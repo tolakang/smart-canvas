@@ -1,6 +1,8 @@
 import { connectSource, disconnectSource, moveSourceToPort } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState, type DragEvent } from 'react';
+import { assetUrl } from '../api';
+import { RenderThumbnail } from '../render/OutputRenderer';
 import { useBoard } from './context';
 import { OUTPUT_HANDLE, portHandleId, type MainFlowNode } from './flow';
 
@@ -12,7 +14,7 @@ const DRAG_TYPE = 'application/x-sc-source';
  * there; drag rows or use ▲▼ to re-order; × disconnects.
  */
 export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
-  const { readOnly, run } = useBoard();
+  const { readOnly, run, teamId } = useBoard();
   const updateInternals = useUpdateNodeInternals();
   const [dropAt, setDropAt] = useState<number | null>(null);
   const handleKey = data.ports.map((p) => p.port).join(',');
@@ -32,6 +34,15 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
       <div className="sc-node__title">Main preview</div>
       <div className="sc-node__meta">
         {data.size.width} × {data.size.height} {data.size.unit} · {data.inputs} inputs · {data.outputs} outputs
+      </div>
+      <div className="sc-main-thumb" aria-label="Main preview">
+        <RenderThumbnail
+          scene={data.scene}
+          sources={data.sources}
+          assetUrl={(assetId) => assetUrl(teamId, assetId)}
+          maxWidth={236}
+          maxHeight={180}
+        />
       </div>
       <ol className="sc-ports" aria-label="Ports (front first)">
         {data.ports.map((p, i) => (

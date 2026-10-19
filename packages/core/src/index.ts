@@ -7,5 +7,9 @@ export * from './project';
 export * from './sources';
 export * from './ports';
 export * from './fonts';
+export * from './rules.config';
+export * from './text';
+export * from './css';
+export * from './render';
 
 export const CORE_VERSION = '0.0.0';

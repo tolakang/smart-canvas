@@ -2,7 +2,7 @@
  * ProjectDoc ↔ React Flow. The doc is the source of truth: node positions live in `board`
  * on each source / the master / each output; edges come from `wires`.
  */
-import type { InputSource, OutputNode, ProjectDoc, Wire } from '@smart-canvas/core';
+import { masterScene, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Wire } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = 'main';
@@ -20,7 +20,15 @@ export interface PortRow {
   connected: boolean;
 }
 export type MainFlowNode = Node<
-  { size: ProjectDoc['master']['size']; ports: PortRow[]; inputs: number; outputs: number },
+  {
+    size: ProjectDoc['master']['size'];
+    ports: PortRow[];
+    inputs: number;
+    outputs: number;
+    /** What the master looks like now, for the thumbnail (same OutputRenderer as export). */
+    scene: RenderScene;
+    sources: InputSource[];
+  },
   'mainNode'
 >;
 
@@ -64,7 +72,14 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
       id: MAIN_ID,
       type: 'mainNode',
       position: doc.master.board,
-      data: { size: doc.master.size, ports: portRows(doc), inputs: doc.sources.length, outputs: doc.outputs.length },
+      data: {
+        size: doc.master.size,
+        ports: portRows(doc),
+        inputs: doc.sources.length,
+        outputs: doc.outputs.length,
+        scene: masterScene(doc),
+        sources: doc.sources,
+      },
       deletable: false,
     },
     ...doc.outputs.map(

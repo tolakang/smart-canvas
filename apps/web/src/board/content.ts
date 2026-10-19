@@ -1,7 +1,6 @@
 /**
  * Pure edits on input-source content (used by the input node editors).
- * Gradient angle follows CSS `linear-gradient`: 0° points up, 90° left→right, clockwise.
- * The renderer (T3.1) must use the same convention.
+ * Gradient angle convention and CSS output: fillToCss in @smart-canvas/core (shared with the renderer).
  */
 import type { Fill, InputSource, ProjectDoc } from '@smart-canvas/core';
 
@@ -69,12 +68,6 @@ export function addStop(fill: LinearFill): LinearFill {
 /** A gradient keeps at least two stops. */
 export function removeStop(fill: LinearFill, index: number): LinearFill {
   return fill.stops.length <= 2 ? fill : { ...fill, stops: fill.stops.filter((_, i) => i !== index) };
-}
-
-export function fillToCss(fill: Fill): string {
-  if (fill.type === 'solid') return fill.color;
-  const stops = sorted(fill.stops).map((s) => `${s.color} ${Math.round(s.offset * 1000) / 10}%`);
-  return `linear-gradient(${fill.angleDeg}deg, ${stops.join(', ')})`;
 }
 
 const clamp01 = (n: number) => (Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0);
