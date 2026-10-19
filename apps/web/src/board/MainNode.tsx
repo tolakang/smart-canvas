@@ -14,7 +14,7 @@ const DRAG_TYPE = 'application/x-sc-source';
  * there; drag rows or use ▲▼ to re-order; × disconnects.
  */
 export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
-  const { readOnly, run, teamId } = useBoard();
+  const { readOnly, run, teamId, openMainEditor } = useBoard();
   const updateInternals = useUpdateNodeInternals();
   const [dropAt, setDropAt] = useState<number | null>(null);
   const handleKey = data.ports.map((p) => p.port).join(',');
@@ -31,7 +31,12 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
 
   return (
     <div className="sc-node sc-node--main">
-      <div className="sc-node__title">Main preview</div>
+      <div className="sc-node__head">
+        <div className="sc-node__title">Main preview</div>
+        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={openMainEditor}>
+          {readOnly ? 'View' : 'Edit'}
+        </button>
+      </div>
       <div className="sc-node__meta">
         {data.size.width} × {data.size.height} {data.size.unit} · {data.inputs} inputs · {data.outputs} outputs
       </div>

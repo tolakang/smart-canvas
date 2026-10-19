@@ -4,6 +4,7 @@
  * the others shift to keep ports contiguous, and wires follow.
  */
 import type { ProjectDoc, Wire } from './model';
+import { ensurePlacement } from './placement';
 import { withSources, type SourceResult } from './sources';
 
 export const MAIN = 'main';
@@ -27,6 +28,7 @@ export function moveSourceToPort(doc: ProjectDoc, sourceId: string, port: number
 /**
  * Wires a source into the main preview. With `port`, the source also moves there (re-wire reorders).
  * A source has at most one wire into main; connecting again just moves it.
+ * First wire auto-places the source by its behaviour if it has no master placement yet (Flow 3).
  */
 export function connectSource(doc: ProjectDoc, sourceId: string, port?: number): SourceResult {
   const moved = port === undefined ? { ok: true as const, doc } : moveSourceToPort(doc, sourceId, port);
@@ -35,7 +37,8 @@ export function connectSource(doc: ProjectDoc, sourceId: string, port?: number):
   const source = next.sources.find((s) => s.id === sourceId);
   if (!source) return { ok: false, error: 'not_found' };
   if (inputWire(next, sourceId)) return { ok: true, doc: next };
-  return { ok: true, doc: { ...next, wires: [...next.wires, { id: inputWireId(sourceId), from: sourceId, to: MAIN, port: source.port }] } };
+  const placed = ensurePlacement(next, sourceId);
+  return { ok: true, doc: { ...placed, wires: [...placed.wires, { id: inputWireId(sourceId), from: sourceId, to: MAIN, port: source.port }] } };
 }
 
 /** Removes the source's wire into main; the source keeps its port (its place in the stack). */

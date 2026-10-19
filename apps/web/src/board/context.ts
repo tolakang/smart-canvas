@@ -5,6 +5,9 @@ import { createContext, useContext } from 'react';
 export interface BoardActions {
   teamId: string;
   readOnly: boolean;
+  /** The current project document (follows every edit). */
+  doc: ProjectDoc;
+  openMainEditor: () => void;
   /** Current number of inputs (for the 10-input cap). */
   sourceCount: number;
   editSource: (id: string, edit: (s: InputSource) => InputSource) => void;

@@ -19,6 +19,7 @@ import { api, ApiError } from '../api';
 import { Autosave, type SaveState } from './autosave';
 import { FontsDialog } from '../fonts/FontsDialog';
 import { registerTeamFonts, type TeamFont } from '../fonts/loader';
+import { MainEditor } from '../editor/MainEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
@@ -94,6 +95,8 @@ function BoardCanvas(props: {
 }) {
   const { teamId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
+  const [doc, setDoc] = useState(initial.doc);
+  const [editingMain, setEditingMain] = useState(false);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const [edges, setEdges] = useState(() => docToEdges(initial.doc));
   const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
@@ -152,6 +155,7 @@ function BoardCanvas(props: {
     (doc: ProjectDoc) => {
       if (readOnly || doc === docRef.current) return;
       docRef.current = doc;
+      setDoc(doc);
       setNodes((ns) => syncNodes(ns, docToNodes(doc)));
       setEdges(docToEdges(doc));
       setSourceCount(doc.sources.length);
@@ -178,11 +182,13 @@ function BoardCanvas(props: {
     () => ({
       teamId,
       readOnly,
+      doc,
+      openMainEditor: () => setEditingMain(true),
       sourceCount,
       editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit)),
       run,
     }),
-    [teamId, readOnly, sourceCount, apply, run],
+    [teamId, readOnly, doc, sourceCount, apply, run],
   );
 
   const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && isInputToMain(c), [readOnly]);
@@ -223,6 +229,7 @@ function BoardCanvas(props: {
       const doc = withPositions(docRef.current, dragged);
       if (doc === docRef.current) return;
       docRef.current = doc;
+      setDoc(doc);
       autosave.change(doc);
     },
     [autosave],
@@ -292,6 +299,7 @@ function BoardCanvas(props: {
             <Controls showInteractive={false} />
             <MiniMap pannable zoomable />
           </ReactFlow>
+          {editingMain && <MainEditor onClose={() => setEditingMain(false)} />}
         </BoardContext.Provider>
       </div>
       {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}

@@ -95,3 +95,11 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 .sc-main-thumb { margin-top: 8px; display: grid; place-items: center; background: repeating-conic-gradient(#e6e8ee 0 25%, #fff 0 50%) 0 0 / 12px 12px; border: 1px solid var(--line); border-radius: 4px; min-height: 60px; }
 .sc-render--thumb { box-shadow: 0 0 0 1px var(--line); }
 html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }
+
+/* Main editor */
+.sc-editor-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: var(--bg); }
+.sc-editor__hint { margin-left: auto; font-size: 12px; }
+.sc-editor__stage { flex: 1; display: grid; place-items: center; overflow: hidden; background: repeating-conic-gradient(#e6e8ee 0 25%, #f3f4f7 0 50%) 0 0 / 20px 20px; }
+.sc-editor__canvas { position: relative; box-shadow: 0 2px 16px rgb(0 0 0 / 0.15); background: #fff; }
+.sc-editor__target { position: absolute; left: 0; top: 0; cursor: move; touch-action: none; }
+.sc-open-editor { font-size: 12px; padding: 2px 10px; }
