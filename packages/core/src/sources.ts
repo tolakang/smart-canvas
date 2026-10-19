@@ -3,6 +3,7 @@
  * Invariants kept by every operation:
  * - at most LIMITS.maxSources sources;
  * - ports are unique and contiguous 0..n-1 (port 0 = front layer, D11);
+ * - a source→main wire always carries its source's current port;
  * - nothing in the doc points at a deleted source (wires, master placements, output overrides, frozen frames).
  */
 import { LIMITS, type Behavior, type InputSource, type ProjectDoc, type SourceContent, type SourceKind, type TextStyle } from './model';
@@ -76,6 +77,17 @@ export function normalizePorts(sources: InputSource[]): InputSource[] {
   return sources.map((s) => (s.port === order.indexOf(s.id) ? s : { ...s, port: order.indexOf(s.id) }));
 }
 
+/** Sets the sources (ports renumbered 0..n-1) and brings every source→main wire's port in line. */
+export function withSources(doc: ProjectDoc, sources: InputSource[]): ProjectDoc {
+  const normalized = normalizePorts(sources);
+  const portOf = new Map(normalized.map((s) => [s.id, s.port]));
+  const wires = doc.wires.map((w) => {
+    const port = w.to === 'main' ? portOf.get(w.from) : undefined;
+    return port === undefined || w.port === port ? w : { ...w, port };
+  });
+  return { ...doc, sources: normalized, wires };
+}
+
 function nextRowY(doc: ProjectDoc): number {
   const ys = doc.sources.map((s) => s.board.y);
   return ys.length === 0 ? 0 : Math.max(...ys) + SOURCE_ROW_GAP;
@@ -84,7 +96,7 @@ function nextRowY(doc: ProjectDoc): number {
 /** Inserts `source` at `port`, pushing that port and everything behind it one step back. */
 function insertAt(doc: ProjectDoc, source: InputSource, port: number): ProjectDoc {
   const shifted = doc.sources.map((s) => (s.port >= port ? { ...s, port: s.port + 1 } : s));
-  return { ...doc, sources: normalizePorts([...shifted, { ...source, port }]) };
+  return withSources(doc, [...shifted, { ...source, port }]);
 }
 
 /**
@@ -143,13 +155,12 @@ export function duplicateSource(doc: ProjectDoc, id: string, newId: string): Sou
 export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
   if (!doc.sources.some((s) => s.id === id)) return fail('not_found');
   const placements = Object.fromEntries(Object.entries(doc.master.placements).filter(([sourceId]) => sourceId !== id));
+  const rest = { ...doc, wires: doc.wires.filter((w) => w.from !== id && w.to !== id) };
   return {
     ok: true,
     doc: {
-      ...doc,
-      sources: normalizePorts(doc.sources.filter((s) => s.id !== id)),
+      ...withSources(rest, doc.sources.filter((s) => s.id !== id)),
       master: { ...doc.master, placements },
-      wires: doc.wires.filter((w) => w.from !== id && w.to !== id),
       outputs: doc.outputs.map((o) => ({
         ...o,
         overrides: o.overrides.filter((ov) => ov.sourceId !== id),

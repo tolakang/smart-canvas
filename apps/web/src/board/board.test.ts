@@ -1,7 +1,17 @@
 import { createProjectDoc, type ProjectDoc } from '@smart-canvas/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
-import { docToEdges, docToNodes, MAIN_ID, syncNodes, withPositions } from './flow';
+import {
+  docToEdges,
+  docToNodes,
+  isInputToMain,
+  MAIN_ID,
+  portFromHandle,
+  portRows,
+  sourceIdOfNode,
+  syncNodes,
+  withPositions,
+} from './flow';
 
 function sampleDoc(): ProjectDoc {
   const doc = { ...createProjectDoc('P'), sources: [] as ProjectDoc['sources'] };
@@ -39,11 +49,34 @@ describe('docToNodes / docToEdges', () => {
     ]);
   });
 
-  it('maps wires to edges between node ids', () => {
+  it('maps wires to edges: inputs land on their port handle and are deletable; output wires are not', () => {
     expect(docToEdges(sampleDoc())).toEqual([
-      { id: 'w1', source: 'src:bg', target: 'main', label: 'port 0' },
-      { id: 'w2', source: 'main', target: 'out:ig', label: undefined },
+      { id: 'w1', source: 'src:bg', target: 'main', targetHandle: 'p0', deletable: true },
+      { id: 'w2', source: 'main', target: 'out:ig', sourceHandle: 'out', deletable: false },
     ]);
+  });
+
+  it('lists the main preview ports front first, with wired state', () => {
+    const doc = createProjectDoc('P');
+    doc.wires.push({ id: 'in:subject', from: 'subject', to: 'main', port: 2 });
+    doc.sources = doc.sources.map((s) => (s.id === 'logo' ? { ...s, visible: false } : s));
+    expect(portRows(doc)).toEqual([
+      { port: 0, sourceId: 'logo', label: 'Logo', visible: false, connected: false },
+      { port: 1, sourceId: 'headline', label: 'Headline', visible: true, connected: false },
+      { port: 2, sourceId: 'subject', label: 'Subject', visible: true, connected: true },
+      { port: 3, sourceId: 'background', label: 'Background', visible: true, connected: false },
+    ]);
+  });
+
+  it('parses port handles and only allows input → main connections', () => {
+    expect(portFromHandle('p3')).toBe(3);
+    expect(portFromHandle('out')).toBeUndefined();
+    expect(portFromHandle(null)).toBeUndefined();
+    expect(isInputToMain({ source: 'src:logo', target: 'main' })).toBe(true);
+    expect(isInputToMain({ source: 'main', target: 'out:ig' })).toBe(false);
+    expect(isInputToMain({ source: 'src:logo', target: 'src:bg' })).toBe(false);
+    expect(sourceIdOfNode('src:logo')).toBe('logo');
+    expect(sourceIdOfNode('main')).toBeUndefined();
   });
 
   it('a new project shows its 4 default inputs and the main preview', () => {

@@ -5,5 +5,6 @@
 export * from './model';
 export * from './project';
 export * from './sources';
+export * from './ports';
 
 export const CORE_VERSION = '0.0.0';

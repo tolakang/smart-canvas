@@ -11,7 +11,25 @@ export const outputNodeId = (outputId: string) => `out:${outputId}`;
 
 // Not 'input'/'output': React Flow has built-in node types (and CSS) under those names.
 export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
-export type MainFlowNode = Node<{ size: ProjectDoc['master']['size']; inputs: number; outputs: number }, 'mainNode'>;
+/** One row per port on the main preview, front (port 0) first. */
+export interface PortRow {
+  port: number;
+  sourceId: string;
+  label: string;
+  visible: boolean;
+  connected: boolean;
+}
+export type MainFlowNode = Node<
+  { size: ProjectDoc['master']['size']; ports: PortRow[]; inputs: number; outputs: number },
+  'mainNode'
+>;
+
+export const portHandleId = (port: number) => `p${port}`;
+export const OUTPUT_HANDLE = 'out';
+export function portFromHandle(handle: string | null | undefined): number | undefined {
+  const m = handle ? /^p(\d+)$/.exec(handle) : null;
+  return m?.[1] === undefined ? undefined : Number(m[1]);
+}
 export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean }, 'outputNode'>;
 export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode;
 
@@ -22,17 +40,31 @@ function endpoint(doc: ProjectDoc, id: string): string {
   return outputNodeId(id);
 }
 
+export function portRows(doc: ProjectDoc): PortRow[] {
+  const wired = new Set(doc.wires.filter((w) => w.to === MAIN_ID).map((w) => w.from));
+  return [...doc.sources]
+    .sort((a, b) => a.port - b.port)
+    .map((s) => ({ port: s.port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }));
+}
+
+// Nodes are never removed with the Delete key (inputs have a delete button with a confirm).
 export function docToNodes(doc: ProjectDoc): BoardNode[] {
   const connected = new Set(doc.wires.filter((w) => w.from === MAIN_ID).map((w) => w.to));
   return [
     ...doc.sources.map(
-      (source): InputFlowNode => ({ id: inputNodeId(source.id), type: 'inputNode', position: source.board, data: { source } }),
+      (source): InputFlowNode => ({
+        id: inputNodeId(source.id),
+        type: 'inputNode',
+        position: source.board,
+        data: { source },
+        deletable: false,
+      }),
     ),
     {
       id: MAIN_ID,
       type: 'mainNode',
       position: doc.master.board,
-      data: { size: doc.master.size, inputs: doc.sources.length, outputs: doc.outputs.length },
+      data: { size: doc.master.size, ports: portRows(doc), inputs: doc.sources.length, outputs: doc.outputs.length },
       deletable: false,
     },
     ...doc.outputs.map(
@@ -41,19 +73,33 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         type: 'outputNode',
         position: output.board,
         data: { output, connected: connected.has(output.id) },
+        deletable: false,
       }),
     ),
   ];
 }
 
+/** Input wires land on their port's handle and can be deleted; main→output wires are T4.9's. */
 export function docToEdges(doc: ProjectDoc): Edge[] {
-  return doc.wires.map((w: Wire) => ({
-    id: w.id,
-    source: endpoint(doc, w.from),
-    target: endpoint(doc, w.to),
-    label: w.port === undefined ? undefined : `port ${w.port}`,
-  }));
+  return doc.wires.map((w: Wire): Edge => {
+    const intoMain = w.to === MAIN_ID;
+    return {
+      id: w.id,
+      source: endpoint(doc, w.from),
+      target: endpoint(doc, w.to),
+      ...(intoMain && w.port !== undefined ? { targetHandle: portHandleId(w.port) } : {}),
+      ...(w.from === MAIN_ID ? { sourceHandle: OUTPUT_HANDLE } : {}),
+      deletable: intoMain,
+    };
+  });
 }
+
+/** Only input → main preview connections can be drawn on the board for now. */
+export function isInputToMain(c: { source: string | null; target: string | null }): boolean {
+  return !!c.source?.startsWith('src:') && c.target === MAIN_ID;
+}
+
+export const sourceIdOfNode = (nodeId: string) => (nodeId.startsWith('src:') ? nodeId.slice(4) : undefined);
 
 /** Returns a new doc with the given node positions written into `board`; unknown ids are ignored. */
 export function withPositions(doc: ProjectDoc, moved: { id: string; position: { x: number; y: number } }[]): ProjectDoc {

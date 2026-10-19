@@ -1,10 +1,15 @@
-import { addSource, LIMITS, type InputSource, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addSource, connectSource, disconnectSource, LIMITS, type InputSource, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import {
+  applyEdgeChanges,
   applyNodeChanges,
   Background,
   Controls,
   MiniMap,
   ReactFlow,
+  type Connection,
+  type Edge,
+  type EdgeChange,
+  type IsValidConnection,
   type Node,
   type NodeChange,
 } from '@xyflow/react';
@@ -16,7 +21,16 @@ import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
 import { withSource } from './content';
-import { docToEdges, docToNodes, syncNodes, withPositions, type BoardNode } from './flow';
+import {
+  docToEdges,
+  docToNodes,
+  isInputToMain,
+  portFromHandle,
+  sourceIdOfNode,
+  syncNodes,
+  withPositions,
+  type BoardNode,
+} from './flow';
 import { nodeTypes } from './nodes';
 
 interface Loaded {
@@ -150,6 +164,34 @@ function BoardCanvas(props: {
     [teamId, readOnly, sourceCount, apply, run],
   );
 
+  const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && isInputToMain(c), [readOnly]);
+
+  /** Wire input → a port row: connects it, and moves it to that port if different (D11). */
+  const onConnect = useCallback(
+    (c: Connection) => {
+      const sourceId = sourceIdOfNode(c.source);
+      if (!sourceId || !isInputToMain(c)) return;
+      run((doc) => connectSource(doc, sourceId, portFromHandle(c.targetHandle)));
+    },
+    [run],
+  );
+
+  // Edges are controlled: apply selection here; removals go through the doc (onEdgesDelete).
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    const selection = changes.filter((c) => c.type === 'select');
+    if (selection.length) setEdges((es) => applyEdgeChanges(selection, es));
+  }, []);
+
+  const onEdgesDelete = useCallback(
+    (deleted: Edge[]) => {
+      for (const e of deleted) {
+        const sourceId = sourceIdOfNode(e.source);
+        if (sourceId) run((doc) => disconnectSource(doc, sourceId));
+      }
+    },
+    [run],
+  );
+
   const addInput = (input: NewInput) => {
     const result = run((doc) => addSource(doc, { id: newId(), ...input }));
     if (result.ok) setAdding(false);
@@ -208,9 +250,14 @@ function BoardCanvas(props: {
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onNodeDragStop={onNodeDragStop}
+            onConnect={onConnect}
+            onEdgesChange={onEdgesChange}
+            onEdgesDelete={onEdgesDelete}
+            isValidConnection={isValidConnection}
             nodesDraggable={!readOnly}
-            nodesConnectable={false}
-            deleteKeyCode={null}
+            nodesConnectable={!readOnly}
+            edgesFocusable={!readOnly}
+            deleteKeyCode={readOnly ? null : ['Backspace', 'Delete']}
             fitView
             fitViewOptions={{ maxZoom: 1 }}
             minZoom={0.1}

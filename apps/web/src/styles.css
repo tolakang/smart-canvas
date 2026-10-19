@@ -70,3 +70,18 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 .sc-dialog::backdrop { background: rgb(0 0 0 / 0.25); }
 .sc-dialog .sc-card { margin: 0; min-width: 320px; }
 .sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
+
+.sc-node--main { min-width: 260px; }
+.sc-ports { list-style: none; margin: 8px -12px 0; padding: 0; }
+.sc-port { position: relative; display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-top: 1px solid var(--line); font-size: 12px; background: #fff; }
+.sc-port[draggable='true'] { cursor: grab; }
+.sc-port--drop { box-shadow: inset 0 2px 0 var(--accent); }
+.sc-port--hidden .sc-port__label { opacity: 0.5; }
+.sc-port--wired .sc-port__label { color: var(--fg); }
+.sc-port__n { width: 14px; color: var(--muted); text-align: right; }
+.sc-port__label { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-port__actions { display: flex; gap: 2px; }
+.sc-port__actions button { width: 20px; height: 20px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: none; color: var(--muted); font-size: 11px; line-height: 1; }
+.sc-port__actions button:hover:not(:disabled) { border-color: var(--line); color: var(--fg); }
+.sc-port__actions button:disabled { opacity: 0.3; }
+.sc-ports__hint { margin-top: 4px; }

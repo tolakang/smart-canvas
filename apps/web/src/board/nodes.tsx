@@ -1,13 +1,16 @@
 import { Handle, Position, type NodeProps, type NodeTypes } from '@xyflow/react';
 import type { InputSource } from '@smart-canvas/core';
 import { AssetEditor, FillEditor, TextEditor } from './editors';
+import { useBoard } from './context';
+import { MainNodeView } from './MainNode';
 import { SourceHeader } from './SourceHeader';
-import type { InputFlowNode, MainFlowNode, OutputFlowNode } from './flow';
+import type { InputFlowNode, OutputFlowNode } from './flow';
 
 const sizeLabel = (s: { width: number; height: number; unit: string }) => `${s.width} × ${s.height} ${s.unit}`;
 
 function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
+  const { readOnly } = useBoard();
   return (
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}`}>
       <SourceHeader source={source} />
@@ -16,7 +19,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
         {!source.visible && ' · hidden'}
       </div>
       <SourceEditor source={source} />
-      <Handle type="source" position={Position.Right} />
+      <Handle type="source" position={Position.Right} isConnectable={!readOnly} />
     </div>
   );
 }
@@ -32,20 +35,6 @@ function SourceEditor({ source }: { source: InputSource }) {
     case 'fill':
       return <FillEditor source={{ ...source, content }} />;
   }
-}
-
-function MainNodeView({ data }: NodeProps<MainFlowNode>) {
-  return (
-    <div className="sc-node sc-node--main">
-      <Handle type="target" position={Position.Left} />
-      <div className="sc-node__title">Main preview</div>
-      <div className="sc-node__meta">{sizeLabel(data.size)}</div>
-      <div className="sc-node__meta">
-        {data.inputs} inputs · {data.outputs} outputs
-      </div>
-      <Handle type="source" position={Position.Right} />
-    </div>
-  );
 }
 
 function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
