@@ -13,5 +13,6 @@ export * from './css';
 export * from './render';
 export * from './placement';
 export * from './text-style';
+export * from './units';
 
 export const CORE_VERSION = '0.0.0';
