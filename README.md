@@ -18,5 +18,8 @@ Database (Postgres, Drizzle; run in `apps/api`):
 ```
 DATABASE_URL=postgres://… pnpm db:migrate   # apply migrations
 pnpm db:generate --name <change>            # new migration after editing src/db/schema.ts
-TEST_DATABASE_URL=postgres://… pnpm test    # also runs the migration test on a fresh empty DB
+TEST_DATABASE_URL=postgres://… pnpm test    # also runs the DB integration tests on fresh empty DBs
 ```
+
+The API needs `DATABASE_URL`. Session cookies are `Secure` unless `COOKIE_SECURE=false` (plain-http local dev).
+First run: `POST /auth/setup` creates the first admin and team; after that, people join through invite links.
