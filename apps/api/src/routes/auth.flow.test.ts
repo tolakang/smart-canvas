@@ -2,6 +2,7 @@ import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
+import { MemoryStore } from '../storage/object-store';
 import { requireTeam, SESSION_COOKIE } from '../auth/plugin';
 import type { Db } from '../db/client';
 import { invites } from '../db/schema';
@@ -36,7 +37,7 @@ describe.skipIf(!adminUrl)('auth, invites and roles (Postgres)', () => {
 
   beforeAll(async () => {
     ({ db, drop } = await freshDb());
-    app = await buildApp({ db, secureCookie: false, logger: false });
+    app = await buildApp({ db, store: new MemoryStore(), secureCookie: false, logger: false });
     // A non-admin team route, to prove the generic viewer-is-read-only rule.
     app.post('/teams/:teamId/probe', { preHandler: requireTeam() }, async () => ({ ok: true }));
     app.get('/teams/:teamId/probe', { preHandler: requireTeam() }, async () => ({ ok: true }));

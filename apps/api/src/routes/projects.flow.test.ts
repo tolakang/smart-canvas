@@ -3,6 +3,7 @@ import { createProjectDoc } from '@smart-canvas/core';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
+import { MemoryStore } from '../storage/object-store';
 import { adminUrl, freshDb } from '../test/db';
 import { caller, setupTeam } from '../test/team';
 
@@ -18,7 +19,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
   beforeAll(async () => {
     const fresh = await freshDb();
     drop = fresh.drop;
-    app = await buildApp({ db: fresh.db, secureCookie: false, logger: false });
+    app = await buildApp({ db: fresh.db, store: new MemoryStore(), secureCookie: false, logger: false });
     call = caller(app);
     const team = await setupTeam(app);
     teamId = team.teamId;

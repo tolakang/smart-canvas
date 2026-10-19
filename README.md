@@ -21,5 +21,5 @@ pnpm db:generate --name <change>            # new migration after editing src/db
 TEST_DATABASE_URL=postgres://… pnpm test    # also runs the DB integration tests on fresh empty DBs
 ```
 
-The API needs `DATABASE_URL`. Session cookies are `Secure` unless `COOKIE_SECURE=false` (plain-http local dev).
+The API needs `DATABASE_URL` and object storage (MinIO / any S3 API): `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` (optional `S3_REGION`); the bucket is created on start if missing. Session cookies are `Secure` unless `COOKIE_SECURE=false` (plain-http local dev).
 First run: `POST /auth/setup` creates the first admin and team; after that, people join through invite links.
