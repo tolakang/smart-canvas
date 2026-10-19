@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, type Me } from '../api';
+import { PresetsDialog } from './PresetsDialog';
 
 interface ProjectRow {
   id: string;
@@ -11,6 +12,7 @@ export function Projects(props: { team: Me['teams'][number]; onOpen: (projectId:
   const { team } = props;
   const [rows, setRows] = useState<ProjectRow[] | null>(null);
   const canEdit = team.role !== 'viewer';
+  const [showPresets, setShowPresets] = useState(false);
 
   useEffect(() => {
     void api<ProjectRow[]>('GET', `/teams/${team.id}/projects`).then(setRows);
@@ -28,7 +30,12 @@ export function Projects(props: { team: Me['teams'][number]; onOpen: (projectId:
 
   return (
     <section className="sc-card sc-card--wide">
-      <h1>{team.name} · Projects</h1>
+      <div className="sc-row sc-row--between">
+        <h1>{team.name} · Projects</h1>
+        <button type="button" onClick={() => setShowPresets(true)}>
+          Size presets
+        </button>
+      </div>
       {canEdit && (
         <form className="sc-row" onSubmit={create}>
           <input name="name" placeholder="New project name" required maxLength={200} />
@@ -51,6 +58,7 @@ export function Projects(props: { team: Me['teams'][number]; onOpen: (projectId:
           ))}
         </ul>
       )}
+      {showPresets && <PresetsDialog teamId={team.id} isAdmin={team.role === 'admin'} onClose={() => setShowPresets(false)} />}
     </section>
   );
 }

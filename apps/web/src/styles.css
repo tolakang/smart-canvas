@@ -140,3 +140,10 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-seg button { border: 0; border-radius: 0; padding: 3px 8px; background: #fff; font: inherit; }
 .sc-seg button[aria-pressed='true'] { background: var(--accent); color: #fff; }
 .sc-icon-btn { padding: 0 6px; line-height: 1.4; }
+
+/* Preset manager (T4.8) */
+.sc-row--between { justify-content: space-between; align-items: center; }
+.sc-presets { max-width: 640px; max-height: 85vh; overflow: auto; }
+.sc-presets h2 { margin: 12px 0 4px; font-size: 14px; }
+.sc-presets .sc-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sc-presets form label { display: grid; gap: 2px; font-size: 13px; }

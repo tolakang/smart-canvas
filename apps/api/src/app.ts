@@ -5,6 +5,7 @@ import { assetRoutes } from './routes/assets';
 import { authRoutes } from './routes/auth';
 import { inviteRoutes } from './routes/invites';
 import { memberRoutes } from './routes/members';
+import { presetRoutes } from './routes/presets';
 import { projectRoutes } from './routes/projects';
 import type { ObjectStore } from './storage/object-store';
 
@@ -26,6 +27,7 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
   await app.register(inviteRoutes);
   await app.register(memberRoutes);
   await app.register(projectRoutes);
+  await app.register(presetRoutes);
   await app.register(assetRoutes, { store: opts.store });
 
   return app;
