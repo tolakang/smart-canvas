@@ -12,3 +12,11 @@ pnpm lint       # eslint
 pnpm build      # build (web)
 pnpm dev        # web (Vite) + api (Fastify :3000) + worker
 ```
+
+Database (Postgres, Drizzle; run in `apps/api`):
+
+```
+DATABASE_URL=postgres://… pnpm db:migrate   # apply migrations
+pnpm db:generate --name <change>            # new migration after editing src/db/schema.ts
+TEST_DATABASE_URL=postgres://… pnpm test    # also runs the migration test on a fresh empty DB
+```
