@@ -1,4 +1,4 @@
-import type { InputSource, ProjectDoc } from '@smart-canvas/core';
+import { addSource, LIMITS, type InputSource, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import {
   applyNodeChanges,
   Background,
@@ -12,7 +12,9 @@ import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Autosave, type SaveState } from './autosave';
+import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { BoardContext, type BoardActions } from './context';
+import { newId } from './ids';
 import { withSource } from './content';
 import { docToEdges, docToNodes, syncNodes, withPositions, type BoardNode } from './flow';
 import { nodeTypes } from './nodes';
@@ -77,7 +79,10 @@ function BoardCanvas(props: {
   const { teamId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
-  const edges = useMemo(() => docToEdges(initial.doc), [initial.doc]);
+  const [edges, setEdges] = useState(() => docToEdges(initial.doc));
+  const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
+  const [adding, setAdding] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('saved');
 
   const autosave = useMemo(
@@ -107,21 +112,48 @@ function BoardCanvas(props: {
     setNodes((ns) => applyNodeChanges(changes, ns));
   }, []);
 
+  /** The single way the doc changes from the UI: board state follows, autosave picks it up. */
+  const apply = useCallback(
+    (doc: ProjectDoc) => {
+      if (readOnly || doc === docRef.current) return;
+      docRef.current = doc;
+      setNodes((ns) => syncNodes(ns, docToNodes(doc)));
+      setEdges(docToEdges(doc));
+      setSourceCount(doc.sources.length);
+      autosave.change(doc);
+    },
+    [readOnly, autosave],
+  );
+
+  const run = useCallback(
+    (op: (doc: ProjectDoc) => SourceResult): SourceResult => {
+      const result = op(docRef.current);
+      if (result.ok) {
+        setNotice(null);
+        apply(result.doc);
+      } else {
+        setNotice(result.error === 'limit' ? `A project can have at most ${LIMITS.maxSources} inputs.` : 'That change could not be made.');
+      }
+      return result;
+    },
+    [apply],
+  );
+
   const actions = useMemo<BoardActions>(
     () => ({
       teamId,
       readOnly,
-      editSource: (id: string, edit: (s: InputSource) => InputSource) => {
-        if (readOnly) return;
-        const doc = withSource(docRef.current, id, edit);
-        if (doc === docRef.current) return;
-        docRef.current = doc;
-        setNodes((ns) => syncNodes(ns, docToNodes(doc)));
-        autosave.change(doc);
-      },
+      sourceCount,
+      editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit)),
+      run,
     }),
-    [teamId, readOnly, autosave],
+    [teamId, readOnly, sourceCount, apply, run],
   );
+
+  const addInput = (input: NewInput) => {
+    const result = run((doc) => addSource(doc, { id: newId(), ...input }));
+    if (result.ok) setAdding(false);
+  };
 
   const onNodeDragStop = useCallback(
     (_e: unknown, _node: Node, dragged: Node[]) => {
@@ -141,6 +173,24 @@ function BoardCanvas(props: {
         </button>
         <strong>{initial.doc.name}</strong>
         {readOnly && <span className="sc-badge">View only</span>}
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            disabled={sourceCount >= LIMITS.maxSources}
+            title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : undefined}
+          >
+            + Add input
+          </button>
+        )}
+        <span className="sc-muted">
+          {sourceCount}/{LIMITS.maxSources} inputs
+        </span>
+        {notice && (
+          <span className="sc-error" role="alert">
+            {notice}
+          </span>
+        )}
         <span className={`sc-save sc-save--${saveState}`} role="status">
           {STATE_LABEL[saveState]}
           {saveState === 'conflict' && (
@@ -173,6 +223,7 @@ function BoardCanvas(props: {
           </ReactFlow>
         </BoardContext.Provider>
       </div>
+      {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}
     </div>
   );
 }

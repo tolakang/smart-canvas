@@ -1,8 +1,8 @@
 import { DEFAULTS, type ProjectDoc } from './model';
+import { defaultSources } from './sources';
 
 /**
- * A new, empty project document: master at the default size, nothing wired.
- * The 4 default input sources are added by T2.3.
+ * A new project document: master at the default size, the 4 default inputs (D8), nothing wired yet.
  */
 export function createProjectDoc(name: string): ProjectDoc {
   return {
@@ -10,7 +10,7 @@ export function createProjectDoc(name: string): ProjectDoc {
     rev: 0,
     name,
     master: { size: { ...DEFAULTS.masterSize }, placements: {}, board: { x: 0, y: 0 } },
-    sources: [],
+    sources: defaultSources(),
     outputs: [],
     wires: [],
   };

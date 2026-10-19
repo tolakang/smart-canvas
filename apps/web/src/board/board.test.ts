@@ -4,7 +4,7 @@ import { Autosave, type SaveFn, type SaveState } from './autosave';
 import { docToEdges, docToNodes, MAIN_ID, syncNodes, withPositions } from './flow';
 
 function sampleDoc(): ProjectDoc {
-  const doc = createProjectDoc('P');
+  const doc = { ...createProjectDoc('P'), sources: [] as ProjectDoc['sources'] };
   doc.sources.push({
     id: 'bg',
     label: 'Background',
@@ -46,8 +46,14 @@ describe('docToNodes / docToEdges', () => {
     ]);
   });
 
-  it('a new project shows just the main preview', () => {
-    expect(docToNodes(createProjectDoc('New')).map((n) => n.id)).toEqual([MAIN_ID]);
+  it('a new project shows its 4 default inputs and the main preview', () => {
+    expect(docToNodes(createProjectDoc('New')).map((n) => n.id)).toEqual([
+      'src:background',
+      'src:subject',
+      'src:headline',
+      'src:logo',
+      MAIN_ID,
+    ]);
   });
 });
 

@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps, type NodeTypes } from '@xyflow/react';
 import type { InputSource } from '@smart-canvas/core';
 import { AssetEditor, FillEditor, TextEditor } from './editors';
+import { SourceHeader } from './SourceHeader';
 import type { InputFlowNode, MainFlowNode, OutputFlowNode } from './flow';
 
 const sizeLabel = (s: { width: number; height: number; unit: string }) => `${s.width} × ${s.height} ${s.unit}`;
@@ -9,9 +10,10 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
   return (
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}`}>
-      <div className="sc-node__title">{source.label}</div>
+      <SourceHeader source={source} />
       <div className="sc-node__meta">
-        {source.kind} · {source.behavesLike}
+        {source.kind} · {source.behavesLike} · port {source.port}
+        {!source.visible && ' · hidden'}
       </div>
       <SourceEditor source={source} />
       <Handle type="source" position={Position.Right} />
