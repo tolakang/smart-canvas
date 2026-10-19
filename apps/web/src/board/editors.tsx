@@ -1,4 +1,4 @@
-import { LIMITS, type Fill, type InputSource } from '@smart-canvas/core';
+import { fontStack, LIMITS, type Fill, type InputSource } from '@smart-canvas/core';
 import { useState, type ChangeEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
 import { addStop, fillToCss, removeStop, setAsset, setFill, setStop, setText, switchFillType } from './content';
@@ -81,6 +81,8 @@ export function TextEditor({ source }: { source: InputSource & { content: { kind
       value={source.content.text}
       readOnly={readOnly}
       rows={3}
+      lang={source.content.style.language === 'km' ? 'km' : undefined}
+      style={{ fontFamily: fontStack(source.content.style.fontFamily), fontWeight: source.content.style.fontWeight }}
       onChange={(e) => editSource(source.id, (s) => setText(s, e.target.value))}
     />
   );

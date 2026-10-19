@@ -17,6 +17,8 @@ import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Autosave, type SaveState } from './autosave';
+import { FontsDialog } from '../fonts/FontsDialog';
+import { registerTeamFonts, type TeamFont } from '../fonts/loader';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
@@ -96,6 +98,25 @@ function BoardCanvas(props: {
   const [edges, setEdges] = useState(() => docToEdges(initial.doc));
   const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
   const [adding, setAdding] = useState(false);
+  const [showFonts, setShowFonts] = useState(false);
+  const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
+  const [fontsKey, setFontsKey] = useState(0);
+
+  // Team fonts become FontFaces as soon as the board opens, so text renders and measures in them.
+  useEffect(() => {
+    let live = true;
+    api<TeamFont[]>('GET', `/teams/${teamId}/fonts`).then(
+      (fonts) => {
+        if (!live) return;
+        registerTeamFonts(teamId, fonts);
+        setTeamFonts(fonts);
+      },
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, [teamId, fontsKey]);
   const [notice, setNotice] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('saved');
 
@@ -228,6 +249,9 @@ function BoardCanvas(props: {
         <span className="sc-muted">
           {sourceCount}/{LIMITS.maxSources} inputs
         </span>
+        <button type="button" onClick={() => setShowFonts(true)}>
+          Fonts
+        </button>
         {notice && (
           <span className="sc-error" role="alert">
             {notice}
@@ -271,6 +295,15 @@ function BoardCanvas(props: {
         </BoardContext.Provider>
       </div>
       {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}
+      {showFonts && (
+        <FontsDialog
+          teamId={teamId}
+          readOnly={readOnly}
+          teamFonts={teamFonts}
+          onUploaded={() => setFontsKey((k) => k + 1)}
+          onClose={() => setShowFonts(false)}
+        />
+      )}
     </div>
   );
 }

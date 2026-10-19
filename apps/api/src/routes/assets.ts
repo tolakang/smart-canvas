@@ -8,6 +8,7 @@ import { LIMITS } from '@smart-canvas/core';
 import { and, desc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { dimensions } from '../assets/dimensions';
+import { readFontFamily } from '../assets/font';
 import { sniff } from '../assets/sniff';
 import { sanitizeSvg, SvgRejected } from '../assets/svg-sanitize';
 import { currentUser, requireTeam } from '../auth/plugin';
@@ -24,6 +25,7 @@ const assetColumns = {
   sha256: assets.sha256,
   width: assets.width,
   height: assets.height,
+  fontFamily: assets.fontFamily,
   createdAt: assets.createdAt,
 };
 type Params = { teamId: string; assetId: string };
@@ -45,7 +47,14 @@ export const assetRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (ap
     let body: Uint8Array = await file.toBuffer(); // throws 413 past MAX_UPLOAD_BYTES
 
     const type = sniff(body);
-    if (!type) return reply.code(415).send({ error: 'unsupported_type', accepted: ['png', 'jpg', 'webp', 'svg'] });
+    if (!type) {
+      return reply.code(415).send({ error: 'unsupported_type', accepted: ['png', 'jpg', 'webp', 'svg', 'ttf', 'otf', 'woff2'] });
+    }
+    let fontFamily: string | null = null;
+    if (type.kind === 'font') {
+      fontFamily = readFontFamily(body);
+      if (!fontFamily) return reply.code(422).send({ error: 'font_rejected' });
+    }
     if (type.kind === 'vector') {
       try {
         body = new TextEncoder().encode(sanitizeSvg(new TextDecoder().decode(body)));
@@ -54,7 +63,7 @@ export const assetRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (ap
         throw err;
       }
     }
-    const dims = dimensions(body);
+    const dims = type.kind === 'font' ? null : dimensions(body);
     if (type.kind === 'image' && !dims) return reply.code(422).send({ error: 'unreadable_image' });
 
     const { teamId } = req.params;
@@ -78,6 +87,7 @@ export const assetRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (ap
         storageKey,
         width: dims?.width ?? null,
         height: dims?.height ?? null,
+        fontFamily,
         createdBy: currentUser(req).id,
       })
       .onConflictDoNothing({ target: [assets.teamId, assets.sha256] })
@@ -89,6 +99,15 @@ export const assetRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (ap
       .from(assets)
       .where(and(eq(assets.teamId, teamId), eq(assets.sha256, sha256)));
     return reply.code(200).send(winner);
+  });
+
+  /** Team fonts (T2.5), for the font list and for registering FontFaces in the browser and the export worker. */
+  app.get<{ Params: { teamId: string } }>('/teams/:teamId/fonts', { preHandler: member }, async (req) => {
+    return db
+      .select({ id: assets.id, family: assets.fontFamily, mime: assets.mime, createdAt: assets.createdAt })
+      .from(assets)
+      .where(and(eq(assets.teamId, req.params.teamId), eq(assets.kind, 'font')))
+      .orderBy(assets.fontFamily);
   });
 
   app.get<{ Params: { teamId: string } }>('/teams/:teamId/assets', { preHandler: member }, async (req) => {

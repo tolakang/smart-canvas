@@ -32,6 +32,7 @@ export interface AssetMeta {
   mime: string;
   width: number | null;
   height: number | null;
+  fontFamily: string | null;
 }
 
 /** Multipart upload of one file to the team's assets. */
