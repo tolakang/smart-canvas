@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T4.8 — Presets
+**Next:** T4.9 — Connect rules
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -42,7 +42,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T4.5 — Engine: text fit + Khmer breaking — [#23](https://github.com/tolakang/smart-canvas/pull/23)
 - [x] T4.6 — Engine: families — [#24](https://github.com/tolakang/smart-canvas/pull/24)
 - [x] T4.7 — Output node UI — [#25](https://github.com/tolakang/smart-canvas/pull/25)
-- [ ] T4.8 — Presets
+- [x] T4.8 — Presets — [#26](https://github.com/tolakang/smart-canvas/pull/26)
 - [ ] T4.9 — Connect rules
 
 ## P5 Overrides
