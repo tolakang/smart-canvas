@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:check": "drizzle-kit check",
-    "db:migrate": "tsx src/db/migrate-cli.ts"
+    "db:migrate": "tsx src/db/migrate-cli.ts",
+    "build": "node ../../scripts/bundle.mjs src/main.ts src/db/migrate-cli.ts",
+    "start:prod": "node dist/db/migrate-cli.js && node dist/main.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
@@ -28,5 +30,9 @@
     "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.31.11",
     "tsx": "^4.23.15"
-  }
+  },
+  "files": [
+    "dist",
+    "drizzle"
+  ]
 }
