@@ -4,6 +4,7 @@ import type { Db } from './db/client';
 import { authRoutes } from './routes/auth';
 import { inviteRoutes } from './routes/invites';
 import { memberRoutes } from './routes/members';
+import { projectRoutes } from './routes/projects';
 
 export interface AppOptions {
   db: Db;
@@ -21,6 +22,7 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
   await app.register(authRoutes);
   await app.register(inviteRoutes);
   await app.register(memberRoutes);
+  await app.register(projectRoutes);
 
   return app;
 }

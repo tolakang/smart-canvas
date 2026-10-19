@@ -3,5 +3,6 @@
  * Pure TypeScript: no DOM, no Node APIs, no I/O. Text measuring is injected.
  */
 export * from './model';
+export * from './project';
 
 export const CORE_VERSION = '0.0.0';
