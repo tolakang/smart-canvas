@@ -1,7 +1,7 @@
 import { createProjectDoc, type ProjectDoc } from '@smart-canvas/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
-import { docToEdges, docToNodes, MAIN_ID, withPositions } from './flow';
+import { docToEdges, docToNodes, MAIN_ID, syncNodes, withPositions } from './flow';
 
 function sampleDoc(): ProjectDoc {
   const doc = createProjectDoc('P');
@@ -48,6 +48,27 @@ describe('docToNodes / docToEdges', () => {
 
   it('a new project shows just the main preview', () => {
     expect(docToNodes(createProjectDoc('New')).map((n) => n.id)).toEqual([MAIN_ID]);
+  });
+});
+
+describe('syncNodes', () => {
+  it('takes data from the doc but keeps position, selection and size from the canvas', () => {
+    const doc = sampleDoc();
+    const current = docToNodes(doc).map((n) => (n.id === 'out:ig' ? { ...n, position: { x: 999, y: 9 }, selected: true, measured: { width: 160, height: 60 } } : n));
+    const renamed = { ...doc, outputs: doc.outputs.map((o) => (o.id === 'ig' ? { ...o, label: 'IG square' } : o)) };
+    const next = syncNodes(current, docToNodes(renamed));
+    const ig = next.find((n) => n.id === 'out:ig');
+    expect(ig?.position).toEqual({ x: 999, y: 9 });
+    expect(ig?.selected).toBe(true);
+    expect(ig?.measured).toEqual({ width: 160, height: 60 });
+    expect(ig?.type === 'outputNode' && ig.data.output.label).toBe('IG square');
+  });
+
+  it('adds new nodes as they come from the doc and drops removed ones', () => {
+    const doc = sampleDoc();
+    const fewer = { ...doc, outputs: doc.outputs.slice(0, 1) };
+    expect(syncNodes(docToNodes(fewer), docToNodes(doc)).map((n) => n.id)).toContain('out:a4');
+    expect(syncNodes(docToNodes(doc), docToNodes(fewer)).map((n) => n.id)).not.toContain('out:a4');
   });
 });
 

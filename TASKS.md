@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T2.2 — Input node UI
+**Next:** T2.3 — Default sources + Add input
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -23,7 +23,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P2 Board and inputs
 - [x] T2.1 — Board canvas — [#10](https://github.com/tolakang/smart-canvas/pull/10)
-- [ ] T2.2 — Input node UI
+- [x] T2.2 — Input node UI — [#11](https://github.com/tolakang/smart-canvas/pull/11)
 - [ ] T2.3 — Default sources + Add input
 - [ ] T2.4 — Ports + wiring
 - [ ] T2.5 — Fonts
