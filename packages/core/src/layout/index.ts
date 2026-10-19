@@ -6,6 +6,7 @@ import { canvasMetrics, DEFAULTS, type Frame, type OutputNode, type ProjectDoc }
 import { sizeInDesignPx, toDesignFrame } from '../render';
 import { backgroundFrame } from './background';
 import type { RuleContext } from './context';
+import { logoFrame } from './logo';
 import { decorationFrame, subjectFrame } from './subject';
 import type { LayoutDeps, LayoutItem, LayoutResult, LayoutWarning } from './types';
 
@@ -51,8 +52,12 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
         if (!f) continue;
         frame = decorationFrame(f, ctx);
         break;
+      case 'logo':
+        if (!f) continue;
+        ({ frame, warnings } = logoFrame(f, ctx));
+        break;
       default:
-        continue; // logo, text: T4.4–T4.5
+        continue; // text: T4.5
     }
     items.push({
       sourceId: source.id,
