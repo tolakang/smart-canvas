@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T3.2 — Main editor
+**Next:** T3.3 — Layers panel
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -30,7 +30,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P3 Main preview
 - [x] T3.1 — `OutputRenderer` (DOM/SVG) — [#15](https://github.com/tolakang/smart-canvas/pull/15)
-- [ ] T3.2 — Main editor
+- [x] T3.2 — Main editor — [#16](https://github.com/tolakang/smart-canvas/pull/16)
 - [ ] T3.3 — Layers panel
 - [ ] T3.4 — Text panel
 
