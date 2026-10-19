@@ -7,4 +7,4 @@ if (!url) {
 }
 
 await runMigrations(url);
-console.log('migrations applied');
+console.log('migrations applied, built-in presets synced');

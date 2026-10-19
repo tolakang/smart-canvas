@@ -1,5 +1,4 @@
-import { addOutput, addSource, connectSource, disconnectSource, LIMITS, type InputSource, type ProjectDoc, type SourceError, type SourceResult } from '@smart-canvas/core';
-import { presets as builtInPresets } from '@smart-canvas/presets';
+import { addOutput, addSource, connectSource, disconnectSource, LIMITS, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -190,6 +189,17 @@ function BoardCanvas(props: {
     [apply],
   );
 
+  const [presets, setPresets] = useState<SizePreset[]>([]);
+  useEffect(() => {
+    let live = true;
+    api<SizePreset[]>('GET', `/teams/${teamId}/presets`).then(
+      (list) => live && setPresets(list),
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, [teamId]);
   const { sizes, remember } = useAssetSizes(teamId);
   const layoutDeps = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
 
@@ -203,11 +213,11 @@ function BoardCanvas(props: {
       sourceCount,
       editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit)),
       layoutDeps,
-      presets: builtInPresets,
+      presets,
       rememberAsset: remember,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, remember, apply, run],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, presets, remember, apply, run],
   );
 
   const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && isInputToMain(c), [readOnly]);
@@ -340,7 +350,7 @@ function BoardCanvas(props: {
         </BoardContext.Provider>
       </div>
       {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}
-      {addingOutput && <AddOutputDialog presets={builtInPresets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
+      {addingOutput && <AddOutputDialog presets={presets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
         <FontsDialog
           teamId={teamId}
