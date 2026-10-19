@@ -10,6 +10,7 @@ import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
 import { OutputRenderer } from '../render/OutputRenderer';
 import { fitScale, NUDGE_STEP, nudge, toNFrame, type Box } from './geometry';
+import { LayersPanel } from './LayersPanel';
 
 const SNAP_DIRECTIONS = { top: true, left: true, bottom: true, right: true, center: true, middle: true };
 
@@ -128,59 +129,68 @@ export function MainEditor({ onClose }: { onClose: () => void }) {
           Close
         </button>
       </header>
-      <div className="sc-editor__stage" ref={stage}>
-        <div className="sc-editor__canvas" ref={canvasEl} onPointerDown={onPointerDown} style={{ width: scene.width * scale, height: scene.height * scale }}>
-          <OutputRenderer scene={drawn} sources={doc.sources} assetUrl={(id) => assetUrl(teamId, id)} scale={scale} mode="preview" />
-          {boxNow && (
-            <div
-              ref={control}
-              className="sc-editor__target"
-              data-testid="selection-box"
-              style={{ width: boxNow.w, height: boxNow.h, transform: `translate(${boxNow.x}px, ${boxNow.y}px) rotate(${boxNow.rotation}deg)` }}
-            />
-          )}
-          {boxNow && !readOnly && (
-            <Moveable
-              key={selected ?? ''}
-              target={control}
-              draggable
-              resizable
-              rotatable
-              keepRatio={keepRatio}
-              origin={false}
-              throttleDrag={0}
-              throttleResize={0}
-              throttleRotate={0}
-              snappable
-              snapThreshold={6}
-              isDisplaySnapDigit
-              snapDirections={SNAP_DIRECTIONS}
-              elementSnapDirections={SNAP_DIRECTIONS}
-              verticalGuidelines={guidesV}
-              horizontalGuidelines={guidesH}
-              elementGuidelines={otherLayers}
-              onDragStart={(e) => e.set([boxNow.x, boxNow.y])}
-              onDrag={(e) => setGesture({ ...(liveRef.current ?? boxNow), x: e.beforeTranslate[0] ?? 0, y: e.beforeTranslate[1] ?? 0 })}
-              onDragEnd={commit}
-              onResizeStart={(e) => {
-                e.setOrigin(['%', '%']);
-                if (e.dragStart) e.dragStart.set([boxNow.x, boxNow.y]);
-              }}
-              onResize={(e) =>
-                setGesture({
-                  ...(liveRef.current ?? boxNow),
-                  w: e.width,
-                  h: e.height,
-                  x: e.drag.beforeTranslate[0] ?? 0,
-                  y: e.drag.beforeTranslate[1] ?? 0,
-                })
-              }
-              onResizeEnd={commit}
-              onRotateStart={(e) => e.set(boxNow.rotation)}
-              onRotate={(e) => setGesture({ ...(liveRef.current ?? boxNow), rotation: e.beforeRotate })}
-              onRotateEnd={commit}
-            />
-          )}
+      <div className="sc-editor__body">
+        <LayersPanel
+          selected={selected}
+          onSelect={(id) => {
+            setSelected(id);
+            setGesture(null);
+          }}
+        />
+        <div className="sc-editor__stage" ref={stage}>
+          <div className="sc-editor__canvas" ref={canvasEl} onPointerDown={onPointerDown} style={{ width: scene.width * scale, height: scene.height * scale }}>
+            <OutputRenderer scene={drawn} sources={doc.sources} assetUrl={(id) => assetUrl(teamId, id)} scale={scale} mode="preview" />
+            {boxNow && (
+              <div
+                ref={control}
+                className="sc-editor__target"
+                data-testid="selection-box"
+                style={{ width: boxNow.w, height: boxNow.h, transform: `translate(${boxNow.x}px, ${boxNow.y}px) rotate(${boxNow.rotation}deg)` }}
+              />
+            )}
+            {boxNow && !readOnly && (
+              <Moveable
+                key={selected ?? ''}
+                target={control}
+                draggable
+                resizable
+                rotatable
+                keepRatio={keepRatio}
+                origin={false}
+                throttleDrag={0}
+                throttleResize={0}
+                throttleRotate={0}
+                snappable
+                snapThreshold={6}
+                isDisplaySnapDigit
+                snapDirections={SNAP_DIRECTIONS}
+                elementSnapDirections={SNAP_DIRECTIONS}
+                verticalGuidelines={guidesV}
+                horizontalGuidelines={guidesH}
+                elementGuidelines={otherLayers}
+                onDragStart={(e) => e.set([boxNow.x, boxNow.y])}
+                onDrag={(e) => setGesture({ ...(liveRef.current ?? boxNow), x: e.beforeTranslate[0] ?? 0, y: e.beforeTranslate[1] ?? 0 })}
+                onDragEnd={commit}
+                onResizeStart={(e) => {
+                  e.setOrigin(['%', '%']);
+                  if (e.dragStart) e.dragStart.set([boxNow.x, boxNow.y]);
+                }}
+                onResize={(e) =>
+                  setGesture({
+                    ...(liveRef.current ?? boxNow),
+                    w: e.width,
+                    h: e.height,
+                    x: e.drag.beforeTranslate[0] ?? 0,
+                    y: e.drag.beforeTranslate[1] ?? 0,
+                  })
+                }
+                onResizeEnd={commit}
+                onRotateStart={(e) => e.set(boxNow.rotation)}
+                onRotate={(e) => setGesture({ ...(liveRef.current ?? boxNow), rotation: e.beforeRotate })}
+                onRotateEnd={commit}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
