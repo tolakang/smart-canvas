@@ -3,7 +3,7 @@
  * main. Outputs store only their settings and overrides; their layout is always computed (D18).
  */
 import { DEFAULTS, LIMITS, type LayoutFamily, type OutputNode, type ProjectDoc, type Size } from './model';
-import type { LayoutResult } from './layout';
+import { computeLayout, type LayoutDeps, type LayoutResult } from './layout';
 import type { RenderScene } from './render';
 import type { SourceResult } from './sources';
 
@@ -89,4 +89,50 @@ export function outputScene(layout: LayoutResult): RenderScene {
 /** Defaults for a new output of a unit: print outputs get 300 dpi + 3 mm bleed, screen outputs 1×. */
 export function outputDefaults(unit: Size['unit']): OutputSettings {
   return unit === 'mm' ? { dpi: DEFAULTS.printDpi, bleedMm: DEFAULTS.printBleedMm } : { exportScale: 1 };
+}
+
+export function isOutputConnected(doc: ProjectDoc, outputId: string): boolean {
+  return doc.wires.some((w) => w.from === 'main' && w.to === outputId);
+}
+
+/**
+ * Disconnect (D12/D20): removes the main→output wire and stores `frozen` = the frames (and font sizes)
+ * the engine computes right now, before overrides. Overrides stay and keep applying on top.
+ */
+export function disconnectOutput(doc: ProjectDoc, outputId: string, deps: LayoutDeps): SourceResult {
+  const output = doc.outputs.find((o) => o.id === outputId);
+  if (!output) return { ok: false, error: 'not_found' };
+  if (!isOutputConnected(doc, outputId)) return { ok: true, doc };
+  const auto = computeLayout({ ...doc, outputs: doc.outputs.map((o) => (o.id === outputId ? { ...o, overrides: [], frozen: undefined } : o)) }, outputId, deps);
+  const frozen = { items: auto.items.map(({ sourceId, frame, fontSizePx }) => ({ sourceId, frame, ...(fontSizePx !== undefined ? { fontSizePx } : {}) })) };
+  return {
+    ok: true,
+    doc: {
+      ...doc,
+      outputs: doc.outputs.map((o) => (o.id === outputId ? { ...o, frozen } : o)),
+      wires: doc.wires.filter((w) => !(w.from === 'main' && w.to === outputId)),
+    },
+  };
+}
+
+/** What reconnecting needs (D21): silent re-sync without overrides, otherwise ask keep / reset all / cancel. */
+export function reconnectNeedsChoice(doc: ProjectDoc, outputId: string): boolean {
+  return (doc.outputs.find((o) => o.id === outputId)?.overrides.length ?? 0) > 0;
+}
+
+/** Reconnect: restores the wire and deletes `frozen`; 'reset' also clears every override of the output. */
+export function reconnectOutput(doc: ProjectDoc, outputId: string, overrides: 'keep' | 'reset'): SourceResult {
+  const output = doc.outputs.find((o) => o.id === outputId);
+  if (!output) return { ok: false, error: 'not_found' };
+  const { frozen: _frozen, ...rest } = output;
+  void _frozen;
+  const next: OutputNode = { ...rest, overrides: overrides === 'reset' ? [] : output.overrides };
+  return {
+    ok: true,
+    doc: {
+      ...doc,
+      outputs: doc.outputs.map((o) => (o.id === outputId ? next : o)),
+      wires: isOutputConnected(doc, outputId) ? doc.wires : [...doc.wires, { id: outputWireId(outputId), from: 'main', to: outputId }],
+    },
+  };
 }

@@ -9,6 +9,7 @@ import type { RuleContext } from './context';
 import { logoFrame } from './logo';
 import { decorationFrame, subjectFrame } from './subject';
 import { fitInFrame, sideColumn, stackTextFrame, type TextJob } from './text';
+import { wrapAt } from './text-fit';
 import type { LayoutDeps, LayoutItem, LayoutResult, LayoutWarning } from './types';
 
 export * from './types';
@@ -33,12 +34,25 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   const ctx: RuleContext = { metrics, family, master, k: Math.min(metrics.trim.w / master.w, metrics.trim.h / master.h) };
   const wired = new Set(doc.wires.filter((w) => w.to === 'main').map((w) => w.from));
   const overrides = new Map(output.overrides.map((o) => [o.sourceId, o]));
+  // Disconnected (D20/D21, O7): frames frozen at disconnect time; content still updates, overrides still apply.
+  const frozen = new Map(output.frozen?.items.map((i) => [i.sourceId, i]));
 
   const items: LayoutItem[] = [];
   const column: { index: number; job: TextJob }[] = []; // side-family texts, placed together after the loop
   for (const source of [...doc.sources].sort((a, b) => b.port - a.port)) {
     const override = overrides.get(source.id);
     if (!source.visible || !wired.has(source.id) || override?.hidden) continue;
+    const snap = frozen.get(source.id);
+    if (snap) {
+      const frame = { ...snap.frame, ...override?.frame };
+      if (source.content.kind === 'text') {
+        const style = { ...source.content.style, ...override?.style };
+        const size = override?.style?.fontSizePx ?? snap.fontSizePx ?? style.fontSizePx * ctx.k;
+        const fit = wrapAt(source.content.text, style, frame, size, deps.measure);
+        items.push({ sourceId: source.id, frame, fontSizePx: size, lines: fit.lines, overridden: !!override, warnings: fit.overflow ? ['text-overflow'] : [] });
+      } else items.push({ sourceId: source.id, frame, overridden: !!override, warnings: [] });
+      continue;
+    }
     const placement = doc.master.placements[source.id];
     const f = placement ? toDesignFrame(placement, masterSize) : undefined;
     let frame: Frame;

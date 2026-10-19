@@ -94,7 +94,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
   ];
 }
 
-/** Input wires land on their port's handle and can be deleted; main→output wires are T4.9's. */
+/** Input wires land on their port's handle; deleting one disconnects the input, deleting main→output freezes the output (T4.9). */
 export function docToEdges(doc: ProjectDoc): Edge[] {
   return doc.wires.map((w: Wire): Edge => {
     const intoMain = w.to === MAIN_ID;
@@ -104,15 +104,22 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
       target: endpoint(doc, w.to),
       ...(intoMain && w.port !== undefined ? { targetHandle: portHandleId(w.port) } : {}),
       ...(w.from === MAIN_ID ? { sourceHandle: OUTPUT_HANDLE } : {}),
-      deletable: intoMain,
+      deletable: true,
     };
   });
 }
 
-/** Only input → main preview connections can be drawn on the board for now. */
+/** Input → main preview connections (wire onto a port). */
 export function isInputToMain(c: { source: string | null; target: string | null }): boolean {
   return !!c.source?.startsWith('src:') && c.target === MAIN_ID;
 }
+
+/** Main → output connections (reconnecting a disconnected output). */
+export function isMainToOutput(c: { source: string | null; target: string | null }): boolean {
+  return c.source === MAIN_ID && !!c.target?.startsWith('out:');
+}
+
+export const outputIdOfNode = (nodeId: string) => (nodeId.startsWith('out:') ? nodeId.slice(4) : undefined);
 
 export const sourceIdOfNode = (nodeId: string) => (nodeId.startsWith('src:') ? nodeId.slice(4) : undefined);
 

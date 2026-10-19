@@ -102,7 +102,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
       </ol>
       {data.ports.length === 0 && <p className="sc-node__meta">No inputs yet.</p>}
       <div className="sc-node__meta sc-ports__hint">front ↑ · back ↓</div>
-      <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={false} />
+      <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={!readOnly} />
     </div>
   );
 }
