@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T1.4 — Projects API
+**Next:** T1.5 — Asset upload
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -16,7 +16,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T1.1 — Monorepo scaffold — [#1](https://github.com/tolakang/smart-canvas/pull/1)
 - [x] T1.2 — DB schema + migrations (Drizzle) — [#3](https://github.com/tolakang/smart-canvas/pull/3)
 - [x] T1.3 — Auth — [#5](https://github.com/tolakang/smart-canvas/pull/5)
-- [ ] T1.4 — Projects API
+- [x] T1.4 — Projects API — [#6](https://github.com/tolakang/smart-canvas/pull/6)
 - [ ] T1.5 — Asset upload
 - [ ] T1.6 — Docker + Dokploy compose
 - [ ] T1.7 — CI
