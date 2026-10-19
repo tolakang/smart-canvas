@@ -1,0 +1,46 @@
+:root {
+  --bg: #f6f7f9;
+  --fg: #1d2330;
+  --muted: #6b7385;
+  --line: #d7dbe3;
+  --accent: #2f6fed;
+  --input: #e8f0ff;
+  --output: #eaf7ee;
+  --danger: #c0392b;
+  color: var(--fg);
+  background: var(--bg);
+  font: 14px/1.4 system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+#root { min-height: 100vh; }
+button { font: inherit; cursor: pointer; }
+input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
+
+.sc-card { max-width: 360px; margin: 10vh auto; padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 12px; }
+.sc-card--wide { max-width: 640px; }
+.sc-card h1 { margin: 0 0 4px; font-size: 18px; }
+.sc-card label { display: grid; gap: 4px; }
+.sc-row { display: flex; gap: 8px; }
+.sc-row input { flex: 1; }
+.sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sc-list li { display: flex; justify-content: space-between; gap: 8px; }
+.sc-link { background: none; border: 0; padding: 0; color: var(--accent); text-align: left; }
+.sc-muted { color: var(--muted); }
+.sc-error { color: var(--danger); margin: 0; }
+.sc-badge { padding: 2px 8px; border-radius: 99px; background: var(--line); font-size: 12px; }
+
+.sc-board { height: 100vh; display: flex; flex-direction: column; }
+.sc-board__bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #fff; border-bottom: 1px solid var(--line); }
+.sc-board__canvas { flex: 1; }
+.sc-save { margin-left: auto; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.sc-save--conflict, .sc-save--error { color: var(--danger); }
+
+.sc-node { min-width: 160px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.sc-node--input { background: var(--input); }
+.sc-node--main { min-width: 220px; min-height: 120px; border-width: 2px; border-color: var(--accent); }
+.sc-node--output { background: var(--output); }
+.sc-node--hidden { opacity: 0.5; }
+.sc-node--frozen { border-style: dashed; }
+.sc-node__title { font-weight: 600; }
+.sc-node__meta { color: var(--muted); font-size: 12px; }
