@@ -1,9 +1,10 @@
-/** text behaviour placement: boxes follow the master anchor, text is fitted inside. */
+/** text behaviour placement: stack boxes follow the master anchor; the side family stacks all text in one left column. */
 import type { TextMeasure } from '../fonts';
 import type { Frame, TextStyle } from '../model';
+import { lineHeightOf } from '../text';
 import { anchorOf, type RuleContext } from './context';
 import { clampIntoSafe } from './subject';
-import { fitText, wrapAt, type TextFit } from './text-fit';
+import { fitText, gridSize, wrapAt, type TextFit } from './text-fit';
 import type { LayoutWarning } from './types';
 
 export interface TextJob {
@@ -47,4 +48,41 @@ export function stackTextFrame(F: Frame, ctx: RuleContext): { frame: Frame; warn
 /** Fits text inside an already-decided frame (stack box, or an override frame). */
 export function fitInFrame(job: TextJob, frame: Frame, ctx: RuleContext, measure: TextMeasure, warnings: LayoutWarning[] = []): TextPlaced {
   return result(frame, fit(job, frame, ctx, measure), warnings);
+}
+
+/**
+ * Side family: one column `x = S.x, w = 0.5·S.w`, texts in master top→bottom order with a 2%·Ht gap,
+ * the block centred vertically in S. A block taller than S scales every size down to fit (≥ minFontPx; warns clamped).
+ */
+export function sideColumn(jobs: TextJob[], ctx: RuleContext, measure: TextMeasure): TextPlaced[] {
+  const { metrics: m } = ctx;
+  const S = m.safe;
+  const w = 0.5 * S.w;
+  const gap = 0.02 * m.trim.h;
+  const heightOf = (job: TextJob, f: TextFit) => f.lines.length * f.fontSizePx * lineHeightOf(job.style, job.text);
+  let rows = jobs
+    .map((job, index) => ({ job, index, fit: fit(job, { w, h: Math.min((job.master.h / ctx.master.h) * m.trim.h, S.h) }, ctx, measure) }))
+    .sort((a, b) => a.job.master.y - b.job.master.y);
+  const blockOf = () => rows.reduce((sum, r) => sum + heightOf(r.job, r.fit), 0) + gap * Math.max(0, rows.length - 1);
+  let block = blockOf();
+  const shrunk = block > S.h;
+  if (shrunk) {
+    // S.h/blockHeight, with the fixed gaps kept out of the scaled part so the block really fits S.
+    const gaps = gap * Math.max(0, rows.length - 1);
+    const factor = Math.max(0, S.h - gaps) / (block - gaps);
+    rows = rows.map((r) => {
+      if (r.job.fixedSizePx !== undefined) return r;
+      const scaled = wrapAt(r.job.text, r.job.style, { w, h: Infinity }, gridSize(r.fit.fontSizePx * factor), measure);
+      return { ...r, fit: { ...scaled, overflow: r.fit.overflow || scaled.overflow } };
+    });
+    block = blockOf();
+  }
+  const placed: TextPlaced[] = new Array<TextPlaced>(jobs.length);
+  let y = S.y + Math.max(0, (S.h - block) / 2);
+  for (const r of rows) {
+    const h = heightOf(r.job, r.fit);
+    placed[r.index] = result({ x: S.x, y, w, h }, r.fit, shrunk ? ['clamped'] : []);
+    y += h + gap;
+  }
+  return placed;
 }

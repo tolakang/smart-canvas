@@ -8,7 +8,7 @@ import { backgroundFrame } from './background';
 import type { RuleContext } from './context';
 import { logoFrame } from './logo';
 import { decorationFrame, subjectFrame } from './subject';
-import { fitInFrame, stackTextFrame, type TextJob } from './text';
+import { fitInFrame, sideColumn, stackTextFrame, type TextJob } from './text';
 import type { LayoutDeps, LayoutItem, LayoutResult, LayoutWarning } from './types';
 
 export * from './types';
@@ -35,6 +35,7 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   const overrides = new Map(output.overrides.map((o) => [o.sourceId, o]));
 
   const items: LayoutItem[] = [];
+  const column: { index: number; job: TextJob }[] = []; // side-family texts, placed together after the loop
   for (const source of [...doc.sources].sort((a, b) => b.port - a.port)) {
     const override = overrides.get(source.id);
     if (!source.visible || !wired.has(source.id) || override?.hidden) continue;
@@ -66,6 +67,9 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
           // Override frame: fit still runs inside it (rule 8).
           const placed = fitInFrame(job, { ...stackTextFrame(f, ctx).frame, ...override.frame }, ctx, deps.measure);
           items.push({ sourceId: source.id, ...placed, overridden: true });
+        } else if (family === 'side') {
+          column.push({ index: items.length, job });
+          items.push({ sourceId: source.id, frame: f, overridden: !!override, warnings: [] });
         } else {
           const box = stackTextFrame(f, ctx);
           items.push({ sourceId: source.id, ...fitInFrame(job, box.frame, ctx, deps.measure, box.warnings), overridden: !!override });
@@ -80,5 +84,11 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
       warnings,
     });
   }
+  const placed = sideColumn(column.map((c) => c.job), ctx, deps.measure);
+  column.forEach((c, i) => {
+    const item = items[c.index];
+    const p = placed[i];
+    if (item && p) items[c.index] = { ...item, ...p };
+  });
   return { metrics, family, items };
 }
