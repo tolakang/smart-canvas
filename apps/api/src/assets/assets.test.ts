@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { dimensions } from './dimensions';
+import { readFontFamily } from './font';
 import { sniff } from './sniff';
 import { sanitizeCss, sanitizeSvg, SvgRejected } from './svg-sanitize';
 
@@ -127,5 +128,24 @@ describe('sanitizeSvg', () => {
     expect(() => sanitizeSvg('<html xmlns="http://www.w3.org/1999/xhtml"><svg/></html>')).toThrow(SvgRejected);
     expect(() => sanitizeSvg('<svg>no namespace</svg>')).toThrow(SvgRejected);
     expect(() => sanitizeSvg('<svg xmlns="http://www.w3.org/2000/svg"><g></svg>')).toThrow(SvgRejected);
+  });
+});
+
+describe('fonts (T2.5)', () => {
+  it.each([
+    ['tiny.ttf', 'font/ttf'],
+    ['tiny.otf', 'font/otf'],
+    ['tiny.woff2', 'font/woff2'],
+  ])('sniffs %s as %s and reads its family name', (file, mime) => {
+    const buf = fixture(file);
+    expect(sniff(buf)).toMatchObject({ kind: 'font', mime });
+    expect(readFontFamily(buf)).toBe('SC Test Sans');
+  });
+
+  it('rejects collections and fonts that only have the right magic bytes', () => {
+    expect(sniff(fixture('tiny.ttc'))).toBeNull();
+    expect(sniff(fixture('broken.ttf'))).toMatchObject({ kind: 'font' });
+    expect(readFontFamily(fixture('broken.ttf'))).toBeNull();
+    expect(readFontFamily(fixture('tiny.png'))).toBeNull();
   });
 });

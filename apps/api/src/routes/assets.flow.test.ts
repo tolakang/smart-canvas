@@ -107,6 +107,32 @@ describe.skipIf(!adminUrl)('asset upload (Postgres)', () => {
     expect((await upload(Buffer.from(undefinedEntity))).statusCode).toBe(422);
   });
 
+  it('accepts TTF, OTF and WOFF2 fonts, stores their family, and lists them', async () => {
+    const res = await Promise.all(
+      [
+        ['tiny.ttf', 'font/ttf'],
+        ['tiny.otf', 'font/otf'],
+        ['tiny.woff2', 'font/woff2'],
+      ].map(([file, mime]) => upload(fixture(file ?? ''), file, 'application/octet-stream').then((r) => [r, mime] as const)),
+    );
+    for (const [r, mime] of res) {
+      expect(r.statusCode).toBe(201);
+      expect(r.json()).toMatchObject({ kind: 'font', mime, fontFamily: 'SC Test Sans', width: null, height: null });
+    }
+    const fonts = (await get(`/teams/${teamId}/fonts`)).json<{ family: string; mime: string }[]>();
+    expect(fonts.map((f) => f.mime).sort()).toEqual(['font/otf', 'font/ttf', 'font/woff2']);
+    expect(fonts.every((f) => f.family === 'SC Test Sans')).toBe(true);
+    const content = await get(`/teams/${teamId}/assets/${res[2]?.[0].json().id}/content`);
+    expect(content.headers['content-type']).toBe('font/woff2');
+  });
+
+  it('rejects font collections (415) and unparseable fonts (422)', async () => {
+    expect((await upload(fixture('tiny.ttc'), 'x.ttc')).statusCode).toBe(415);
+    const broken = await upload(fixture('broken.ttf'), 'x.ttf');
+    expect(broken.statusCode).toBe(422);
+    expect(broken.json()).toEqual({ error: 'font_rejected' });
+  });
+
   it('caps uploads at 50 MB', async () => {
     const big = Buffer.alloc(MAX_UPLOAD_BYTES + 1);
     fixture('tiny.png').copy(big);

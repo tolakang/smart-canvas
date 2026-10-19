@@ -9,7 +9,7 @@
   --danger: #c0392b;
   color: var(--fg);
   background: var(--bg);
-  font: 14px/1.4 system-ui, sans-serif;
+  font: 14px/1.4 'Noto Sans', 'Noto Sans Khmer', system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
 body { margin: 0; }
@@ -85,3 +85,7 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 .sc-port__actions button:hover:not(:disabled) { border-color: var(--line); color: var(--fg); }
 .sc-port__actions button:disabled { opacity: 0.3; }
 .sc-ports__hint { margin-top: 4px; }
+
+.sc-fonts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-height: 50vh; overflow: auto; }
+.sc-font__name { font-size: 12px; font-weight: 600; }
+.sc-font__sample { font-size: 22px; line-height: 1.6; }

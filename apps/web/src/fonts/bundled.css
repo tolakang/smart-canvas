@@ -1,0 +1,8 @@
+/* Bundled fonts (OFL-1.1, via @fontsource). Keep in sync with BUNDLED_FONTS in packages/core/src/fonts.ts.
+   Each family is split by unicode-range, so the Khmer face only downloads when Khmer text is used. */
+@import '@fontsource/noto-sans/400.css';
+@import '@fontsource/noto-sans/700.css';
+@import '@fontsource/noto-sans-khmer/400.css';
+@import '@fontsource/noto-sans-khmer/700.css';
+@import '@fontsource/kantumruy-pro/400.css';
+@import '@fontsource/kantumruy-pro/700.css';

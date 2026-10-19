@@ -1,7 +1,8 @@
 /** Upload type detection from magic bytes (the client's filename and Content-Type are ignored). */
 export type Sniffed =
   | { kind: 'image'; mime: 'image/png' | 'image/jpeg' | 'image/webp'; ext: 'png' | 'jpg' | 'webp' }
-  | { kind: 'vector'; mime: 'image/svg+xml'; ext: 'svg' };
+  | { kind: 'vector'; mime: 'image/svg+xml'; ext: 'svg' }
+  | { kind: 'font'; mime: 'font/ttf' | 'font/otf' | 'font/woff2'; ext: 'ttf' | 'otf' | 'woff2' };
 
 const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
@@ -18,6 +19,10 @@ export function sniff(buf: Uint8Array): Sniffed | null {
   if (startsWith(buf, ascii('RIFF')) && startsWith(buf, ascii('WEBP'), 8)) {
     return { kind: 'image', mime: 'image/webp', ext: 'webp' };
   }
+  // Fonts (T2.5): TrueType, CFF OpenType and WOFF2. Collections (ttcf) and WOFF1 are not accepted.
+  if (startsWith(buf, [0x00, 0x01, 0x00, 0x00]) || startsWith(buf, ascii('true'))) return { kind: 'font', mime: 'font/ttf', ext: 'ttf' };
+  if (startsWith(buf, ascii('OTTO'))) return { kind: 'font', mime: 'font/otf', ext: 'otf' };
+  if (startsWith(buf, ascii('wOF2'))) return { kind: 'font', mime: 'font/woff2', ext: 'woff2' };
   const head = new TextDecoder('utf-8', { fatal: false }).decode(buf.subarray(0, 4096));
   if (SVG_HEAD.test(head)) return { kind: 'vector', mime: 'image/svg+xml', ext: 'svg' };
   return null;
