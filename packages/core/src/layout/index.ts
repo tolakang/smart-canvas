@@ -8,12 +8,14 @@ import { backgroundFrame } from './background';
 import type { RuleContext } from './context';
 import { logoFrame } from './logo';
 import { decorationFrame, subjectFrame } from './subject';
+import { fitInFrame, stackTextFrame, type TextJob } from './text';
 import type { LayoutDeps, LayoutItem, LayoutResult, LayoutWarning } from './types';
 
 export * from './types';
 export type { RuleContext } from './context';
 export { coverFrame } from './background';
 export { anchoredFrame, clampIntoSafe } from './subject';
+export { breakLines, fitText } from './text-fit';
 
 /** `output.family` unless 'auto'; then side when the trim ratio is ≥ 1.3, else stack. */
 export function familyOf(output: Pick<OutputNode, 'family'>, trim: { w: number; h: number }): 'stack' | 'side' {
@@ -56,8 +58,20 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
         if (!f) continue;
         ({ frame, warnings } = logoFrame(f, ctx));
         break;
-      default:
-        continue; // text: T4.5
+      case 'text': {
+        if (!f || source.content.kind !== 'text') continue;
+        const style = { ...source.content.style, ...override?.style };
+        const job: TextJob = { text: source.content.text, style, master: f, fixedSizePx: override?.style?.fontSizePx };
+        if (override?.frame) {
+          // Override frame: fit still runs inside it (rule 8).
+          const placed = fitInFrame(job, { ...stackTextFrame(f, ctx).frame, ...override.frame }, ctx, deps.measure);
+          items.push({ sourceId: source.id, ...placed, overridden: true });
+        } else {
+          const box = stackTextFrame(f, ctx);
+          items.push({ sourceId: source.id, ...fitInFrame(job, box.frame, ctx, deps.measure, box.warnings), overridden: !!override });
+        }
+        continue;
+      }
     }
     items.push({
       sourceId: source.id,
