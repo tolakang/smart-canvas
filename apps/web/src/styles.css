@@ -120,3 +120,12 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-layer__actions button { width: 22px; height: 22px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: none; color: var(--muted); font-size: 11px; }
 .sc-layer__actions button:hover:not(:disabled) { border-color: var(--line); color: var(--fg); }
 .sc-layer__actions button:disabled { opacity: 0.3; }
+
+/* Properties (text) panel */
+.sc-props { width: 280px; flex: none; border-left: 1px solid var(--line); background: #fff; overflow: auto; }
+.sc-props__body { border: 0; margin: 0; padding: 12px; display: grid; gap: 12px; font-size: 12px; }
+.sc-props__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sc-field--col { display: grid; gap: 4px; align-items: start; }
+.sc-props select, .sc-props input[type='number'] { width: 100%; font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; }
+.sc-props input[type='color'] { width: 44px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 4px; }
+.sc-props .sc-text { margin-top: 0; font-size: 14px; }

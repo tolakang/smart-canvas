@@ -1,4 +1,5 @@
 import type { InputSource, ProjectDoc, SourceResult } from '@smart-canvas/core';
+import type { TeamFont } from '../fonts/loader';
 import { createContext, useContext } from 'react';
 
 /** What node editors need from the board: where to upload, whether edits are allowed, how to apply them. */
@@ -8,6 +9,8 @@ export interface BoardActions {
   /** The current project document (follows every edit). */
   doc: ProjectDoc;
   openMainEditor: () => void;
+  /** Uploaded team fonts (registered as FontFaces), for font pickers. */
+  teamFonts: TeamFont[];
   /** Current number of inputs (for the 10-input cap). */
   sourceCount: number;
   editSource: (id: string, edit: (s: InputSource) => InputSource) => void;
