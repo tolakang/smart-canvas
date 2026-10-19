@@ -1,4 +1,4 @@
-import type { ProjectDoc } from '@smart-canvas/core';
+import type { InputSource, ProjectDoc } from '@smart-canvas/core';
 import {
   applyNodeChanges,
   Background,
@@ -12,7 +12,9 @@ import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Autosave, type SaveState } from './autosave';
-import { docToEdges, docToNodes, withPositions, type BoardNode } from './flow';
+import { BoardContext, type BoardActions } from './context';
+import { withSource } from './content';
+import { docToEdges, docToNodes, syncNodes, withPositions, type BoardNode } from './flow';
 import { nodeTypes } from './nodes';
 
 interface Loaded {
@@ -54,6 +56,7 @@ export function Board(props: { teamId: string; projectId: string; readOnly: bool
   return (
     <BoardCanvas
       key={reloadKey}
+      teamId={teamId}
       url={url}
       initial={result.ok}
       readOnly={readOnly}
@@ -63,8 +66,15 @@ export function Board(props: { teamId: string; projectId: string; readOnly: bool
   );
 }
 
-function BoardCanvas(props: { url: string; initial: Loaded; readOnly: boolean; onBack: () => void; onReload: () => void }) {
-  const { url, initial, readOnly } = props;
+function BoardCanvas(props: {
+  teamId: string;
+  url: string;
+  initial: Loaded;
+  readOnly: boolean;
+  onBack: () => void;
+  onReload: () => void;
+}) {
+  const { teamId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const edges = useMemo(() => docToEdges(initial.doc), [initial.doc]);
@@ -97,6 +107,22 @@ function BoardCanvas(props: { url: string; initial: Loaded; readOnly: boolean; o
     setNodes((ns) => applyNodeChanges(changes, ns));
   }, []);
 
+  const actions = useMemo<BoardActions>(
+    () => ({
+      teamId,
+      readOnly,
+      editSource: (id: string, edit: (s: InputSource) => InputSource) => {
+        if (readOnly) return;
+        const doc = withSource(docRef.current, id, edit);
+        if (doc === docRef.current) return;
+        docRef.current = doc;
+        setNodes((ns) => syncNodes(ns, docToNodes(doc)));
+        autosave.change(doc);
+      },
+    }),
+    [teamId, readOnly, autosave],
+  );
+
   const onNodeDragStop = useCallback(
     (_e: unknown, _node: Node, dragged: Node[]) => {
       const doc = withPositions(docRef.current, dragged);
@@ -125,25 +151,27 @@ function BoardCanvas(props: { url: string; initial: Loaded; readOnly: boolean; o
         </span>
       </header>
       <div className="sc-board__canvas">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onNodeDragStop={onNodeDragStop}
-          nodesDraggable={!readOnly}
-          nodesConnectable={false}
-          deleteKeyCode={null}
-          fitView
-          fitViewOptions={{ maxZoom: 1 }}
-          minZoom={0.1}
-          maxZoom={2}
-          proOptions={{ hideAttribution: false }}
-        >
-          <Background />
-          <Controls showInteractive={false} />
-          <MiniMap pannable zoomable />
-        </ReactFlow>
+        <BoardContext.Provider value={actions}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
+            onNodeDragStop={onNodeDragStop}
+            nodesDraggable={!readOnly}
+            nodesConnectable={false}
+            deleteKeyCode={null}
+            fitView
+            fitViewOptions={{ maxZoom: 1 }}
+            minZoom={0.1}
+            maxZoom={2}
+            proOptions={{ hideAttribution: false }}
+          >
+            <Background />
+            <Controls showInteractive={false} />
+            <MiniMap pannable zoomable />
+          </ReactFlow>
+        </BoardContext.Provider>
       </div>
     </div>
   );

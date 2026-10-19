@@ -70,3 +70,16 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };
 }
+
+/**
+ * Fresh nodes from the doc, keeping what React Flow owns on the current ones
+ * (position while dragging, selection, measured size).
+ */
+export function syncNodes(current: BoardNode[], fresh: BoardNode[]): BoardNode[] {
+  const byId = new Map(current.map((n) => [n.id, n]));
+  return fresh.map((n) => {
+    const prev = byId.get(n.id);
+    if (!prev) return n;
+    return { ...n, position: prev.position, selected: prev.selected, dragging: prev.dragging, measured: prev.measured } as BoardNode;
+  });
+}
