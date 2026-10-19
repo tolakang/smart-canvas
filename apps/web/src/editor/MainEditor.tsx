@@ -11,6 +11,7 @@ import { useBoard } from '../board/context';
 import { OutputRenderer } from '../render/OutputRenderer';
 import { fitScale, NUDGE_STEP, nudge, toNFrame, type Box } from './geometry';
 import { LayersPanel } from './LayersPanel';
+import { TextPanel } from './TextPanel';
 
 const SNAP_DIRECTIONS = { top: true, left: true, bottom: true, right: true, center: true, middle: true };
 
@@ -192,6 +193,9 @@ export function MainEditor({ onClose }: { onClose: () => void }) {
             )}
           </div>
         </div>
+        {selectedSource?.content.kind === 'text' && (
+          <TextPanel key={selectedSource.id} source={{ ...selectedSource, content: selectedSource.content }} />
+        )}
       </div>
     </div>
   );

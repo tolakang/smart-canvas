@@ -184,11 +184,12 @@ function BoardCanvas(props: {
       readOnly,
       doc,
       openMainEditor: () => setEditingMain(true),
+      teamFonts,
       sourceCount,
       editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit)),
       run,
     }),
-    [teamId, readOnly, doc, sourceCount, apply, run],
+    [teamId, readOnly, doc, teamFonts, sourceCount, apply, run],
   );
 
   const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && isInputToMain(c), [readOnly]);
