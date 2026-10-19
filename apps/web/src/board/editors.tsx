@@ -23,7 +23,7 @@ function uploadMessage(err: unknown, kind: 'image' | 'vector'): string {
 }
 
 export function AssetEditor({ source }: { source: InputSource & { content: { kind: 'image' | 'vector' } } }) {
-  const { teamId, readOnly, editSource } = useBoard();
+  const { teamId, readOnly, editSource, rememberAsset } = useBoard();
   const kind = source.content.kind;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +41,10 @@ export function AssetEditor({ source }: { source: InputSource & { content: { kin
     try {
       const asset = await uploadAsset(teamId, file);
       if (asset.kind !== kind) setError(kind === 'image' ? 'This input takes PNG, JPEG or WebP.' : 'This input takes SVG files.');
-      else editSource(source.id, (s) => setAsset(s, asset.id));
+      else {
+        rememberAsset(asset);
+        editSource(source.id, (s) => setAsset(s, asset.id));
+      }
     } catch (err) {
       setError(uploadMessage(err, kind));
     } finally {

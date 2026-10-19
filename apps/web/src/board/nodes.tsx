@@ -4,9 +4,8 @@ import { AssetEditor, FillEditor, TextEditor } from './editors';
 import { useBoard } from './context';
 import { MainNodeView } from './MainNode';
 import { SourceHeader } from './SourceHeader';
-import type { InputFlowNode, OutputFlowNode } from './flow';
-
-const sizeLabel = (s: { width: number; height: number; unit: string }) => `${s.width} × ${s.height} ${s.unit}`;
+import type { InputFlowNode } from './flow';
+import { OutputNodeView } from './OutputNode';
 
 function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
@@ -35,18 +34,6 @@ function SourceEditor({ source }: { source: InputSource }) {
     case 'fill':
       return <FillEditor source={{ ...source, content }} />;
   }
-}
-
-function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
-  const { output, connected } = data;
-  return (
-    <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`}>
-      <Handle type="target" position={Position.Left} />
-      <div className="sc-node__title">{output.label}</div>
-      <div className="sc-node__meta">{sizeLabel(output.size)}</div>
-      {!connected && <div className="sc-node__meta">disconnected</div>}
-    </div>
-  );
 }
 
 export const nodeTypes: NodeTypes = { inputNode: InputNodeView, mainNode: MainNodeView, outputNode: OutputNodeView };
