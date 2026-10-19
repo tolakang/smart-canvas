@@ -1,24 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { OutputNode, ProjectDoc } from '../model';
+import type { ProjectDoc } from '../model';
 import { connectSource } from '../ports';
-import { createProjectDoc } from '../project';
 import { addSource } from '../sources';
 import { computeLayout, coverFrame, familyOf, type LayoutDeps } from './index';
-
-const measure: LayoutDeps['measure'] = (text, fontPx) => text.length * 0.5 * fontPx;
-
-function output(patch: Partial<OutputNode> = {}): OutputNode {
-  return { id: 'o1', label: 'Out', size: { width: 1080, height: 1350, unit: 'px' }, family: 'auto', overrides: [], board: { x: 0, y: 0 }, ...patch };
-}
-
-function project(out: OutputNode = output()): ProjectDoc {
-  let doc = createProjectDoc('P');
-  for (const id of ['background', 'subject', 'headline', 'logo']) {
-    const r = connectSource(doc, id);
-    if (r.ok) doc = r.doc;
-  }
-  return { ...doc, outputs: [out] };
-}
+import { mockMeasure as measure, output, project } from './test-doc';
 
 function withPhoto(doc: ProjectDoc, focal = { x: 0.7, y: 0.4 }): ProjectDoc {
   return {
@@ -73,18 +58,20 @@ describe('background (fill)', () => {
 });
 
 describe('computeLayout', () => {
+  const backgrounds = (doc: ProjectDoc) => computeLayout(doc, 'o1', deps).items.map((i) => i.sourceId).filter((id) => id === 'bg2' || id === 'background');
+
   it('orders back→front, skips hidden and unwired sources', () => {
     const r1 = addSource(project(), { id: 'bg2', label: 'Paper', kind: 'fill', behavesLike: 'background' });
     if (!r1.ok) throw new Error(r1.error);
     let doc = r1.doc; // bg2 is unwired
-    expect(computeLayout(doc, 'o1', deps).items.map((i) => i.sourceId)).toEqual(['background']);
+    expect(backgrounds(doc)).toEqual(['background']);
     const r2 = connectSource(doc, 'bg2');
     if (!r2.ok) throw new Error(r2.error);
     doc = r2.doc;
     const order = [...doc.sources].sort((a, b) => b.port - a.port).map((s) => s.id).filter((id) => id === 'bg2' || id === 'background');
-    expect(computeLayout(doc, 'o1', deps).items.map((i) => i.sourceId)).toEqual(order);
+    expect(backgrounds(doc)).toEqual(order);
     doc = { ...doc, sources: doc.sources.map((s) => (s.id === 'bg2' ? { ...s, visible: false } : s)) };
-    expect(computeLayout(doc, 'o1', deps).items.map((i) => i.sourceId)).toEqual(['background']);
+    expect(backgrounds(doc)).toEqual(['background']);
   });
 
   it('applies override frame fields last and honours override.hidden', () => {
