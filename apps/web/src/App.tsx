@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError, type Me } from './api';
 import { Board } from './board/Board';
+import { parseRenderPath, RenderPage } from './render/RenderPage';
 import { Projects } from './shell/Projects';
 import { SignIn } from './shell/SignIn';
 
@@ -21,6 +22,11 @@ function useHash() {
 }
 
 export function App() {
+  const render = typeof window === 'undefined' ? null : parseRenderPath(window.location.pathname, window.location.search);
+  return render ? <RenderPage route={render} /> : <Shell />;
+}
+
+function Shell() {
   const [me, setMe] = useState<Me | null | undefined>(undefined); // undefined = loading, null = signed out
   const hash = useHash();
 

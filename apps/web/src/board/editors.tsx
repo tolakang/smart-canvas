@@ -1,7 +1,7 @@
-import { fontStack, LIMITS, type Fill, type InputSource } from '@smart-canvas/core';
+import { fillToCss, fontStack, LIMITS, type Fill, type InputSource } from '@smart-canvas/core';
 import { useState, type ChangeEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
-import { addStop, fillToCss, removeStop, setAsset, setFill, setStop, setText, switchFillType } from './content';
+import { addStop, removeStop, setAsset, setFill, setStop, setText, switchFillType } from './content';
 import { useBoard } from './context';
 
 // Interactive elements inside a node must not start a node drag, pan or zoom.

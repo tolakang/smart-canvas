@@ -89,3 +89,9 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 .sc-fonts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-height: 50vh; overflow: auto; }
 .sc-font__name { font-size: 12px; font-weight: 600; }
 .sc-font__sample { font-size: 22px; line-height: 1.6; }
+
+/* Renderer */
+.sc-render__placeholder { display: grid; place-items: center; border: 2px dashed #9aa3b5; color: #6b7385; font: 600 48px/1.2 'Noto Sans', sans-serif; background: rgb(255 255 255 / 0.4); }
+.sc-main-thumb { margin-top: 8px; display: grid; place-items: center; background: repeating-conic-gradient(#e6e8ee 0 25%, #fff 0 50%) 0 0 / 12px 12px; border: 1px solid var(--line); border-radius: 4px; min-height: 60px; }
+.sc-render--thumb { box-shadow: 0 0 0 1px var(--line); }
+html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }

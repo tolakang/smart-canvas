@@ -1,6 +1,6 @@
 import { createProjectDoc, type InputSource } from '@smart-canvas/core';
 import { describe, expect, it } from 'vitest';
-import { addStop, fillToCss, removeStop, setAsset, setFill, setStop, setText, switchFillType, withSource } from './content';
+import { addStop, removeStop, setAsset, setFill, setStop, setText, switchFillType, withSource } from './content';
 
 const text: InputSource = {
   id: 'head',
@@ -57,10 +57,4 @@ describe('fill helpers', () => {
     expect(removeStop(lin, 0)).toBe(lin);
   });
 
-  it('renders CSS with sorted stops in percent', () => {
-    expect(fillToCss({ type: 'solid', color: '#abc' })).toBe('#abc');
-    expect(
-      fillToCss({ type: 'linear', angleDeg: 45, stops: [{ offset: 1, color: '#fff' }, { offset: 0.333, color: '#000' }] }),
-    ).toBe('linear-gradient(45deg, #000 33.3%, #fff 100%)');
-  });
 });
