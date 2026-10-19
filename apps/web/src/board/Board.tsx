@@ -1,4 +1,5 @@
-import { addSource, connectSource, disconnectSource, LIMITS, type InputSource, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addOutput, addSource, connectSource, disconnectSource, LIMITS, type InputSource, type ProjectDoc, type SourceError, type SourceResult } from '@smart-canvas/core';
+import { presets as builtInPresets } from '@smart-canvas/presets';
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -21,6 +22,8 @@ import { FontsDialog } from '../fonts/FontsDialog';
 import { registerTeamFonts, type TeamFont } from '../fonts/loader';
 import { MainEditor } from '../editor/MainEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
+import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
+import { useAssetSizes, useLayoutDeps } from './layout-deps';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
 import { withSource } from './content';
@@ -41,6 +44,12 @@ interface Loaded {
   doc: ProjectDoc;
 }
 type LoadResult = { key: number } & ({ ok: Loaded } | { error: string });
+
+const ERROR_NOTICE: Partial<Record<SourceError, string>> = {
+  limit: `A project can have at most ${LIMITS.maxSources} inputs.`,
+  output_limit: `A project can have at most ${LIMITS.maxOutputs} outputs.`,
+  invalid: 'That value is out of range.',
+};
 
 const STATE_LABEL: Record<SaveState, string> = {
   saved: 'All changes saved',
@@ -101,6 +110,8 @@ function BoardCanvas(props: {
   const [edges, setEdges] = useState(() => docToEdges(initial.doc));
   const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
   const [adding, setAdding] = useState(false);
+  const [addingOutput, setAddingOutput] = useState(false);
+  const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [showFonts, setShowFonts] = useState(false);
   const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
   const [fontsKey, setFontsKey] = useState(0);
@@ -159,6 +170,7 @@ function BoardCanvas(props: {
       setNodes((ns) => syncNodes(ns, docToNodes(doc)));
       setEdges(docToEdges(doc));
       setSourceCount(doc.sources.length);
+      setOutputCount(doc.outputs.length);
       autosave.change(doc);
     },
     [readOnly, autosave],
@@ -171,12 +183,15 @@ function BoardCanvas(props: {
         setNotice(null);
         apply(result.doc);
       } else {
-        setNotice(result.error === 'limit' ? `A project can have at most ${LIMITS.maxSources} inputs.` : 'That change could not be made.');
+        setNotice(ERROR_NOTICE[result.error] ?? 'That change could not be made.');
       }
       return result;
     },
     [apply],
   );
+
+  const { sizes, remember } = useAssetSizes(teamId);
+  const layoutDeps = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
 
   const actions = useMemo<BoardActions>(
     () => ({
@@ -187,9 +202,12 @@ function BoardCanvas(props: {
       teamFonts,
       sourceCount,
       editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit)),
+      layoutDeps,
+      presets: builtInPresets,
+      rememberAsset: remember,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, apply, run],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, remember, apply, run],
   );
 
   const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && isInputToMain(c), [readOnly]);
@@ -225,6 +243,11 @@ function BoardCanvas(props: {
     if (result.ok) setAdding(false);
   };
 
+  const addOutputNode = (o: NewOutput) => {
+    const result = run((doc) => addOutput(doc, { id: newId(), ...o }));
+    if (result.ok) setAddingOutput(false);
+  };
+
   const onNodeDragStop = useCallback(
     (_e: unknown, _node: Node, dragged: Node[]) => {
       const doc = withPositions(docRef.current, dragged);
@@ -256,6 +279,19 @@ function BoardCanvas(props: {
         )}
         <span className="sc-muted">
           {sourceCount}/{LIMITS.maxSources} inputs
+        </span>
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={() => setAddingOutput(true)}
+            disabled={outputCount >= LIMITS.maxOutputs}
+            title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : undefined}
+          >
+            + Add output
+          </button>
+        )}
+        <span className="sc-muted">
+          {outputCount}/{LIMITS.maxOutputs} outputs
         </span>
         <button type="button" onClick={() => setShowFonts(true)}>
           Fonts
@@ -304,6 +340,7 @@ function BoardCanvas(props: {
         </BoardContext.Provider>
       </div>
       {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}
+      {addingOutput && <AddOutputDialog presets={builtInPresets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
         <FontsDialog
           teamId={teamId}

@@ -1,4 +1,5 @@
-import type { InputSource, ProjectDoc, SourceResult } from '@smart-canvas/core';
+import type { InputSource, LayoutDeps, ProjectDoc, SizePreset, SourceResult } from '@smart-canvas/core';
+import type { AssetMeta } from '../api';
 import type { TeamFont } from '../fonts/loader';
 import { createContext, useContext } from 'react';
 
@@ -14,6 +15,12 @@ export interface BoardActions {
   /** Current number of inputs (for the 10-input cap). */
   sourceCount: number;
   editSource: (id: string, edit: (s: InputSource) => InputSource) => void;
+  /** Engine deps for live output previews; null until text fonts are loaded. */
+  layoutDeps: LayoutDeps | null;
+  /** Size presets for output pickers (built-in + team). */
+  presets: readonly SizePreset[];
+  /** Records a newly uploaded asset's size for the engine. */
+  rememberAsset: (asset: AssetMeta) => void;
   /** Applies a core source operation; returns its error, if any. */
   run: (op: (doc: ProjectDoc) => SourceResult) => SourceResult;
 }

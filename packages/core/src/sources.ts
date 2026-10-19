@@ -62,7 +62,7 @@ export function defaultSources(): InputSource[] {
   ];
 }
 
-export type SourceError = 'limit' | 'not_found' | 'bad_behavior';
+export type SourceError = 'limit' | 'not_found' | 'bad_behavior' | 'output_limit' | 'invalid';
 export type SourceResult = { ok: true; doc: ProjectDoc } | { ok: false; error: SourceError };
 
 const fail = (error: SourceError): SourceResult => ({ ok: false, error });
