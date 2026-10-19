@@ -23,3 +23,15 @@ TEST_DATABASE_URL=postgres://… pnpm test    # also runs the DB integration tes
 
 The API needs `DATABASE_URL` and object storage (MinIO / any S3 API): `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` (optional `S3_REGION`); the bucket is created on start if missing. Session cookies are `Secure` unless `COOKIE_SECURE=false` (plain-http local dev).
 First run: `POST /auth/setup` creates the first admin and team; after that, people join through invite links.
+
+## Docker / Dokploy
+
+```
+cp .env.example .env                         # set passwords; COOKIE_SECURE=false for http://localhost
+docker compose up --build                    # web on http://localhost:8080, API under /api
+docker buildx bake -f docker-bake.hcl --push # multi-arch images (amd64 + arm64) to IMAGE_REGISTRY
+```
+
+Services: `web` (nginx: SPA + `/api` proxy, the only published port), `api` (runs migrations, then serves),
+`worker`, `postgres`, `minio`. In Dokploy, create a Compose app from this repo, paste the `.env` values,
+and attach the domain to service `web`, port 80.

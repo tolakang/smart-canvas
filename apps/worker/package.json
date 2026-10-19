@@ -6,12 +6,16 @@
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "node ../../scripts/bundle.mjs src/main.ts"
   },
   "dependencies": {
     "@smart-canvas/core": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.23.15"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
