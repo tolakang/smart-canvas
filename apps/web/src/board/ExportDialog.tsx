@@ -7,7 +7,7 @@ import { EXPORT_FORMATS, exportCapError, LIMITS, type ExportFormat, type ExportJ
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 
-const FORMAT_LABEL: Record<ExportFormat, string> = { png: 'PNG', jpg: 'JPG', webp: 'WebP', pdf: 'PDF (vector)', svg: 'SVG (live text)' };
+const FORMAT_LABEL: Record<ExportFormat, string> = { png: 'PNG', jpg: 'JPG', webp: 'WebP', pdf: 'PDF (vector)', svg: 'SVG' };
 const POLL_MS = 1000;
 const API_BASE = '/api';
 
@@ -20,6 +20,7 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
   const [quality, setQuality] = useState(90);
   const [cropMarks, setCropMarks] = useState(true);
   const [withBleed, setWithBleed] = useState(true);
+  const [outlineText, setOutlineText] = useState(false);
   const [jobs, setJobs] = useState<ExportJob[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -46,6 +47,7 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
   const options = (): ExportOptions => ({
     ...(format === 'jpg' || format === 'webp' ? { quality } : {}),
     ...(format === 'pdf' && hasBleed ? { cropMarks } : {}),
+    ...(format === 'svg' && outlineText ? { outlineText } : {}),
     ...(hasBleed ? { withBleed } : {}),
   });
 
@@ -107,6 +109,11 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
             {hasBleed && (
               <label className="sc-check">
                 <input type="checkbox" checked={withBleed} onChange={(e) => setWithBleed(e.target.checked)} /> Include bleed (print outputs)
+              </label>
+            )}
+            {format === 'svg' && (
+              <label className="sc-check" title="Text becomes shapes: the SVG needs no fonts, but the text can't be edited">
+                <input type="checkbox" checked={outlineText} onChange={(e) => setOutlineText(e.target.checked)} /> Outline text
               </label>
             )}
             {format === 'pdf' && hasBleed && (

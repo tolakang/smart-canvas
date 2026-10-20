@@ -69,7 +69,7 @@ export async function runExportJob(id: string, deps: ExportDeps): Promise<void> 
       if (format === 'pdf') {
         const bleedMm = withBleedOf(output, options) ? (output.bleedMm ?? 0) : 0;
         file = await exportPdf(page, { bleedMm, cropMarks: options.cropMarks });
-      } else if (format === 'svg') file = await exportSvg(page);
+      } else if (format === 'svg') file = await exportSvg(page, { outlineText: options.outlineText });
       else file = await exportRaster(page, format, { quality: options.quality });
     } finally {
       await page.close();
