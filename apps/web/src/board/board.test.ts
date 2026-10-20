@@ -6,8 +6,8 @@ import {
   docToEdges,
   edgeOfConnection,
   docToNodes,
-  isInputToMain,
-  isMainToOutput,
+  compositionToOutput,
+  inputToComposition,
   MAIN_ID,
   outputIdOfNode,
   portFromHandle,
@@ -76,11 +76,13 @@ describe('docToNodes / docToEdges', () => {
     expect(portFromHandle('p3')).toBe(3);
     expect(portFromHandle('out')).toBeUndefined();
     expect(portFromHandle(null)).toBeUndefined();
-    expect(isInputToMain({ source: 'src:logo', target: 'main' })).toBe(true);
-    expect(isInputToMain({ source: 'main', target: 'out:ig' })).toBe(false);
-    expect(isInputToMain({ source: 'src:logo', target: 'src:bg' })).toBe(false);
-    expect(isMainToOutput({ source: 'main', target: 'out:ig' })).toBe(true);
-    expect(isMainToOutput({ source: 'src:logo', target: 'out:ig' })).toBe(false);
+    expect(inputToComposition({ source: 'src:logo', target: 'main' })).toBe('main');
+    expect(inputToComposition({ source: 'src:logo', target: 'comp:b' })).toBe('b'); // T12.3: any composition
+    expect(inputToComposition({ source: 'main', target: 'out:ig' })).toBeUndefined();
+    expect(inputToComposition({ source: 'src:logo', target: 'src:bg' })).toBeUndefined();
+    expect(compositionToOutput({ source: 'main', target: 'out:ig' })).toBe('main');
+    expect(compositionToOutput({ source: 'comp:b', target: 'out:ig' })).toBe('b');
+    expect(compositionToOutput({ source: 'src:logo', target: 'out:ig' })).toBeUndefined();
     expect(outputIdOfNode('out:ig')).toBe('ig');
     expect(outputIdOfNode('main')).toBeUndefined();
     expect(sourceIdOfNode('src:logo')).toBe('logo');

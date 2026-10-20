@@ -9,7 +9,8 @@ export interface BoardActions {
   readOnly: boolean;
   /** The current project document (follows every edit). */
   doc: ProjectDoc;
-  openMainEditor: () => void;
+  /** Opens the main preview editor on a composition (default: the main preview). */
+  openMainEditor: (compositionId?: string) => void;
   openOutputEditor: (outputId: string) => void;
   /** Stamp for override writes: the signed-in user, now. */
   author: () => OverrideAuthor;
@@ -28,8 +29,8 @@ export interface BoardActions {
   rememberAsset: (asset: AssetMeta) => void;
   /** Disconnects an output, freezing its current layout (D20). */
   disconnectOutput: (outputId: string) => void;
-  /** Reconnects an output: silently, or after asking when it has overrides (D21). */
-  reconnectOutput: (outputId: string) => void;
+  /** Reconnects an output to a composition (default main): silently, or after asking when it has overrides (D21). */
+  reconnectOutput: (outputId: string, compositionId?: string) => void;
   /** Applies a core source operation; returns its error, if any. */
   run: (op: (doc: ProjectDoc) => SourceResult) => SourceResult;
 }

@@ -1,14 +1,17 @@
 /**
  * ProjectDoc ↔ React Flow. The doc is the source of truth: node positions live in `board`
- * on each source / the main composition / each output; wires come from the doc's typed `edges` (D32).
- * The board shows the main composition (more compositions and process nodes: T12.2+).
+ * on each source / composition / output; wires come from the doc's typed `edges` (D32).
+ * Every composition is a "main preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { connectRefusal, isOutputConnected, mainComposition, masterScene, MAIN, withComposition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { compositionById, connectRefusal, isOutputConnected, masterScene, MAIN, outputComposition, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
 export const inputNodeId = (sourceId: string) => `src:${sourceId}`;
 export const outputNodeId = (outputId: string) => `out:${outputId}`;
+export const compositionNodeId = (compositionId: string) => (compositionId === MAIN ? MAIN_ID : `comp:${compositionId}`);
+export const compositionIdOfNode = (nodeId: string | null | undefined): string | undefined =>
+  nodeId === MAIN_ID ? MAIN : nodeId?.startsWith('comp:') ? nodeId.slice(5) : undefined;
 
 // Not 'input'/'output': React Flow has built-in node types (and CSS) under those names.
 export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
@@ -22,6 +25,8 @@ export interface PortRow {
 }
 export type MainFlowNode = Node<
   {
+    compositionId: string;
+    label: string;
     size: Size;
     ports: PortRow[];
     inputs: number;
@@ -42,19 +47,19 @@ export function portFromHandle(handle: string | null | undefined): number | unde
 export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean }, 'outputNode'>;
 export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode;
 
-/** An edge's `from`/`to` are source ids, 'main' or output ids; map them to node ids (null: not on this board yet). */
+/** An edge's `from`/`to` are source, composition or output ids; map them to node ids (null: not on this board). */
 function endpoint(doc: ProjectDoc, id: string): string | null {
-  if (id === MAIN_ID) return MAIN_ID;
+  if (compositionById(doc, id)) return compositionNodeId(id);
   if (doc.sources.some((s) => s.id === id)) return inputNodeId(id);
   if (doc.outputs.some((o) => o.id === id)) return outputNodeId(id);
   return null;
 }
 
-/** The main preview's rows, front (port 0) first. */
-export function portRows(doc: ProjectDoc): PortRow[] {
-  const wired = new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === MAIN_ID).map((e) => e.from));
+/** A composition's rows (default: the main preview), front (port 0) first. */
+export function portRows(doc: ProjectDoc, compositionId: string = MAIN): PortRow[] {
+  const wired = new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === compositionId).map((e) => e.from));
   const byId = new Map(doc.sources.map((s) => [s.id, s]));
-  return mainComposition(doc).layers.flatMap((id, port) => {
+  return (compositionById(doc, compositionId)?.layers ?? []).flatMap((id, port) => {
     const s = byId.get(id);
     return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
   });
@@ -63,7 +68,22 @@ export function portRows(doc: ProjectDoc): PortRow[] {
 // Nodes are never removed with the Delete key (inputs have a delete button with a confirm).
 export function docToNodes(doc: ProjectDoc): BoardNode[] {
   const connected = new Set(doc.edges.filter((e) => e.kind === 'composition').map((e) => e.to));
-  const main = mainComposition(doc);
+  const compositionNode = (c: Composition): MainFlowNode => ({
+    id: compositionNodeId(c.id),
+    type: 'mainNode',
+    position: c.board,
+    data: {
+      compositionId: c.id,
+      label: c.label,
+      size: c.size,
+      ports: portRows(doc, c.id),
+      inputs: doc.sources.length,
+      outputs: doc.outputs.filter((o) => outputComposition(doc, o.id) === c.id).length,
+      scene: masterScene(doc, c.id),
+      sources: doc.sources,
+    },
+    deletable: false,
+  });
   return [
     ...doc.sources.map(
       (source): InputFlowNode => ({
@@ -74,20 +94,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         deletable: false,
       }),
     ),
-    {
-      id: MAIN_ID,
-      type: 'mainNode',
-      position: main.board,
-      data: {
-        size: main.size,
-        ports: portRows(doc),
-        inputs: doc.sources.length,
-        outputs: doc.outputs.length,
-        scene: masterScene(doc),
-        sources: doc.sources,
-      },
-      deletable: false,
-    },
+    ...doc.compositions.map(compositionNode),
     ...doc.outputs.map(
       (output): OutputFlowNode => ({
         id: outputNodeId(output.id),
@@ -100,14 +107,14 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
   ];
 }
 
-/** Layer edges into main land on their row's handle; deleting one disconnects the input, deleting main→output freezes the output (T4.9). */
+/** Layer edges land on their row's handle; deleting one disconnects the input, deleting composition→output freezes the output (T4.9). */
 export function docToEdges(doc: ProjectDoc): Edge[] {
-  const rows = mainComposition(doc).layers;
   return doc.edges.flatMap((e: DocEdge): Edge[] => {
     const source = endpoint(doc, e.from);
     const target = endpoint(doc, e.to);
     if (!source || !target) return [];
-    const port = e.kind === 'layer' && e.to === MAIN_ID ? rows.indexOf(e.from) : -1;
+    const rows = e.kind === 'layer' ? compositionById(doc, e.to)?.layers : undefined;
+    const port = rows ? rows.indexOf(e.from) : -1;
     return [
       {
         id: e.id,
@@ -124,11 +131,11 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
 
 /** A board connection as a typed graph edge (D32): node ids → doc ids; out of a composition = 'composition'. */
 export function edgeOfConnection(c: { source: string | null; target: string | null }): { from: string; to: string; kind: EdgeKind } | null {
-  const id = (n: string | null) => (n === MAIN_ID ? MAIN_ID : n ? (sourceIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
+  const id = (n: string | null) => (n ? (compositionIdOfNode(n) ?? sourceIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
   const from = id(c.source);
   const to = id(c.target);
   if (!from || !to) return null;
-  return { from, to, kind: c.source === MAIN_ID ? 'composition' : 'layer' };
+  return { from, to, kind: compositionIdOfNode(c.source) ? 'composition' : 'layer' };
 }
 
 /** Why a wire may not go there (null = it may): port types and loops (core), one composition per output. */
@@ -141,19 +148,19 @@ export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; t
   if (refusal === 'cycle') return 'That would make a loop.';
   if (refusal) return 'Drop the wire on a port.';
   // Output-only layers (layer → output) come with T12.4; until then layers go into main preview rows.
-  if (e.kind === 'layer' && e.to !== MAIN_ID) return 'An input wires into a row of a main preview.';
+  if (e.kind === 'layer' && !compositionById(doc, e.to)) return 'An input wires into a row of a main preview.';
   if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This output already has a main preview: drag its wire off first.';
   return null;
 }
 
-/** Input → main preview connections (wire onto a port). */
-export function isInputToMain(c: { source: string | null; target: string | null }): boolean {
-  return !!c.source?.startsWith('src:') && c.target === MAIN_ID;
+/** Input → composition connections (wire onto a row); the composition id, if so. */
+export function inputToComposition(c: { source: string | null; target: string | null }): string | undefined {
+  return c.source?.startsWith('src:') ? compositionIdOfNode(c.target) : undefined;
 }
 
-/** Main → output connections (reconnecting a disconnected output). */
-export function isMainToOutput(c: { source: string | null; target: string | null }): boolean {
-  return c.source === MAIN_ID && !!c.target?.startsWith('out:');
+/** Composition → output connections (reconnecting a disconnected output); the composition id, if so. */
+export function compositionToOutput(c: { source: string | null; target: string | null }): string | undefined {
+  return c.target?.startsWith('out:') ? compositionIdOfNode(c.source) : undefined;
 }
 
 export const outputIdOfNode = (nodeId: string) => (nodeId.startsWith('out:') ? nodeId.slice(4) : undefined);
@@ -169,7 +176,8 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     return board ? { ...item, board } : item;
   };
   return {
-    ...withComposition(doc, MAIN_ID, (c) => place(c, MAIN_ID)),
+    ...doc,
+    compositions: doc.compositions.map((c) => place(c, compositionNodeId(c.id))),
     sources: doc.sources.map((s) => place(s, inputNodeId(s.id))),
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };
