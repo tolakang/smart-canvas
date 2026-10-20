@@ -128,6 +128,21 @@ function update(doc: ProjectDoc, id: string, edit: (s: InputSource) => InputSour
   return { ok: true, doc: { ...doc, sources: doc.sources.map((s) => (s.id === id ? edit(s) : s)) } };
 }
 
+/**
+ * Changes how an input adapts in outputs (D8: its behaviour's rules). Only behaviours that fit its kind;
+ * an input that becomes a background goes to the back (like adding one), the others keep their port.
+ */
+export function setBehavior(doc: ProjectDoc, id: string, behavesLike: Behavior): SourceResult {
+  const source = doc.sources.find((s) => s.id === id);
+  if (!source) return fail('not_found');
+  if (!ALLOWED_BEHAVIORS[source.kind].includes(behavesLike)) return fail('bad_behavior');
+  if (source.behavesLike === behavesLike) return { ok: true, doc };
+  const sources = doc.sources.map((s) => (s.id === id ? { ...s, behavesLike } : s));
+  if (behavesLike !== 'background') return { ok: true, doc: { ...doc, sources } };
+  const back = doc.sources.length - 1;
+  return { ok: true, doc: withSources(doc, sources.map((s) => (s.id === id ? { ...s, port: back + 1 } : s))) };
+}
+
 export function renameSource(doc: ProjectDoc, id: string, label: string): SourceResult {
   const clean = label.trim();
   return update(doc, id, (s) => (clean ? { ...s, label: clean } : s));

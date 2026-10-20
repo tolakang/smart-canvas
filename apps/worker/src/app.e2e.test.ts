@@ -34,7 +34,7 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     const [, team, project] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];
     return (await (await page.request.get(`${env.webUrl}api/teams/${team}/projects/${project}`)).json()).doc;
   };
-  const inNode = (label: string) => page.locator('.react-flow__node-inputNode', { hasText: label });
+  const inNode = (label: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${label}$`) }) });
 
   it('creates a project with 4 inputs and 3 outputs', async () => {
     await setupAndCreateProject(page, env.webUrl, 'Grand opening');

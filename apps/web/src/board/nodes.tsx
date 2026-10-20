@@ -1,5 +1,5 @@
 import { Handle, Position, type NodeProps, type NodeTypes } from '@xyflow/react';
-import type { InputSource } from '@smart-canvas/core';
+import { ALLOWED_BEHAVIORS, setBehavior, type Behavior, type InputSource } from '@smart-canvas/core';
 import { AssetEditor, FillEditor, TextEditor, useAssetUpload, type AssetUpload } from './editors';
 import { useBoard } from './context';
 import { MainNodeView } from './MainNode';
@@ -9,14 +9,33 @@ import { OutputNodeView } from './OutputNode';
 
 function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
-  const { readOnly } = useBoard();
+  const { readOnly, run } = useBoard();
   // T8.3: drop an image file anywhere on a picture input (or a photo on a fill background, D9).
   const upload = useAssetUpload(source);
   return (
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
       <div className="sc-node__meta">
-        {source.kind} · {source.behavesLike} · port {source.port}
+        {source.kind} ·{' '}
+        {readOnly || ALLOWED_BEHAVIORS[source.kind].length < 2 ? (
+          BEHAVIOR_LABEL[source.behavesLike].toLowerCase()
+        ) : (
+          // T8.7: how this input adapts in outputs (its behaviour's rules), changeable any time.
+          <select
+            className="sc-behavior nodrag nopan nowheel"
+            aria-label={`${source.label} behaves like`}
+            title="How this input adapts in outputs"
+            value={source.behavesLike}
+            onChange={(e) => run((doc) => setBehavior(doc, source.id, e.target.value as Behavior))}
+          >
+            {ALLOWED_BEHAVIORS[source.kind].map((b) => (
+              <option key={b} value={b}>
+                {BEHAVIOR_LABEL[b]}
+              </option>
+            ))}
+          </select>
+        )}{' '}
+        · port {source.port}
         {!source.visible && ' · hidden'}
         {source.libraryItemId && ' · from library'}
       </div>
@@ -25,6 +44,8 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
     </div>
   );
 }
+
+const BEHAVIOR_LABEL: Record<Behavior, string> = { background: 'Background', subject: 'Subject', text: 'Text', logo: 'Logo', decoration: 'Decoration' };
 
 function SourceEditor({ source, upload }: { source: InputSource; upload: AssetUpload }) {
   const { content } = source;

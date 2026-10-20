@@ -68,7 +68,8 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
     await saved();
     const bg = (await doc()).sources.find((s) => s.id === 'background');
     expect(bg).toMatchObject({ kind: 'image', behavesLike: 'background', content: { kind: 'image', focal: { x: 0.5, y: 0.5 } } });
-    expect(await node('Background').locator('.sc-node__meta').innerText()).toContain('image · background');
+    expect(await node('Background').locator('.sc-node__meta').innerText()).toMatch(/^image ·/);
+    expect(await node('Background').getByLabel('Background behaves like').inputValue()).toBe('background');
 
     await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
     await page.keyboard.press('Control+z');
