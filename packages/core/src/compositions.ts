@@ -37,9 +37,9 @@ export function setCompositionSize(doc: ProjectDoc, id: string, size: Size): Sou
   return { ok: true, doc: withComposition(doc, id, (c) => ({ ...c, size: { ...size } })) };
 }
 
-/** Takes a node out of a composition's rows (not 'main', which lists every input); its wire and placement go too. */
+/** Takes a node out of a composition's rows (not an input from 'main', which lists every input); its wire and placement go too. */
 export function removeRow(doc: ProjectDoc, compositionId: string, nodeId: string): SourceResult {
-  if (compositionId === MAIN) return { ok: false, error: 'invalid' };
+  if (compositionId === MAIN && doc.sources.some((s) => s.id === nodeId)) return { ok: false, error: 'invalid' };
   const comp = compositionById(doc, compositionId);
   if (!comp || !comp.layers.includes(nodeId)) return { ok: false, error: 'not_found' };
   const placements = Object.fromEntries(Object.entries(comp.placements).filter(([id]) => id !== nodeId));

@@ -11,6 +11,7 @@ import type { RuleContext } from './context';
 import { logoFrame } from './logo';
 import { outputOnlyFrame } from './output-only';
 import { wiredOutputLayers } from '../output-layers';
+import { layerSources } from '../processes';
 import { decorationFrame, subjectFrame } from './subject';
 import { fitInFrame, sideColumn, stackTextFrame, type TextJob } from './text';
 import { wrapAt } from './text-fit';
@@ -45,7 +46,8 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   const frozen = new Map(output.frozen?.items.map((i) => [i.sourceId, i]));
 
   // Content groups (v2): the master frames of the layers that carry the design, fitted together.
-  const visible = doc.sources.filter((s) => s.visible && wired.has(s.id) && !overrides.get(s.id)?.hidden && !frozen.has(s.id));
+  const layers = layerSources(doc);
+  const visible = layers.filter((s) => s.visible && wired.has(s.id) && !overrides.get(s.id)?.hidden && !frozen.has(s.id));
   const masterFrame = (id: string) => {
     const p = comp.placements[id];
     return p ? toDesignFrame(p, masterSize) : undefined;
@@ -64,7 +66,7 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
 
   const items: LayoutItem[] = [];
   const column: { index: number; job: TextJob }[] = []; // side-family texts, placed together after the loop
-  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  const byId = new Map(layers.map((s) => [s.id, s]));
   for (const source of [...comp.layers].reverse().flatMap((id) => byId.get(id) ?? [])) {
     const override = overrides.get(source.id);
     if (!source.visible || !wired.has(source.id) || override?.hidden) continue;

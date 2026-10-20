@@ -32,6 +32,12 @@ output port also offering `layer`.
 - **Rendering.** Process effects map to what the DOM renderer draws: CSS `filter`, `clip-path`/object
   position, transforms, and replaced text or colours. Browser preview, browser export and the worker stay
   pixel-identical.
+- **Implementation (T12.5).** `layerSources(doc)` lists every drawable layer: the inputs, plus one per process
+  whose chain reaches an input, under the process's id. Rows, placements and overrides name a process like an
+  input. A chain of Crop / Flip-Rotate / Adjust ops folds into one canonical effect (`LayerEffect`): crop in the
+  image's own 0..1 coordinates, then mirror, then a clockwise quarter turn, with colour as `filter` and `opacity`.
+  The renderer draws the crop and turn by nesting boxes (`effectBoxes`, which needs the asset's intrinsic size).
+  The browser and worker parity test covers a full chain.
 
 ## Model (schema 2)
 

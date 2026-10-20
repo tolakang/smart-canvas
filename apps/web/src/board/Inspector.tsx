@@ -12,6 +12,7 @@ import {
   computeLayout,
   isOutputConnected,
   outputHealth,
+  PROCESS_LABEL,
   renameSource,
   resetOutputOverrides,
   setSourceVisible,
@@ -25,7 +26,8 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useBoard } from './context';
 import { useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
-import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId } from './flow';
+import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, processNodeId } from './flow';
+import { ProcessSettings } from './ProcessSettings';
 import { HealthIssues, healthSummary } from './HealthBadge';
 import { Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
@@ -39,6 +41,7 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
   const source = doc.sources.find((s) => inputNodeId(s.id) === selected);
   const output = doc.outputs.find((o) => outputNodeId(o.id) === selected);
   const composition = compositionIdOfNode(selected);
+  const process = doc.processes.find((p) => processNodeId(p.id) === selected);
   return (
     <aside className={`sc-inspector-panel${floating ? ` sc-floating sc-floating--${floating} sc-floating--end` : ''}`} aria-label="Inspector">
       {floating && (
@@ -53,6 +56,10 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
         <InputInspector key={source.id} source={source} />
       ) : output ? (
         <OutputInspector key={output.id} output={output} />
+      ) : process ? (
+        <Section key={process.id} title={PROCESS_LABEL[process.op.type]}>
+          <ProcessSettings process={process} />
+        </Section>
       ) : composition && compositionById(doc, composition) ? (
         <CompositionInspector key={composition} compositionId={composition} />
       ) : (

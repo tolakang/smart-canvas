@@ -6,6 +6,7 @@
  */
 import { edgeId } from './graph';
 import type { OutputNode, ProjectDoc } from './model';
+import { isLayerNode } from './processes';
 import type { SourceResult } from './sources';
 
 export function outputLayers(doc: ProjectDoc, outputId: string): string[] {
@@ -31,7 +32,7 @@ export function moveOutputLayer(doc: ProjectDoc, outputId: string, sourceId: str
 /** Wires an input into an output's own rows (in front, or at `port`); wiring again just moves the row. */
 export function connectOutputLayer(doc: ProjectDoc, outputId: string, sourceId: string, port?: number): SourceResult {
   const output = doc.outputs.find((o) => o.id === outputId);
-  if (!output || !doc.sources.some((s) => s.id === sourceId)) return { ok: false, error: 'not_found' };
+  if (!output || !isLayerNode(doc, sourceId)) return { ok: false, error: 'not_found' };
   let next = output.layers?.includes(sourceId) ? doc : withOutput(doc, outputId, (o) => ({ ...o, layers: [sourceId, ...(o.layers ?? [])] }));
   if (port !== undefined) {
     const moved = moveOutputLayer(next, outputId, sourceId, port);

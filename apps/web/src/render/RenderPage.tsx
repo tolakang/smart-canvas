@@ -12,7 +12,9 @@ import {
   exportScaleOf,
   masterScene,
   outputScene,
+  layerSources,
   type InputSource,
+  type LayerSource,
   type LayoutResult,
   type ProjectDoc,
   type RenderScene,
@@ -79,18 +81,18 @@ export async function frameReady(frame: HTMLElement, scene: RenderScene, sources
 }
 
 /** The export frame: whole pixels (same rounding as exportPixels), clipping the canvas' fraction. */
-export const RenderFrame = forwardRef<HTMLDivElement, { scene: RenderScene; sources: readonly InputSource[]; assetUrl: (id: string) => string; scale: number }>(
-  function RenderFrame({ scene, sources, assetUrl: urlOf, scale }, ref) {
+export const RenderFrame = forwardRef<HTMLDivElement, { scene: RenderScene; sources: readonly LayerSource[]; assetSizes?: Record<string, { width: number; height: number }>; assetUrl: (id: string) => string; scale: number }>(
+  function RenderFrame({ scene, sources, assetSizes, assetUrl: urlOf, scale }, ref) {
     const frame = { width: Math.round(scene.width * scale), height: Math.round(scene.height * scale) };
     return (
       <div ref={ref} className="sc-render-frame" style={{ ...frame, overflow: 'hidden' }} data-export-width={frame.width} data-export-height={frame.height} data-exact-width={scene.width * scale} data-exact-height={scene.height * scale}>
-        <OutputRenderer scene={scene} sources={sources} assetUrl={urlOf} scale={scale} mode="export" />
+        <OutputRenderer scene={scene} sources={sources} assetSizes={assetSizes} assetUrl={urlOf} scale={scale} mode="export" />
       </div>
     );
   },
 );
 
-type Loaded = { scene: RenderScene; sources: InputSource[]; scale: number } | { error: string };
+type Loaded = { scene: RenderScene; sources: LayerSource[]; sizes: Record<string, { width: number; height: number }>; scale: number } | { error: string };
 
 function setStatus(status: 'true' | 'error', error?: string) {
   document.documentElement.dataset.renderReady = status;
@@ -113,20 +115,21 @@ export function RenderPage({ route }: { route: RenderRoute }) {
       ]);
       registerTeamFonts(route.teamId, fonts);
       const { doc } = project;
-      if (route.target === 'main') return { scene: masterScene(doc), sources: doc.sources, scale: route.scale ?? 1 };
-      const output = doc.outputs.find((o) => o.id === route.target);
-      if (!output) return { error: 'output_not_found' };
-      // Same deps as the board: fonts loaded before measuring, intrinsic asset sizes.
+      // Same deps as the board: fonts loaded before measuring, intrinsic asset sizes (layout, and crops: T12.5).
       const assets = await api<AssetMeta[]>('GET', `/teams/${route.teamId}/assets`);
       const sizes = Object.fromEntries(assets.flatMap((a) => (a.width && a.height ? [[a.id, { width: a.width, height: a.height }]] : [])));
+      const sources = layerSources(doc);
+      if (route.target === 'main') return { scene: masterScene(doc), sources, sizes, scale: route.scale ?? 1 };
+      const output = doc.outputs.find((o) => o.id === route.target);
+      if (!output) return { error: 'output_not_found' };
       const styleOverride = new Map(output.overrides.map((o) => [o.sourceId, o.style]));
-      const requests = doc.sources.flatMap((s) =>
+      const requests = sources.flatMap((s) =>
         s.content.kind === 'text' ? [{ style: { ...s.content.style, ...styleOverride.get(s.id) }, text: s.content.text }] : [],
       );
       const { measure, missing } = await prepareTextMeasure(requests);
       if (missing.length) return { error: 'font_missing' };
       const layout = computeLayout(doc, output.id, { measure, assets: sizes });
-      return { scene: exportScene(layout, output, route.bleed), sources: doc.sources, scale: route.scale ?? exportScaleOf(output) };
+      return { scene: exportScene(layout, output, route.bleed), sources, sizes, scale: route.scale ?? exportScaleOf(output) };
     })().then(
       (r) => live && setLoaded(r),
       (e: unknown) => live && setLoaded({ error: e instanceof ApiError ? `api_${e.status}` : 'load_failed' }),
@@ -152,5 +155,5 @@ export function RenderPage({ route }: { route: RenderRoute }) {
   }, [loaded]);
 
   if (!loaded || 'error' in loaded) return null;
-  return <RenderFrame ref={root} scene={loaded.scene} sources={loaded.sources} assetUrl={(id) => assetUrl(route.teamId, id)} scale={loaded.scale} />;
+  return <RenderFrame ref={root} scene={loaded.scene} sources={loaded.sources} assetSizes={loaded.sizes} assetUrl={(id) => assetUrl(route.teamId, id)} scale={loaded.scale} />;
 }

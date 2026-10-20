@@ -9,6 +9,7 @@
  */
 import { compositionById, MAIN, outputComposition, wiredLayers } from './graph';
 import { wiredOutputLayers } from './output-layers';
+import { layerSources } from './processes';
 import type { LayoutResult, LayoutWarning } from './layout';
 import type { InputSource, ProjectDoc } from './model';
 
@@ -44,7 +45,7 @@ function emptyIssues(doc: ProjectDoc, compositionId: string): HealthIssue[] {
   const comp = compositionById(doc, compositionId);
   if (!comp) return [];
   const wired = wiredLayers(doc, comp.id);
-  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   return comp.layers.flatMap((id) => {
     const s = byId.get(id);
     return s && s.visible && wired.has(id) && isEmpty(s) ? [issue(s, 'empty')] : [];
@@ -64,7 +65,7 @@ function levelOf(issues: HealthIssue[], frozen = false): HealthLevel {
 /** Text sources whose font family is in `missingFonts`. */
 function fontIssues(doc: ProjectDoc, ids: Set<string>, missingFonts: readonly string[]): HealthIssue[] {
   if (missingFonts.length === 0) return [];
-  return doc.sources.flatMap((s) => (ids.has(s.id) && s.content.kind === 'text' && missingFonts.includes(s.content.style.fontFamily) ? [issue(s, 'font-missing')] : []));
+  return layerSources(doc).flatMap((s) => (ids.has(s.id) && s.content.kind === 'text' && missingFonts.includes(s.content.style.fontFamily) ? [issue(s, 'font-missing')] : []));
 }
 
 /** Health of a composition (default: the main preview): empty wired layers and missing fonts. */
@@ -75,7 +76,7 @@ export function compositionHealth(doc: ProjectDoc, compositionId: string = MAIN,
 
 /** Health of an output from its computed layout: engine warnings per drawn layer, empty layers, missing fonts. */
 export function outputHealth(doc: ProjectDoc, outputId: string, layout: LayoutResult, missingFonts: readonly string[] = []): Health {
-  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   const drawn = new Set(layout.items.map((i) => i.sourceId));
   const issues: HealthIssue[] = [...fontIssues(doc, drawn, missingFonts)];
   for (const item of layout.items) {

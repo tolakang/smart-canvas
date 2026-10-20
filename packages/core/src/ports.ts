@@ -6,6 +6,7 @@
 import { edgeId, isLayerWired, MAIN, withComposition } from './graph';
 import type { Edge, ProjectDoc } from './model';
 import { ensurePlacement } from './placement';
+import { isLayerNode } from './processes';
 import type { SourceResult } from './sources';
 
 export { MAIN } from './graph';
@@ -31,7 +32,7 @@ export function moveSourceToPort(doc: ProjectDoc, sourceId: string, port: number
  */
 export function connectSource(doc: ProjectDoc, sourceId: string, port?: number, compositionId: string = MAIN): SourceResult {
   const comp = doc.compositions.find((c) => c.id === compositionId);
-  if (!comp || !doc.sources.some((s) => s.id === sourceId)) return { ok: false, error: 'not_found' };
+  if (!comp || !isLayerNode(doc, sourceId)) return { ok: false, error: 'not_found' };
   let next = comp.layers.includes(sourceId) ? doc : withComposition(doc, compositionId, (c) => ({ ...c, layers: [sourceId, ...c.layers] }));
   if (port !== undefined) {
     const moved = moveSourceToPort(next, sourceId, port, compositionId);
@@ -45,6 +46,6 @@ export function connectSource(doc: ProjectDoc, sourceId: string, port?: number, 
 
 /** Removes the node's wire into the composition; the node keeps its row (its place in the stack). */
 export function disconnectSource(doc: ProjectDoc, sourceId: string, compositionId: string = MAIN): SourceResult {
-  if (!doc.sources.some((s) => s.id === sourceId)) return { ok: false, error: 'not_found' };
+  if (!isLayerNode(doc, sourceId)) return { ok: false, error: 'not_found' };
   return { ok: true, doc: { ...doc, edges: doc.edges.filter((e) => !(e.kind === 'layer' && e.from === sourceId && e.to === compositionId)) } };
 }

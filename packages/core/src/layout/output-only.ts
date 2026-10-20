@@ -3,17 +3,17 @@
  * output's own canvas. Not in a content group: they don't move the composition's layers.
  */
 import { DEFAULTS, type CanvasMetrics, type Frame, type InputSource } from '../model';
+import { layerAssetSize, type LayerEffect } from '../processes';
 import { backgroundFrame } from './background';
 import type { LayoutDeps } from './types';
 
 /** Intrinsic aspect (w/h) of an image or vector source; 1 when unknown. */
-function aspectOf(source: InputSource, deps: LayoutDeps): number {
-  const c = source.content;
-  const size = (c.kind === 'image' || c.kind === 'vector') && c.assetId ? deps.assets[c.assetId] : undefined;
-  return size && size.width > 0 && size.height > 0 ? size.width / size.height : 1;
+function aspectOf(source: InputSource & { effect?: LayerEffect }, deps: LayoutDeps): number {
+  const size = layerAssetSize(source, deps.assets);
+  return size ? size.width / size.height : 1;
 }
 
-export function outputOnlyFrame(source: InputSource, m: CanvasMetrics, deps: LayoutDeps): Frame {
+export function outputOnlyFrame(source: InputSource & { effect?: LayerEffect }, m: CanvasMetrics, deps: LayoutDeps): Frame {
   const S = m.safe;
   switch (source.behavesLike) {
     case 'background':

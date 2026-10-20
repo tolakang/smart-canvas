@@ -3,6 +3,7 @@
  * The layout engine produces these for outputs; a composition's come straight from its placements.
  */
 import { compositionById, MAIN, mainComposition, wiredLayers } from './graph';
+import { layerSources } from './processes';
 import { toDesignPx, type Frame, type NFrame, type ProjectDoc, type Size, type TextStyle } from './model';
 
 /** One drawn layer. Same shape as the engine's LayoutItem minus bookkeeping. Frame in design px; rotation in degrees. */
@@ -44,7 +45,7 @@ export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): Rend
   const comp = compositionById(doc, compositionId) ?? mainComposition(doc);
   const canvas = sizeInDesignPx(comp.size);
   const wired = wiredLayers(doc, comp.id);
-  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   const items: RenderItem[] = [];
   for (const s of [...comp.layers].reverse().flatMap((id) => byId.get(id) ?? [])) {
     if (!s.visible || !wired.has(s.id)) continue;

@@ -10,6 +10,7 @@ import {
   convertSize,
   deleteOutput,
   disconnectOutputLayer,
+  layerSources,
   outputDefaults,
   outputScene,
   resetOutputOverrides,
@@ -80,6 +81,7 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
     const layout = computeLayout(shownDoc, output.id, layoutDeps);
     return { scene: outputScene(layout, current), health: outputHealth(shownDoc, output.id, layout, missingFonts) };
   }, [shownDoc, output.id, layoutDeps, missingFonts]);
+  const shownLayers = useMemo(() => layerSources(shownDoc), [shownDoc]);
   const bleed = output.bleedMm ?? 0;
 
   return (
@@ -148,7 +150,7 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
       )}
       <div className="sc-main-thumb" aria-label={`${output.label} preview`}>
         {scene ? (
-          <RenderThumbnail scene={scene} sources={shownDoc.sources} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={236} maxHeight={180} />
+          <RenderThumbnail scene={scene} sources={shownLayers} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={236} maxHeight={180} />
         ) : (
           <span className="sc-muted">Loading fonts…</span>
         )}
@@ -173,7 +175,7 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
           {!readOnly && (
             <li className="sc-port sc-port--add" data-port={layers.length}>
               <Handle type="target" position={Position.Left} id={portHandleId(layers.length)} isConnectable className="sc-handle--layer" title="Output-only layer in: wire an input here" />
-              <span className="sc-port__label">Add a layer only this output gets</span>
+              <span className="sc-port__hint">Add a layer only this output gets</span>
             </li>
           )}
         </ol>

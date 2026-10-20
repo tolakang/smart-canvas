@@ -14,6 +14,7 @@
   --type-input: #0d99ff;
   --type-main: #9747ff;
   --type-output: #14ae5c;
+  --type-process: #f24e1e;
   --input: var(--accent-soft); /* legacy names */
   --output: #e8f7ee;
   --ok: #0f7a40;
@@ -511,6 +512,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   --type-input: #2ba6ff;
   --type-main: #b088ff;
   --type-output: #3fcf7f;
+  --type-process: #ff7a52;
   --input: var(--accent-soft);
   --output: var(--ok-soft);
   --faint: #5c5c5c;
@@ -592,3 +594,10 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
   .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
+
+/* T12.5 process nodes */
+.sc-node--process { width: 240px; }
+.sc-node--process::before { background: var(--type-process); }
+.sc-library__glyph--process { color: var(--type-process); }
+.sc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
+.sc-port__hint { flex: 1; color: var(--muted); font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -5,6 +5,9 @@ import {
   canAddComposition,
   addSource,
   connectOutputLayer,
+  connectProcessInput,
+  disconnectProcessInput,
+  addProcess,
   connectSource,
   deleteSource,
   disconnectOutput,
@@ -66,6 +69,8 @@ import {
   outputIdOfNode,
   portFromHandle,
   sourceIdOfNode,
+  layerIdOfNode,
+  processIdOfNode,
   syncNodes,
   withPositions,
   type BoardNode,
@@ -147,6 +152,8 @@ export function Board(props: { teamId: string; projectId: string; userId: string
 function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, port: number | undefined): SourceResult {
   const composition = compositionIdOfNode(target);
   if (composition) return connectSource(doc, sourceId, port, composition);
+  const processId = target ? processIdOfNode(target) : undefined;
+  if (processId) return connectProcessInput(doc, processId, sourceId);
   const outputId = target ? outputIdOfNode(target) : undefined;
   return outputId ? connectOutputLayer(doc, outputId, sourceId, port) : { ok: false, error: 'not_found' };
 }
@@ -154,6 +161,8 @@ function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, 
 function disconnectLayer(doc: ProjectDoc, sourceId: string, target: string): SourceResult {
   const composition = compositionIdOfNode(target);
   if (composition) return disconnectSource(doc, sourceId, composition);
+  const processId = processIdOfNode(target);
+  if (processId) return disconnectProcessInput(doc, processId);
   const outputId = outputIdOfNode(target);
   return outputId ? disconnectOutputLayer(doc, outputId, sourceId) : { ok: false, error: 'not_found' };
 }
@@ -414,7 +423,7 @@ function BoardCanvas(props: {
         reconnect(outputId, fromComposition);
         return;
       }
-      const sourceId = sourceIdOfNode(c.source);
+      const sourceId = layerIdOfNode(c.source);
       if (sourceId) run((doc) => connectLayer(doc, sourceId, c.target, portFromHandle(c.targetHandle)));
     },
     [run, reconnect],
@@ -429,7 +438,7 @@ function BoardCanvas(props: {
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
       for (const e of deleted) {
-        const sourceId = sourceIdOfNode(e.source);
+        const sourceId = layerIdOfNode(e.source);
         const outputId = compositionIdOfNode(e.source) ? outputIdOfNode(e.target) : undefined;
         if (sourceId) run((doc) => disconnectLayer(doc, sourceId, e.target));
         else if (outputId) disconnect(outputId);
@@ -453,9 +462,9 @@ function BoardCanvas(props: {
   const onReconnect = useCallback(
     (old: Edge, c: Connection) => {
       reconnectDone.current = true;
-      const oldSource = sourceIdOfNode(old.source);
-      const newSource = sourceIdOfNode(c.source);
-      if (oldSource && newSource && (inputToComposition(c) || inputToOutput(c))) {
+      const oldSource = layerIdOfNode(old.source);
+      const newSource = layerIdOfNode(c.source);
+      if (oldSource && newSource && (inputToComposition(c) || inputToOutput(c) || processIdOfNode(c.target ?? ''))) {
         // Same input to another row = move it to that row; another input onto this row = swap who feeds it.
         const port = portFromHandle(c.targetHandle);
         run((doc) => {
@@ -579,6 +588,9 @@ function BoardCanvas(props: {
     switch (spec.type) {
       case 'input':
         addInput(spec.input, at);
+        return;
+      case 'process':
+        run((d) => addProcess(d, { id: newId(), op: spec.op, board: at }));
         return;
       case 'composition':
         run((d) => addComposition(d, { id: newId(), label: `Main preview ${d.compositions.length + 1}`, board: at }));
