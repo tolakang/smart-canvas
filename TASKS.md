@@ -102,7 +102,7 @@ Legend: `[x]` done · `[ ]` to do
 - [ ] T12.8 — Nested compositions
 
 ## P13 — Workspace UX (D33–D35)
-- [ ] T13.1 — Layout health status on nodes
+- [x] T13.1 — Layout health status on nodes — [#65](https://github.com/tolakang/smart-canvas/pull/65)
 - [ ] T13.2 — Right inspector (settings off the cards)
 - [ ] T13.3 — Dark theme + toggle
 - [ ] T13.4 — Left node library
