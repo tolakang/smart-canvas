@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LIMITS, type ProjectDoc } from './model';
 import { createProjectDoc } from './project';
+import { addOutput } from './outputs';
 import {
   addSource,
   ALLOWED_BEHAVIORS,
@@ -174,5 +175,14 @@ describe('normalizePorts', () => {
   it('keeps the order and closes gaps', () => {
     const s = defaultSources().map((x) => ({ ...x, port: x.port * 3 }));
     expect(normalizePorts(s).map((x) => x.port)).toEqual([3, 2, 1, 0]);
+  });
+});
+
+describe('placing new nodes (T8.4)', () => {
+  it('addSource and addOutput take a board position, rounded', () => {
+    const doc = ok(addSource(createProjectDoc('P'), { id: 'n', kind: 'text', label: 'Note', behavesLike: 'text', board: { x: 12.4, y: -80.6 } }));
+    expect(doc.sources.find((s) => s.id === 'n')?.board).toEqual({ x: 12, y: -81 });
+    const out = ok(addOutput(doc, { id: 'o', label: 'Post', size: { width: 1080, height: 1080, unit: 'px' }, board: { x: 900.5, y: 40 } }));
+    expect(out.outputs[0]?.board).toEqual({ x: 901, y: 40 });
   });
 });

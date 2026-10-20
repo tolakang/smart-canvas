@@ -101,10 +101,11 @@ function insertAt(doc: ProjectDoc, source: InputSource, port: number): ProjectDo
 
 /**
  * Adds a new input. It goes to the front (port 0), except backgrounds, which go to the back.
+ * `board` places its node (e.g. where the canvas was right-clicked, T8.4); default: below the other inputs.
  */
 export function addSource(
   doc: ProjectDoc,
-  spec: { id: string; kind: SourceKind; label: string; behavesLike: Behavior },
+  spec: { id: string; kind: SourceKind; label: string; behavesLike: Behavior; board?: { x: number; y: number } },
 ): SourceResult {
   if (!canAddSource(doc)) return fail('limit');
   if (!ALLOWED_BEHAVIORS[spec.kind].includes(spec.behavesLike)) return fail('bad_behavior');
@@ -116,7 +117,7 @@ export function addSource(
     port: 0,
     visible: true,
     content: defaultContent(spec.kind),
-    board: { x: SOURCE_COLUMN_X, y: nextRowY(doc) },
+    board: spec.board ? { x: Math.round(spec.board.x), y: Math.round(spec.board.y) } : { x: SOURCE_COLUMN_X, y: nextRowY(doc) },
   };
   const port = spec.behavesLike === 'background' ? doc.sources.length : 0;
   return { ok: true, doc: insertAt(doc, source, port) };
