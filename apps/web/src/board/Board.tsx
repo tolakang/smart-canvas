@@ -1,5 +1,6 @@
 import {
   addComposition,
+  addSourceFromLibrary,
   addOutput,
   canAddComposition,
   addSource,
@@ -68,8 +69,9 @@ import {
 } from './flow';
 import { useTheme } from '../ui/theme';
 import { Inspector } from './Inspector';
+import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
 import { nodeTypes } from './nodes';
-import { sizeLabel } from './OutputNode';
+import { presetSettings, sizeLabel } from './OutputNode';
 
 interface Loaded {
   rev: number;
@@ -526,6 +528,35 @@ function BoardCanvas(props: {
     if (result.ok) setAddingOutput(false);
   };
 
+  /** T13.4: add from the node library at `at` (a drop point), or in the middle of the view (a click). */
+  const addFromLibrary = (spec: AddSpec, drop?: { x: number; y: number }) => {
+    if (readOnly || !flow.current) return;
+    const pane = document.querySelector('.sc-board__flow')?.getBoundingClientRect();
+    const screen = drop ?? (pane ? { x: pane.left + pane.width / 2, y: pane.top + pane.height / 2 } : { x: 0, y: 0 });
+    const at = flow.current.screenToFlowPosition(screen);
+    switch (spec.type) {
+      case 'input':
+        addInput(spec.input, at);
+        return;
+      case 'composition':
+        run((d) => addComposition(d, { id: newId(), label: `Main preview ${d.compositions.length + 1}`, board: at }));
+        return;
+      case 'library':
+        run((d) => addSourceFromLibrary(d, spec.item, newId(), at));
+        return;
+      case 'output':
+        if (!spec.preset) {
+          setPlaceAt(at);
+          setAddingOutput(true);
+          return;
+        }
+        {
+          const p = spec.preset;
+          run((d) => addOutput(d, { id: newId(), label: p.name, size: { ...p.size }, ...presetSettings(p), board: at }));
+        }
+    }
+  };
+
   // T8.4: right-click the empty canvas → add an input or an output right there.
   const onPaneContextMenu = (e: MouseEvent | React.MouseEvent) => {
     if (readOnly || !flow.current) return;
@@ -691,10 +722,20 @@ function BoardCanvas(props: {
       <div
         className="sc-board__canvas"
         // A file dropped outside an input must not make the browser open it (and leave the board).
-        onDragOver={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
-        onDrop={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
+        onDragOver={(e) => (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes(ADD_DRAG_TYPE)) && e.preventDefault()}
+        onDrop={(e) => {
+          if (e.dataTransfer.types.includes(ADD_DRAG_TYPE)) {
+            e.preventDefault();
+            try {
+              addFromLibrary(JSON.parse(e.dataTransfer.getData(ADD_DRAG_TYPE)) as AddSpec, { x: e.clientX, y: e.clientY });
+            } catch {
+              // not ours
+            }
+          } else if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+        }}
       >
         <BoardContext.Provider value={actions}>
+          <NodeLibrary onAdd={(spec) => addFromLibrary(spec)} />
           <div className="sc-board__flow">
           <ReactFlow
             nodes={nodes}

@@ -20,9 +20,14 @@ export function isValidLibraryEntry(e: { kind: SourceKind; behavesLike: Behavior
 }
 
 /** Adds a detached copy of a library item as a new input (front, or back for backgrounds; cap 10). */
-export function addSourceFromLibrary(doc: ProjectDoc, item: Pick<LibraryItem, 'id' | 'name' | 'kind' | 'behavesLike' | 'content'>, id: string): SourceResult {
+export function addSourceFromLibrary(
+  doc: ProjectDoc,
+  item: Pick<LibraryItem, 'id' | 'name' | 'kind' | 'behavesLike' | 'content'>,
+  id: string,
+  board?: { x: number; y: number },
+): SourceResult {
   if (!isValidLibraryEntry(item)) return { ok: false, error: 'bad_behavior' };
-  const r = addSource(doc, { id, label: item.name, kind: item.kind, behavesLike: item.behavesLike });
+  const r = addSource(doc, { id, label: item.name, kind: item.kind, behavesLike: item.behavesLike, ...(board ? { board } : {}) });
   if (!r.ok) return r;
   return {
     ok: true,
