@@ -58,16 +58,33 @@ export async function ensureFonts(requests: FontRequest[]): Promise<FontRequest[
 
 const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 
+/** Most recent measurements kept by each TextMeasure (T7.4: text fitting re-measures the same runs a lot). */
+export const MEASURE_CACHE_SIZE = 20_000;
+
+/** Wraps a measure with a bounded cache keyed by font, size, spacing, transform and text. */
+export function cachedMeasure(measure: TextMeasure, size = MEASURE_CACHE_SIZE): TextMeasure {
+  const cache = new Map<string, number>();
+  return (text, fontPx, style) => {
+    const key = `${cssFont(style, fontPx)}|${style.letterSpacingEm ?? 0}|${style.textTransform ?? ''}|${text}`;
+    const hit = cache.get(key);
+    if (hit !== undefined) return hit;
+    const w = measure(text, fontPx, style);
+    if (cache.size >= size) cache.delete(cache.keys().next().value as string); // oldest first
+    cache.set(key, w);
+    return w;
+  };
+}
+
 /** Synchronous canvas measure. Only valid after the fonts are loaded; use prepareTextMeasure. */
 function canvasMeasure(): TextMeasure {
   const ctx = document.createElement('canvas').getContext('2d');
   if (!ctx) throw new Error('2D canvas unavailable');
-  return (text, fontPx, style) => {
+  return cachedMeasure((text, fontPx, style) => {
     const shown = style.textTransform === 'uppercase' ? text.toUpperCase() : text;
     ctx.font = cssFont(style, fontPx);
     const spacing = (style.letterSpacingEm ?? 0) * fontPx * [...graphemes.segment(shown)].length;
     return ctx.measureText(shown).width + spacing;
-  };
+  });
 }
 
 /** Loads fonts for `requests`, then returns a TextMeasure for the layout engine. */

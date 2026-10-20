@@ -21,7 +21,7 @@ import {
   type Unit,
 } from '@smart-canvas/core';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 import { assetUrl } from '../api';
 import { RenderThumbnail } from '../render/OutputRenderer';
 import { NumberField } from '../ui/NumberField';
@@ -49,11 +49,13 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
   const { output, connected } = data;
   const { doc, readOnly, run, teamId, layoutDeps, presets, disconnectOutput, reconnectOutput, openOutputEditor } = useBoard();
   const set = (patch: OutputSettings) => run((d) => updateOutput(d, output.id, patch));
+  // T7.4: thumbnails lag behind edits (deferred) so typing and dragging stay responsive with 10 outputs.
+  const shownDoc = useDeferredValue(doc);
   // The node can outlive its output by a render (React Flow syncs nodes after the doc changes).
-  const scene = useMemo(
-    () => (layoutDeps && doc.outputs.some((o) => o.id === output.id) ? outputScene(computeLayout(doc, output.id, layoutDeps)) : null),
-    [doc, output.id, layoutDeps],
-  );
+  const scene = useMemo(() => {
+    const current = shownDoc.outputs.find((o) => o.id === output.id);
+    return layoutDeps && current ? outputScene(computeLayout(shownDoc, output.id, layoutDeps), current) : null;
+  }, [shownDoc, output.id, layoutDeps]);
   const bleed = output.bleedMm ?? 0;
   const px = exportPixels(output, bleed > 0);
   const overCap = exceedsExportCap(px);
@@ -106,7 +108,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
       )}
       <div className="sc-main-thumb" aria-label={`${output.label} preview`}>
         {scene ? (
-          <RenderThumbnail scene={scene} sources={doc.sources} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={236} maxHeight={180} />
+          <RenderThumbnail scene={scene} sources={shownDoc.sources} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={236} maxHeight={180} />
         ) : (
           <span className="sc-muted">Loading fonts…</span>
         )}

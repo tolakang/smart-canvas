@@ -149,6 +149,14 @@ export function syncNodes(current: BoardNode[], fresh: BoardNode[], positionsFro
   return fresh.map((n) => {
     const prev = byId.get(n.id);
     if (!prev) return n;
+    // T7.4: an unchanged node keeps its object, so React Flow doesn't re-render it on every edit.
+    if (!positionsFromDoc && sameData(prev.data, n.data)) return prev;
     return { ...n, position: positionsFromDoc ? n.position : prev.position, selected: prev.selected, dragging: prev.dragging, measured: prev.measured } as BoardNode;
   });
+}
+
+/** Node data equal by value identity of each field (docs are immutable: unchanged parts keep identity). */
+function sameData(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(b);
+  return keys.length === Object.keys(a).length && keys.every((k) => a[k] === b[k]);
 }
