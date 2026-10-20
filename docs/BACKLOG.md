@@ -75,3 +75,6 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P9 — Smart outputs
 - T9.1 — Layout v2 content fit: output elements learn from the main preview but fill each output's free space and re-arrange to it (subjects, decorations and text fitted as a group; side layouts put visuals right and text left). (D30)
+
+## P10 — Figma-style editing
+- T10.1 — Editor works like Figma: dark toolbar with Move (V) / Hand (H) tools; pan with Space/H + drag and the wheel; zoom at the pointer (Ctrl/⌘ + wheel), Ctrl/⌘ ±, Shift+1 fit, Shift+0 100%; Design panel with X / Y / W / H / rotation and constrain proportions; size badge on the selection; Shift keeps proportions / snaps rotation to 15°; compact Figma-style layers and panels. Main preview and output editors (shared editor).

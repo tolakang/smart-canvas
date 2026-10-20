@@ -80,3 +80,6 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P9 — Smart outputs
 - [ ] T9.1 — Layout v2: outputs fill the space and re-arrange (D30)
+
+## P10 — Figma-style editing
+- [ ] T10.1 — Editor like Figma: tools, pan / zoom, Design panel, Figma look

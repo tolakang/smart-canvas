@@ -2,6 +2,8 @@
  * T8.6 end to end: the main preview editor moves and resizes assets directly on the canvas.
  * Press-and-drag moves an unselected asset in one gesture; the selection box doesn't hide the layers under
  * it (a click selects the front-most one, Alt+click the next one behind); zoom; bigger handles.
+ * T10.1: Figma-style workspace — Design panel X/Y/W/H, size badge, Hand tool / Space pan, wheel pan, zoom at
+ * the pointer, Shift+1 / Shift+0.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -101,4 +103,90 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
     await editor().getByRole('button', { name: 'Fit' }).click();
     expect(Math.round((await editor().locator('.sc-editor__canvas').boundingBox())?.width ?? 0)).toBe(Math.round(w0));
   }, 30_000);
+
+  const canvasBox = async () => {
+    const b = await editor().locator('.sc-editor__canvas').boundingBox();
+    if (!b) throw new Error('no canvas');
+    return b;
+  };
+  const design = () => editor().getByRole('complementary', { name: 'Design' });
+
+  it('Design panel: typed X / Y / W / H move and resize the layer; W keeps the image ratio', async () => {
+    await page.keyboard.press('Shift+Digit1');
+    await page.mouse.click(...(Object.values(await centre(layer('subject'))) as [number, number]));
+    expect(await selection()).toBe('Subject');
+    const { master } = await doc();
+    const W = master.size.width; // px masters: design px = px
+    const H = master.size.height;
+    await design().getByLabel('X', { exact: true }).fill('100');
+    await design().getByLabel('X', { exact: true }).press('Enter');
+    await expect.poll(async () => ((await doc()).master.placements.subject?.x ?? 0) * W, { timeout: 10_000 }).toBeCloseTo(100, 1);
+    const before = (await doc()).master.placements.subject;
+    const ratio = ((before?.w ?? 1) * W) / ((before?.h ?? 1) * H);
+    await design().getByLabel('Width', { exact: true }).fill('300');
+    await design().getByLabel('Width', { exact: true }).press('Enter');
+    await expect.poll(async () => ((await doc()).master.placements.subject?.w ?? 0) * W, { timeout: 10_000 }).toBeCloseTo(300, 1);
+    const after = (await doc()).master.placements.subject;
+    expect(((after?.w ?? 0) * W) / ((after?.h ?? 1) * H)).toBeCloseTo(ratio, 3);
+    // Moveable's frame follows the typed values.
+    await expect
+      .poll(async () => {
+        const [line, box] = await Promise.all([editor().locator('.moveable-control.moveable-se').first().boundingBox(), editor().getByTestId('selection-box').boundingBox()]);
+        return Math.round((line?.x ?? 0) + (line?.width ?? 0) / 2 - ((box?.x ?? 0) + (box?.width ?? 0)));
+      })
+      .toBe(0);
+    // The badge under the selection shows the size in design px.
+    await expect.poll(() => editor().getByTestId('selection-size').innerText()).toMatch(/^300 × \d+$/);
+  }, 60_000);
+
+  it('Hand tool (H) and Space + drag pan the canvas; V goes back to selecting', async () => {
+    const stage = await editor().locator('.sc-editor__stage').boundingBox();
+    if (!stage) throw new Error('no stage');
+    const b0 = await canvasBox();
+    await page.keyboard.press('h');
+    expect(await editor().getByRole('button', { name: 'Hand tool (H)' }).getAttribute('aria-pressed')).toBe('true');
+    await page.mouse.move(stage.x + 40, stage.y + 40);
+    await page.mouse.down();
+    await page.mouse.move(stage.x + 100, stage.y + 70, { steps: 5 });
+    await page.mouse.up();
+    const b1 = await canvasBox();
+    expect(b1.x - b0.x).toBeCloseTo(60, 0);
+    expect(b1.y - b0.y).toBeCloseTo(30, 0);
+    await page.keyboard.press('v');
+    await page.keyboard.down('Space');
+    await page.mouse.move(stage.x + 100, stage.y + 70);
+    await page.mouse.down();
+    await page.mouse.move(stage.x + 60, stage.y + 50, { steps: 5 });
+    await page.mouse.up();
+    await page.keyboard.up('Space');
+    const b2 = await canvasBox();
+    expect(b2.x - b1.x).toBeCloseTo(-40, 0);
+    expect(await editor().getByTestId('pan-surface').count()).toBe(0); // Space released: back to selecting
+    // Plain wheel pans too.
+    await page.mouse.move(stage.x + stage.width / 2, stage.y + stage.height / 2);
+    await page.mouse.wheel(0, 50);
+    await expect.poll(async () => (await canvasBox()).y - b2.y).toBeCloseTo(-50, 0);
+  }, 60_000);
+
+  it('Ctrl + wheel zooms at the pointer; Shift+0 is 100%, Shift+1 fits', async () => {
+    await page.keyboard.press('Shift+Digit1');
+    const b0 = await canvasBox();
+    const at = { x: b0.x + b0.width * 0.25, y: b0.y + b0.height * 0.25 };
+    await page.mouse.move(at.x, at.y);
+    await page.keyboard.down('Control');
+    await page.mouse.wheel(0, -200);
+    await page.keyboard.up('Control');
+    await expect.poll(async () => (await canvasBox()).width).toBeGreaterThan(b0.width * 1.3);
+    const b1 = await canvasBox();
+    // The design point under the pointer stays under it.
+    expect((at.x - b1.x) / b1.width).toBeCloseTo(0.25, 2);
+    expect((at.y - b1.y) / b1.height).toBeCloseTo(0.25, 2);
+    await page.keyboard.press('Shift+Digit0');
+    expect(await editor().getByLabel('Zoom level').innerText()).toBe('100%');
+    const { master } = await doc();
+    expect((await canvasBox()).width).toBeCloseTo(master.size.width, 0);
+    await page.keyboard.press('Shift+Digit1');
+    expect(Math.round((await canvasBox()).width)).toBe(Math.round(b0.width));
+    expect(Math.round((await canvasBox()).x)).toBe(Math.round(b0.x));
+  }, 60_000);
 });
