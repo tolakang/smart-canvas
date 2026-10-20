@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveOutput, exportCapError, exportFileName, rasterPixels, renderScaleOf, withBleedOf } from './exports';
+import { effectiveOutput, exportCapError, exportRoute, exportFileName, rasterPixels, renderScaleOf, withBleedOf } from './exports';
 import type { OutputNode } from './model';
 
 const out = (patch: Partial<OutputNode> = {}): OutputNode => ({
@@ -46,5 +46,20 @@ describe('export settings', () => {
     expect(exportFileName('Poster', a4, 'pdf', {})).toBe('Poster_A4-poster_210x297mm.pdf');
     expect(exportFileName('a/b:c', out({ label: 'ផ្ទាំង' }), 'svg', {})).toBe('a-b-c_ផ្ទាំង_1080x1350px.svg');
     expect(exportFileName('', out({ label: '...' }), 'jpg', {})).toBe('untitled_untitled_1080x1350.jpg');
+  });
+});
+
+describe('hybrid export route (D31)', () => {
+  it('browser: SVG with live text and rasters up to 4096 px', () => {
+    expect(exportRoute(out(), 'png', {})).toBe('browser'); // 1080×1350
+    expect(exportRoute(out(), 'jpg', { scale: 3 })).toBe('browser'); // 3240×4050
+    expect(exportRoute(out(), 'svg', {})).toBe('browser');
+  });
+  it('server: PDF, outlined SVG and rasters over 4096 px', () => {
+    expect(exportRoute(out(), 'pdf', {})).toBe('server');
+    expect(exportRoute(out(), 'svg', { outlineText: true })).toBe('server');
+    expect(exportRoute(out(), 'webp', { scale: 4 })).toBe('server'); // 4320×5400
+    expect(exportRoute(a4, 'png', {})).toBe('browser'); // 300 dpi A4 + bleed: 2551×3579
+    expect(exportRoute(out({ size: { width: 297, height: 420, unit: 'mm' }, dpi: 300 }), 'png', {})).toBe('server'); // A3: 3508×4961
   });
 });

@@ -40,6 +40,21 @@ export function renderScaleOf(o: OutputNode, format: ExportFormat, opts: ExportO
   return RASTER_FORMATS.includes(format) ? exportScaleOf(effectiveOutput(o, opts)) : 1;
 }
 
+/** D31: rasters up to this long edge (px) are made in the user's browser; larger ones on the server. */
+export const BROWSER_MAX_EDGE_PX = 4096;
+
+/**
+ * D31 hybrid export: where a file is made. The browser makes SVG with live text and rasters up to
+ * BROWSER_MAX_EDGE_PX; the server makes PDF, SVG with outlined text and larger rasters. (The UI also sends
+ * everything to the server when the browser fails its feature check.)
+ */
+export function exportRoute(o: OutputNode, format: ExportFormat, opts: ExportOptions): 'browser' | 'server' {
+  if (format === 'pdf') return 'server';
+  if (format === 'svg') return opts.outlineText ? 'server' : 'browser';
+  const px = rasterPixels(o, format, opts);
+  return px && Math.max(px.w, px.h) <= BROWSER_MAX_EDGE_PX ? 'browser' : 'server';
+}
+
 /** T6.7: a raster export larger than LIMITS.maxExportEdgePx is refused, with the reason. */
 export function exportCapError(o: OutputNode, format: ExportFormat, opts: ExportOptions): string | null {
   const px = rasterPixels(o, format, opts);
@@ -62,6 +77,11 @@ export function exportFileName(project: string, o: OutputNode, format: ExportFor
   const px = rasterPixels(o, format, opts);
   const size = px ? `${px.w}x${px.h}` : `${o.size.width}x${o.size.height}${o.size.unit}`;
   return `${safe(project)}_${safe(o.label)}_${size}.${format}`;
+}
+
+/** Name of a "download all" archive (API and browser ZIPs alike). */
+export function exportZipName(project: string): string {
+  return `${safe(project)}_exports.zip`;
 }
 
 /** Where a finished export file is stored (worker writes, API serves). */

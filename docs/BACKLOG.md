@@ -88,7 +88,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P11 — Hybrid export (D31)
 - T11.1 — Browser export engine: draw an output's `OutputRenderer` DOM to a canvas with fonts and images inlined (SVG `foreignObject`), giving PNG / JPG / WebP up to 4096 px, plus SVG with live text; a feature check (Safari → server).
-- T11.2 — Export dialog routing: each file goes to the browser or the server (PDF, outlines, > 4096 px, failed feature check), shows where it is made, retries a failed browser file on the server, and zips several files in the browser.
+- T11.2 — (folded into T11.1) Export dialog routing: each file goes to the browser or the server (PDF, outlines, > 4096 px, failed feature check), shows where it is made, retries a failed browser file on the server, and zips several files in the browser.
 
 ## P12 — Node graph (D32, `docs/NODE-GRAPH.md`)
 - T12.1 — Model schema 2, v1 migration, core graph helpers (typed ports, cycle check, effective layers); API upgrades v1; no visible change.

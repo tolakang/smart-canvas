@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T11.1 — browser export engine (D31), then T11.2; then P12 node graph (D32) from T12.1
+**Next:** T12.1 — node graph model schema 2 + migration (D32)
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -88,8 +88,8 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T10.4 — Drag a wire out of main onto the canvas → new wired output — [#60](https://github.com/tolakang/smart-canvas/pull/60)
 
 ## P11 — Hybrid export (D31)
-- [ ] T11.1 — Browser export engine (PNG / JPG / WebP ≤ 4096 px, SVG)
-- [ ] T11.2 — Export routing: browser or server, fallback, browser ZIP
+- [ ] T11.1 — Hybrid export: browser engine, routing, server fallback, browser ZIP
+- [~] T11.2 — folded into T11.1
 
 ## P12 — Node graph (D32)
 - [ ] T12.1 — Model schema 2 + migration + core graph helpers
