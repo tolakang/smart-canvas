@@ -110,9 +110,8 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 /* Main editor */
 .sc-editor-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: var(--bg); }
-.sc-editor__hint { margin-left: auto; font-size: 12px; }
-.sc-editor__stage { flex: 1; display: grid; place-items: center; overflow: hidden; background: repeating-conic-gradient(#e6e8ee 0 25%, #f3f4f7 0 50%) 0 0 / 20px 20px; }
-.sc-editor__canvas { position: relative; box-shadow: 0 2px 16px rgb(0 0 0 / 0.15); background: #fff; }
+.sc-editor__stage { flex: 1; position: relative; overflow: hidden; background: var(--fig-canvas, #e5e5e5); }
+.sc-editor__canvas { position: absolute; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 2px 12px rgb(0 0 0 / 0.12); background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 16px 16px; }
 .sc-editor__target { position: absolute; left: 0; top: 0; cursor: move; touch-action: none; }
 .sc-open-editor { font-size: 12px; padding: 2px 10px; }
 
@@ -213,12 +212,76 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-editor__canvas .moveable-line { background: var(--accent) !important; }
 .sc-editor__canvas .moveable-rotation .moveable-rotation-control { width: 18px !important; height: 18px !important; margin-top: -9px !important; margin-left: -9px !important; }
 .sc-editor__stage { min-width: 0; min-height: 0; }
-.sc-editor__stage--zoomed { place-items: start; overflow: auto; }
-.sc-editor__stage--zoomed .sc-editor__canvas { margin: 32px; }
 .sc-editor__hover { position: absolute; left: 0; top: 0; outline: 1.5px dashed var(--accent); outline-offset: -1px; pointer-events: none; }
-.sc-zoom { display: inline-flex; align-items: center; gap: 4px; }
+.sc-zoom { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; }
 .sc-zoom button { min-width: 28px; }
-.sc-zoom__value { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; font-size: 12px; }
+.sc-zoom__value { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; font-size: 11px; }
 
 /* T8.7 behaviour picker in the input node's meta line */
 .sc-behavior { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--fg); }
+
+/* T10.1 editor, Figma style: dark toolbar, grey canvas, compact 11 px panels, blue selection */
+.sc-fig {
+  --fig-bar: #2c2c2c; --fig-bar-hover: #3d3d3d; --fig-bar-fg: #fff; --fig-bar-muted: #b3b3b3;
+  --fig-panel: #fff; --fig-line: #e6e6e6; --fig-hover: #f5f5f5; --fig-select: #e5f4ff; --fig-blue: #0d99ff;
+  --fig-canvas: #e5e5e5; --fig-fg: #1e1e1e; --fig-muted: #8c8c8c;
+  font-family: Inter, system-ui, 'Noto Sans', 'Noto Sans Khmer', sans-serif; font-size: 11px; color: var(--fig-fg); background: var(--fig-panel);
+  --accent: var(--fig-blue); --line: var(--fig-line); --input: var(--fig-select); --muted: var(--fig-muted);
+}
+.sc-fig__bar { height: 48px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 8px; background: var(--fig-bar); color: var(--fig-bar-fg); }
+.sc-fig__bar button { height: 32px; padding: 0 10px; border: 0; border-radius: 5px; background: none; color: var(--fig-bar-fg); font-size: 11px; }
+.sc-fig__bar button:hover:not(:disabled) { background: var(--fig-bar-hover); }
+.sc-fig__bar button:disabled { color: #777; }
+.sc-fig__bar .sc-muted, .sc-fig__muted { color: var(--fig-bar-muted); }
+.sc-fig__tools { display: inline-flex; gap: 2px; }
+.sc-fig__tool { width: 36px; padding: 0 !important; display: inline-grid; place-items: center; }
+.sc-fig__bar .sc-fig__tool[aria-pressed='true'] { background: var(--fig-blue); }
+.sc-fig__title { display: inline-flex; align-items: center; gap: 10px; font-size: 12px; min-width: 0; }
+.sc-fig__title strong { font-weight: 600; }
+.sc-fig__close { border: 1px solid #555 !important; }
+.sc-editor__stage--hand, .sc-editor__pan { cursor: grab; }
+.sc-editor__pan { position: absolute; inset: 0; z-index: 5; touch-action: none; }
+.sc-editor__pan:active { cursor: grabbing; }
+.sc-editor__size { position: absolute; transform: translateX(-50%); padding: 1px 4px; border-radius: 2px; background: var(--fig-blue); color: #fff; font-size: 10px; line-height: 14px; white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; z-index: 4; }
+.sc-fig .sc-editor__canvas .moveable-control { width: 14px !important; height: 14px !important; margin-top: -7px !important; margin-left: -7px !important; border: 1.5px solid var(--fig-blue) !important; background: #fff !important; border-radius: 2px !important; }
+.sc-fig .sc-editor__canvas .moveable-line { background: var(--fig-blue) !important; }
+.sc-fig .sc-editor__canvas .moveable-rotation-line { display: none; }
+.sc-fig .sc-editor__canvas .moveable-rotation .moveable-rotation-control { border-radius: 50% !important; }
+.sc-fig .sc-editor__hover { outline: 1.5px solid var(--fig-blue); outline-offset: 0; }
+
+/* Layers (left), Figma style */
+.sc-fig .sc-layers { width: 240px; border-right: 1px solid var(--fig-line); }
+.sc-fig .sc-layers__title { padding: 12px 16px 8px; font-size: 11px; font-weight: 600; border-bottom: 0; }
+.sc-fig .sc-layer { gap: 6px; min-height: 32px; padding: 0 8px; border-bottom: 0; }
+.sc-fig .sc-layer:hover { background: var(--fig-hover); }
+.sc-fig .sc-layer--selected, .sc-fig .sc-layer--selected:hover { background: var(--fig-select); box-shadow: none; }
+.sc-fig .sc-layer__name { padding: 2px; font-size: 11px; }
+.sc-fig .sc-layer__name > span.sc-muted { font-size: 10px; }
+.sc-fig .sc-layer-thumb { width: 20px; height: 20px; border-radius: 2px; }
+.sc-fig .sc-layer__actions { opacity: 0; }
+.sc-fig .sc-layer:hover .sc-layer__actions, .sc-fig .sc-layer--selected .sc-layer__actions, .sc-fig .sc-layer__actions:focus-within { opacity: 1; }
+
+/* Design panel (right) */
+.sc-design { width: 248px; flex: none; overflow: auto; border-left: 1px solid var(--fig-line); background: var(--fig-panel); }
+.sc-design__section { padding: 12px 16px; border-bottom: 1px solid var(--fig-line); display: grid; gap: 8px; }
+.sc-design__title { font-weight: 600; font-size: 11px; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.sc-design__title .sc-muted { font-weight: 400; }
+.sc-design__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sc-design__num { display: flex !important; align-items: center; gap: 0 !important; height: 28px; border: 1px solid transparent; border-radius: 5px; background: var(--fig-hover); color: var(--fig-muted); padding-left: 8px; }
+.sc-design__num:hover { border-color: var(--fig-line); }
+.sc-design__num:focus-within { border-color: var(--fig-blue); background: #fff; }
+.sc-design__num input { width: 100%; min-width: 0; height: 26px; border: 0; background: none; padding: 0 6px; font-size: 11px; color: var(--fig-fg); outline: none; -moz-appearance: textfield; }
+.sc-design__num input::-webkit-inner-spin-button { display: none; }
+.sc-design__lock { justify-self: start; width: 28px; height: 28px; display: inline-grid; place-items: center; border: 0; border-radius: 5px; background: none; color: var(--fig-muted); }
+.sc-design__lock:hover:not(:disabled) { background: var(--fig-hover); color: var(--fig-fg); }
+.sc-design__lock[aria-pressed='true'] { background: var(--fig-select); color: var(--fig-blue); }
+.sc-design__keys { margin: 0; display: grid; gap: 4px; }
+.sc-design__keys div { display: flex; justify-content: space-between; gap: 8px; }
+.sc-design__keys dt { color: var(--fig-fg); }
+.sc-design__keys dd { margin: 0; color: var(--fig-muted); text-align: right; }
+.sc-design .sc-props, .sc-design .sc-editor__side { width: auto; border-left: 0; overflow: visible; }
+.sc-design .sc-layers__title { padding: 12px 16px 4px; font-size: 11px; border-bottom: 0; }
+.sc-design .sc-props__body { padding: 8px 16px 12px; font-size: 11px; gap: 8px; }
+.sc-design .sc-props select, .sc-design .sc-props input[type='number'] { font-size: 11px; border-color: transparent; background: var(--fig-hover); border-radius: 5px; height: 28px; }
+.sc-design .sc-props select:focus, .sc-design .sc-props input[type='number']:focus { border-color: var(--fig-blue); background: #fff; outline: none; }
+.sc-design .sc-inspector { border-bottom: 1px solid var(--fig-line); }

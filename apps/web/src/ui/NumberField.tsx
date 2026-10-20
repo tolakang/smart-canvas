@@ -11,6 +11,8 @@ export function NumberField(props: {
   onCommit: (n: number | null) => void;
   disabled: boolean;
   className?: string;
+  /** Accessible name when the visible label is short ("W" → "Width"). */
+  ariaLabel?: string;
 }) {
   const [draft, setDraft] = useState(String(props.value));
   // When the stored value changes (clamped, undo, another edit), show it: adjust state during render.
@@ -30,6 +32,7 @@ export function NumberField(props: {
       {props.label}
       <input
         type="number"
+        aria-label={props.ariaLabel}
         value={draft}
         placeholder={props.placeholder}
         min={props.min}
