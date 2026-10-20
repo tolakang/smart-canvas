@@ -94,7 +94,7 @@ Legend: `[x]` done · `[ ]` to do
 ## P12 — Node graph (D32)
 - [x] T12.1 — Model schema 2 + migration + core graph helpers — [#63](https://github.com/tolakang/smart-canvas/pull/63)
 - [x] T12.2 — Board on the typed graph — [#66](https://github.com/tolakang/smart-canvas/pull/66)
-- [ ] T12.3 — Several compositions
+- [x] T12.3 — Several compositions — [#69](https://github.com/tolakang/smart-canvas/pull/69)
 - [ ] T12.4 — Output-only layers
 - [ ] T12.5 — Process nodes I: Crop, Adjust, Flip/Rotate
 - [ ] T12.6 — Process nodes II: Text variant, Recolor
