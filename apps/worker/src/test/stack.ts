@@ -28,6 +28,7 @@ export interface Stack {
 export async function startStack(): Promise<Stack> {
   const fresh = await freshDb();
   const pool = new pg.Pool({ connectionString: fresh.url, max: 2 });
+  pool.on('error', () => undefined); // the test database is force-dropped at close
   const store = new MemoryStore();
   const running: Promise<void>[] = [];
   const worker: { deps?: ExportDeps } = {};

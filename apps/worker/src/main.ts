@@ -27,6 +27,7 @@ const api = httpApiFetch(required('API_URL'), required('RENDER_TOKEN'));
 const concurrency = Math.max(1, Number(process.env.EXPORT_CONCURRENCY ?? 2));
 
 const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
+pool.on('error', (err) => console.error('pg pool', err.message)); // an idle client dropped by the server is replaced
 const browser = await chromium.launch({ args: CHROMIUM_ARGS });
 const boss = new PgBoss(databaseUrl);
 boss.on('error', (err) => console.error('pg-boss', err));
