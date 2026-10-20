@@ -16,6 +16,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
       <div className="sc-node__meta">
         {source.kind} · {source.behavesLike} · port {source.port}
         {!source.visible && ' · hidden'}
+        {source.libraryItemId && ' · from library'}
       </div>
       <SourceEditor source={source} />
       <Handle type="source" position={Position.Right} isConnectable={!readOnly} />

@@ -1,4 +1,5 @@
-import { deleteSource, duplicateSource, LIMITS, renameSource, setSourceVisible, type InputSource } from '@smart-canvas/core';
+import { deleteSource, duplicateSource, libraryEntryOf, LIMITS, renameSource, setSourceVisible, type InputSource } from '@smart-canvas/core';
+import { api } from '../api';
 import { useState, type KeyboardEvent } from 'react';
 import { useBoard } from './context';
 import { newId } from './ids';
@@ -7,7 +8,8 @@ const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** Input node title with rename / hide / duplicate / delete (D8: defaults included). */
 export function SourceHeader({ source }: { source: InputSource }) {
-  const { readOnly, run, sourceCount } = useBoard();
+  const { readOnly, run, sourceCount, teamId } = useBoard();
+  const [saved, setSaved] = useState<'idle' | 'saved' | 'failed'>('idle');
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(source.label);
 
@@ -22,6 +24,17 @@ export function SourceHeader({ source }: { source: InputSource }) {
   function remove() {
     if (window.confirm(`Delete input "${source.label}"? Its wires and output overrides go with it.`)) {
       run((doc) => deleteSource(doc, source.id));
+    }
+  }
+
+  async function saveToLibrary() {
+    const name = window.prompt('Save to the team library as', source.label);
+    if (name === null) return;
+    try {
+      await api('POST', `/teams/${teamId}/library`, { ...libraryEntryOf(source, name), tags: [] });
+      setSaved('saved');
+    } catch {
+      setSaved('failed');
     }
   }
 
@@ -71,6 +84,14 @@ export function SourceHeader({ source }: { source: InputSource }) {
             onClick={() => run((doc) => duplicateSource(doc, source.id, newId()))}
           >
             ⧉
+          </button>
+          <button
+            type="button"
+            title={saved === 'saved' ? 'Saved to the team library' : saved === 'failed' ? 'Could not save — try again' : 'Save to team library'}
+            aria-label={`Save ${source.label} to library`}
+            onClick={() => void saveToLibrary()}
+          >
+            {saved === 'saved' ? '✓' : '📚'}
           </button>
           <button type="button" title="Delete" aria-label={`Delete ${source.label}`} onClick={remove}>
             🗑
