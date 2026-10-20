@@ -31,12 +31,14 @@ export function fakeApi(doc: ProjectDoc, assets: { id: string; width: number; he
   return { fetch, requested };
 }
 
-export async function startRenderEnv(): Promise<{ webUrl: string; browser: Browser; close: () => Promise<void> }> {
+/** `apiUrl` sends the app's /api calls to a real API (the end-to-end test); render tests answer them in the worker. */
+export async function startRenderEnv(apiUrl?: string): Promise<{ webUrl: string; browser: Browser; close: () => Promise<void> }> {
+  const proxy = apiUrl ? { '/api': { target: apiUrl, rewrite: (p: string) => p.replace(/^\/api/, '') } } : undefined;
   const vite: ViteDevServer = await createServer({
     root: webRoot,
     configFile: `${webRoot}/vite.config.ts`,
     logLevel: 'silent',
-    server: { port: 0, host: '127.0.0.1' },
+    server: { port: 0, host: '127.0.0.1', ...(proxy && { proxy }) },
   });
   await vite.listen();
   const browser = await chromium.launch();
