@@ -103,7 +103,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P13 — Workspace UX (D33–D35)
 - [x] T13.1 — Layout health status on nodes — [#65](https://github.com/tolakang/smart-canvas/pull/65)
-- [ ] T13.2 — Right inspector (settings off the cards)
+- [x] T13.2 — Right inspector (settings off the cards) — [#67](https://github.com/tolakang/smart-canvas/pull/67)
 - [ ] T13.3 — Dark theme + toggle
 - [ ] T13.4 — Left node library
 - [ ] T13.5 — Floating toolbar, minimap, grid snap, guides
