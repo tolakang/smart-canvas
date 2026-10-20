@@ -85,3 +85,17 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
   - a "N edited by hand" chip plus Reset; "layer N" instead of "port N".
 - T10.3 — Top bar: three groups — back · project name · undo/redo (icons) | Add input / Add output with count chips | save status dot · Fonts · Library · Export (primary). Compact 48 px, labels collapse to icons on narrow screens.
 - T10.4 — Drag a wire out of the main preview and release it on empty canvas: a new output is added there, already wired (D12).
+
+## P11 — Hybrid export (D31)
+- T11.1 — Browser export engine: draw an output's `OutputRenderer` DOM to a canvas with fonts and images inlined (SVG `foreignObject`), giving PNG / JPG / WebP up to 4096 px, plus SVG with live text; a feature check (Safari → server).
+- T11.2 — Export dialog routing: each file goes to the browser or the server (PDF, outlines, > 4096 px, failed feature check), shows where it is made, retries a failed browser file on the server, and zips several files in the browser.
+
+## P12 — Node graph (D32, `docs/NODE-GRAPH.md`)
+- T12.1 — Model schema 2, v1 migration, core graph helpers (typed ports, cycle check, effective layers); API upgrades v1; no visible change.
+- T12.2 — Board on the typed graph: typed handles, invalid drops refused with a hint, generic re-route / detach.
+- T12.3 — Several compositions: add "Main preview" nodes; outputs wire to any composition; one editor per composition.
+- T12.4 — Output-only layers: layer ports on outputs; default placement by behaviour; overrides.
+- T12.5 — Process nodes I: Crop, Adjust, Flip/Rotate (renderer + parity test).
+- T12.6 — Process nodes II: Text variant, Recolor.
+- T12.7 — Node palette: drag a wire out of any port or right-click to add a compatible node.
+- T12.8 — Nested compositions.

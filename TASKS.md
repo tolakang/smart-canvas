@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** nothing queued — waiting for the next request (S1 / T7.6 `.af` import dropped, D6)
+**Next:** T11.1 — browser export engine (D31), then T11.2; then P12 node graph (D32) from T12.1
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -85,4 +85,18 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T10.1 — Editor like Figma: tools, pan / zoom, Design panel, Figma look — [#56](https://github.com/tolakang/smart-canvas/pull/56)
 - [x] T10.2 — Board design-system pass: tokens, node cards, fields, icons, output naming — [#58](https://github.com/tolakang/smart-canvas/pull/58)
 - [x] T10.3 — Top bar redesign — [#59](https://github.com/tolakang/smart-canvas/pull/59)
-- [ ] T10.4 — Drag a wire out of main onto the canvas → new wired output
+- [x] T10.4 — Drag a wire out of main onto the canvas → new wired output — [#60](https://github.com/tolakang/smart-canvas/pull/60)
+
+## P11 — Hybrid export (D31)
+- [ ] T11.1 — Browser export engine (PNG / JPG / WebP ≤ 4096 px, SVG)
+- [ ] T11.2 — Export routing: browser or server, fallback, browser ZIP
+
+## P12 — Node graph (D32)
+- [ ] T12.1 — Model schema 2 + migration + core graph helpers
+- [ ] T12.2 — Board on the typed graph
+- [ ] T12.3 — Several compositions
+- [ ] T12.4 — Output-only layers
+- [ ] T12.5 — Process nodes I: Crop, Adjust, Flip/Rotate
+- [ ] T12.6 — Process nodes II: Text variant, Recolor
+- [ ] T12.7 — Node palette from any port
+- [ ] T12.8 — Nested compositions
