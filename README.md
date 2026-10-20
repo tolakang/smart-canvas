@@ -34,4 +34,4 @@ docker buildx bake -f docker-bake.hcl --push # multi-arch images (amd64 + arm64)
 
 Services: `web` (nginx: SPA + `/api` proxy, the only published port), `api` (runs migrations, then serves),
 `worker`, `postgres`, `minio`. In Dokploy, create a Compose app from this repo, paste the `.env` values,
-and attach the domain to service `web`, port 80.
+and attach the domain to service `web`, port 80. Step by step: [docs/DEPLOY-DOKPLOY.md](docs/DEPLOY-DOKPLOY.md).
