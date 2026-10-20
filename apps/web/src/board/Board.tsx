@@ -24,6 +24,7 @@ import {
   type IsValidConnection,
   type Node,
   type NodeChange,
+  type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -142,6 +143,9 @@ function BoardCanvas(props: {
   const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
   const [adding, setAdding] = useState(false);
   const [addingOutput, setAddingOutput] = useState(false);
+  /** Where a node added from the canvas menu goes (flow coordinates); null = the default column (T8.4). */
+  const [placeAt, setPlaceAt] = useState<{ x: number; y: number } | null>(null);
+  const flow = useRef<ReactFlowInstance<BoardNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [reconnecting, setReconnecting] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -419,14 +423,53 @@ function BoardCanvas(props: {
     [duplicateInputs, readOnly, run],
   );
 
-  const addInput = (input: NewInput) => {
-    const result = run((doc) => addSource(doc, { id: newId(), ...input }));
+  const addInput = (input: NewInput, at = placeAt) => {
+    const result = run((doc) => addSource(doc, { id: newId(), ...input, ...(at ? { board: at } : {}) }));
     if (result.ok) setAdding(false);
   };
 
   const addOutputNode = (o: NewOutput) => {
-    const result = run((doc) => addOutput(doc, { id: newId(), ...o }));
+    const result = run((doc) => addOutput(doc, { id: newId(), ...o, ...(placeAt ? { board: placeAt } : {}) }));
     if (result.ok) setAddingOutput(false);
+  };
+
+  // T8.4: right-click the empty canvas → add an input or an output right there.
+  const onPaneContextMenu = (e: MouseEvent | React.MouseEvent) => {
+    if (readOnly || !flow.current) return;
+    e.preventDefault();
+    const at = flow.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
+    const doc = docRef.current;
+    const inputsFull = doc.sources.length >= LIMITS.maxSources;
+    const outputsFull = doc.outputs.length >= LIMITS.maxOutputs;
+    const quick = (label: string, input: NewInput) => ({ label, disabled: inputsFull, onSelect: () => addInput(input, at) });
+    setMenu({
+      x: e.clientX,
+      y: e.clientY,
+      title: inputsFull ? `Add (${LIMITS.maxSources} inputs max)` : 'Add here',
+      items: [
+        quick('Image input', { kind: 'image', label: 'Image', behavesLike: 'decoration' }),
+        quick('Logo / SVG input', { kind: 'vector', label: 'Logo', behavesLike: 'logo' }),
+        quick('Text input', { kind: 'text', label: 'Text', behavesLike: 'text' }),
+        quick('Colour / gradient input', { kind: 'fill', label: 'Colour', behavesLike: 'decoration' }),
+        {
+          label: 'Input…',
+          disabled: inputsFull,
+          onSelect: () => {
+            setPlaceAt(at);
+            setAdding(true);
+          },
+        },
+        {
+          label: outputsFull ? `Output… (${LIMITS.maxOutputs} max)` : 'Output…',
+          disabled: outputsFull,
+          separated: true,
+          onSelect: () => {
+            setPlaceAt(at);
+            setAddingOutput(true);
+          },
+        },
+      ],
+    });
   };
 
   const onNodeDragStop = useCallback(
@@ -464,7 +507,10 @@ function BoardCanvas(props: {
         {!readOnly && (
           <button
             type="button"
-            onClick={() => setAdding(true)}
+            onClick={() => {
+              setPlaceAt(null);
+              setAdding(true);
+            }}
             disabled={sourceCount >= LIMITS.maxSources}
             title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : undefined}
           >
@@ -477,7 +523,10 @@ function BoardCanvas(props: {
         {!readOnly && (
           <button
             type="button"
-            onClick={() => setAddingOutput(true)}
+            onClick={() => {
+              setPlaceAt(null);
+              setAddingOutput(true);
+            }}
             disabled={outputCount >= LIMITS.maxOutputs}
             title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : undefined}
           >
@@ -526,6 +575,10 @@ function BoardCanvas(props: {
             onNodesChange={onNodesChange}
             onNodeDragStop={onNodeDragStop}
             onNodeContextMenu={onNodeContextMenu}
+            onPaneContextMenu={onPaneContextMenu}
+            onInit={(instance) => {
+              flow.current = instance;
+            }}
             onConnect={onConnect}
             onEdgesChange={onEdgesChange}
             onEdgesDelete={onEdgesDelete}
@@ -549,7 +602,7 @@ function BoardCanvas(props: {
           {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}
         </BoardContext.Provider>
       </div>
-      {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}
+      {adding && <AddInputDialog onAdd={(input) => addInput(input)} onClose={() => setAdding(false)} />}
       {reconnecting && (
         <ReconnectDialog
           label={doc.outputs.find((o) => o.id === reconnecting)?.label ?? 'output'}

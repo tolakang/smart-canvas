@@ -38,8 +38,11 @@ export function canAddOutput(doc: ProjectDoc): boolean {
   return doc.outputs.length < LIMITS.maxOutputs;
 }
 
-/** Adds an output wired to main, in the column right of the main preview. */
-export function addOutput(doc: ProjectDoc, spec: { id: string; label: string; size: Size } & OutputSettings): SourceResult {
+/** Adds an output wired to main, in the column right of the main preview (or at `board`, T8.4). */
+export function addOutput(
+  doc: ProjectDoc,
+  { board, ...spec }: { id: string; label: string; size: Size; board?: { x: number; y: number } } & OutputSettings,
+): SourceResult {
   if (!canAddOutput(doc)) return { ok: false, error: 'output_limit' };
   if (doc.outputs.some((o) => o.id === spec.id)) return { ok: false, error: 'invalid' };
   const lowest = doc.outputs.reduce((y, o) => Math.max(y, o.board.y + OUTPUT_ROW_GAP), doc.master.board.y);
@@ -49,7 +52,9 @@ export function addOutput(doc: ProjectDoc, spec: { id: string; label: string; si
     label: spec.label.trim(),
     size: { ...spec.size },
     overrides: [],
-    board: { x: doc.master.board.x + OUTPUT_COLUMN_X, y: doc.outputs.length === 0 ? doc.master.board.y : lowest },
+    board: board
+      ? { x: Math.round(board.x), y: Math.round(board.y) }
+      : { x: doc.master.board.x + OUTPUT_COLUMN_X, y: doc.outputs.length === 0 ? doc.master.board.y : lowest },
   };
   if (!valid(output)) return { ok: false, error: 'invalid' };
   return {
