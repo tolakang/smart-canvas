@@ -29,6 +29,7 @@ import { Autosave, type SaveState } from './autosave';
 import { FontsDialog } from '../fonts/FontsDialog';
 import { registerTeamFonts, type TeamFont } from '../fonts/loader';
 import { MainEditor } from '../editor/MainEditor';
+import { OutputEditor } from '../editor/OutputEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
 import { ReconnectDialog } from './ReconnectDialog';
@@ -71,7 +72,7 @@ const STATE_LABEL: Record<SaveState, string> = {
   conflict: 'Someone else saved a newer version.',
 };
 
-export function Board(props: { teamId: string; projectId: string; readOnly: boolean; onBack: () => void }) {
+export function Board(props: { teamId: string; projectId: string; userId: string; readOnly: boolean; onBack: () => void }) {
   const { teamId, projectId, readOnly } = props;
   const url = `/teams/${teamId}/projects/${projectId}`;
   const [reloadKey, setReloadKey] = useState(0);
@@ -97,6 +98,7 @@ export function Board(props: { teamId: string; projectId: string; readOnly: bool
     <BoardCanvas
       key={reloadKey}
       teamId={teamId}
+      userId={props.userId}
       url={url}
       initial={result.ok}
       readOnly={readOnly}
@@ -108,6 +110,7 @@ export function Board(props: { teamId: string; projectId: string; readOnly: bool
 
 function BoardCanvas(props: {
   teamId: string;
+  userId: string;
   url: string;
   initial: Loaded;
   readOnly: boolean;
@@ -118,6 +121,7 @@ function BoardCanvas(props: {
   const docRef = useRef(initial.doc);
   const [doc, setDoc] = useState(initial.doc);
   const [editingMain, setEditingMain] = useState(false);
+  const [editingOutput, setEditingOutput] = useState<string | null>(null);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const [edges, setEdges] = useState(() => docToEdges(initial.doc));
   const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
@@ -235,12 +239,17 @@ function BoardCanvas(props: {
     [run],
   );
 
+  const { userId } = props;
+  const author = useCallback(() => ({ by: userId, at: new Date().toISOString() }), [userId]);
+
   const actions = useMemo<BoardActions>(
     () => ({
       teamId,
       readOnly,
       doc,
       openMainEditor: () => setEditingMain(true),
+      openOutputEditor: (id: string) => setEditingOutput(id),
+      author,
       teamFonts,
       sourceCount,
       editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit)),
@@ -251,7 +260,7 @@ function BoardCanvas(props: {
       reconnectOutput: reconnect,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, presets, remember, disconnect, reconnect, apply, run],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, presets, remember, disconnect, reconnect, author, apply, run],
   );
 
   const isValidConnection = useCallback<IsValidConnection>(
@@ -391,6 +400,7 @@ function BoardCanvas(props: {
             <MiniMap pannable zoomable />
           </ReactFlow>
           {editingMain && <MainEditor onClose={() => setEditingMain(false)} />}
+          {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}
         </BoardContext.Provider>
       </div>
       {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}

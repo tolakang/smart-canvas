@@ -2,7 +2,7 @@
  * What the OutputRenderer draws: a canvas size and items back→front (ADAPTATION-RULES: highest port first).
  * The layout engine produces these for outputs; the main preview's come straight from master placements.
  */
-import { toDesignPx, type Frame, type NFrame, type ProjectDoc, type Size } from './model';
+import { toDesignPx, type Frame, type NFrame, type ProjectDoc, type Size, type TextStyle } from './model';
 
 /** One drawn layer. Same shape as the engine's LayoutItem minus bookkeeping. Frame in design px; rotation in degrees. */
 export interface RenderItem {
@@ -11,6 +11,8 @@ export interface RenderItem {
   fontSizePx?: number;
   /** Explicit line breaks from the text-fit engine; when absent the renderer wraps itself. */
   lines?: string[];
+  /** An output's text-style override, drawn on top of the source's own style. */
+  style?: Partial<TextStyle>;
 }
 
 export interface RenderScene {

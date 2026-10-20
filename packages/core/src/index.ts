@@ -16,5 +16,6 @@ export * from './text-style';
 export * from './units';
 export * from './layout';
 export * from './outputs';
+export * from './overrides';
 
 export const CORE_VERSION = '0.0.0';

@@ -50,6 +50,7 @@ function Shell() {
       <Board
         teamId={team.id}
         projectId={route.projectId}
+        userId={me.user.id}
         readOnly={team.role === 'viewer'}
         onBack={() => (window.location.hash = '#/')}
       />

@@ -7,6 +7,7 @@ import {
   fontStack,
   isKhmerText,
   LINE_HEIGHT,
+  setOverrideStyle,
   setTextStyle,
   TEXT_LIMITS,
   type InputSource,
@@ -19,10 +20,17 @@ import { NumberField } from '../ui/NumberField';
 
 const WEIGHT_NAME: Record<number, string> = { 100: 'Thin', 200: 'Extra light', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold', 700: 'Bold', 800: 'Extra bold', 900: 'Black' };
 
-export function TextPanel({ source }: { source: InputSource & { content: { kind: 'text' } } }) {
-  const { run, editSource, readOnly, teamFonts } = useBoard();
-  const { style, text } = source.content;
-  const patch = (p: TextStylePatch) => run((d) => setTextStyle(d, source.id, p));
+/**
+ * Without `outputId` it edits the source (master); with it, it edits that output's style override (T5.1):
+ * shown values are the source style with the override on top, and the text itself stays shared.
+ */
+export function TextPanel({ source, outputId }: { source: InputSource & { content: { kind: 'text' } }; outputId?: string }) {
+  const { doc, run, editSource, readOnly, teamFonts, author } = useBoard();
+  const { text } = source.content;
+  const override = outputId ? doc.outputs.find((o) => o.id === outputId)?.overrides.find((o) => o.sourceId === source.id)?.style : undefined;
+  const style: TextStyle = { ...source.content.style, ...override };
+  const patch = (p: TextStylePatch) =>
+    run((d) => (outputId ? setOverrideStyle(d, outputId, source.id, p, author()) : setTextStyle(d, source.id, p)));
   const autoLh = isKhmerText(style, text) ? LINE_HEIGHT.khmer : LINE_HEIGHT.latin;
   const families = [...new Set([...BUNDLED_FONTS.map((f) => f.family), ...teamFonts.map((f) => f.family), style.fontFamily])];
 
@@ -30,6 +38,9 @@ export function TextPanel({ source }: { source: InputSource & { content: { kind:
     <aside className="sc-props" aria-label="Text">
       <div className="sc-layers__title">Text · {source.label}</div>
       <fieldset className="sc-props__body" disabled={readOnly}>
+        {outputId ? (
+          <p className="sc-muted sc-props__note">Text is shared by every output; edit it on the main preview. Style changes here apply to this output only.</p>
+        ) : (
         <label className="sc-field sc-field--col">
           Text
           <textarea
@@ -42,6 +53,7 @@ export function TextPanel({ source }: { source: InputSource & { content: { kind:
             onChange={(e) => editSource(source.id, (s) => setText(s, e.target.value))}
           />
         </label>
+        )}
         <label className="sc-field sc-field--col">
           Font
           <select value={style.fontFamily} onChange={(e) => patch({ fontFamily: e.target.value })} style={{ fontFamily: fontStack(style.fontFamily) }}>

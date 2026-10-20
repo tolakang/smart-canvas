@@ -1,4 +1,4 @@
-import type { InputSource, LayoutDeps, ProjectDoc, SizePreset, SourceResult } from '@smart-canvas/core';
+import type { InputSource, LayoutDeps, OverrideAuthor, ProjectDoc, SizePreset, SourceResult } from '@smart-canvas/core';
 import type { AssetMeta } from '../api';
 import type { TeamFont } from '../fonts/loader';
 import { createContext, useContext } from 'react';
@@ -10,6 +10,9 @@ export interface BoardActions {
   /** The current project document (follows every edit). */
   doc: ProjectDoc;
   openMainEditor: () => void;
+  openOutputEditor: (outputId: string) => void;
+  /** Stamp for override writes: the signed-in user, now. */
+  author: () => OverrideAuthor;
   /** Uploaded team fonts (registered as FontFaces), for font pickers. */
   teamFonts: TeamFont[];
   /** Current number of inputs (for the 10-input cap). */

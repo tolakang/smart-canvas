@@ -101,7 +101,8 @@ function Layer({ item, source, assetUrl, mode }: { item: RenderItem; source: Inp
     }
 
     case 'text': {
-      const { style, text } = content;
+      const style = item.style ? { ...content.style, ...item.style } : content.style;
+      const { text } = content;
       const shown = applyTransform(text, style);
       const khmer = isKhmerText(style, shown);
       const fontSize = item.fontSizePx ?? style.fontSizePx;
