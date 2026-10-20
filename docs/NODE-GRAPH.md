@@ -33,36 +33,36 @@ output port also offering `layer`.
   position, transforms, and replaced text or colours. Browser preview, browser export and the worker stay
   pixel-identical.
 
-## Model (schema 2), draft
+## Model (schema 2)
+
+The types live in `packages/core/src/model.ts` (mirrored in `docs/DATA-MODEL.ts`), and the helpers live in
+`packages/core/src/graph.ts`.
 
 ```ts
-type PortRef = { node: string; port: string };             // e.g. { node: 'comp:main', port: 'layer:0' }
-interface Edge { id: string; from: PortRef; to: PortRef }   // replaces Wire
-interface ProcessNode { id: string; op: ProcessOp; label: string; board: XY }
-type ProcessOp =
-  | { type: 'crop'; rect: NFrame }                          // of the incoming content
-  | { type: 'adjust'; opacity?: number; brightness?: number; contrast?: number; saturation?: number; blurPx?: number }
-  | { type: 'flip'; x: boolean; y: boolean; rotate?: 0 | 90 | 180 | 270 }
-  | { type: 'textVariant'; text?: string; style?: Partial<TextStyle> }
-  | { type: 'recolor'; color: string };
-interface Composition { id: string; label: string; size: Size; placements: Record<string, NFrame>; board: XY }
+interface Composition { id: string; label: string; size: Size; placements: Record<string, NFrame>; layers: string[]; board: XY }
+//   layers = its rows, front first (row index = port, D11); a row draws while a `layer` edge feeds it
+type EdgeKind = 'layer' | 'composition';
+interface Edge { id: string; from: string; to: string; kind: EdgeKind }   // replaces Wire
+interface ProcessNode { id: string; label: string; op: ProcessOp; board: XY }
 interface ProjectDoc {
   schema: 2; rev: number; name: string;
-  sources: InputSource[];   // `port` moves onto the composition edges
+  compositions: Composition[];   // [0] is 'main' (the v1 master)
+  sources: InputSource[];        // no `port` any more: order is per composition
   processes: ProcessNode[];
-  compositions: Composition[];   // the v1 `master` becomes compositions[0] ('main')
-  outputs: OutputNode[];         // overrides keyed by layer id = the effective layer's head node
+  outputs: OutputNode[];
   edges: Edge[];
 }
 ```
 
-Migrating v1 → v2 (pure, in core, run on load and by the API before validating):
-- `master` becomes composition `main`.
-- `source → main` wires become `layer` edges into `main` at `layer:<port>`.
-- `main → output` wires become `composition` edges.
-- `frozen` and overrides are kept.
+- **Edge ids** keep the v1 wire ids: `in:<source>` into main, and `out:<output>` from a composition into an output. Other layer edges are `in:<from>><to>`.
+- **`connectRefusal(doc, from, to, kind)`** checks port types and refuses cycles.
+- **`migrateProjectDoc`** turns v1 into v2:
+  - `master` becomes composition `main`, with rows in port order;
+  - wires become typed edges with the same ids, and dangling wires are dropped;
+  - overrides and frozen frames are kept.
+- **The API** migrates on read and accepts v1 or v2 on save (it stores v2). A stored v1 document upgrades on its next save.
 
-The limits stay (10 inputs, 10 outputs), with up to 5 compositions and 20 process nodes.
+The limits are 10 inputs, 10 outputs, 5 compositions (`LIMITS.maxCompositions`) and 20 process nodes (`LIMITS.maxProcesses`).
 
 ## Tickets (P12)
 

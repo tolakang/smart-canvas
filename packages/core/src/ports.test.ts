@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { layerOrder, portOf } from './graph';
 import type { ProjectDoc } from './model';
 import { connectSource, disconnectSource, inputWire, moveSourceToPort } from './ports';
 import { createProjectDoc } from './project';
@@ -9,10 +10,13 @@ const ok = (r: SourceResult): ProjectDoc => {
   return r.doc;
 };
 // Default stack, front→back: logo 0, headline 1, subject 2, background 3.
-const stack = (doc: ProjectDoc) => [...doc.sources].sort((a, b) => a.port - b.port).map((s) => s.id);
-const wirePorts = (doc: ProjectDoc) => Object.fromEntries(doc.wires.filter((w) => w.to === 'main').map((w) => [w.from, w.port]));
-/** Every source→main wire carries its source's port. */
-const consistent = (doc: ProjectDoc) => doc.wires.filter((w) => w.to === 'main').every((w) => doc.sources.find((s) => s.id === w.from)?.port === w.port);
+const stack = (doc: ProjectDoc) => layerOrder(doc);
+const wirePorts = (doc: ProjectDoc) => Object.fromEntries(doc.edges.filter((e) => e.kind === 'layer' && e.to === 'main').map((e) => [e.from, portOf(doc, e.from)]));
+/** Every source is a row of main exactly once (rows = ports, contiguous by construction). */
+const consistent = (doc: ProjectDoc) => {
+  const rows = layerOrder(doc);
+  return rows.length === doc.sources.length && new Set(rows).size === rows.length && doc.sources.every((s) => rows.includes(s.id));
+};
 
 describe('moveSourceToPort', () => {
   it('moves one source and shifts the ones in between', () => {
@@ -28,10 +32,11 @@ describe('moveSourceToPort', () => {
 });
 
 describe('connect / disconnect', () => {
-  it('wiring an input creates one wire at its port', () => {
+  it('wiring an input creates one layer edge into its row', () => {
     const doc = ok(connectSource(createProjectDoc('P'), 'subject'));
-    expect(doc.wires).toEqual([{ id: 'in:subject', from: 'subject', to: 'main', port: 2 }]);
-    expect(ok(connectSource(doc, 'subject')).wires).toHaveLength(1); // idempotent
+    expect(doc.edges).toEqual([{ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' }]);
+    expect(portOf(doc, 'subject')).toBe(2);
+    expect(ok(connectSource(doc, 'subject')).edges).toHaveLength(1); // idempotent
   });
 
   it('wiring onto another port re-orders (re-wire reorders, D11)', () => {
@@ -53,10 +58,10 @@ describe('connect / disconnect', () => {
     expect(stack(doc)).toEqual(stack(wired));
   });
 
-  it('leaves main→output wires alone', () => {
-    const doc0 = { ...createProjectDoc('P'), wires: [{ id: 'o', from: 'main', to: 'ig' }] };
+  it('leaves main→output edges alone', () => {
+    const doc0: ProjectDoc = { ...createProjectDoc('P'), edges: [{ id: 'o', from: 'main', to: 'ig', kind: 'composition' }] };
     const doc = ok(disconnectSource(ok(connectSource(doc0, 'logo', 2)), 'logo'));
-    expect(doc.wires).toEqual([{ id: 'o', from: 'main', to: 'ig' }]);
+    expect(doc.edges).toEqual([{ id: 'o', from: 'main', to: 'ig', kind: 'composition' }]);
   });
 });
 
@@ -68,9 +73,8 @@ describe('ports stay contiguous and wires follow, whatever the edit', () => {
     doc = ok(duplicateSource(doc, 'subject', 's2'));
     doc = ok(moveSourceToPort(doc, 'background', 1));
     doc = ok(deleteSource(doc, 'headline'));
-    const ports = doc.sources.map((s) => s.port).sort((a, b) => a - b);
-    expect(ports).toEqual(ports.map((_, i) => i));
     expect(consistent(doc)).toBe(true);
+    expect(stack(doc)).toEqual(['n', 'background', 'logo', 's2', 'subject']);
     expect(Object.keys(wirePorts(doc)).sort()).toEqual(['background', 'logo', 's2', 'subject']); // the copy of a wired source is wired (T8.1)
   });
 });

@@ -72,7 +72,7 @@ describe.skipIf(!adminUrl)('S2 Khmer text parity: board = export worker', () => 
   /** Only the headline is connected, so the canvas is transparent except for its glyphs. */
   async function showHeadline(h: (typeof HEADLINES)[number]) {
     const { rev, doc: current } = (await (await page.request.get(projectUrl())).json()) as { rev: number; doc: ProjectDoc };
-    let doc: ProjectDoc = { ...current, outputs: [], wires: [] };
+    let doc: ProjectDoc = { ...current, outputs: [], edges: [] };
     doc = ok(connectSource(doc, 'headline'));
     const style: Partial<TextStyle> = { fontFamily: h.font, fontWeight: h.weight, fontSizePx: 140, maxLines: 3, language: 'auto' };
     doc = {

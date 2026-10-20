@@ -4,6 +4,7 @@
  * while non-overridden layers keep re-flowing.
  */
 import { describe, expect, it } from 'vitest';
+import { MAIN, withComposition } from './graph';
 import { computeLayout, type LayoutDeps } from './layout';
 import { mockMeasure } from './layout/test-doc';
 import { LIMITS, type ProjectDoc } from './model';
@@ -68,7 +69,7 @@ const masterEdits: [string, (d: ProjectDoc) => ProjectDoc][] = [
   ['hide + show', (d) => ok(setSourceVisible(ok(setSourceVisible(d, 't3', false)), 't3', true))],
   ['disconnect + reconnect input', (d) => ok(connectSource(ok(disconnectSource(d, 'l2')), 'l2'))],
   ['delete an input without overrides, duplicate another', (d) => ok(duplicateSource(ok(deleteSource(d, 's2')), 't3', 't4'))],
-  ['master size', (d) => ({ ...d, master: { ...d.master, size: { width: 4000, height: 2500, unit: 'px' } } })],
+  ['master size', (d) => withComposition(d, MAIN, (c) => ({ ...c, size: { width: 4000, height: 2500, unit: 'px' } }))],
   ['output size change', (d) => ok(updateOutput(d, 'o0', { size: { width: 1080, height: 1920, unit: 'px' } }))],
 ];
 

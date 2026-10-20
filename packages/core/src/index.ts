@@ -6,6 +6,7 @@ export * from './model';
 export * from './project';
 export * from './sources';
 export * from './ports';
+export * from './graph';
 export * from './fonts';
 export * from './rules.config';
 export * from './text';

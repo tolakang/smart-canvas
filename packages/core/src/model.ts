@@ -18,6 +18,8 @@ export type PresetGroup = 'print' | 'social';
 export const LIMITS = {
   maxSources: 10, // includes the 4 defaults
   maxOutputs: 10,
+  maxCompositions: 5,
+  maxProcesses: 20,
   maxUploadMB: 50,
   maxExportEdgePx: 12000,
 } as const;
@@ -68,17 +70,39 @@ export interface InputSource {
   label: string;
   kind: SourceKind;
   behavesLike: Behavior;
-  port: number; // 0 = front layer; unique, contiguous 0..n-1 across sources
   visible: boolean;
   content: SourceContent;
   libraryItemId?: string; // set when created from the team library
   board: { x: number; y: number }; // node position on the board
 }
 
-// ---------- main preview and outputs ----------
-export interface MainPreview {
+// ---------- compositions (main previews) and outputs ----------
+/**
+ * A composition ("Main preview", D32): an artboard whose rows are layers. `layers` lists the rows front
+ * first (row index = port, D11); a row is drawn only while a `layer` edge feeds it. The first composition
+ * is always id 'main'.
+ */
+export interface Composition {
+  id: string;
+  label: string;
   size: Size; // default DEFAULTS.masterSize
-  placements: Record<string, NFrame>; // sourceId -> frame (text sources: this is the text box)
+  placements: Record<string, NFrame>; // layer node id -> frame (text sources: this is the text box)
+  layers: string[]; // node ids of its rows, front first
+  board: { x: number; y: number };
+}
+
+/** Process nodes (D32, T12.5+): change a layer on its way to a composition or output. */
+export type ProcessOp =
+  | { type: 'crop'; rect: NFrame }
+  | { type: 'adjust'; opacity?: number; brightness?: number; contrast?: number; saturation?: number; blurPx?: number }
+  | { type: 'flip'; x: boolean; y: boolean; rotate?: 0 | 90 | 180 | 270 }
+  | { type: 'textVariant'; text?: string; style?: Partial<TextStyle> }
+  | { type: 'recolor'; color: string };
+
+export interface ProcessNode {
+  id: string;
+  label: string;
+  op: ProcessOp;
   board: { x: number; y: number };
 }
 
@@ -109,19 +133,22 @@ export interface OutputNode {
 }
 
 /**
- * source→main: from = sourceId, to = 'main', port = z-order index.
- * main→output: from = 'main', to = outputId. Output is "connected" iff this wire exists (no separate flag).
+ * A wire on the board (D32). `layer`: an input or process feeds a composition row, a process, or an output's
+ * own layers. `composition`: a composition feeds an output; an output is "connected" iff it has one (no flag).
+ * Each in-port takes one edge; an out-port can feed many. No cycles.
  */
-export interface Wire { id: string; from: string; to: string; port?: number }
+export type EdgeKind = 'layer' | 'composition';
+export interface Edge { id: string; from: string; to: string; kind: EdgeKind }
 
 export interface ProjectDoc {
-  schema: 1;
+  schema: 2;
   rev: number; // increments on every save; reject stale writes
   name: string;
-  master: MainPreview;
+  compositions: Composition[]; // [0] is 'main'; length <= LIMITS.maxCompositions
   sources: InputSource[]; // length <= LIMITS.maxSources
+  processes: ProcessNode[]; // length <= LIMITS.maxProcesses
   outputs: OutputNode[]; // length <= LIMITS.maxOutputs
-  wires: Wire[];
+  edges: Edge[];
 }
 
 // ---------- team-level records ----------

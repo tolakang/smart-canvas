@@ -51,7 +51,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
 
   it('saves with the current rev, bumps it, and stores the doc', async () => {
     const p = await create();
-    const doc = { ...p.doc, name: 'Renamed', master: { ...p.doc.master, size: { width: 210, height: 297, unit: 'mm' } } };
+    const doc = { ...p.doc, name: 'Renamed', compositions: p.doc.compositions.map((c) => ({ ...c, size: { width: 210, height: 297, unit: 'mm' as const } })) };
     const res = await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc });
     expect(res.statusCode).toBe(200);
     expect(res.json().rev).toBe(1);
@@ -89,22 +89,41 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
       label: 'x',
       kind: 'fill',
       behavesLike: 'background',
-      port: i % 10,
       visible: true,
       content: { kind: 'fill', fill: { type: 'solid', color: '#000' } },
       board: { x: 0, y: 0 },
     }));
     for (const doc of [
       { ...p.doc, sources: tooMany },
-      { ...p.doc, schema: 2 },
+      { ...p.doc, schema: 3 },
       { ...p.doc, name: '' },
-      { ...p.doc, master: { ...p.doc.master, size: { width: 0, height: 10, unit: 'px' } } },
+      { ...p.doc, compositions: p.doc.compositions.map((c) => ({ ...c, size: { width: 0, height: 10, unit: 'px' } })) },
+      { ...p.doc, compositions: [] },
+      { ...p.doc, edges: [{ id: 'x', from: 'a', to: 'b', kind: 'pipe' }] },
     ]) {
       expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc })).statusCode).toBe(400);
     }
     expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: { ...p.doc, sources: tooMany.slice(0, 10) } })).statusCode).toBe(
       200,
     );
+  });
+
+  it('upgrades a v1 document (D32): accepted on save, stored and served as v2', async () => {
+    const p = await create();
+    const v1 = {
+      schema: 1,
+      rev: 0,
+      name: 'Old client',
+      master: { size: { width: 2000, height: 1000, unit: 'px' }, placements: { subject: { x: 0.1, y: 0.1, w: 0.5, h: 0.5 } }, board: { x: 0, y: 0 } },
+      sources: p.doc.sources.map((s, i) => ({ ...s, port: 3 - i })),
+      outputs: [],
+      wires: [{ id: 'in:subject', from: 'subject', to: 'main', port: 2 }],
+    };
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v1 })).statusCode).toBe(200);
+    const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
+    expect(got.schema).toBe(2);
+    expect(got.compositions[0]).toMatchObject({ id: 'main', size: { width: 2000, height: 1000, unit: 'px' }, layers: ['logo', 'headline', 'subject', 'background'] });
+    expect(got.edges).toEqual([{ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' }]);
   });
 
   it('deletes', async () => {

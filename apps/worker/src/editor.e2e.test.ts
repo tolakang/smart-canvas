@@ -6,7 +6,7 @@
  * the pointer, Shift+1 / Shift+0.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import type { ProjectDoc } from '@smart-canvas/core';
+import { mainComposition, type ProjectDoc } from '@smart-canvas/core';
 import type { Locator, Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -46,7 +46,7 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
 
   it('press-and-drag on an unselected asset selects and moves it in one gesture', async () => {
     expect(await selection()).toBeNull();
-    const before = (await doc()).master.placements.subject;
+    const before = mainComposition(await doc()).placements.subject;
     const c = await centre(layer('subject'));
     await page.mouse.move(c.x - 5, c.y - 5);
     await page.mouse.move(c.x, c.y);
@@ -55,8 +55,8 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
     await page.mouse.move(c.x + 40, c.y + 25, { steps: 10 });
     await page.mouse.up();
     expect(await selection()).toBe('Subject');
-    await expect.poll(async () => (await doc()).master.placements.subject?.x ?? 0, { timeout: 10_000 }).toBeGreaterThan((before?.x ?? 0) + 0.01);
-    expect((await doc()).master.placements.subject?.y).toBeGreaterThan((before?.y ?? 0) + 0.005);
+    await expect.poll(async () => mainComposition(await doc()).placements.subject?.x ?? 0, { timeout: 10_000 }).toBeGreaterThan((before?.x ?? 0) + 0.01);
+    expect(mainComposition(await doc()).placements.subject?.y).toBeGreaterThan((before?.y ?? 0) + 0.005);
   }, 60_000);
 
   it('with the Background selected, a click on the Subject (in front) selects it', async () => {
@@ -86,13 +86,13 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
     const handle = editor().locator('.moveable-control.moveable-se').first();
     const hb = await handle.boundingBox();
     expect(hb?.width ?? 0).toBeGreaterThanOrEqual(14);
-    const before = (await doc()).master.placements.subject;
+    const before = mainComposition(await doc()).placements.subject;
     const h = await centre(handle);
     await page.mouse.move(h.x, h.y);
     await page.mouse.down();
     await page.mouse.move(h.x + 50, h.y + 50, { steps: 10 });
     await page.mouse.up();
-    await expect.poll(async () => (await doc()).master.placements.subject?.w ?? 0, { timeout: 10_000 }).toBeGreaterThan((before?.w ?? 0) + 0.01);
+    await expect.poll(async () => mainComposition(await doc()).placements.subject?.w ?? 0, { timeout: 10_000 }).toBeGreaterThan((before?.w ?? 0) + 0.01);
   }, 60_000);
 
   it('zooms in and out; Fit goes back', async () => {
@@ -115,18 +115,18 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
     await page.keyboard.press('Shift+Digit1');
     await page.mouse.click(...(Object.values(await centre(layer('subject'))) as [number, number]));
     expect(await selection()).toBe('Subject');
-    const { master } = await doc();
+    const master = mainComposition(await doc());
     const W = master.size.width; // px masters: design px = px
     const H = master.size.height;
     await design().getByLabel('X', { exact: true }).fill('100');
     await design().getByLabel('X', { exact: true }).press('Enter');
-    await expect.poll(async () => ((await doc()).master.placements.subject?.x ?? 0) * W, { timeout: 10_000 }).toBeCloseTo(100, 1);
-    const before = (await doc()).master.placements.subject;
+    await expect.poll(async () => (mainComposition(await doc()).placements.subject?.x ?? 0) * W, { timeout: 10_000 }).toBeCloseTo(100, 1);
+    const before = mainComposition(await doc()).placements.subject;
     const ratio = ((before?.w ?? 1) * W) / ((before?.h ?? 1) * H);
     await design().getByLabel('Width', { exact: true }).fill('300');
     await design().getByLabel('Width', { exact: true }).press('Enter');
-    await expect.poll(async () => ((await doc()).master.placements.subject?.w ?? 0) * W, { timeout: 10_000 }).toBeCloseTo(300, 1);
-    const after = (await doc()).master.placements.subject;
+    await expect.poll(async () => (mainComposition(await doc()).placements.subject?.w ?? 0) * W, { timeout: 10_000 }).toBeCloseTo(300, 1);
+    const after = mainComposition(await doc()).placements.subject;
     expect(((after?.w ?? 0) * W) / ((after?.h ?? 1) * H)).toBeCloseTo(ratio, 3);
     // Moveable's frame follows the typed values.
     await expect
@@ -183,7 +183,7 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
     expect((at.y - b1.y) / b1.height).toBeCloseTo(0.25, 2);
     await page.keyboard.press('Shift+Digit0');
     expect(await editor().getByLabel('Zoom level').innerText()).toBe('100%');
-    const { master } = await doc();
+    const master = mainComposition(await doc());
     expect((await canvasBox()).width).toBeCloseTo(master.size.width, 0);
     await page.keyboard.press('Shift+Digit1');
     expect(Math.round((await canvasBox()).width)).toBe(Math.round(b0.width));

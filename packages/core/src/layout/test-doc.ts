@@ -1,5 +1,6 @@
 import { expect } from 'vitest';
 /** Test fixtures for the layout engine (not exported from the package). */
+import { MAIN, mainComposition, withComposition } from '../graph';
 import type { NFrame, OutputNode, ProjectDoc } from '../model';
 import { connectSource } from '../ports';
 import { createProjectDoc } from '../project';
@@ -24,10 +25,9 @@ export function project(out: OutputNode = output()): ProjectDoc {
 
 /** Sets a master placement from a design-px frame on the master canvas. */
 export function place(doc: ProjectDoc, id: string, f: { x: number; y: number; w: number; h: number; rotation?: number }): ProjectDoc {
-  const W = doc.master.size.width;
-  const H = doc.master.size.height;
+  const { width: W, height: H } = mainComposition(doc).size;
   const n: NFrame = { x: f.x / W, y: f.y / H, w: f.w / W, h: f.h / H, ...(f.rotation ? { rotation: f.rotation } : {}) };
-  return { ...doc, master: { ...doc.master, placements: { ...doc.master.placements, [id]: n } } };
+  return withComposition(doc, MAIN, (c) => ({ ...c, placements: { ...c.placements, [id]: n } }));
 }
 
 /** Frames compared to 6 decimals (float noise from normalized placements). */

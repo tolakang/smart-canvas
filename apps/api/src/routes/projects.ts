@@ -4,7 +4,7 @@
  * Saves are optimistic: the client sends the `rev` it loaded; a save against an older rev gets 409
  * with the current rev so the UI can offer "reload latest". The server owns `rev` (and mirrors it into doc.rev).
  */
-import { copyProjectDoc, createProjectDoc, type ProjectDoc } from '@smart-canvas/core';
+import { copyProjectDoc, createProjectDoc, migrateProjectDoc, type ProjectDoc } from '@smart-canvas/core';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { currentUser, requireTeam } from '../auth/plugin';
@@ -53,7 +53,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
           .from(projects)
           .where(and(inTeam({ teamId: req.params.teamId, projectId: req.body.templateId }), eq(projects.isTemplate, true)));
         if (!template) return reply.code(404).send({ error: 'template_not_found' });
-        doc = copyProjectDoc(template.doc, req.body.name);
+        doc = copyProjectDoc(migrateProjectDoc(template.doc), req.body.name);
       }
       const [row] = await db
         .insert(projects)
@@ -77,7 +77,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       const [source] = await db.select({ doc: projects.doc, isTemplate: projects.isTemplate }).from(projects).where(inTeam(req.params));
       if (!source) return reply.code(404).send({ error: 'not_found' });
       const isTemplate = req.body.isTemplate ?? source.isTemplate;
-      const doc = copyProjectDoc(source.doc, req.body.name ?? `${source.doc.name} (copy)`.slice(0, 200));
+      const doc = copyProjectDoc(migrateProjectDoc(source.doc), req.body.name ?? `${source.doc.name} (copy)`.slice(0, 200));
       const [row] = await db
         .insert(projects)
         .values({ teamId: req.params.teamId, name: doc.name, doc, rev: 0, isTemplate, createdBy: currentUser(req).id })
@@ -95,7 +95,8 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
         .from(projects)
         .where(inTeam(req.params));
       if (!row) return reply.code(404).send({ error: 'not_found' });
-      return row;
+      // Stored v1 documents are upgraded on read (D32); the next save stores v2.
+      return { ...row, doc: migrateProjectDoc(row.doc) };
     },
   );
 
@@ -114,7 +115,8 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
-      const { rev, doc } = req.body;
+      const { rev } = req.body;
+      const doc = migrateProjectDoc(req.body.doc);
       const next = rev + 1;
       const updated = await db
         .update(projects)

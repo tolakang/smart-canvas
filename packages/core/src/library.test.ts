@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { layerOrder } from './graph';
 import { addSourceFromLibrary, isValidLibraryEntry, libraryEntryOf } from './library';
 import { LIMITS, type ProjectDoc } from './model';
 import { createProjectDoc } from './project';
@@ -24,7 +25,8 @@ describe('team library', () => {
   it('adds a detached copy that remembers its library item', () => {
     const doc = ok(addSourceFromLibrary(createProjectDoc('P'), logo, 's9'));
     const added = doc.sources.find((s) => s.id === 's9');
-    expect(added).toMatchObject({ label: 'Brand logo', kind: 'vector', behavesLike: 'logo', libraryItemId: 'lib1', port: 0, content: logo.content });
+    expect(added).toMatchObject({ label: 'Brand logo', kind: 'vector', behavesLike: 'logo', libraryItemId: 'lib1', content: logo.content });
+    expect(layerOrder(doc)[0]).toBe(added?.id); // in front
     expect(added?.content).not.toBe(logo.content);
   });
 

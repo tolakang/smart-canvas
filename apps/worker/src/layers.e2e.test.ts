@@ -3,7 +3,7 @@
  * only show/hide, duplicate (+) and delete; no ▲ ▼. Duplicate of a wired layer is wired at the same spot.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import type { ProjectDoc } from '@smart-canvas/core';
+import { mainComposition, portOf, type ProjectDoc } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
@@ -28,7 +28,7 @@ describe.skipIf(!adminUrl)('layer list (T8.1)', () => {
   const main = () => page.locator('.react-flow__node-mainNode');
   const row = (label: string) => main().locator('.sc-port', { has: page.locator('.sc-port__label', { hasText: new RegExp(`^${label}$`) }) });
   const order = async () => main().locator('.sc-port__label').allInnerTexts();
-  const portsOf = (d: ProjectDoc) => Object.fromEntries(d.sources.map((s) => [s.label, s.port]));
+  const portsOf = (d: ProjectDoc) => Object.fromEntries(d.sources.map((s) => [s.label, portOf(d, s.id)]));
 
   it('shows grip, thumbnail, wired dot, eye, + and trash; no arrows', async () => {
     expect(await order()).toEqual(['Logo', 'Headline', 'Subject', 'Background']);
@@ -47,7 +47,8 @@ describe.skipIf(!adminUrl)('layer list (T8.1)', () => {
     await saved();
     const d = await doc();
     expect(portsOf(d)).toMatchObject({ Background: 0, Logo: 1, Headline: 2, Subject: 3 });
-    expect(d.wires.find((w) => w.from === 'background')?.port).toBe(0); // the wire follows
+    expect(portOf(d, 'background')).toBe(0); // its wire is on that row
+    expect(d.edges.some((e) => e.from === 'background' && e.to === 'main')).toBe(true);
     await row('Background').dragTo(row('Subject'));
     await expect.poll(order).toEqual(['Logo', 'Headline', 'Subject', 'Background']);
   }, 60_000);
@@ -58,8 +59,8 @@ describe.skipIf(!adminUrl)('layer list (T8.1)', () => {
     await saved();
     const d = await doc();
     const copy = d.sources.find((s) => s.label === 'Logo copy');
-    expect(d.wires.some((w) => w.from === copy?.id && w.to === 'main')).toBe(true);
-    expect(d.master.placements[copy?.id ?? '']).toEqual(d.master.placements.logo);
+    expect(d.edges.some((e) => e.from === copy?.id && e.to === 'main')).toBe(true);
+    expect(mainComposition(d).placements[copy?.id ?? '']).toEqual(mainComposition(d).placements.logo);
     expect(await page.locator('.react-flow__node-inputNode', { hasText: 'Logo copy' }).count()).toBe(1);
   }, 60_000);
 

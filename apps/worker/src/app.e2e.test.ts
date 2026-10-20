@@ -53,9 +53,9 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     await saved();
 
     const d = await doc();
-    expect(d.wires.filter((w) => w.to === 'main').map((w) => w.from).sort()).toEqual(['background', 'headline', 'logo', 'subject']);
+    expect(d.edges.filter((e) => e.kind === 'layer' && e.to === 'main').map((e) => e.from).sort()).toEqual(['background', 'headline', 'logo', 'subject']);
     expect(d.outputs.map((o) => o.label)).toEqual(['Instagram portrait 4:5', 'Instagram square', 'A5 flyer']);
-    expect(d.wires.filter((w) => w.from === 'main')).toHaveLength(3);
+    expect(d.edges.filter((e) => e.kind === 'composition')).toHaveLength(3);
     await page.getByLabel('Output Instagram square', { exact: true }).locator('.sc-render [data-source-id=headline]').waitFor();
   }, 90_000);
 

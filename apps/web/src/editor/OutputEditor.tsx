@@ -3,7 +3,7 @@
  * override on that output (move/resize/rotate → frame, text panel → style, eye → hidden); the master
  * and the other outputs are untouched.
  */
-import { computeLayout, outputScene, resetOutputOverrides, setOverrideFrame, type Frame } from '@smart-canvas/core';
+import { computeLayout, isOutputConnected, outputScene, resetOutputOverrides, setOverrideFrame, type Frame } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
@@ -22,7 +22,7 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
 
   if (!output) return null;
   if (!scene) return <div className="sc-editor-screen sc-muted">Loading fonts…</div>;
-  const connected = doc.wires.some((w) => w.from === 'main' && w.to === output.id);
+  const connected = isOutputConnected(doc, output.id);
   return (
     <CanvasEditor
       label={`Output editor ${output.label}`}

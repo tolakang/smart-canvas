@@ -1,7 +1,8 @@
 /**
- * Master placements (NFrame, 0..1 of the master canvas; rotation in degrees).
+ * Placements on a composition (NFrame, 0..1 of its canvas; rotation in degrees). Default: the main preview.
  * Flow 3: an input is auto-placed by its behaviour the first time it is wired; the main editor then moves it.
  */
+import { MAIN, withComposition } from './graph';
 import type { Behavior, NFrame, ProjectDoc } from './model';
 import type { SourceResult } from './sources';
 
@@ -19,9 +20,9 @@ export function defaultPlacement(behavesLike: Behavior): NFrame {
 
 const round = (n: number) => Math.round(n * 1e6) / 1e6;
 
-/** Sets a source's master placement (values rounded to 1e-6; zero rotation dropped). */
-export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame): SourceResult {
-  if (!doc.sources.some((s) => s.id === sourceId)) return { ok: false, error: 'not_found' };
+/** Sets a source's placement on a composition (values rounded to 1e-6; zero rotation dropped). */
+export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame, compositionId: string = MAIN): SourceResult {
+  if (!doc.sources.some((s) => s.id === sourceId) || !doc.compositions.some((c) => c.id === compositionId)) return { ok: false, error: 'not_found' };
   const rotation = frame.rotation ? round(((frame.rotation % 360) + 360) % 360) : 0;
   const clean: NFrame = {
     x: round(frame.x),
@@ -30,13 +31,14 @@ export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame): 
     h: round(Math.max(frame.h, 1e-4)),
     ...(rotation ? { rotation } : {}),
   };
-  return { ok: true, doc: { ...doc, master: { ...doc.master, placements: { ...doc.master.placements, [sourceId]: clean } } } };
+  return { ok: true, doc: withComposition(doc, compositionId, (c) => ({ ...c, placements: { ...c.placements, [sourceId]: clean } })) };
 }
 
 /** Gives a source its behaviour's default placement if it has none (used when it is first wired). */
-export function ensurePlacement(doc: ProjectDoc, sourceId: string): ProjectDoc {
+export function ensurePlacement(doc: ProjectDoc, sourceId: string, compositionId: string = MAIN): ProjectDoc {
   const source = doc.sources.find((s) => s.id === sourceId);
-  if (!source || doc.master.placements[sourceId]) return doc;
-  const r = setPlacement(doc, sourceId, defaultPlacement(source.behavesLike));
+  const comp = doc.compositions.find((c) => c.id === compositionId);
+  if (!source || !comp || comp.placements[sourceId]) return doc;
+  const r = setPlacement(doc, sourceId, defaultPlacement(source.behavesLike), compositionId);
   return r.ok ? r.doc : doc;
 }

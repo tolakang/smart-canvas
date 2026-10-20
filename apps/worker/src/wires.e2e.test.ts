@@ -4,7 +4,7 @@
  * row; on a disconnected output to move the output wire.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import type { ProjectDoc } from '@smart-canvas/core';
+import { portOf, type ProjectDoc } from '@smart-canvas/core';
 import type { Locator, Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
@@ -26,7 +26,10 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
 
   const saved = () => page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
-  const wiredPorts = async () => Object.fromEntries((await doc()).wires.filter((w) => w.to === 'main').map((w) => [w.from, w.port]));
+  const wiredPorts = async () => {
+    const d = await doc();
+    return Object.fromEntries(d.edges.filter((e) => e.kind === 'layer' && e.to === 'main').map((e) => [e.from, portOf(d, e.from)]));
+  };
   const main = () => page.locator('.react-flow__node-mainNode');
   const rowHandle = (port: number) => main().locator(`.sc-port[data-port="${port}"] .react-flow__handle`);
   const inputHandle = (label: string) =>
@@ -74,7 +77,7 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     await drag(end('in:headline', 'target'), rowHandle(3));
     await expect.poll(async () => (await wiredPorts()).headline).toBe(3);
     const d = await doc();
-    expect(d.sources.find((s) => s.id === 'headline')?.port).toBe(3);
+    expect(portOf(d, 'headline')).toBe(3);
   }, 60_000);
 
   it('dropping the input end on another input swaps who feeds that row', async () => {
@@ -98,12 +101,12 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     await saved();
 
     await drag(end(`out:${sq.id}`, 'target'), outHandle(pt.id));
-    await expect.poll(async () => (await doc()).wires.filter((w) => w.from === 'main').map((w) => w.to)).toEqual([pt.id]);
+    await expect.poll(async () => (await doc()).edges.filter((e) => e.kind === 'composition').map((e) => e.to)).toEqual([pt.id]);
     const d = await doc();
     expect(d.outputs.find((o) => o.id === sq.id)?.frozen).toBeTruthy(); // detached outputs freeze (D12)
 
     await drag(end(`out:${pt.id}`, 'target'), await emptySpot());
-    await expect.poll(async () => (await doc()).wires.filter((w) => w.from === 'main').length).toBe(0);
+    await expect.poll(async () => (await doc()).edges.filter((e) => e.kind === 'composition').length).toBe(0);
     expect((await doc()).outputs.find((o) => o.id === pt.id)?.frozen).toBeTruthy();
   }, 90_000);
 
@@ -114,7 +117,7 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     await expect.poll(async () => (await doc()).outputs.length).toBe(before.length + 1);
     const added = (await doc()).outputs.find((o) => !before.includes(o.id));
     expect(added).toMatchObject({ label: '1080×1350 px', size: { width: 1080, height: 1350, unit: 'px' } });
-    expect((await doc()).wires).toContainEqual(expect.objectContaining({ from: 'main', to: added?.id }));
+    expect((await doc()).edges).toContainEqual(expect.objectContaining({ from: 'main', to: added?.id }));
     // The new node sits where the wire was dropped (its input handle under the pointer).
     const handle = await centre(page.locator(`.react-flow__node-outputNode[data-id="out:${added?.id}"] .react-flow__handle`));
     expect(Math.abs(handle.x - spot.x)).toBeLessThan(30);

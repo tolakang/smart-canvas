@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MAIN, withComposition } from '../graph';
 import type { ProjectDoc } from '../model';
 import { computeLayout, type LayoutDeps } from './index';
 import { expectFrame, mockMeasure, output, place, project } from './test-doc';
@@ -8,7 +9,7 @@ const item = (doc: ProjectDoc, id: string) => computeLayout(doc, 'o1', deps).ite
 const subjectFrame = { x: 900, y: 750, w: 1200, h: 1800 };
 
 /** Example G (v2): the project's subject and headline fitted as one content group. */
-const onlySubject = (doc: ProjectDoc): ProjectDoc => ({ ...doc, wires: doc.wires.filter((w) => w.from !== 'headline') });
+const onlySubject = (doc: ProjectDoc): ProjectDoc => ({ ...doc, edges: doc.edges.filter((e) => e.from !== 'headline') });
 
 describe('subject (v2 content fit)', () => {
   it('example A: alone on 1080×1350 it fills the safe rect up to the cover scale, centred', () => {
@@ -59,8 +60,8 @@ describe('subject (v2 content fit)', () => {
 
   it('is skipped while it has no master placement', () => {
     const doc = project();
-    const placements = Object.fromEntries(Object.entries(doc.master.placements).filter(([id]) => id !== 'subject'));
-    expect(item({ ...doc, master: { ...doc.master, placements } }, 'subject')).toBeUndefined();
+    const without = withComposition(doc, MAIN, (c) => ({ ...c, placements: Object.fromEntries(Object.entries(c.placements).filter(([id]) => id !== 'subject')) }));
+    expect(item(without, 'subject')).toBeUndefined();
   });
 });
 
