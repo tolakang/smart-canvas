@@ -551,3 +551,15 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-library__text > .sc-muted { font-size: var(--fs-xs); }
 .sc-library__empty { padding: var(--sp-3); margin: 0; font-size: var(--fs-xs); }
 .sc-library__tip { margin: 0; padding: var(--sp-2) var(--sp-3); border-top: 1px solid var(--line); font-size: var(--fs-xs); }
+
+/* T13.5 canvas chrome: floating glass toolbar and alignment guides */
+.sc-canvasbar { display: flex; align-items: center; gap: 2px; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--surface) 72%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
+.sc-canvasbar__btn { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: var(--r-md); background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
+.sc-canvasbar__btn:hover { background: var(--surface-2); color: var(--fg); }
+.sc-canvasbar__btn[aria-pressed='true'] { background: var(--accent-soft); color: var(--accent); }
+.sc-canvasbar__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sc-canvasbar__sep { width: 1px; height: 20px; margin: 0 var(--sp-1); background: var(--line); }
+.sc-canvasbar__zoom { min-width: 44px; text-align: center; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; color: var(--fg); }
+.sc-guide { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--danger); z-index: 1000; }
+.sc-guide--v { width: 1px; height: 100000px; margin-top: -50000px; }
+.sc-guide--h { height: 1px; width: 100000px; margin-left: -50000px; }
