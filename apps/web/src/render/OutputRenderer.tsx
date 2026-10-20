@@ -15,7 +15,7 @@ import {
   type RenderItem,
   type RenderScene,
 } from '@smart-canvas/core';
-import type { CSSProperties } from 'react';
+import { memo, type CSSProperties } from 'react';
 
 export interface OutputRendererProps {
   scene: RenderScene;
@@ -28,7 +28,7 @@ export interface OutputRendererProps {
   className?: string;
 }
 
-export function OutputRenderer({ scene, sources, assetUrl, scale, mode = 'export', className }: OutputRendererProps) {
+export const OutputRenderer = memo(function OutputRenderer({ scene, sources, assetUrl, scale, mode = 'export', className }: OutputRendererProps) {
   const byId = new Map(sources.map((s) => [s.id, s]));
   return (
     <div
@@ -55,7 +55,7 @@ export function OutputRenderer({ scene, sources, assetUrl, scale, mode = 'export
       </div>
     </div>
   );
-}
+});
 
 function Layer({ item, source, assetUrl, mode }: { item: RenderItem; source: InputSource; assetUrl: (id: string) => string; mode: 'preview' | 'export' }) {
   const { frame } = item;
