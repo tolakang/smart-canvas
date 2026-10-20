@@ -68,9 +68,12 @@ export async function openRender(browser: Browser, webUrl: string, t: RenderTarg
   }
 }
 
-/** Size of the drawn canvas in CSS px (= export pixels at the chosen scale). */
+/** The export frame: the drawn canvas clipped to whole pixels (= exportPixels at the chosen scale). */
+export const FRAME = '.sc-render-frame';
+
+/** Size of the export frame in CSS px. */
 export async function renderedSize(page: Page): Promise<{ width: number; height: number }> {
-  const box = await page.locator('.sc-render').first().boundingBox();
-  if (!box) throw new RenderError('render: nothing drawn');
-  return { width: Math.round(box.width), height: Math.round(box.height) };
+  const size = await page.locator(FRAME).first().evaluate((el) => ({ width: Number(el.dataset.exportWidth), height: Number(el.dataset.exportHeight) }));
+  if (!size.width || !size.height) throw new RenderError('render: nothing drawn');
+  return size;
 }

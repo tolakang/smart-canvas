@@ -2,21 +2,10 @@
  * T6.1 end to end: real Chromium opens the web app's /render page (Vite dev server), the worker answers
  * its API reads, and the page reports ready at the export pixel size.
  */
-import { fileURLToPath } from 'node:url';
-import { addOutput, connectSource, createProjectDoc, exportPixels, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
-import { chromium, type Browser } from 'playwright';
-import { createServer, type ViteDevServer } from 'vite';
+import { addOutput, connectSource, createProjectDoc, exportPixels, type ProjectDoc } from '@smart-canvas/core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isAllowedApiPath, openRender, renderedSize, RenderError, renderUrl, type ApiFetch } from './render';
-
-const TEAM = '11111111-1111-4111-8111-111111111111';
-const PROJECT = '22222222-2222-4222-8222-222222222222';
-const webRoot = fileURLToPath(new URL('../../web', import.meta.url));
-
-const ok = (r: SourceResult): ProjectDoc => {
-  if (!r.ok) throw new Error(r.error);
-  return r.doc;
-};
+import { isAllowedApiPath, openRender, renderedSize, RenderError, renderUrl } from './render';
+import { fakeApi as makeApi, ok, PROJECT, startRenderEnv, TEAM } from './test/render-env';
 
 function sampleDoc(): ProjectDoc {
   let doc = createProjectDoc('E2E');
@@ -32,30 +21,20 @@ function sampleDoc(): ProjectDoc {
   return doc;
 }
 
-const json = (v: unknown) => ({ status: 200, contentType: 'application/json', body: Buffer.from(JSON.stringify(v)) });
 const doc = sampleDoc();
-const requested: string[] = [];
-const fakeApi: ApiFetch = async (path) => {
-  requested.push(path);
-  if (path === `/teams/${TEAM}/projects/${PROJECT}`) return json({ id: PROJECT, rev: 1, doc });
-  if (path === `/teams/${TEAM}/fonts` || path === `/teams/${TEAM}/assets`) return json([]);
-  return { status: 404, contentType: 'application/json', body: Buffer.from('{}') };
-};
+const { fetch: fakeApi, requested } = makeApi(doc);
 
 describe('render page in Chromium (T6.1)', () => {
-  let vite: ViteDevServer;
-  let browser: Browser;
+  let env: Awaited<ReturnType<typeof startRenderEnv>>;
+  let browser: Awaited<ReturnType<typeof startRenderEnv>>['browser'];
   let webUrl = '';
 
   beforeAll(async () => {
-    vite = await createServer({ root: webRoot, configFile: `${webRoot}/vite.config.ts`, logLevel: 'silent', server: { port: 0, host: '127.0.0.1' } });
-    await vite.listen();
-    webUrl = vite.resolvedUrls?.local[0] ?? '';
-    browser = await chromium.launch();
+    env = await startRenderEnv();
+    ({ browser, webUrl } = env);
   }, 60_000);
   afterAll(async () => {
-    await browser?.close();
-    await vite?.close();
+    await env?.close();
   });
 
   it('renders an output at its export pixel size once fonts and images are ready', async () => {
