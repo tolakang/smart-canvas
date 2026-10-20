@@ -86,7 +86,30 @@ jobs:
           test "$(code $base/teams/$team/assets/$asset/content)" = 200
           cmp /tmp/out apps/api/src/assets/fixtures/tiny.png
           test "$(code -H 'content-type: application/json' -d '{"name":"P"}' $base/teams/$team/projects)" = 201
+          project=$(python3 -c "import json;print(json.load(open('/tmp/out'))['id'])")
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/)" = 200
+          # Export through the queue: api → pg-boss → worker (Chromium renders http://web/render/…) → MinIO.
+          python3 - "$project" > /tmp/put.json <<'PY'
+          import json, sys
+          p = json.load(open('/tmp/out'))
+          doc = p['doc']
+          doc['sources'] = [dict(s, content={'kind': 'fill', 'fill': {'type': 'solid', 'color': '#ff0000'}}) if s['id'] == 'background' else s for s in doc['sources']]
+          doc['wires'] += [{'id': 'in:background', 'from': 'background', 'to': 'main', 'port': 3}, {'id': 'out:o1', 'from': 'main', 'to': 'o1'}]
+          doc['master']['placements']['background'] = {'x': 0, 'y': 0, 'w': 1, 'h': 1}
+          doc['outputs'] = [{'id': 'o1', 'label': 'Smoke', 'size': {'width': 320, 'height': 200, 'unit': 'px'}, 'exportScale': 2, 'family': 'auto', 'overrides': [], 'board': {'x': 420, 'y': 0}}]
+          print(json.dumps({'rev': p['rev'], 'doc': doc}))
+          PY
+          test "$(code -X PUT -H 'content-type: application/json' --data @/tmp/put.json $base/teams/$team/projects/$project)" = 200
+          test "$(code -H 'content-type: application/json' -d '{"outputIds":["o1"],"format":"png"}' $base/teams/$team/projects/$project/exports)" = 202
+          job=$(python3 -c "import json;print(json.load(open('/tmp/out'))[0]['id'])")
+          for i in $(seq 1 60); do
+            code "$base/teams/$team/projects/$project/exports?ids=$job" >/dev/null
+            status=$(python3 -c "import json;print(json.load(open('/tmp/out'))[0]['status'])")
+            [ "$status" = done ] || [ "$status" = failed ] && break
+            sleep 2
+          done
+          cat /tmp/out; echo
+          test "$status" = done
           echo "stack OK"
       - name: Logs on failure
         if: failure()

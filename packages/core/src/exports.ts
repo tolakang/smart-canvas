@@ -1,0 +1,65 @@
+/**
+ * Export settings shared by the API (validation, caps), the worker (rendering) and the UI (file names).
+ * Formats per D22; one export job per output (PRODUCT-SPEC: failures reported per output).
+ */
+import { exceedsExportCap, exportPixels, exportScaleOf, LIMITS, type ExportFormat, type ExportOptions, type OutputNode } from './model';
+
+export const EXPORT_FORMATS: readonly ExportFormat[] = ['png', 'jpg', 'webp', 'pdf', 'svg'];
+export const RASTER_FORMATS: readonly ExportFormat[] = ['png', 'jpg', 'webp'];
+
+export const EXPORT_MIME: Record<ExportFormat, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  webp: 'image/webp',
+  pdf: 'application/pdf',
+  svg: 'image/svg+xml',
+};
+
+/** The output as it will be exported: per-export scale (px outputs) or dpi (mm outputs) override its own. */
+export function effectiveOutput<T extends Pick<OutputNode, 'size' | 'dpi' | 'exportScale' | 'bleedMm' | 'safeMarginPct'>>(o: T, opts: ExportOptions): T {
+  return {
+    ...o,
+    ...(o.size.unit === 'px' && opts.scale !== undefined ? { exportScale: opts.scale } : {}),
+    ...(o.size.unit === 'mm' && opts.dpi !== undefined ? { dpi: opts.dpi } : {}),
+  };
+}
+
+/** Include the bleed? Default: yes when the output has bleed (print). */
+export function withBleedOf(o: Pick<OutputNode, 'bleedMm'>, opts: ExportOptions): boolean {
+  return opts.withBleed ?? (o.bleedMm ?? 0) > 0;
+}
+
+/** Pixel size of a raster export (null for vector formats, which have no pixel size). */
+export function rasterPixels(o: OutputNode, format: ExportFormat, opts: ExportOptions): { w: number; h: number } | null {
+  if (!RASTER_FORMATS.includes(format)) return null;
+  return exportPixels(effectiveOutput(o, opts), withBleedOf(o, opts));
+}
+
+/** Render scale (output px per design px) for a format: vector formats print at 1 (96 per inch). */
+export function renderScaleOf(o: OutputNode, format: ExportFormat, opts: ExportOptions): number {
+  return RASTER_FORMATS.includes(format) ? exportScaleOf(effectiveOutput(o, opts)) : 1;
+}
+
+/** T6.7: a raster export larger than LIMITS.maxExportEdgePx is refused, with the reason. */
+export function exportCapError(o: OutputNode, format: ExportFormat, opts: ExportOptions): string | null {
+  const px = rasterPixels(o, format, opts);
+  if (!px || !exceedsExportCap(px)) return null;
+  return `${o.label}: ${px.w} × ${px.h} px is over the ${LIMITS.maxExportEdgePx} px limit`;
+}
+
+const safe = (s: string) =>
+  s
+    .normalize('NFC')
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f/\\:*?"<>|]+/g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^[-.]+|[-.]+$/g, '')
+    .slice(0, 80) || 'untitled';
+
+/** `{project}_{output}_{WxH}.{ext}` (Flow 8): export pixels for raster, the typed size for PDF/SVG. */
+export function exportFileName(project: string, o: OutputNode, format: ExportFormat, opts: ExportOptions): string {
+  const px = rasterPixels(o, format, opts);
+  const size = px ? `${px.w}x${px.h}` : `${o.size.width}x${o.size.height}${o.size.unit}`;
+  return `${safe(project)}_${safe(o.label)}_${size}.${format}`;
+}

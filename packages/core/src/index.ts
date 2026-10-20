@@ -17,5 +17,6 @@ export * from './units';
 export * from './layout';
 export * from './outputs';
 export * from './overrides';
+export * from './exports';
 
 export const CORE_VERSION = '0.0.0';

@@ -1,0 +1,50 @@
+import { describe, expect, it } from 'vitest';
+import { effectiveOutput, exportCapError, exportFileName, rasterPixels, renderScaleOf, withBleedOf } from './exports';
+import type { OutputNode } from './model';
+
+const out = (patch: Partial<OutputNode> = {}): OutputNode => ({
+  id: 'o',
+  label: 'Instagram',
+  size: { width: 1080, height: 1350, unit: 'px' },
+  family: 'auto',
+  overrides: [],
+  board: { x: 0, y: 0 },
+  ...patch,
+});
+const a4 = out({ label: 'A4 poster', size: { width: 210, height: 297, unit: 'mm' }, dpi: 300, bleedMm: 3 });
+
+describe('export settings', () => {
+  it('per-export scale / dpi override the output', () => {
+    expect(effectiveOutput(out({ exportScale: 1 }), { scale: 3 }).exportScale).toBe(3);
+    expect(effectiveOutput(a4, { dpi: 150 }).dpi).toBe(150);
+    expect(effectiveOutput(a4, { scale: 3 }).exportScale).toBeUndefined(); // scale is for px outputs
+  });
+
+  it('bleed is included by default only when the output has one', () => {
+    expect(withBleedOf(a4, {})).toBe(true);
+    expect(withBleedOf(a4, { withBleed: false })).toBe(false);
+    expect(withBleedOf(out(), {})).toBe(false);
+  });
+
+  it('raster pixels follow exportPixels (example F); vector formats have none', () => {
+    expect(rasterPixels(a4, 'png', {})).toEqual({ w: 2551, h: 3579 });
+    expect(rasterPixels(a4, 'jpg', { withBleed: false })).toEqual({ w: 2480, h: 3508 });
+    expect(rasterPixels(out(), 'webp', { scale: 2 })).toEqual({ w: 2160, h: 2700 });
+    expect(rasterPixels(a4, 'pdf', {})).toBeNull();
+    expect(renderScaleOf(a4, 'pdf', {})).toBe(1);
+    expect(renderScaleOf(a4, 'png', {})).toBeCloseTo(300 / 96);
+  });
+
+  it('caps raster exports at 12000 px with a clear message', () => {
+    expect(exportCapError(out(), 'png', { scale: 4 })).toBeNull(); // 4320 × 5400
+    expect(exportCapError(out({ size: { width: 3001, height: 1000, unit: 'px' } }), 'png', { scale: 4 })).toBe('Instagram: 12004 × 4000 px is over the 12000 px limit');
+    expect(exportCapError(out({ size: { width: 3001, height: 1000, unit: 'px' } }), 'pdf', { scale: 4 })).toBeNull();
+  });
+
+  it('file names: {project}_{output}_{WxH}.{ext}, filesystem-safe', () => {
+    expect(exportFileName('Grand opening', out(), 'png', { scale: 2 })).toBe('Grand-opening_Instagram_2160x2700.png');
+    expect(exportFileName('Poster', a4, 'pdf', {})).toBe('Poster_A4-poster_210x297mm.pdf');
+    expect(exportFileName('a/b:c', out({ label: 'ផ្ទាំង' }), 'svg', {})).toBe('a-b-c_ផ្ទាំង_1080x1350px.svg');
+    expect(exportFileName('', out({ label: '...' }), 'jpg', {})).toBe('untitled_untitled_1080x1350.jpg');
+  });
+});

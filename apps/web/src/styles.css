@@ -160,3 +160,11 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-inspector__table td, .sc-inspector__table th { padding: 2px 4px; border-bottom: 1px solid var(--line); }
 .sc-lock { font-size: 11px; }
 .sc-inspector__actions { padding: 4px 12px; }
+
+/* Export dialog (T6.5) */
+.sc-export { min-width: 420px; }
+.sc-export form { display: grid; gap: 10px; }
+.sc-export__outputs { display: grid; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.sc-export__outputs label, .sc-check { display: flex; gap: 6px; align-items: center; }
+.sc-export__jobs { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
+.sc-export__jobs li { display: grid; grid-template-columns: 1fr 120px 1fr; gap: 8px; align-items: center; }
