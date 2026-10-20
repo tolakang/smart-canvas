@@ -219,3 +219,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-zoom { display: inline-flex; align-items: center; gap: 4px; }
 .sc-zoom button { min-width: 28px; }
 .sc-zoom__value { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; font-size: 12px; }
+
+/* T8.7 behaviour picker in the input node's meta line */
+.sc-behavior { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--fg); }

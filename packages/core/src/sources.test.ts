@@ -8,6 +8,7 @@ import {
   defaultSources,
   deleteSource,
   duplicateSource,
+  setBehavior,
   normalizePorts,
   renameSource,
   setSourceVisible,
@@ -184,5 +185,19 @@ describe('placing new nodes (T8.4)', () => {
     expect(doc.sources.find((s) => s.id === 'n')?.board).toEqual({ x: 12, y: -81 });
     const out = ok(addOutput(doc, { id: 'o', label: 'Post', size: { width: 1080, height: 1080, unit: 'px' }, board: { x: 900.5, y: 40 } }));
     expect(out.outputs[0]?.board).toEqual({ x: 901, y: 40 });
+  });
+});
+
+describe('setBehavior (T8.7)', () => {
+  it('changes the behaviour within what the kind allows; a new background goes to the back', () => {
+    let doc = ok(addSource(createProjectDoc('P'), { id: 'g', kind: 'fill', label: 'Gradient', behavesLike: 'decoration' }));
+    expect(doc.sources.find((s) => s.id === 'g')?.port).toBe(0);
+    doc = ok(setBehavior(doc, 'g', 'background'));
+    const g = doc.sources.find((s) => s.id === 'g');
+    expect(g).toMatchObject({ behavesLike: 'background', port: 4 });
+    expect(contiguous(doc)).toBe(true);
+    expect(setBehavior(doc, 'g', 'subject')).toEqual({ ok: false, error: 'bad_behavior' }); // a fill can't be a subject
+    expect(setBehavior(doc, 'nope', 'logo')).toEqual({ ok: false, error: 'not_found' });
+    expect(ok(setBehavior(doc, 'logo', 'decoration')).sources.find((s) => s.id === 'logo')).toMatchObject({ behavesLike: 'decoration', port: 0 });
   });
 });

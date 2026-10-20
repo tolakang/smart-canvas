@@ -76,3 +76,4 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T8.4 — Right-click canvas: add input / output — [#51](https://github.com/tolakang/smart-canvas/pull/51)
 - [x] T8.5 — Wires: attach and detach by dragging — [#52](https://github.com/tolakang/smart-canvas/pull/52)
 - [x] T8.6 — Main preview editor: easier move / resize — [#53](https://github.com/tolakang/smart-canvas/pull/53)
+- [ ] T8.7 — Behaviours: right quick-add defaults; change "behaves like" on the node

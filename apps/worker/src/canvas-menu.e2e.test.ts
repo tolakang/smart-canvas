@@ -53,19 +53,19 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
   it('offers the quick inputs, the input dialog and the output dialog', async () => {
     await rightClickEmpty();
     expect(await menu().getByRole('menuitem').allInnerTexts()).toEqual([
-      'Image input',
-      'Logo / SVG input',
-      'Text input',
-      'Colour / gradient input',
+      'Image (subject)',
+      'Logo / SVG',
+      'Text',
+      'Background colour / gradient',
       'Input…',
       'Output…',
     ]);
     await page.keyboard.press('Escape');
   }, 30_000);
 
-  it('Text input adds a text input whose node sits at the click', async () => {
+  it('Text adds a text input whose node sits at the click', async () => {
     const at = await rightClickEmpty();
-    await menu().getByRole('menuitem', { name: 'Text input' }).click();
+    await menu().getByRole('menuitem', { name: 'Text', exact: true }).click();
     const node = page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: /^Text$/ }) });
     await node.waitFor();
     expect(await near(node, at)).toBe(true);

@@ -70,4 +70,5 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T8.3 — Drop an image file onto any image/vector/background input to set its file (same validation as the file picker).
 - T8.4 — Right-click the empty canvas: add an input (type + behaviour) or an output (preset) at the click point.
 - T8.5 — Wires: draw and remove every wire by dragging (input → main port, main → output); drag a wire end away to detach. (D11, D12)
+- T8.7 — Behaviours: canvas-menu quick-adds use the natural behaviour (colour → background, image → subject); an input's "behaves like" can be changed on its node (only those its kind allows; a new background goes to the back).
 - T8.6 — Main preview editor: move and resize assets directly on the canvas (click to select, drag, handles), easier than today.

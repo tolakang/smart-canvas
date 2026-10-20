@@ -488,10 +488,11 @@ function BoardCanvas(props: {
       y: e.clientY,
       title: inputsFull ? `Add (${LIMITS.maxSources} inputs max)` : 'Add here',
       items: [
-        quick('Image input', { kind: 'image', label: 'Image', behavesLike: 'decoration' }),
-        quick('Logo / SVG input', { kind: 'vector', label: 'Logo', behavesLike: 'logo' }),
-        quick('Text input', { kind: 'text', label: 'Text', behavesLike: 'text' }),
-        quick('Colour / gradient input', { kind: 'fill', label: 'Colour', behavesLike: 'decoration' }),
+        // T8.7: each with the behaviour that adapts the way people expect (changeable on the node).
+        quick('Image (subject)', { kind: 'image', label: 'Image', behavesLike: 'subject' }),
+        quick('Logo / SVG', { kind: 'vector', label: 'Logo', behavesLike: 'logo' }),
+        quick('Text', { kind: 'text', label: 'Text', behavesLike: 'text' }),
+        quick('Background colour / gradient', { kind: 'fill', label: 'Background', behavesLike: 'background' }),
         {
           label: 'Input…',
           disabled: inputsFull,
