@@ -3,7 +3,7 @@
  * watch each one's progress and errors while the worker renders them; download each file or all as a
  * ZIP (T6.6).
  */
-import { EXPORT_FORMATS, type ExportFormat, type ExportJob, type ExportOptions, type ProjectDoc } from '@smart-canvas/core';
+import { EXPORT_FORMATS, exportCapError, LIMITS, type ExportFormat, type ExportJob, type ExportOptions, type ProjectDoc } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 
@@ -48,6 +48,9 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
     ...(format === 'pdf' && hasBleed ? { cropMarks } : {}),
     ...(hasBleed ? { withBleed } : {}),
   });
+
+  // T6.7: raster exports over the edge cap are blocked here (the API refuses them too).
+  const tooLarge = doc.outputs.flatMap((o) => (selected.includes(o.id) ? [exportCapError(o, format, options())] : [])).filter((m): m is string => !!m);
 
   async function start(e: FormEvent) {
     e.preventDefault();
@@ -111,13 +114,26 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
                 <input type="checkbox" checked={cropMarks} onChange={(e) => setCropMarks(e.target.checked)} /> Crop marks
               </label>
             )}
+            {tooLarge.length > 0 && (
+              <div className="sc-error" role="alert">
+                <p>
+                  Too large to export as {format.toUpperCase()} (max {LIMITS.maxExportEdgePx} px per side). Lower the output size, scale or DPI, or
+                  export as PDF/SVG:
+                </p>
+                <ul>
+                  {tooLarge.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {error && (
               <p className="sc-error" role="alert">
                 {error}
               </p>
             )}
             <div className="sc-row">
-              <button type="submit" disabled={busy || selected.length === 0}>
+              <button type="submit" disabled={busy || selected.length === 0 || tooLarge.length > 0}>
                 Export {selected.length} {selected.length === 1 ? 'output' : 'outputs'}
               </button>
               <button type="button" onClick={() => ref.current?.close()}>
