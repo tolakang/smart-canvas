@@ -41,6 +41,7 @@
 - D26 Board: `@xyflow/react` v12. **Renderer: DOM/SVG + react-moveable for editing, not react-konva** (changed from earlier chat: identical rendering for preview and export, vector PDF with live text).
 - D27 Export: worker drives headless Chromium (Playwright) against a `/render/:outputId` route. PNG/JPG via screenshot, WebP via sharp, PDF via page.pdf.
 - D28 Postgres (Drizzle ORM) + MinIO (S3 API) + pg-boss queue (no Redis). Project document stored as JSONB with a revision number (optimistic lock).
+- D30 Layout v2 — content fit (2026-10-20, owner's choice after board feedback): subjects, decorations and texts are fitted as a group into the output's safe area (size scale between v1's contain `k` and the master's cover `K`; positions spread per axis to use the space); wide outputs put visuals on the right half and text in a left column, each taking all of the safe area when alone. Backgrounds and logos keep their v1 rules; overrides still win (D18–D21 unchanged). Spec: `docs/ADAPTATION-RULES.md` v2.
 - D29 Deploy: Dokploy compose (web, api, worker, postgres, minio). Multi-arch images (amd64 staging, arm64 production).
 
 ## Open (default applies until you decide)

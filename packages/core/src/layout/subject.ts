@@ -1,9 +1,13 @@
-/** subject and decoration behaviours: scaled by k, anchored like the master; subjects stay inside the safe rect. */
+/**
+ * subject and decoration behaviours (v2, D30): placed by their content group (content.ts), so the design
+ * fills the output; subjects stay inside the safe rect, decorations may bleed off the edges.
+ */
 import type { Frame } from '../model';
+import { mappedFrame, type GroupMap } from './content';
 import { anchorOf, type RuleContext } from './context';
 import type { LayoutWarning } from './types';
 
-/** Size `F·k` centred on the master anchor (stack) or in the right half of the safe rect (side). */
+/** v1 placement (size `F·k` on the master anchor); kept for reference and the frozen fallback. */
 export function anchoredFrame(f: Frame, ctx: RuleContext): Frame {
   const { metrics: m, k } = ctx;
   const { ax, ay } = anchorOf(f, ctx.master);
@@ -31,10 +35,10 @@ export function clampIntoSafe(frame: Frame, safe: Frame): { frame: Frame; warnin
   return { frame: { ...frame, x, y, w, h }, warnings: moved ? ['clamped'] : [] };
 }
 
-export function subjectFrame(f: Frame, ctx: RuleContext): { frame: Frame; warnings: LayoutWarning[] } {
-  return clampIntoSafe(anchoredFrame(f, ctx), ctx.metrics.safe);
+export function subjectFrame(f: Frame, g: GroupMap, ctx: RuleContext): { frame: Frame; warnings: LayoutWarning[] } {
+  return clampIntoSafe(mappedFrame(f, g), ctx.metrics.safe);
 }
 
-export function decorationFrame(f: Frame, ctx: RuleContext): Frame {
-  return anchoredFrame(f, ctx);
+export function decorationFrame(f: Frame, g: GroupMap): Frame {
+  return mappedFrame(f, g);
 }

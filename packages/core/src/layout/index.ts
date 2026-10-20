@@ -1,10 +1,11 @@
 /**
- * Layout engine v1 (ADAPTATION-RULES). Pure and deterministic: layout is computed, never stored;
- * only overrides are applied on top.
+ * Layout engine v2 (ADAPTATION-RULES, D30: content fit). Pure and deterministic: layout is computed, never
+ * stored; only overrides are applied on top.
  */
 import { canvasMetrics, DEFAULTS, type Frame, type OutputNode, type ProjectDoc } from '../model';
 import { sizeInDesignPx, toDesignFrame } from '../render';
 import { backgroundFrame } from './background';
+import { groupMap, regions, type GroupMap } from './content';
 import type { RuleContext } from './context';
 import { logoFrame } from './logo';
 import { decorationFrame, subjectFrame } from './subject';
@@ -16,6 +17,7 @@ export * from './types';
 export type { RuleContext } from './context';
 export { coverFrame } from './background';
 export { anchoredFrame, clampIntoSafe } from './subject';
+export { groupMap, mappedFrame, unionOf, type GroupMap } from './content';
 export { breakLines, fitText } from './text-fit';
 
 /** `output.family` unless 'auto'; then side when the trim ratio is ≥ 1.3, else stack. */
@@ -36,6 +38,24 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   const overrides = new Map(output.overrides.map((o) => [o.sourceId, o]));
   // Disconnected (D20/D21, O7): frames frozen at disconnect time; content still updates, overrides still apply.
   const frozen = new Map(output.frozen?.items.map((i) => [i.sourceId, i]));
+
+  // Content groups (v2): the master frames of the layers that carry the design, fitted together.
+  const visible = doc.sources.filter((s) => s.visible && wired.has(s.id) && !overrides.get(s.id)?.hidden && !frozen.has(s.id));
+  const masterFrame = (id: string) => {
+    const p = doc.master.placements[id];
+    return p ? toDesignFrame(p, masterSize) : undefined;
+  };
+  const framesOf = (pick: (b: string) => boolean) =>
+    visible.filter((s) => pick(s.behavesLike) && (s.behavesLike !== 'text' || s.content.kind === 'text')).flatMap((s) => masterFrame(s.id) ?? []);
+  const visualFrames = framesOf((b) => b === 'subject' || b === 'decoration');
+  const textFrames = framesOf((b) => b === 'text');
+  const region = regions(ctx, visualFrames.length > 0, textFrames.length > 0);
+  const all = groupMap([...visualFrames, ...textFrames], metrics.safe, ctx);
+  const groupFor: Record<'visuals' | 'text', GroupMap | null> =
+    family === 'stack'
+      ? { visuals: all, text: all }
+      : { visuals: groupMap(visualFrames, region.visuals, ctx), text: groupMap(textFrames, region.text, ctx) };
+  const fallback = (R: typeof metrics.safe): GroupMap => ({ c: ctx.k, px: ctx.k, py: ctx.k, U: { x: 0, y: 0, w: master.w, h: master.h }, R });
 
   const items: LayoutItem[] = [];
   const column: { index: number; job: TextJob }[] = []; // side-family texts, placed together after the loop
@@ -63,11 +83,11 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
         break;
       case 'subject':
         if (!f) continue;
-        ({ frame, warnings } = subjectFrame(f, ctx));
+        ({ frame, warnings } = subjectFrame(f, groupFor.visuals ?? fallback(region.visuals), ctx));
         break;
       case 'decoration':
         if (!f) continue;
-        frame = decorationFrame(f, ctx);
+        frame = decorationFrame(f, groupFor.visuals ?? fallback(region.visuals));
         break;
       case 'logo':
         if (!f) continue;
@@ -76,17 +96,18 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
       case 'text': {
         if (!f || source.content.kind !== 'text') continue;
         const style = { ...source.content.style, ...override?.style };
-        const job: TextJob = { text: source.content.text, style, master: f, fixedSizePx: override?.style?.fontSizePx };
+        const g = groupFor.text ?? fallback(region.text);
+        const job: TextJob = { text: source.content.text, style, master: f, fixedSizePx: override?.style?.fontSizePx, scale: g.c };
         if (override?.frame) {
           // Override frame: fit still runs inside it (rule 8).
-          const placed = fitInFrame(job, { ...stackTextFrame(f, ctx).frame, ...override.frame }, ctx, deps.measure);
+          const placed = fitInFrame(job, { ...stackTextFrame(f, g, ctx).frame, ...override.frame }, deps.measure);
           items.push({ sourceId: source.id, ...placed, overridden: true });
         } else if (family === 'side') {
           column.push({ index: items.length, job });
           items.push({ sourceId: source.id, frame: f, overridden: !!override, warnings: [] });
         } else {
-          const box = stackTextFrame(f, ctx);
-          items.push({ sourceId: source.id, ...fitInFrame(job, box.frame, ctx, deps.measure, box.warnings), overridden: !!override });
+          const box = stackTextFrame(f, g, ctx);
+          items.push({ sourceId: source.id, ...fitInFrame(job, box.frame, deps.measure, box.warnings), overridden: !!override });
         }
         continue;
       }
@@ -98,7 +119,7 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
       warnings,
     });
   }
-  const placed = sideColumn(column.map((c) => c.job), ctx, deps.measure);
+  const placed = sideColumn(column.map((c) => c.job), ctx, deps.measure, region.text);
   column.forEach((c, i) => {
     const item = items[c.index];
     const p = placed[i];

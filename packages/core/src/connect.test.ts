@@ -11,7 +11,7 @@ const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);
   return r.doc;
 };
-/** Default project, subject placed as in example A, headline with text, output o1 wired to main. */
+/** Default project, subject placed as in example G (with the headline), headline with text, output o1 wired to main. */
 function wiredProject(overrides: Override[] = []): ProjectDoc {
   const doc = place(project(output({ overrides })), 'subject', { x: 900, y: 750, w: 1200, h: 1800 });
   return {
@@ -30,7 +30,7 @@ describe('disconnect (D20, frozen)', () => {
     expect(isOutputConnected(doc, 'o1')).toBe(false);
     const frozen = doc.outputs[0]?.frozen?.items ?? [];
     expect(frozen.map((i) => i.sourceId).sort()).toEqual(['background', 'headline', 'logo', 'subject']);
-    expectFrame(frozen.find((i) => i.sourceId === 'subject')?.frame, { x: 324, y: 418.5, w: 432, h: 648 });
+    expectFrame(frozen.find((i) => i.sourceId === 'subject')?.frame, { x: 308.571429, y: 262.976546, w: 462.857143, h: 694.285714 });
     expect(frozen.find((i) => i.sourceId === 'headline')?.fontSizePx).toBeGreaterThan(0);
   });
 
@@ -39,17 +39,18 @@ describe('disconnect (D20, frozen)', () => {
     const before = at(doc, 'headline');
     doc = moveSubject(doc);
     doc = { ...doc, sources: doc.sources.map((s) => (s.id === 'headline' && s.content.kind === 'text' ? { ...s, content: { ...s.content, text: 'CCC' } } : s)) };
-    expectFrame(at(doc, 'subject')?.frame, { x: 324, y: 418.5, w: 432, h: 648 });
+    expectFrame(at(doc, 'subject')?.frame, { x: 308.571429, y: 262.976546, w: 462.857143, h: 694.285714 });
     expect(at(doc, 'headline')?.lines).toEqual(['CCC']);
     expect(at(doc, 'headline')?.fontSizePx).toBe(before?.fontSizePx);
     // A connected output re-flows (D20)
-    expect(at(moveSubject(wiredProject()), 'subject')?.frame.w).toBeCloseTo(0.2 * 3000 * 0.36);
+    expect(at(moveSubject(wiredProject()), 'subject')?.frame.w).toBeCloseTo(231.428571); // 600 · 972/2520
   });
 
   it('snapshots frames before overrides; overrides keep applying on top', () => {
     const doc = ok(disconnectOutput(wiredProject([ov({ frame: { x: 5 } })]), 'o1', deps));
-    expect(doc.outputs[0]?.frozen?.items.find((i) => i.sourceId === 'subject')?.frame.x).toBeCloseTo(324);
-    expect(at(moveSubject(doc), 'subject')?.frame).toMatchObject({ x: 5, w: 432 });
+    expect(doc.outputs[0]?.frozen?.items.find((i) => i.sourceId === 'subject')?.frame.x).toBeCloseTo(308.571429);
+    expect(at(moveSubject(doc), 'subject')?.frame.x).toBe(5);
+    expect(at(moveSubject(doc), 'subject')?.frame.w).toBeCloseTo(462.857143);
     expect(at(doc, 'subject')?.overridden).toBe(true);
   });
 
@@ -67,7 +68,7 @@ describe('reconnect (D21)', () => {
     const doc = ok(reconnectOutput(frozen, 'o1', 'keep'));
     expect(isOutputConnected(doc, 'o1')).toBe(true);
     expect(doc.outputs[0]?.frozen).toBeUndefined();
-    expect(at(doc, 'subject')?.frame.w).toBeCloseTo(216);
+    expect(at(doc, 'subject')?.frame.w).toBeCloseTo(231.428571);
     expect(doc.wires.filter((w) => w.to === 'o1')).toHaveLength(1);
   });
 
