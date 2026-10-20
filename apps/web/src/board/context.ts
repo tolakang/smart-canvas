@@ -13,7 +13,7 @@ export interface BoardActions {
   openOutputEditor: (outputId: string) => void;
   /** Stamp for override writes: the signed-in user, now. */
   author: () => OverrideAuthor;
-  /** Uploaded team fonts (registered as FontFaces), for font pickers. */
+  /** Uploaded team fonts (registered as @font-face rules), for font pickers. */
   teamFonts: TeamFont[];
   /** Current number of inputs (for the 10-input cap). */
   sourceCount: number;

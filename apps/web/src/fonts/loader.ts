@@ -5,7 +5,7 @@
  * The text matters: bundled families are split by unicode-range, so loading without the Khmer
  * characters would never fetch the Khmer face.
  */
-import { cssFont, type TextMeasure, type TextStyle } from '@smart-canvas/core';
+import { cssFont, quoteFamily, type TextMeasure, type TextStyle } from '@smart-canvas/core';
 import { assetUrl } from '../api';
 
 export interface TeamFont {
@@ -14,16 +14,25 @@ export interface TeamFont {
   mime: string;
 }
 
-const registered = new Map<string, FontFace>();
+const registered = new Set<string>();
 
-/** Adds team fonts to document.fonts (once each). Faces load lazily when first used or prepared. */
+/**
+ * Adds team fonts as @font-face rules (once each) in one <style>, like the bundled fonts' CSS, so every
+ * consumer (renderer, measuring, the SVG export's font embedding) sees one kind of font. Faces load
+ * lazily when first used or prepared.
+ */
 export function registerTeamFonts(teamId: string, fonts: TeamFont[]): void {
+  let sheet = document.getElementById('sc-team-fonts');
+  if (!sheet) {
+    sheet = document.createElement('style');
+    sheet.id = 'sc-team-fonts';
+    document.head.append(sheet);
+  }
   for (const f of fonts) {
     if (registered.has(f.id) || !f.family) continue;
     // One uploaded file covers every weight request, so the browser does not fake bold over it.
-    const face = new FontFace(f.family, `url(${assetUrl(teamId, f.id)})`, { weight: '100 900', display: 'swap' });
-    document.fonts.add(face);
-    registered.set(f.id, face);
+    sheet.append(`@font-face{font-family:${quoteFamily(f.family)};src:url("${assetUrl(teamId, f.id)}");font-weight:100 900;font-display:swap}\n`);
+    registered.add(f.id);
   }
 }
 
