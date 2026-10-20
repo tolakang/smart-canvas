@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T6.4 — SVG outline text option (S3 passed). S1 needs the `.af` test file; T7.6 waits on S1
+**Next:** S1 — needs the Affinity `.af` test file with named layers; then T7.6 if S1 says go
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -55,7 +55,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T6.1 — Render route + worker — [#32](https://github.com/tolakang/smart-canvas/pull/32)
 - [x] T6.2 — PNG/JPG/WebP — [#33](https://github.com/tolakang/smart-canvas/pull/33)
 - [x] T6.3 — PDF — [#34](https://github.com/tolakang/smart-canvas/pull/34)
-- [ ] T6.4 — SVG — needs S3 · live text done [#35](https://github.com/tolakang/smart-canvas/pull/35); outline text waits on S3
+- [x] T6.4 — SVG — live text [#35](https://github.com/tolakang/smart-canvas/pull/35); outline text [#46](https://github.com/tolakang/smart-canvas/pull/46)
 - [x] T6.5 — Job queue — [#36](https://github.com/tolakang/smart-canvas/pull/36)
 - [x] T6.6 — Download — [#37](https://github.com/tolakang/smart-canvas/pull/37)
 - [x] T6.7 — Caps — [#38](https://github.com/tolakang/smart-canvas/pull/38)
