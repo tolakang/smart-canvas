@@ -56,7 +56,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
               data-port={p.port}
               {...rowProps({ id: p.sourceId, port: p.port })}
             >
-              <Handle type="target" position={Position.Left} id={portHandleId(p.port)} isConnectable={!readOnly} />
+              <Handle type="target" position={Position.Left} id={portHandleId(p.port)} isConnectable={!readOnly} className="sc-handle--layer" title="Layer in" />
               {!readOnly && (
                 <span className="sc-port__grip" title="Drag to re-order">
                   <Icon name="grip" />
@@ -85,7 +85,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
       </ol>
       {data.ports.length === 0 && <p className="sc-node__meta">No inputs yet.</p>}
       <div className="sc-node__meta sc-ports__hint">Top = front · drag to re-order</div>
-      <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={!readOnly} />
+      <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={!readOnly} className="sc-handle--composition" title="Main preview out: wire into outputs" />
     </div>
   );
 }

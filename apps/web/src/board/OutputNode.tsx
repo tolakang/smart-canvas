@@ -90,7 +90,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
 
   return (
     <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`} aria-label={`Output ${output.label}`}>
-      <Handle type="target" position={Position.Left} isConnectable={!readOnly && !connected} />
+      <Handle type="target" position={Position.Left} isConnectable={!readOnly && !connected} className="sc-handle--composition" title="Main preview in" />
       <div className="sc-node__head">
         {renaming !== null ? (
           <input

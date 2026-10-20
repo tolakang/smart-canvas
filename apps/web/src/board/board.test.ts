@@ -2,7 +2,9 @@ import { createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canva
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
 import {
+  connectionRefusal,
   docToEdges,
+  edgeOfConnection,
   docToNodes,
   isInputToMain,
   isMainToOutput,
@@ -53,8 +55,8 @@ describe('docToNodes / docToEdges', () => {
 
   it('maps wires to edges: inputs land on their port handle; all wires are deletable', () => {
     expect(docToEdges(sampleDoc())).toEqual([
-      { id: 'w1', source: 'src:bg', target: 'main', targetHandle: 'p0', deletable: true },
-      { id: 'w2', source: 'main', target: 'out:ig', sourceHandle: 'out', deletable: true },
+      { id: 'w1', source: 'src:bg', target: 'main', targetHandle: 'p0', className: 'sc-edge--layer', deletable: true },
+      { id: 'w2', source: 'main', target: 'out:ig', sourceHandle: 'out', className: 'sc-edge--composition', deletable: true },
     ]);
   });
 
@@ -233,5 +235,22 @@ describe('Autosave', () => {
     await a.flush();
     expect(save).toHaveBeenCalledTimes(1);
     expect(a.state).toBe('saved');
+  });
+});
+
+describe('typed connections (T12.2, D32)', () => {
+  it('maps board connections to typed edges', () => {
+    expect(edgeOfConnection({ source: 'src:bg', target: MAIN_ID })).toEqual({ from: 'bg', to: 'main', kind: 'layer' });
+    expect(edgeOfConnection({ source: MAIN_ID, target: 'out:a4' })).toEqual({ from: 'main', to: 'a4', kind: 'composition' });
+    expect(edgeOfConnection({ source: null, target: MAIN_ID })).toBeNull();
+  });
+
+  it('allows input → main row and main → a free output; says why otherwise', () => {
+    const doc = sampleDoc();
+    expect(connectionRefusal(doc, { source: 'src:bg', target: MAIN_ID })).toBeNull();
+    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4' })).toBeNull();
+    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:ig' })).toBe('This output already has a main preview: drag its wire off first.');
+    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig' })).toBe('An input wires into a row of a main preview.'); // output-only layers: T12.4
+    expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of a main preview.');
   });
 });

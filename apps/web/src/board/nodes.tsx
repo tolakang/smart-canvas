@@ -41,7 +41,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
         {source.libraryItemId && ' · from library'}
       </div>
       <SourceEditor source={source} upload={upload} />
-      <Handle type="source" position={Position.Right} isConnectable={!readOnly} />
+      <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a main preview row" />
     </div>
   );
 }

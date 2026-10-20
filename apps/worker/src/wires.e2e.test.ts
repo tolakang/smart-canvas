@@ -123,4 +123,16 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     expect(Math.abs(handle.x - spot.x)).toBeLessThan(30);
     expect(Math.abs(handle.y - spot.y)).toBeLessThan(80);
   }, 60_000);
+
+  it('T12.2: typed ports — a wire dropped on the wrong kind of port is refused, with the reason', async () => {
+    const before = (await doc()).edges.length;
+    const out = (await doc()).outputs[0];
+    if (!out) throw new Error('no output');
+    await drag(inputHandle('Logo'), page.locator(`.react-flow__node-outputNode[data-id="out:${out.id}"] .react-flow__handle`));
+    await expect.poll(() => page.getByRole('alert').innerText()).toBe('An input wires into a row of a main preview.');
+    expect((await doc()).edges.length).toBe(before);
+    // Ports are typed by class (layer / composition) for their colours.
+    expect(await inputHandle('Logo').getAttribute('class')).toContain('sc-handle--layer');
+    expect(await main().locator('.react-flow__handle[data-handleid="out"]').getAttribute('class')).toContain('sc-handle--composition');
+  }, 60_000);
 });

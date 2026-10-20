@@ -3,7 +3,7 @@
  * on each source / the main composition / each output; wires come from the doc's typed `edges` (D32).
  * The board shows the main composition (more compositions and process nodes: T12.2+).
  */
-import { mainComposition, masterScene, MAIN, withComposition, type Edge as DocEdge, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { connectRefusal, isOutputConnected, mainComposition, masterScene, MAIN, withComposition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -115,10 +115,35 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
         target,
         ...(port >= 0 ? { targetHandle: portHandleId(port) } : {}),
         ...(e.kind === 'composition' ? { sourceHandle: OUTPUT_HANDLE } : {}),
+        className: `sc-edge--${e.kind}`,
         deletable: true,
       },
     ];
   });
+}
+
+/** A board connection as a typed graph edge (D32): node ids → doc ids; out of a composition = 'composition'. */
+export function edgeOfConnection(c: { source: string | null; target: string | null }): { from: string; to: string; kind: EdgeKind } | null {
+  const id = (n: string | null) => (n === MAIN_ID ? MAIN_ID : n ? (sourceIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
+  const from = id(c.source);
+  const to = id(c.target);
+  if (!from || !to) return null;
+  return { from, to, kind: c.source === MAIN_ID ? 'composition' : 'layer' };
+}
+
+/** Why a wire may not go there (null = it may): port types and loops (core), one composition per output. */
+export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; target: string | null }): string | null {
+  const e = edgeOfConnection(c);
+  if (!e) return 'Drop the wire on a port.';
+  const refusal = connectRefusal(doc, e.from, e.to, e.kind);
+  if (refusal === 'wrong_type')
+    return e.kind === 'composition' ? 'A main preview wires into an output.' : 'An input wires into a row of a main preview.';
+  if (refusal === 'cycle') return 'That would make a loop.';
+  if (refusal) return 'Drop the wire on a port.';
+  // Output-only layers (layer → output) come with T12.4; until then layers go into main preview rows.
+  if (e.kind === 'layer' && e.to !== MAIN_ID) return 'An input wires into a row of a main preview.';
+  if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This output already has a main preview: drag its wire off first.';
+  return null;
 }
 
 /** Input → main preview connections (wire onto a port). */

@@ -440,3 +440,14 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-health__list li { padding: 6px var(--sp-2); border-radius: var(--r-sm); border-left: 3px solid var(--warn); background: var(--surface-2); }
 .sc-health__list li[data-level='error'] { border-left-color: var(--danger); }
 .sc-health__list strong { display: block; font-weight: 600; }
+
+/* T12.2 typed ports (D32): layer = blue, composition = purple; while wiring, valid targets glow, others fade */
+.react-flow__handle.sc-handle--layer { border-color: var(--type-input); }
+.react-flow__handle.sc-handle--composition { border-color: var(--type-main); border-radius: 3px; }
+.react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
+.react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
+.react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: #fdecea; }
+.react-flow__edge.sc-edge--layer .react-flow__edge-path { stroke: color-mix(in srgb, var(--type-input) 55%, #b3b3b3); }
+.react-flow__edge.sc-edge--composition .react-flow__edge-path { stroke: color-mix(in srgb, var(--type-main) 55%, #b3b3b3); stroke-dasharray: none; }
+.react-flow__edge.sc-edge--layer.selected .react-flow__edge-path, .react-flow__edge.sc-edge--layer:hover .react-flow__edge-path { stroke: var(--type-input); }
+.react-flow__edge.sc-edge--composition.selected .react-flow__edge-path, .react-flow__edge.sc-edge--composition:hover .react-flow__edge-path { stroke: var(--type-main); }

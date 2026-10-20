@@ -6,7 +6,6 @@ import {
   disconnectOutput,
   disconnectSource,
   duplicateSource,
-  isOutputConnected,
   LIMITS,
   outputDefaults,
   reconnectNeedsChoice,
@@ -54,6 +53,7 @@ import {
   docToNodes,
   isInputToMain,
   isMainToOutput,
+  connectionRefusal,
   MAIN_ID,
   OUTPUT_HANDLE,
   outputIdOfNode,
@@ -343,10 +343,8 @@ function BoardCanvas(props: {
     [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, remember, disconnect, reconnect, author, apply, run],
   );
 
-  const isValidConnection = useCallback<IsValidConnection>(
-    (c) => !readOnly && (isInputToMain(c) || (isMainToOutput(c) && !isOutputConnected(docRef.current, outputIdOfNode(c.target) ?? ''))),
-    [readOnly],
-  );
+  // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.
+  const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && connectionRefusal(docRef.current, c) === null, [readOnly]);
 
   /** Wire input → a port row: connects it, and moves it to that port if different (D11). */
   const onConnect = useCallback(
@@ -430,7 +428,12 @@ function BoardCanvas(props: {
    */
   const onConnectEnd = useCallback(
     (e: MouseEvent | TouchEvent, state: FinalConnectionState) => {
-      if (readOnly || state.isValid || state.toHandle || !flow.current) return;
+      if (readOnly || state.isValid || !flow.current) return;
+      if (state.toHandle) {
+        const why = connectionRefusal(docRef.current, { source: state.fromNode?.id ?? null, target: state.toNode?.id ?? null });
+        if (why) setNotice(why);
+        return;
+      }
       const r = wireEndDrag.current;
       if (r.active || performance.now() - r.endedAt < 100) return;
       if (state.fromNode?.id !== MAIN_ID || state.fromHandle?.id !== OUTPUT_HANDLE) return;
