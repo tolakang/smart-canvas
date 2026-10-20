@@ -14,6 +14,8 @@ export interface AppOptions {
   store: ObjectStore;
   /** Defaults to true; turn off only for plain-http local dev and tests. */
   secureCookie?: boolean;
+  /** Export worker's read-only token (RENDER_TOKEN). */
+  renderToken?: string;
   logger?: boolean;
 }
 
@@ -22,7 +24,7 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
 
   app.get('/health', async () => ({ ok: true }));
 
-  await app.register(authPlugin, { db: opts.db, secureCookie: opts.secureCookie });
+  await app.register(authPlugin, { db: opts.db, secureCookie: opts.secureCookie, renderToken: opts.renderToken });
   await app.register(authRoutes);
   await app.register(inviteRoutes);
   await app.register(memberRoutes);

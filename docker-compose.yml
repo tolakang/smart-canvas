@@ -52,6 +52,8 @@ services:
       S3_ACCESS_KEY: ${MINIO_ROOT_USER:-smartcanvas}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      # Read-only access for the export worker (same value as the worker's).
+      RENDER_TOKEN: ${RENDER_TOKEN:?set RENDER_TOKEN in .env (32+ characters)}
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +70,10 @@ services:
       S3_BUCKET: ${S3_BUCKET:-smart-canvas}
       S3_ACCESS_KEY: ${MINIO_ROOT_USER:-smartcanvas}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      # Renders through the web app (same fonts and renderer as the preview); reads the API with the render token.
+      WEB_URL: http://web
+      API_URL: http://api:3000
+      RENDER_TOKEN: ${RENDER_TOKEN:?set RENDER_TOKEN in .env (32+ characters)}
     depends_on:
       postgres:
         condition: service_healthy

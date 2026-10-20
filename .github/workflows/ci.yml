@@ -36,6 +36,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Chromium for the export worker's render tests
+        run: pnpm --filter @smart-canvas/worker exec playwright install --with-deps chromium
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
@@ -62,6 +64,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: ci
           MINIO_ROOT_PASSWORD: ci-password-123
+          RENDER_TOKEN: ci-render-token-0123456789abcdef0123
       - name: Start the stack
         run: |
           cp .env.example .env
