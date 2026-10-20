@@ -106,4 +106,18 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     await expect.poll(async () => (await doc()).wires.filter((w) => w.from === 'main').length).toBe(0);
     expect((await doc()).outputs.find((o) => o.id === pt.id)?.frozen).toBeTruthy();
   }, 90_000);
+
+  it('T10.4: a wire dragged out of the main preview onto empty canvas adds a wired output there', async () => {
+    const before = (await doc()).outputs.map((o) => o.id);
+    const spot = await emptySpot();
+    await drag(main().locator('.react-flow__handle[data-handleid="out"]'), spot);
+    await expect.poll(async () => (await doc()).outputs.length).toBe(before.length + 1);
+    const added = (await doc()).outputs.find((o) => !before.includes(o.id));
+    expect(added).toMatchObject({ label: '1080×1350 px', size: { width: 1080, height: 1350, unit: 'px' } });
+    expect((await doc()).wires).toContainEqual(expect.objectContaining({ from: 'main', to: added?.id }));
+    // The new node sits where the wire was dropped (its input handle under the pointer).
+    const handle = await centre(page.locator(`.react-flow__node-outputNode[data-id="out:${added?.id}"] .react-flow__handle`));
+    expect(Math.abs(handle.x - spot.x)).toBeLessThan(30);
+    expect(Math.abs(handle.y - spot.y)).toBeLessThan(80);
+  }, 60_000);
 });

@@ -8,6 +8,7 @@ import {
   duplicateSource,
   isOutputConnected,
   LIMITS,
+  outputDefaults,
   reconnectNeedsChoice,
   reconnectOutput,
   setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
@@ -54,6 +55,7 @@ import {
   isInputToMain,
   isMainToOutput,
   MAIN_ID,
+  OUTPUT_HANDLE,
   outputIdOfNode,
   portFromHandle,
   sourceIdOfNode,
@@ -62,6 +64,7 @@ import {
   type BoardNode,
 } from './flow';
 import { nodeTypes } from './nodes';
+import { sizeLabel } from './OutputNode';
 
 interface Loaded {
   rev: number;
@@ -74,6 +77,11 @@ const ERROR_NOTICE: Partial<Record<SourceError, string>> = {
   output_limit: `A project can have at most ${LIMITS.maxOutputs} outputs.`,
   invalid: 'That value is out of range.',
 };
+
+/** T10.4: an output made by dropping a wire starts at this size (the Add output dialog's default). */
+const NEW_OUTPUT_SIZE = { width: 1080, height: 1350, unit: 'px' } as const;
+/** About where an output node's input handle sits below its top-left corner, so the new node lands on the pointer. */
+const NEW_OUTPUT_HANDLE_Y = 26;
 
 const STATE_LABEL: Record<SaveState, string> = {
   saved: 'All changes saved',
@@ -378,8 +386,11 @@ function BoardCanvas(props: {
    * leaves the wire as it was.
    */
   const reconnectDone = useRef(false);
+  // React Flow also ends a wire-end drag with onConnectEnd; T10.4 must not read that as a new wire.
+  const wireEndDrag = useRef<{ active: boolean; endedAt: number }>({ active: false, endedAt: 0 });
   const onReconnectStart = useCallback(() => {
     reconnectDone.current = false;
+    wireEndDrag.current = { active: true, endedAt: 0 };
   }, []);
   const onReconnect = useCallback(
     (old: Edge, c: Connection) => {
@@ -406,9 +417,29 @@ function BoardCanvas(props: {
   );
   const onReconnectEnd = useCallback(
     (_e: MouseEvent | TouchEvent, edge: Edge, _type: HandleType, state: FinalConnectionState) => {
+      wireEndDrag.current = { active: false, endedAt: performance.now() };
       if (!reconnectDone.current && !state.toHandle) onEdgesDelete([edge]);
     },
     [onEdgesDelete],
+  );
+
+  /**
+   * T10.4: a wire dragged out of the main preview and released on empty canvas adds an output there, already
+   * wired (addOutput wires main → output, D12). It starts at the default size; its preset can be changed on the node.
+   */
+  const onConnectEnd = useCallback(
+    (e: MouseEvent | TouchEvent, state: FinalConnectionState) => {
+      if (readOnly || state.isValid || state.toHandle || !flow.current) return;
+      const r = wireEndDrag.current;
+      if (r.active || performance.now() - r.endedAt < 100) return;
+      if (state.fromNode?.id !== MAIN_ID || state.fromHandle?.id !== OUTPUT_HANDLE) return;
+      const point = 'changedTouches' in e ? e.changedTouches[0] : e;
+      if (!point) return;
+      const at = flow.current.screenToFlowPosition({ x: point.clientX, y: point.clientY });
+      const size = { ...NEW_OUTPUT_SIZE };
+      run((doc) => addOutput(doc, { id: newId(), label: sizeLabel(size), size, ...outputDefaults('px'), board: { x: at.x, y: at.y - NEW_OUTPUT_HANDLE_Y } }));
+    },
+    [readOnly, run],
   );
 
   /** Duplicates inputs (each copy right next to its original), as one undo step. */
@@ -646,6 +677,7 @@ function BoardCanvas(props: {
             onReconnectStart={onReconnectStart}
             onReconnect={onReconnect}
             onReconnectEnd={onReconnectEnd}
+            onConnectEnd={onConnectEnd}
             reconnectRadius={16}
             connectionRadius={36}
             nodesDraggable={!readOnly}
