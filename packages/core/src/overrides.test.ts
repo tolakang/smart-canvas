@@ -3,7 +3,7 @@ import { computeLayout } from './layout';
 import { mockMeasure, output, place, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { outputScene } from './outputs';
-import { setOverrideFrame, setOverrideHidden, setOverrideStyle } from './overrides';
+import { overrideDiff, setOverrideFrame, setOverrideHidden, setOverrideStyle } from './overrides';
 import type { SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -66,5 +66,22 @@ describe('setOverrideHidden', () => {
     expect(doc.sources.find((s) => s.id === 'logo')?.visible).toBe(true);
     doc = ok(setOverrideHidden(doc, 'o1', 'logo', false, ada));
     expect(ovOf(doc, 'logo')).toBeUndefined();
+  });
+});
+
+describe('overrideDiff (T5.2)', () => {
+  it('lists overridden fields with their auto values', () => {
+    let doc = ok(setOverrideFrame(base(), 'o1', 'subject', { x: 5, w: 432 }, ada)); // w equals auto → not a difference
+    expect(overrideDiff(doc, 'o1', 'subject', deps)).toEqual([{ field: 'x', auto: 324, value: 5 }]);
+    doc = ok(setOverrideStyle(doc, 'o1', 'headline', { color: '#ff0000', fontSizePx: 40 }, ada));
+    const headline = overrideDiff(doc, 'o1', 'headline', deps);
+    expect(headline).toContainEqual({ field: 'color', auto: '#111111', value: '#ff0000' });
+    expect(headline.find((f) => f.field === 'fontSizePx')).toMatchObject({ value: 40 });
+    doc = ok(setOverrideHidden(doc, 'o1', 'logo', true, ada));
+    expect(overrideDiff(doc, 'o1', 'logo', deps)).toEqual([{ field: 'hidden', auto: false, value: true }]);
+  });
+
+  it('is empty without an override', () => {
+    expect(overrideDiff(base(), 'o1', 'subject', deps)).toEqual([]);
   });
 });

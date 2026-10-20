@@ -149,3 +149,13 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-presets form label { display: grid; gap: 2px; font-size: 13px; }
 .sc-output__frozen { color: #8a5a00; }
 .sc-props__note { margin: 0; font-size: 12px; }
+
+/* Override inspector (T5.2) */
+.sc-editor__side { display: flex; flex-direction: column; flex: none; width: 280px; overflow: auto; border-left: 1px solid var(--line); background: #fff; }
+.sc-editor__side .sc-props { border-left: 0; width: auto; }
+.sc-inspector { padding: 0 0 8px; border-bottom: 1px solid var(--line); }
+.sc-inspector .sc-props__note { padding: 4px 12px; }
+.sc-inspector__table { width: calc(100% - 24px); margin: 4px 12px; border-collapse: collapse; font-size: 12px; }
+.sc-inspector__table th { text-align: left; font-weight: 600; color: var(--muted); }
+.sc-inspector__table td, .sc-inspector__table th { padding: 2px 4px; border-bottom: 1px solid var(--line); }
+.sc-lock { font-size: 11px; }

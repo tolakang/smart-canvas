@@ -2,6 +2,7 @@
  * Output overrides (D19): per (output, source) partial frame / text style / hidden. They are the only
  * stored layout state; the engine applies them last, and master edits never touch them (D20).
  */
+import { computeLayout, type LayoutDeps } from './layout';
 import type { Frame, Override, OutputNode, ProjectDoc, TextStyle } from './model';
 import type { SourceResult } from './sources';
 import { applyTextStylePatch, type TextStylePatch } from './text-style';
@@ -76,4 +77,41 @@ export function setOverrideHidden(doc: ProjectDoc, outputId: string, sourceId: s
     else delete next.hidden;
     return next.frame || next.style || next.hidden ? next : null;
   });
+}
+
+/** One overridden field and what the automatic layout would give (T5.2 inspector). */
+export interface OverrideField {
+  field: string; // 'x' | 'y' | 'w' | 'h' | 'rotation' | 'hidden' | a TextStyle key
+  auto: string | number | boolean | undefined;
+  value: string | number | boolean | undefined;
+}
+
+/**
+ * The fields of a layer's override on one output that differ from auto. Auto = the engine's result for
+ * this output without this override (frozen frames included); text style auto = the source's own style,
+ * except font size, whose auto is the fitted size.
+ */
+export function overrideDiff(doc: ProjectDoc, outputId: string, sourceId: string, deps: LayoutDeps): OverrideField[] {
+  const output = doc.outputs.find((o) => o.id === outputId);
+  const override = output?.overrides.find((o) => o.sourceId === sourceId);
+  const source = doc.sources.find((s) => s.id === sourceId);
+  if (!output || !override || !source) return [];
+  const without = { ...doc, outputs: doc.outputs.map((o) => (o.id === outputId ? { ...o, overrides: o.overrides.filter((x) => x.sourceId !== sourceId) } : o)) };
+  const auto = computeLayout(without, outputId, deps).items.find((i) => i.sourceId === sourceId);
+  const fields: OverrideField[] = [];
+  if (override.hidden) fields.push({ field: 'hidden', auto: false, value: true });
+  for (const key of ['x', 'y', 'w', 'h', 'rotation'] as const) {
+    const value = override.frame?.[key];
+    if (value === undefined) continue;
+    const a = key === 'rotation' ? (auto?.frame.rotation ?? 0) : auto?.frame[key];
+    if (a === undefined || Math.abs(a - value) > 1e-3) fields.push({ field: key, auto: a === undefined ? undefined : round(a), value });
+  }
+  if (override.style && source.content.kind === 'text') {
+    const base = source.content.style;
+    for (const [key, value] of Object.entries(override.style) as [keyof TextStyle, TextStyle[keyof TextStyle]][]) {
+      const a = key === 'fontSizePx' ? auto?.fontSizePx : base[key];
+      if (a !== value) fields.push({ field: key, auto: a, value });
+    }
+  }
+  return fields;
 }
