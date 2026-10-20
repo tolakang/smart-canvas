@@ -77,3 +77,6 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T8.5 — Wires: attach and detach by dragging — [#52](https://github.com/tolakang/smart-canvas/pull/52)
 - [x] T8.6 — Main preview editor: easier move / resize — [#53](https://github.com/tolakang/smart-canvas/pull/53)
 - [x] T8.7 — Behaviours: right quick-add defaults; change "behaves like" on the node — [#54](https://github.com/tolakang/smart-canvas/pull/54)
+
+## P9 — Smart outputs
+- [ ] T9.1 — Layout v2: outputs fill the space and re-arrange (D30)
