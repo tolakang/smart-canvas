@@ -1,6 +1,6 @@
 import { createProjectDoc, type InputSource } from '@smart-canvas/core';
 import { describe, expect, it } from 'vitest';
-import { addStop, removeStop, setAsset, setFill, setStop, setText, switchFillType, withSource } from './content';
+import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, switchFillType, withSource } from './content';
 
 const text: InputSource = {
   id: 'head',
@@ -57,4 +57,18 @@ describe('fill helpers', () => {
     expect(removeStop(lin, 0)).toBe(lin);
   });
 
+});
+
+describe('background photo ↔ colour (D9, T8.3)', () => {
+  const bg = createProjectDoc('P').sources.find((s) => s.id === 'background') as InputSource;
+  it('a fill background takes a photo and goes back to a colour', () => {
+    const photo = photoBackground(bg, 'a1');
+    expect(photo).toMatchObject({ kind: 'image', behavesLike: 'background', content: { kind: 'image', assetId: 'a1', focal: { x: 0.5, y: 0.5 } } });
+    expect(colourBackground(photo)).toMatchObject({ kind: 'fill', content: { kind: 'fill', fill: { type: 'solid', color: '#ffffff' } } });
+  });
+  it('leaves other inputs alone', () => {
+    const headline = createProjectDoc('P').sources.find((s) => s.id === 'headline') as InputSource;
+    expect(photoBackground(headline, 'a1')).toBe(headline);
+    expect(colourBackground(bg)).toBe(bg);
+  });
 });
