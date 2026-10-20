@@ -49,18 +49,26 @@ export function useAssetSizes(teamId: string): { sizes: AssetSizes; remember: (a
  * Layout deps for `doc`, or null until the first measure is ready. Fonts are (re)loaded whenever the
  * text, families or team fonts change; the previous measure stays in use meanwhile.
  */
-export function useLayoutDeps(doc: ProjectDoc, sizes: AssetSizes, fontsKey: string): LayoutDeps | null {
+export function useLayoutDeps(doc: ProjectDoc, sizes: AssetSizes, fontsKey: string): { deps: LayoutDeps | null; missingFonts: string[] } {
   const requests = fontRequestsJson(doc);
   const [measure, setMeasure] = useState<LayoutDeps['measure'] | null>(null);
+  // D35: families that failed to load (their text draws in a fallback): an error on the nodes using them.
+  const [missingFonts, setMissing] = useState<string[]>([]);
   useEffect(() => {
     let live = true;
     prepareTextMeasure(JSON.parse(requests) as FontRequest[]).then(
-      (r) => live && setMeasure(() => r.measure),
+      (r) => {
+        if (!live) return;
+        setMeasure(() => r.measure);
+        const missing = [...new Set(r.missing.map((m) => m.style.fontFamily))].sort();
+        setMissing((cur) => (cur.join('\n') === missing.join('\n') ? cur : missing));
+      },
       () => undefined,
     );
     return () => {
       live = false;
     };
   }, [requests, fontsKey]);
-  return useMemo(() => (measure ? { measure, assets: sizes } : null), [measure, sizes]);
+  const deps = useMemo(() => (measure ? { measure, assets: sizes } : null), [measure, sizes]);
+  return { deps, missingFonts };
 }

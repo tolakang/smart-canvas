@@ -425,3 +425,18 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 /* T10.4: an output's input handle sits on its title row (where a dropped wire creates it), not mid-card */
 .sc-node--output > .react-flow__handle { top: 26px; }
+
+/* T13.1 layout health (D35): status dot + count on nodes, issue list on click */
+.sc-health { position: relative; display: inline-flex; flex: none; }
+.sc-health__btn { display: inline-flex; align-items: center; gap: 4px; height: 20px; min-width: 20px; padding: 0 6px; border: 0; border-radius: 99px; background: none; cursor: default; font-size: var(--fs-xs); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sc-health__btn[aria-expanded] { cursor: pointer; }
+.sc-health__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--type-output); }
+.sc-health--warning { background: #fff4e5; color: var(--warn); }
+.sc-health--warning .sc-health__dot { background: var(--warn); }
+.sc-health--error { background: #fdecea; color: var(--danger); }
+.sc-health--error .sc-health__dot { background: var(--danger); }
+.sc-health--frozen .sc-health__dot { background: #b3b3b3; }
+.sc-health__list { position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; width: 240px; margin: 0; padding: var(--sp-1); list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-2); display: grid; gap: 2px; font-size: var(--fs-xs); }
+.sc-health__list li { padding: 6px var(--sp-2); border-radius: var(--r-sm); border-left: 3px solid var(--warn); background: var(--surface-2); }
+.sc-health__list li[data-level='error'] { border-left-color: var(--danger); }
+.sc-health__list strong { display: block; font-weight: 600; }

@@ -4,6 +4,7 @@
  */
 import {
   computeLayout,
+  outputHealth,
   convertSize,
   deleteOutput,
   DPI_RANGE,
@@ -27,6 +28,7 @@ import { RenderThumbnail } from '../render/OutputRenderer';
 import { NumberField } from '../ui/NumberField';
 import { useBoard } from './context';
 import type { OutputFlowNode } from './flow';
+import { HealthBadge } from './HealthBadge';
 import { Icon } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
@@ -63,7 +65,7 @@ export function unitSettings(o: OutputNode, unit: Unit): OutputSettings {
 
 export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
   const { output, connected } = data;
-  const { doc, readOnly, run, teamId, layoutDeps, presets, disconnectOutput, reconnectOutput, openOutputEditor } = useBoard();
+  const { doc, readOnly, run, teamId, layoutDeps, missingFonts, presets, disconnectOutput, reconnectOutput, openOutputEditor } = useBoard();
   const set = (patch: OutputSettings) => run((d) => updateOutput(d, output.id, withAutoLabel(output, presets, patch)));
   const [renaming, setRenaming] = useState<string | null>(null);
   const rename = () => {
@@ -74,10 +76,12 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
   // T7.4: thumbnails lag behind edits (deferred) so typing and dragging stay responsive with 10 outputs.
   const shownDoc = useDeferredValue(doc);
   // The node can outlive its output by a render (React Flow syncs nodes after the doc changes).
-  const scene = useMemo(() => {
+  const { scene, health } = useMemo(() => {
     const current = shownDoc.outputs.find((o) => o.id === output.id);
-    return layoutDeps && current ? outputScene(computeLayout(shownDoc, output.id, layoutDeps), current) : null;
-  }, [shownDoc, output.id, layoutDeps]);
+    if (!layoutDeps || !current) return { scene: null, health: null };
+    const layout = computeLayout(shownDoc, output.id, layoutDeps);
+    return { scene: outputScene(layout, current), health: outputHealth(shownDoc, output.id, layout, missingFonts) };
+  }, [shownDoc, output.id, layoutDeps, missingFonts]);
   const bleed = output.bleedMm ?? 0;
   const px = exportPixels(output, bleed > 0);
   const overCap = exceedsExportCap(px);
@@ -107,6 +111,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
             {output.label}
           </div>
         )}
+        {health && <HealthBadge health={health} />}
         <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} output ${output.label}`}>
           {readOnly ? 'View' : 'Edit'}
         </button>
