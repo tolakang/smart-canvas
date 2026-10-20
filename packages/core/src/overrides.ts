@@ -115,3 +115,20 @@ export function overrideDiff(doc: ProjectDoc, outputId: string, sourceId: string
   }
   return fields;
 }
+
+/** "Reset layer" (D19): removes that layer's override on one output; its layout is auto again. */
+export function resetOverride(doc: ProjectDoc, outputId: string, sourceId: string): SourceResult {
+  const output = doc.outputs.find((o) => o.id === outputId);
+  if (!output) return { ok: false, error: 'not_found' };
+  if (!output.overrides.some((o) => o.sourceId === sourceId)) return { ok: true, doc };
+  const overrides = output.overrides.filter((o) => o.sourceId !== sourceId);
+  return { ok: true, doc: { ...doc, outputs: doc.outputs.map((o) => (o.id === outputId ? { ...o, overrides } : o)) } };
+}
+
+/** "Reset output" (D19): clears every override of one output. */
+export function resetOutputOverrides(doc: ProjectDoc, outputId: string): SourceResult {
+  const output = doc.outputs.find((o) => o.id === outputId);
+  if (!output) return { ok: false, error: 'not_found' };
+  if (output.overrides.length === 0) return { ok: true, doc };
+  return { ok: true, doc: { ...doc, outputs: doc.outputs.map((o) => (o.id === outputId ? { ...o, overrides: [] } : o)) } };
+}

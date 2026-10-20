@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T5.3 — Reset
+**Next:** T5.4 — Override-safe re-flow
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -48,7 +48,7 @@ Legend: `[x]` done · `[ ]` to do
 ## P5 Overrides
 - [x] T5.1 — Output editor — [#28](https://github.com/tolakang/smart-canvas/pull/28)
 - [x] T5.2 — Lock icon + inspector — [#29](https://github.com/tolakang/smart-canvas/pull/29)
-- [ ] T5.3 — Reset
+- [x] T5.3 — Reset — [#30](https://github.com/tolakang/smart-canvas/pull/30)
 - [ ] T5.4 — Override-safe re-flow
 
 ## P6 Export
