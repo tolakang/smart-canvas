@@ -1,15 +1,41 @@
 :root {
-  --bg: #f6f7f9;
-  --fg: #1d2330;
-  --muted: #6b7385;
-  --line: #d7dbe3;
-  --accent: #2f6fed;
-  --input: #e8f0ff;
-  --output: #eaf7ee;
-  --danger: #c0392b;
+  /* T10.2 design tokens. Colour: neutrals, one accent, semantic types (input / main / output) used as accents only. */
+  --bg: #f5f5f5;
+  --surface: #fff;
+  --surface-2: #f5f5f5; /* field fill, hover */
+  --fg: #1e1e1e;
+  --muted: #757575;
+  --line: #e6e6e6;
+  --line-strong: #d4d4d4;
+  --accent: #0d99ff;
+  --accent-soft: #e5f4ff;
+  --danger: #dc3412;
+  --warn: #b86200;
+  --type-input: #0d99ff;
+  --type-main: #9747ff;
+  --type-output: #14ae5c;
+  --input: var(--accent-soft); /* legacy names */
+  --output: #e8f7ee;
+  /* Type: 11 / 12 / 13 / 15 */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  /* Space (4 px grid), radius, elevation, motion */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.08);
+  --shadow-2: 0 4px 16px rgb(0 0 0 / 0.12);
+  --field-h: 28px;
+  --t-fast: 120ms ease-out;
   color: var(--fg);
   background: var(--bg);
-  font: 14px/1.4 'Noto Sans', 'Noto Sans Khmer', system-ui, sans-serif;
+  font: 13px/1.4 Inter, system-ui, 'Noto Sans', 'Noto Sans Khmer', sans-serif;
 }
 * { box-sizing: border-box; }
 body { margin: 0; }
@@ -285,3 +311,84 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-design .sc-props select, .sc-design .sc-props input[type='number'] { font-size: 11px; border-color: transparent; background: var(--fig-hover); border-radius: 5px; height: 28px; }
 .sc-design .sc-props select:focus, .sc-design .sc-props input[type='number']:focus { border-color: var(--fig-blue); background: #fff; outline: none; }
 .sc-design .sc-inspector { border-bottom: 1px solid var(--fig-line); }
+
+/* T10.2 board: design-system pass. White node cards with a type stripe, one field style, one button style. */
+.sc-board__bar { min-height: 48px; font-size: var(--fs-sm); }
+.sc-board__bar button { height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); font-size: var(--fs-sm); transition: background var(--t-fast); }
+.sc-board__bar button:hover:not(:disabled) { background: var(--surface-2); }
+.react-flow__node { font-size: var(--fs-sm); }
+
+.sc-node { position: relative; padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-1); display: grid; gap: var(--sp-2); transition: box-shadow var(--t-fast), border-color var(--t-fast); }
+.sc-node::before { content: ''; position: absolute; left: -1px; right: -1px; top: -1px; height: 3px; border-radius: var(--r-lg) var(--r-lg) 0 0; background: var(--type-input); }
+.sc-node--input, .sc-node--output { background: var(--surface); }
+.sc-node--input { width: 240px; }
+.sc-node--main { width: 280px; border-width: 1px; border-color: var(--line); }
+.sc-node--main::before { background: var(--type-main); }
+.sc-node--output { width: 260px; }
+.sc-node--output::before { background: var(--type-output); }
+.sc-node--frozen { border-style: dashed; border-color: var(--line-strong); }
+.sc-node--frozen::before { background: var(--line-strong); }
+.react-flow__node:hover .sc-node { box-shadow: var(--shadow-2); }
+.react-flow__node.selected .sc-node { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-2); }
+.sc-node__head { gap: var(--sp-1); min-height: var(--field-h); }
+.sc-node__title { font-size: var(--fs-md); font-weight: 600; }
+.sc-node__meta { font-size: var(--fs-xs); line-height: 1.5; }
+.sc-editor { margin-top: 0; gap: var(--sp-2); }
+.sc-node .sc-main-thumb { margin-top: 0; border-radius: var(--r-md); border-color: var(--line); }
+.sc-thumb { border-radius: var(--r-md); border-color: var(--line); }
+.sc-ports { margin: 0 calc(-1 * var(--sp-3)); }
+.sc-port { min-height: 36px; padding: var(--sp-1) var(--sp-3); border-top-color: var(--line); background: none; transition: background var(--t-fast); }
+.sc-port:hover { background: var(--surface-2); }
+.sc-port__label { color: var(--fg); }
+.sc-port--hidden .sc-port__label { color: var(--muted); }
+.sc-port__actions { opacity: 0; transition: opacity var(--t-fast); }
+.sc-port:hover .sc-port__actions, .sc-port__actions:focus-within { opacity: 1; }
+.sc-ports__hint { margin-top: 0; }
+
+/* Buttons: one size, three variants (default, ghost, icon). Links in nodes become buttons. */
+.sc-btn, .sc-open-editor, .sc-upload, .sc-fill button, .sc-node .sc-link {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1); height: var(--field-h); padding: 0 var(--sp-3);
+  border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); line-height: 1; text-decoration: none; cursor: pointer; transition: background var(--t-fast), border-color var(--t-fast);
+}
+.sc-btn:hover:not(:disabled), .sc-open-editor:hover, .sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
+.sc-btn:focus-visible, .sc-open-editor:focus-visible, .sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sc-btn--ghost { border-color: transparent; background: none; color: var(--accent); padding: 0 var(--sp-2); }
+.sc-btn--ghost:hover:not(:disabled) { background: var(--accent-soft); }
+.sc-node > .sc-btn { justify-self: start; }
+.sc-node .sc-link { justify-self: start; }
+.sc-open-editor { font-weight: 500; }
+.sc-icon-btn, .sc-actions button { width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
+.sc-icon-btn:hover:not(:disabled), .sc-actions button:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); border-color: transparent; }
+.sc-actions { opacity: 0.55; transition: opacity var(--t-fast); }
+.react-flow__node:hover .sc-actions, .sc-actions:focus-within { opacity: 1; }
+
+/* Fields: one look everywhere in nodes (filled, 28 px, blue focus); selects never overflow the card. */
+.sc-node input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-node select, .sc-node textarea {
+  max-width: 100%; min-width: 0; font: inherit; font-size: var(--fs-sm); border: 1px solid transparent; border-radius: var(--r-md); background: var(--surface-2); color: var(--fg); transition: border-color var(--t-fast), background var(--t-fast);
+}
+.sc-node input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-node select { height: var(--field-h); padding: 0 var(--sp-2); }
+.sc-node input:hover, .sc-node select:hover, .sc-node textarea:hover { border-color: var(--line-strong); }
+.sc-node input:focus, .sc-node select:focus, .sc-node textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+.sc-node select { width: 100%; }
+.sc-node .sc-behavior { width: auto; height: 22px; padding: 0 var(--sp-1); font-size: var(--fs-xs); }
+.sc-node input[type='color'] { width: var(--field-h); height: var(--field-h); padding: 2px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
+.sc-output__settings { margin: 0; gap: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+.sc-output__row { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: var(--sp-2); }
+.sc-output__row .sc-field input[type='number'] { width: 100%; }
+.sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; }
+.sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+.sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
+.sc-fill { font-size: var(--fs-xs); color: var(--muted); }
+.sc-fill .sc-seg { display: inline-flex; gap: var(--sp-3); height: auto; background: none; padding: 0; border: 0; }
+.sc-fill .sc-field { color: var(--fg); }
+.sc-swatch { height: 48px; border-radius: var(--r-md); border-color: var(--line); }
+.sc-rename { height: var(--field-h); font-size: var(--fs-md); }
+
+/* Output header: hand-edits chip + reset; frozen note */
+.sc-node__overrides { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+.sc-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--sp-2); border-radius: 99px; background: #fff4e5; color: var(--warn); font-size: var(--fs-xs); font-weight: 500; }
+.sc-output__frozen { color: var(--warn); }
+
+/* Wires and handles in the accent colour */
+.react-flow__edge-path { stroke: #b3b3b3; stroke-width: 1.5; }
+.react-flow__handle { width: 10px; height: 10px; border: 2px solid var(--accent); background: var(--surface); }

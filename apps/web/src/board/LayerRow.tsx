@@ -105,6 +105,10 @@ const PATHS = {
   plus: 'M8 3v10M3 8h10',
   trash: 'M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.7 8.5h5.6l.7-8.5M7 7v4M9 7v4',
   grip: 'M6 4h.01M10 4h.01M6 8h.01M10 8h.01M6 12h.01M10 12h.01',
+  pencil: 'M10.5 2.5l3 3L6 13H3v-3zM9 4l3 3',
+  library: 'M4 2.5h8v11l-4-2.5-4 2.5z',
+  check: 'M3 8.5l3 3 7-7',
+  close: 'M4 4l8 8M12 4l-8 8',
 } as const;
 
 export function Icon({ name }: { name: keyof typeof PATHS }) {

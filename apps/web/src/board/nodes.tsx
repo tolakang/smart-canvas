@@ -35,7 +35,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
             ))}
           </select>
         )}{' '}
-        · port {source.port}
+        <span title={`Port ${source.port} on the main preview (0 = front)`}>· layer {source.port + 1}</span>
         {!source.visible && ' · hidden'}
         {source.libraryItemId && ' · from library'}
       </div>

@@ -1,6 +1,6 @@
 import { outputDefaults, type OutputSettings, type SizePreset, type Unit } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { presetSettings } from './OutputNode';
+import { presetSettings, sizeLabel } from './OutputNode';
 
 export type NewOutput = { label: string; size: { width: number; height: number; unit: Unit } } & OutputSettings;
 
@@ -25,7 +25,7 @@ export function AddOutputDialog(props: { presets: readonly SizePreset[]; onAdd: 
       return;
     }
     const size = { width: Number(width), height: Number(height), unit };
-    props.onAdd({ label: label.trim() || `${size.width}×${size.height} ${unit}`, size, ...outputDefaults(unit) });
+    props.onAdd({ label: label.trim() || sizeLabel(size), size, ...outputDefaults(unit) });
   }
 
   return (
