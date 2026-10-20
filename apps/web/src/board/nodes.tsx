@@ -6,6 +6,7 @@ import { MainNodeView } from './MainNode';
 import { SourceHeader } from './SourceHeader';
 import type { InputFlowNode } from './flow';
 import { OutputNodeView } from './OutputNode';
+import { ProcessNodeView } from './ProcessNode';
 
 function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
@@ -65,4 +66,4 @@ export function SourceEditor({ source, upload }: { source: InputSource; upload: 
   }
 }
 
-export const nodeTypes: NodeTypes = { inputNode: InputNodeView, mainNode: MainNodeView, outputNode: OutputNodeView };
+export const nodeTypes: NodeTypes = { inputNode: InputNodeView, mainNode: MainNodeView, outputNode: OutputNodeView, processNode: ProcessNodeView };

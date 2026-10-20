@@ -64,6 +64,13 @@ export function LayerActions({ source, compositionId = MAIN }: { source: InputSo
   const { run, doc } = useBoard();
   const rowOnly = compositionId !== MAIN;
   const full = doc.sources.length >= LIMITS.maxSources;
+  // T12.5: a process row only comes off the stack (the process node itself is deleted on the board).
+  if (doc.processes.some((p) => p.id === source.id))
+    return (
+      <button type="button" aria-label={`Remove ${source.label} from this preview`} title="Remove from this preview" onClick={() => run((d) => removeRow(d, compositionId, source.id))}>
+        <Icon name="trash" />
+      </button>
+    );
   return (
     <>
       <button
@@ -132,6 +139,9 @@ const PATHS = {
   sun: 'M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1',
   more: 'M3.5 8h.01M8 8h.01M12.5 8h.01',
   panel: 'M2.5 2.5h11v11h-11zM10 2.5v11',
+  crop: 'M4.5 1.5v10h10M1.5 4.5h10v10',
+  adjust: 'M8 2a6 6 0 1 0 0 12zM8 2a6 6 0 0 1 0 12',
+  flip: 'M8 1.5v13M6 4L2.5 12H6zM10 4l3.5 8H10z',
   moon: 'M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z',
 } as const;
 

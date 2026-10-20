@@ -7,7 +7,7 @@
  * pointer (Ctrl/⌘ + wheel) and Figma's zoom keys, a size badge on the selection, and a Design panel with
  * X / Y / W / H / rotation.
  */
-import type { Frame, InputSource, RenderScene } from '@smart-canvas/core';
+import { layerSources, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 import Moveable from 'react-moveable';
 import { assetUrl } from '../api';
@@ -40,7 +40,9 @@ export interface CanvasEditorProps {
 }
 
 export function CanvasEditor({ label, title, scene, onCommit, layers, props: sidePanel, onClose }: CanvasEditorProps) {
-  const { doc, readOnly, teamId } = useBoard();
+  const { doc, readOnly, teamId, layoutDeps } = useBoard();
+  // T12.5: rows can be processes; they draw (and select) as their effective layer.
+  const layerList = useMemo(() => layerSources(doc), [doc]);
   const stage = useRef<HTMLDivElement>(null);
   const canvasEl = useRef<HTMLDivElement>(null);
   const control = useRef<HTMLDivElement>(null);
@@ -100,7 +102,7 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
 
   // An input that left the scene (hidden, disconnected, deleted) can't stay selected.
   const selectedItem = scene.items.find((i) => i.sourceId === selected) ?? null;
-  const selectedSource = doc.sources.find((s) => s.id === selected) ?? null;
+  const selectedSource = layerList.find((s) => s.id === selected) ?? null;
   // What a click would grab (T8.6): an outline on the layer under the pointer.
   const hoveredItem = hovered && hovered !== selected ? (scene.items.find((i) => i.sourceId === hovered) ?? null) : null;
 
@@ -353,7 +355,7 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
             onPointerMove={(e) => e.buttons === 0 && setHovered(layersAt(e.clientX, e.clientY)[0] ?? null)}
             onPointerLeave={() => setHovered(null)}
             style={{ left: canvasLeft, top: canvasTop, width: scene.width * scale, height: scene.height * scale }}>
-            <OutputRenderer scene={drawn} sources={doc.sources} assetUrl={(id) => assetUrl(teamId, id)} scale={scale} mode="preview" />
+            <OutputRenderer scene={drawn} sources={layerList} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} scale={scale} mode="preview" />
             {hoveredItem && !live && (
               <div
                 className="sc-editor__hover"

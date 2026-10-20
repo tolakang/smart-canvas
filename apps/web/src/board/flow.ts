@@ -3,12 +3,13 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "main preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { compositionById, connectRefusal, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { compositionById, connectRefusal, layerSources, resolveProcess, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
 export const inputNodeId = (sourceId: string) => `src:${sourceId}`;
 export const outputNodeId = (outputId: string) => `out:${outputId}`;
+export const processNodeId = (processId: string) => `proc:${processId}`;
 export const compositionNodeId = (compositionId: string) => (compositionId === MAIN ? MAIN_ID : `comp:${compositionId}`);
 export const compositionIdOfNode = (nodeId: string | null | undefined): string | undefined =>
   nodeId === MAIN_ID ? MAIN : nodeId?.startsWith('comp:') ? nodeId.slice(5) : undefined;
@@ -33,7 +34,7 @@ export type MainFlowNode = Node<
     outputs: number;
     /** What the master looks like now, for the thumbnail (same OutputRenderer as export). */
     scene: RenderScene;
-    sources: InputSource[];
+    sources: LayerSource[];
   },
   'mainNode'
 >;
@@ -46,20 +47,23 @@ export function portFromHandle(handle: string | null | undefined): number | unde
 }
 /** `layers`: the output's own rows (T12.4), front first. */
 export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean; layers: PortRow[] }, 'outputNode'>;
-export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode;
+/** A process node (T12.5): its op and the effective layer it outputs (undefined while its in port is empty). */
+export type ProcessFlowNode = Node<{ process: ProcessNode; layer: LayerSource | undefined }, 'processNode'>;
+export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
 
 /** An edge's `from`/`to` are source, composition or output ids; map them to node ids (null: not on this board). */
 function endpoint(doc: ProjectDoc, id: string): string | null {
   if (compositionById(doc, id)) return compositionNodeId(id);
   if (doc.sources.some((s) => s.id === id)) return inputNodeId(id);
   if (doc.outputs.some((o) => o.id === id)) return outputNodeId(id);
+  if (doc.processes.some((p) => p.id === id)) return processNodeId(id);
   return null;
 }
 
 /** A composition's rows (default: the main preview), front (port 0) first. */
 export function portRows(doc: ProjectDoc, compositionId: string = MAIN): PortRow[] {
   const wired = new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === compositionId).map((e) => e.from));
-  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   return (compositionById(doc, compositionId)?.layers ?? []).flatMap((id, port) => {
     const s = byId.get(id);
     return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
@@ -69,7 +73,7 @@ export function portRows(doc: ProjectDoc, compositionId: string = MAIN): PortRow
 /** An output's own rows (output-only layers, T12.4), front first. */
 export function outputRows(doc: ProjectDoc, outputId: string): PortRow[] {
   const wired = wiredOutputLayers(doc, outputId);
-  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   return (doc.outputs.find((o) => o.id === outputId)?.layers ?? []).flatMap((id, port) => {
     const s = byId.get(id);
     return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
@@ -91,7 +95,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
       inputs: doc.sources.length,
       outputs: doc.outputs.filter((o) => outputComposition(doc, o.id) === c.id).length,
       scene: masterScene(doc, c.id),
-      sources: doc.sources,
+      sources: layerSources(doc),
     },
     deletable: false,
   });
@@ -102,6 +106,15 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         type: 'inputNode',
         position: source.board,
         data: { source },
+        deletable: false,
+      }),
+    ),
+    ...doc.processes.map(
+      (process): ProcessFlowNode => ({
+        id: processNodeId(process.id),
+        type: 'processNode',
+        position: process.board,
+        data: { process, layer: resolveProcess(doc, process.id) },
         deletable: false,
       }),
     ),
@@ -142,7 +155,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
 
 /** A board connection as a typed graph edge (D32): node ids → doc ids; out of a composition = 'composition'. */
 export function edgeOfConnection(c: { source: string | null; target: string | null }): { from: string; to: string; kind: EdgeKind } | null {
-  const id = (n: string | null) => (n ? (compositionIdOfNode(n) ?? sourceIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
+  const id = (n: string | null) => (n ? (compositionIdOfNode(n) ?? layerIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
   const from = id(c.source);
   const to = id(c.target);
   if (!from || !to) return null;
@@ -177,12 +190,12 @@ export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; t
 
 /** Input → composition connections (wire onto a row); the composition id, if so. */
 export function inputToComposition(c: { source: string | null; target: string | null }): string | undefined {
-  return c.source?.startsWith('src:') ? compositionIdOfNode(c.target) : undefined;
+  return c.source && layerIdOfNode(c.source) ? compositionIdOfNode(c.target) : undefined;
 }
 
 /** Input → output connections (an output-only layer, T12.4); the output id, if so. */
 export function inputToOutput(c: { source: string | null; target: string | null }): string | undefined {
-  return c.source?.startsWith('src:') && c.target?.startsWith('out:') ? c.target.slice(4) : undefined;
+  return c.source && layerIdOfNode(c.source) && c.target?.startsWith('out:') ? c.target.slice(4) : undefined;
 }
 
 /** Composition → output connections (reconnecting a disconnected output); the composition id, if so. */
@@ -193,6 +206,9 @@ export function compositionToOutput(c: { source: string | null; target: string |
 export const outputIdOfNode = (nodeId: string) => (nodeId.startsWith('out:') ? nodeId.slice(4) : undefined);
 
 export const sourceIdOfNode = (nodeId: string) => (nodeId.startsWith('src:') ? nodeId.slice(4) : undefined);
+export const processIdOfNode = (nodeId: string) => (nodeId.startsWith('proc:') ? nodeId.slice(5) : undefined);
+/** A node whose out port is a `layer`: an input or a process (T12.5). */
+export const layerIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? processIdOfNode(nodeId);
 
 /** Returns a new doc with the given node positions written into `board`; unknown ids are ignored. */
 export function withPositions(doc: ProjectDoc, moved: { id: string; position: { x: number; y: number } }[]): ProjectDoc {
@@ -206,6 +222,7 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     ...doc,
     compositions: doc.compositions.map((c) => place(c, compositionNodeId(c.id))),
     sources: doc.sources.map((s) => place(s, inputNodeId(s.id))),
+    processes: doc.processes.map((p) => place(p, processNodeId(p.id))),
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };
 }

@@ -80,6 +80,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
         <RenderThumbnail
           scene={data.scene}
           sources={data.sources}
+          assetSizes={layoutDeps?.assets}
           assetUrl={(assetId) => assetUrl(teamId, assetId)}
           maxWidth={236}
           maxHeight={180}
@@ -122,11 +123,11 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
           );
         })}
       </ol>
-      {!isMain && !readOnly && (
-        // A row past the last one: an input wired here becomes this preview's back row.
+      {!readOnly && (
+        // A row past the last one: an input (or a process, T12.5) wired here becomes this preview's back row.
         <div className="sc-port sc-port--add" data-port={data.ports.length}>
-          <Handle type="target" position={Position.Left} id={portHandleId(data.ports.length)} isConnectable className="sc-handle--layer" title="Layer in: wire an input here" />
-          <span className="sc-port__label">Wire an input here</span>
+          <Handle type="target" position={Position.Left} id={portHandleId(data.ports.length)} isConnectable className="sc-handle--layer" title="Layer in: wire an input or a process here" />
+          <span className="sc-port__hint">{isMain ? 'Wire a process here' : 'Wire an input here'}</span>
         </div>
       )}
       {data.ports.length === 0 && isMain && <p className="sc-node__meta">No inputs yet.</p>}

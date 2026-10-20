@@ -4,7 +4,7 @@
  * or click it to add it in the middle of the view (touch, keyboard). Collapses to a slim rail (remembered).
  * On tablets and phones (T13.6, D33) it floats instead — an overlay or a bottom sheet — and closes with `onClose`.
  */
-import { fillToCss, LIMITS, type LibraryItem, type SizePreset } from '@smart-canvas/core';
+import { DEFAULT_OPS, fillToCss, LIMITS, PROCESS_LABEL, type LibraryItem, type ProcessOp, type SizePreset } from '@smart-canvas/core';
 import { useEffect, useState, type DragEvent, type ReactNode } from 'react';
 import { api, assetUrl } from '../api';
 import type { NewInput } from './AddInputDialog';
@@ -15,6 +15,7 @@ import { Icon } from './LayerRow';
 export type AddSpec =
   | { type: 'input'; input: NewInput }
   | { type: 'composition' }
+  | { type: 'process'; op: ProcessOp }
   | { type: 'output'; preset: SizePreset | null }
   | { type: 'library'; item: LibraryItem };
 
@@ -26,6 +27,13 @@ const INPUTS: { label: string; hint: string; input: NewInput; icon: 'image' | 'v
   { label: 'Logo / SVG', hint: 'Vector · logo', input: { kind: 'vector', label: 'Logo', behavesLike: 'logo' }, icon: 'vector' },
   { label: 'Text', hint: 'Headline or copy', input: { kind: 'text', label: 'Text', behavesLike: 'text' }, icon: 'text' },
   { label: 'Background colour / gradient', hint: 'Fills every output', input: { kind: 'fill', label: 'Background', behavesLike: 'background' }, icon: 'fill' },
+];
+
+/** T12.5 process nodes: change a layer without touching its input. */
+const PROCESSES: { kind: keyof typeof DEFAULT_OPS; hint: string; icon: 'crop' | 'adjust' | 'flip' }[] = [
+  { kind: 'crop', hint: 'Keep part of a picture', icon: 'crop' },
+  { kind: 'adjust', hint: 'Opacity, brightness, contrast, saturation, blur', icon: 'adjust' },
+  { kind: 'flip', hint: 'Mirror or turn a picture', icon: 'flip' },
 ];
 
 const COLLAPSE_KEY = 'sc-library-collapsed';
@@ -79,6 +87,8 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
   const inputsFull = doc.sources.length >= LIMITS.maxSources;
   const outputsFull = doc.outputs.length >= LIMITS.maxOutputs;
   const compsFull = doc.compositions.length >= LIMITS.maxCompositions;
+  const processesFull = doc.processes.length >= LIMITS.maxProcesses;
+  const processes = PROCESSES.filter((p) => match(PROCESS_LABEL[p.kind], p.hint, 'process'));
   const inputs = INPUTS.filter((i) => match(i.label, i.hint));
   const shownPresets = presets.filter((p) => match(p.name, `${p.size.width}×${p.size.height}`, p.group));
   const libraryItems = items.filter((i) => match(i.name, ...i.tags));
@@ -102,6 +112,13 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
           <Group title="Inputs" note={inputsFull ? `${LIMITS.maxSources} max` : undefined}>
             {inputs.map((i) => (
               <Item key={i.label} spec={{ type: 'input', input: i.input }} label={i.label} hint={i.hint} icon={<span className="sc-library__glyph"><Icon name={i.icon} /></span>} disabled={inputsFull} onAdd={onAdd} />
+            ))}
+          </Group>
+        )}
+        {processes.length > 0 && (
+          <Group title="Process" note={processesFull ? `${LIMITS.maxProcesses} max` : undefined}>
+            {processes.map((p) => (
+              <Item key={p.kind} spec={{ type: 'process', op: structuredClone(DEFAULT_OPS[p.kind]) }} label={PROCESS_LABEL[p.kind]} hint={p.hint} icon={<span className="sc-library__glyph sc-library__glyph--process"><Icon name={p.icon} /></span>} disabled={processesFull} onAdd={onAdd} />
             ))}
           </Group>
         )}
@@ -135,7 +152,7 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
             ))}
           </Group>
         )}
-        {q && inputs.length + shownPresets.length + libraryItems.length === 0 && !match('Main preview', 'composition', 'variant', 'Custom size', 'output') && (
+        {q && inputs.length + processes.length + shownPresets.length + libraryItems.length === 0 && !match('Main preview', 'composition', 'variant', 'Custom size', 'output') && (
           <p className="sc-muted sc-library__empty">Nothing matches “{query}”.</p>
         )}
       </div>

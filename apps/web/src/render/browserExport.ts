@@ -6,6 +6,7 @@
  */
 import {
   computeLayout,
+  layerSources,
   exportCapError,
   renderScaleOf,
   withBleedOf,
@@ -53,10 +54,11 @@ export async function exportInBrowser(req: {
   document.body.append(host);
   const root = createRoot(host);
   try {
-    flushSync(() => root.render(createElement(RenderFrame, { scene, sources: doc.sources, assetUrl: req.assetUrl, scale })));
+    const sources = layerSources(doc);
+    flushSync(() => root.render(createElement(RenderFrame, { scene, sources, assetSizes: req.layoutDeps.assets, assetUrl: req.assetUrl, scale })));
     const frame = host.querySelector<HTMLElement>('.sc-render-frame');
     if (!frame) throw new Error('render: nothing drawn');
-    await frameReady(frame, scene, doc.sources);
+    await frameReady(frame, scene, sources);
     const svg = await frameToSvg(frame);
     if (!svg.width || !svg.height) throw new Error('render: nothing drawn');
     if (format === 'svg') return { blob: new Blob([svg.svg], { type: 'image/svg+xml' }), width: svg.width, height: svg.height };

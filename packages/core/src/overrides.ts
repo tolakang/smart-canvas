@@ -6,6 +6,7 @@ import { computeLayout, type LayoutDeps } from './layout';
 import type { Frame, Override, OutputNode, ProjectDoc, TextStyle } from './model';
 import type { SourceResult } from './sources';
 import { applyTextStylePatch, type TextStylePatch } from './text-style';
+import { isLayerNode, layerSource } from './processes';
 
 /** Who and when, stamped on every override write. */
 export interface OverrideAuthor {
@@ -24,7 +25,7 @@ function withOverride(
 ): SourceResult {
   const output = doc.outputs.find((o) => o.id === outputId);
   if (!output) return { ok: false, error: 'not_found' };
-  if (!doc.sources.some((s) => s.id === sourceId)) return { ok: false, error: 'not_found' };
+  if (!isLayerNode(doc, sourceId)) return { ok: false, error: 'not_found' };
   const current = output.overrides.find((o) => o.sourceId === sourceId);
   const next = edit(current, output);
   const rest = output.overrides.filter((o) => o.sourceId !== sourceId);
@@ -52,7 +53,7 @@ export function setOverrideFrame(doc: ProjectDoc, outputId: string, sourceId: st
  * turns auto-fit off for that layer (ADAPTATION-RULES rule 8).
  */
 export function setOverrideStyle(doc: ProjectDoc, outputId: string, sourceId: string, patch: TextStylePatch, author: OverrideAuthor): SourceResult {
-  const source = doc.sources.find((s) => s.id === sourceId);
+  const source = layerSource(doc, sourceId);
   if (source && source.content.kind !== 'text') return { ok: false, error: 'bad_behavior' };
   return withOverride(doc, outputId, sourceId, author, (cur) => {
     if (!source || source.content.kind !== 'text') return cur ?? null;
@@ -94,7 +95,7 @@ export interface OverrideField {
 export function overrideDiff(doc: ProjectDoc, outputId: string, sourceId: string, deps: LayoutDeps): OverrideField[] {
   const output = doc.outputs.find((o) => o.id === outputId);
   const override = output?.overrides.find((o) => o.sourceId === sourceId);
-  const source = doc.sources.find((s) => s.id === sourceId);
+  const source = layerSource(doc, sourceId);
   if (!output || !override || !source) return [];
   const without = { ...doc, outputs: doc.outputs.map((o) => (o.id === outputId ? { ...o, overrides: o.overrides.filter((x) => x.sourceId !== sourceId) } : o)) };
   const auto = computeLayout(without, outputId, deps).items.find((i) => i.sourceId === sourceId);

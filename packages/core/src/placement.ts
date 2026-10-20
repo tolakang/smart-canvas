@@ -4,6 +4,7 @@
  */
 import { MAIN, withComposition } from './graph';
 import type { Behavior, NFrame, ProjectDoc } from './model';
+import { isLayerNode, layerSource } from './processes';
 import type { SourceResult } from './sources';
 
 const DEFAULT_PLACEMENT: Record<Behavior, NFrame> = {
@@ -22,7 +23,7 @@ const round = (n: number) => Math.round(n * 1e6) / 1e6;
 
 /** Sets a source's placement on a composition (values rounded to 1e-6; zero rotation dropped). */
 export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame, compositionId: string = MAIN): SourceResult {
-  if (!doc.sources.some((s) => s.id === sourceId) || !doc.compositions.some((c) => c.id === compositionId)) return { ok: false, error: 'not_found' };
+  if (!isLayerNode(doc, sourceId) || !doc.compositions.some((c) => c.id === compositionId)) return { ok: false, error: 'not_found' };
   const rotation = frame.rotation ? round(((frame.rotation % 360) + 360) % 360) : 0;
   const clean: NFrame = {
     x: round(frame.x),
@@ -36,7 +37,7 @@ export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame, c
 
 /** Gives a source its behaviour's default placement if it has none (used when it is first wired). */
 export function ensurePlacement(doc: ProjectDoc, sourceId: string, compositionId: string = MAIN): ProjectDoc {
-  const source = doc.sources.find((s) => s.id === sourceId);
+  const source = layerSource(doc, sourceId);
   const comp = doc.compositions.find((c) => c.id === compositionId);
   if (!source || !comp || comp.placements[sourceId]) return doc;
   const r = setPlacement(doc, sourceId, defaultPlacement(source.behavesLike), compositionId);

@@ -1,4 +1,4 @@
-import { createProjectDoc, DEFAULT_TEXT_STYLE, type InputSource, type RenderScene } from '@smart-canvas/core';
+import { createProjectDoc, DEFAULT_TEXT_STYLE, NO_EFFECT, type InputSource, type RenderScene } from '@smart-canvas/core';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { OutputRenderer, RenderThumbnail } from './OutputRenderer';
@@ -77,5 +77,26 @@ describe('OutputRenderer', () => {
     const out = renderToStaticMarkup(<RenderThumbnail scene={scene} sources={sources} assetUrl={assetUrl} maxWidth={200} maxHeight={200} />);
     expect(out).toContain('width:200px;height:100px');
     expect(out).toContain('sc-render__placeholder');
+  });
+});
+
+describe('OutputRenderer: process effects (T12.5)', () => {
+  const effect = { ...NO_EFFECT, crop: { x: 0.5, y: 0, w: 0.5, h: 1 }, rotate: 90 as const, flipX: true, opacity: 0.5, brightness: 1.2 };
+  const layer = { ...src('subject', { content: { kind: 'image', assetId: 'img1', focal: { x: 0.5, y: 0.5 } } }), id: 'p1', effect };
+  const scene: RenderScene = { width: 200, height: 100, items: [{ sourceId: 'p1', frame: { x: 0, y: 0, w: 100, h: 50 } }] };
+
+  it('crop, mirror and quarter turn by nesting (effectBoxes); colour as opacity + filter', () => {
+    const out = renderToStaticMarkup(<OutputRenderer scene={scene} sources={[layer]} assetSizes={{ img1: { width: 400, height: 200 } }} assetUrl={assetUrl} scale={1} />);
+    expect(out).toContain('data-source-id="p1"');
+    expect(out).toContain('opacity:0.5;filter:brightness(1.2)');
+    expect(out).toContain('left:25px;top:0;width:50px;height:50px;overflow:hidden'); // the view
+    expect(out).toContain('transform:rotate(90deg) scaleX(-1)'); // the pane
+    expect(out).toContain('left:-50px;top:0;width:100px;height:50px;max-width:none'); // the full image, crop in place
+  });
+
+  it('without the asset size: mirror / turn the whole picture', () => {
+    const out = renderToStaticMarkup(<OutputRenderer scene={scene} sources={[layer]} assetUrl={assetUrl} scale={1} />);
+    expect(out).toContain('<img');
+    expect(out).toContain('rotate(90deg) scaleX(-1)');
   });
 });

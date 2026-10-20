@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** order — T12.4 output-only layers → T12.5–T12.8 → T13.7 groups → T13.8 wire polish
+**Next:** order — T12.5 process nodes I → T12.6 → T12.7 → T12.8 → T13.7 groups → T13.8 wire polish
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -95,7 +95,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T12.1 — Model schema 2 + migration + core graph helpers — [#63](https://github.com/tolakang/smart-canvas/pull/63)
 - [x] T12.2 — Board on the typed graph — [#66](https://github.com/tolakang/smart-canvas/pull/66)
 - [x] T12.3 — Several compositions — [#69](https://github.com/tolakang/smart-canvas/pull/69)
-- [ ] T12.4 — Output-only layers
+- [x] T12.4 — Output-only layers — [#73](https://github.com/tolakang/smart-canvas/pull/73)
 - [ ] T12.5 — Process nodes I: Crop, Adjust, Flip/Rotate
 - [ ] T12.6 — Process nodes II: Text variant, Recolor
 - [ ] T12.7 — Node palette from any port
