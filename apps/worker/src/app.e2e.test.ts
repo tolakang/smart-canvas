@@ -4,55 +4,29 @@
  * Create project → 4 inputs → 3 outputs → override → export.
  */
 import { readFileSync } from 'node:fs';
-import type { AddressInfo } from 'node:net';
 import type { ProjectDoc } from '@smart-canvas/core';
-import { buildApp } from '@smart-canvas/api/src/app';
-import { MemoryStore } from '@smart-canvas/api/src/storage/object-store';
-import { adminUrl, freshDb } from '@smart-canvas/api/src/test/db';
-import pg from 'pg';
+import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { httpApiFetch } from './api-fetch';
-import { runExportJob, type ExportDeps } from './jobs';
-import { pgJobStore } from './pg-jobs';
-import { openRender } from './render';
-import { startRenderEnv } from './test/render-env';
+import { setupAndCreateProject, startStack, type Stack } from './test/stack';
 
-const TOKEN = 'e2e-render-token-0123456789abcdef0123';
 const tinyPng = readFileSync(new URL('../../api/src/assets/fixtures/tiny.png', import.meta.url));
 const logoSvg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100" fill="#0a7"/></svg>');
 
 const pngSize = (b: Buffer) => [b.readUInt32BE(16), b.readUInt32BE(20)];
 
 describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
-  let app: Awaited<ReturnType<typeof buildApp>>;
-  let pool: pg.Pool;
-  let drop: () => Promise<void>;
-  let env: Awaited<ReturnType<typeof startRenderEnv>>;
+  let stack: Stack;
+  let env: Stack['env'];
   let page: Page;
-  const store = new MemoryStore();
-  const running: Promise<void>[] = [];
 
   beforeAll(async () => {
-    const fresh = await freshDb();
-    drop = fresh.drop;
-    pool = new pg.Pool({ connectionString: fresh.url, max: 2 });
-    const worker: { deps?: ExportDeps } = {};
-    // The queue runs each job right away in this process, like the worker does from pg-boss.
-    app = await buildApp({ db: fresh.db, store, secureCookie: false, logger: false, renderToken: TOKEN, queue: { send: async (id) => void running.push(runExportJob(id, worker.deps as ExportDeps)) } });
-    await app.listen({ port: 0, host: '127.0.0.1' });
-    const apiUrl = `http://127.0.0.1:${(app.server.address() as AddressInfo).port}`;
-    env = await startRenderEnv(apiUrl);
-    const api = httpApiFetch(apiUrl, TOKEN);
-    worker.deps = { jobs: pgJobStore(pool), api, files: store, render: (t) => openRender(env.browser, env.webUrl, t, api) };
+    stack = await startStack();
+    env = stack.env;
     page = await env.browser.newPage({ viewport: { width: 1600, height: 1000 }, acceptDownloads: true });
   }, 120_000);
   afterAll(async () => {
-    await Promise.allSettled(running);
-    await env?.close();
-    await app?.close();
-    await pool?.end();
-    await drop?.();
+    await stack?.close();
   });
 
   const saved = () => page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
@@ -63,16 +37,7 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
   const inNode = (label: string) => page.locator('.react-flow__node-inputNode', { hasText: label });
 
   it('creates a project with 4 inputs and 3 outputs', async () => {
-    await page.goto(env.webUrl);
-    await page.getByText('First run? Set up the workspace').click();
-    await page.getByLabel('Your name').fill('Ada');
-    await page.getByLabel('Team name').fill('Studio');
-    await page.getByLabel('Email').fill('ada@example.com');
-    await page.getByLabel('Password').fill('password123');
-    await page.getByRole('button', { name: 'Create workspace' }).click();
-    await page.getByPlaceholder('New project name').fill('Grand opening');
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.locator('.sc-port').first().waitFor();
+    await setupAndCreateProject(page, env.webUrl, 'Grand opening');
 
     await inNode('Subject').locator('input[type=file]').setInputFiles({ name: 'subject.png', mimeType: 'image/png', buffer: tinyPng });
     await inNode('Subject').locator('img.sc-thumb').waitFor();
