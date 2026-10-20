@@ -69,6 +69,7 @@ describe.skipIf(!adminUrl)('exports API (Postgres)', () => {
     expect(huge.statusCode).toBe(422);
     expect(huge.json()).toEqual({ error: 'export_too_large', messages: ['Huge: 12002 × 200 px is over the 12000 px limit'] });
     expect((await call('POST', base(), editor, { outputIds: ['huge'], format: 'pdf' })).statusCode).toBe(202); // vector: no pixel cap
+    expect((await call('POST', base(), editor, { outputIds: ['ig'], format: 'svg', options: { outlineText: true } })).json()).toMatchObject({ error: 'outline_text_unavailable' });
   });
 
   it('404s other projects and answers 503 without a queue', async () => {

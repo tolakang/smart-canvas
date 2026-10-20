@@ -74,6 +74,8 @@ export const exportRoutes: FastifyPluginAsync<{ queue?: ExportQueue }> = async (
       const doc = project.doc as ProjectDoc;
       const { format } = req.body;
       const options = req.body.options ?? {};
+      // D23 outlined SVG text needs spike S3 (O5); refuse it rather than silently export live text.
+      if (options.outlineText) return reply.code(422).send({ error: 'outline_text_unavailable', messages: ['Outlined text is not available yet.'] });
       const outputs = req.body.outputIds.map((id) => doc.outputs.find((o) => o.id === id));
       if (outputs.some((o) => !o)) return reply.code(400).send({ error: 'unknown_output' });
       const tooLarge = outputs.flatMap((o) => (o ? [exportCapError(o, format, options)] : [])).filter((e): e is string => !!e);
