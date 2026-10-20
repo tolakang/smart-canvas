@@ -37,21 +37,23 @@ describe('families', () => {
     expect(computeLayout(project(output({ family: 'side' })), 'o1', deps).family).toBe('side');
   });
 
-  it('subject moves to the right half in side, stays put in stack', () => {
+  it('subject fills the right half in side; in stack the subject + headline group is centred in S', () => {
     const frame = { x: 900, y: 750, w: 1200, h: 1800 };
-    expect(at(place(project(wide()), 'subject', frame), 'subject')?.frame.x).toBeCloseTo(2025);
-    expect(at(place(project(wide({ family: 'stack' })), 'subject', frame), 'subject')?.frame.x).toBeCloseTo(1300);
+    expect(at(place(project(wide()), 'subject', frame), 'subject')?.frame.x).toBeCloseTo(1925);
+    // stack: c = 900/2010 → 537.31 wide, centred on x = 1500
+    expect(at(place(project(wide({ family: 'stack' })), 'subject', frame), 'subject')?.frame.x).toBeCloseTo(1231.343284);
   });
 });
 
 describe('side column', () => {
-  it('puts one text in the left half of S, vertically centred', () => {
-    // S = {50, 50, 2900, 900}; f0 = 200/3 → 66.5 on the grid; one line of 29 chars = 964 ≤ 1450
+  it('puts one text in the left half of S, vertically centred, sized by its group (v2)', () => {
+    // S = {50, 50, 2900, 900}; column 1450 wide; c = min(1450/2400, 900/500) = 0.6042 → f0 = 120.83, bh = 302.08;
+    // 120.5 on the grid: 2 lines of ≤ 24 chars, 2·120.5·1.2 = 289.2 ≤ 302.08
     const doc = setText(place(project(wide()), 'headline', { x: 300, y: 300, w: 2400, h: 500 }), 'headline', E, { fontSizePx: 200 });
     const r = at(doc, 'headline');
-    expect(r?.fontSizePx).toBe(66.5);
-    expect(r?.lines).toEqual([E]);
-    expectFrame(r?.frame, { x: 50, y: 50 + (900 - 79.8) / 2, w: 1450, h: 79.8 });
+    expect(r?.fontSizePx).toBe(120.5);
+    expect(r?.lines).toEqual(['AAAAA BBBBB CCCCC DDDDD', 'EEEEE']);
+    expectFrame(r?.frame, { x: 50, y: 50 + (900 - 289.2) / 2, w: 1450, h: 289.2 });
     expect(r?.warnings).toEqual([]);
   });
 
@@ -62,8 +64,9 @@ describe('side column', () => {
     doc = setText(setText(doc, 'headline', 'HEAD', { fontSizePx: 300 }), 'small', 'TINY', { fontSizePx: 90 });
     const head = at(doc, 'headline');
     const small = at(doc, 'small');
-    expect(head?.fontSizePx).toBe(100); // f0 = 300/3, one line of 120 ≤ bh 166.67
-    expect(small?.fontSizePx).toBe(30); // f0 = 90/3, one line of 36 ≤ bh 50
+    // texts' group U = {0,100,3000,700} → c = 1450/3000
+    expect(head?.fontSizePx).toBe(145); // f0 = 300·c, one line of 174 ≤ bh 241.67
+    expect(small?.fontSizePx).toBe(43.5); // f0 = 90·c, one line of 52.2 ≤ bh 72.5
     const hh = (head?.fontSizePx ?? 0) * 1.2;
     const sh = (small?.fontSizePx ?? 0) * 1.2;
     const block = hh + sh + 20;
