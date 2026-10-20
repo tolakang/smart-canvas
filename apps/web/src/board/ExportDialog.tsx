@@ -1,6 +1,7 @@
 /**
  * Export dialog (D22, screen 8; T6.5): pick outputs, format and options, start one job per output and
- * watch each one's progress and errors while the worker renders them.
+ * watch each one's progress and errors while the worker renders them; download each file or all as a
+ * ZIP (T6.6).
  */
 import { EXPORT_FORMATS, type ExportFormat, type ExportJob, type ExportOptions, type ProjectDoc } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -8,6 +9,7 @@ import { api, ApiError } from '../api';
 
 const FORMAT_LABEL: Record<ExportFormat, string> = { png: 'PNG', jpg: 'JPG', webp: 'WebP', pdf: 'PDF (vector)', svg: 'SVG (live text)' };
 const POLL_MS = 1000;
+const API_BASE = '/api';
 
 export function ExportDialog(props: { teamId: string; projectId: string; doc: ProjectDoc; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -61,6 +63,7 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
     }
   }
 
+  const done = jobs?.filter((j) => j.status === 'done') ?? [];
   const label = (id: string) => doc.outputs.find((o) => o.id === id)?.label ?? id;
   return (
     <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="export-title">
@@ -131,11 +134,22 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
                     {label(j.outputIds[0] ?? '')} <span className="sc-muted">· {j.format.toUpperCase()}</span>
                   </span>
                   <progress max={1} value={j.progress} aria-label={`${label(j.outputIds[0] ?? '')} progress`} />
-                  <span className={j.status === 'failed' ? 'sc-error' : 'sc-muted'}>{j.status === 'failed' ? (j.error ?? 'Failed') : j.status}</span>
+                  {j.status === 'done' ? (
+                    <a href={`${API_BASE}/teams/${props.teamId}/exports/${j.id}/file`} download>
+                      Download
+                    </a>
+                  ) : (
+                    <span className={j.status === 'failed' ? 'sc-error' : 'sc-muted'}>{j.status === 'failed' ? (j.error ?? 'Failed') : j.status}</span>
+                  )}
                 </li>
               ))}
             </ul>
             <div className="sc-row">
+              {done.length > 1 && (
+                <a className="sc-button" href={`${API_BASE}${base}/zip?ids=${done.map((j) => j.id).join(',')}`} download>
+                  Download all (ZIP, {done.length})
+                </a>
+              )}
               <button type="button" onClick={() => ref.current?.close()}>
                 Close
               </button>

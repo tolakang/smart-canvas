@@ -2,7 +2,7 @@
  * One export job = one output in one format (T6.5): load the row, render the output in Chromium,
  * export, store the file, and record status / progress / error on the row as it goes.
  */
-import { exportCapError, renderScaleOf, withBleedOf, type ExportFormat, type ExportOptions, type ProjectDoc } from '@smart-canvas/core';
+import { exportCapError, exportStorageKey, renderScaleOf, withBleedOf, type ExportFormat, type ExportOptions, type ProjectDoc } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import { exportPdf } from './pdf';
 import { exportRaster } from './raster';
@@ -37,7 +37,7 @@ export interface ExportDeps {
 }
 
 /** Where a finished export is stored; the download route reads the same key (T6.6). */
-export const exportKey = (teamId: string, jobId: string, format: ExportFormat) => `teams/${teamId}/exports/${jobId}.${format}`;
+export const exportKey = exportStorageKey;
 
 class JobFailure extends Error {}
 
