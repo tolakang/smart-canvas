@@ -43,6 +43,9 @@ export class RenderError extends Error {}
 
 export async function openRender(browser: Browser, webUrl: string, t: RenderTarget, apiFetch: ApiFetch, timeoutMs = 60_000): Promise<Page> {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  // esbuild/tsx (keepNames) wrap functions inside page.evaluate callbacks in `__name(...)`, which the
+  // page doesn't have; define it as a no-op there.
+  await page.addInitScript({ content: 'globalThis.__name = globalThis.__name || ((f) => f);' });
   try {
     await page.route('**/api/**', async (route) => {
       const req = route.request();

@@ -32,6 +32,7 @@ import { MainEditor } from '../editor/MainEditor';
 import { OutputEditor } from '../editor/OutputEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
+import { ExportDialog } from './ExportDialog';
 import { ReconnectDialog } from './ReconnectDialog';
 import { useAssetSizes, useLayoutDeps } from './layout-deps';
 import { BoardContext, type BoardActions } from './context';
@@ -98,6 +99,7 @@ export function Board(props: { teamId: string; projectId: string; userId: string
     <BoardCanvas
       key={reloadKey}
       teamId={teamId}
+      projectId={projectId}
       userId={props.userId}
       url={url}
       initial={result.ok}
@@ -110,6 +112,7 @@ export function Board(props: { teamId: string; projectId: string; userId: string
 
 function BoardCanvas(props: {
   teamId: string;
+  projectId: string;
   userId: string;
   url: string;
   initial: Loaded;
@@ -117,7 +120,7 @@ function BoardCanvas(props: {
   onBack: () => void;
   onReload: () => void;
 }) {
-  const { teamId, url, initial, readOnly } = props;
+  const { teamId, projectId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
   const [doc, setDoc] = useState(initial.doc);
   const [editingMain, setEditingMain] = useState(false);
@@ -129,6 +132,7 @@ function BoardCanvas(props: {
   const [addingOutput, setAddingOutput] = useState(false);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [reconnecting, setReconnecting] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [showFonts, setShowFonts] = useState(false);
   const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
   const [fontsKey, setFontsKey] = useState(0);
@@ -359,6 +363,11 @@ function BoardCanvas(props: {
         <button type="button" onClick={() => setShowFonts(true)}>
           Fonts
         </button>
+        {!readOnly && (
+          <button type="button" onClick={() => void autosave.flush().then(() => setExporting(true))} disabled={outputCount === 0}>
+            Export
+          </button>
+        )}
         {notice && (
           <span className="sc-error" role="alert">
             {notice}
@@ -415,6 +424,7 @@ function BoardCanvas(props: {
           onClose={() => setReconnecting(null)}
         />
       )}
+      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} onClose={() => setExporting(false)} />}
       {addingOutput && <AddOutputDialog presets={presets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
         <FontsDialog
