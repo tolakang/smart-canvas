@@ -1,8 +1,10 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { authPlugin } from './auth/plugin';
 import type { Db } from './db/client';
+import type { ExportQueue } from './exports/queue';
 import { assetRoutes } from './routes/assets';
 import { authRoutes } from './routes/auth';
+import { exportRoutes } from './routes/exports';
 import { inviteRoutes } from './routes/invites';
 import { memberRoutes } from './routes/members';
 import { presetRoutes } from './routes/presets';
@@ -16,6 +18,8 @@ export interface AppOptions {
   secureCookie?: boolean;
   /** Export worker's read-only token (RENDER_TOKEN). */
   renderToken?: string;
+  /** Export job queue (pg-boss); without it exports answer 503. */
+  queue?: ExportQueue;
   logger?: boolean;
 }
 
@@ -31,6 +35,7 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
   await app.register(projectRoutes);
   await app.register(presetRoutes);
   await app.register(assetRoutes, { store: opts.store });
+  await app.register(exportRoutes, { queue: opts.queue });
 
   return app;
 }

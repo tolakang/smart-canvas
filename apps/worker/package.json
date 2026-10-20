@@ -10,7 +10,10 @@
     "build": "node ../../scripts/bundle.mjs src/main.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1152.0",
     "@smart-canvas/core": "workspace:*",
+    "pg": "^8.23.1",
+    "pg-boss": "12.35.1",
     "playwright": "1.56.1",
     "sharp": "^0.34.5"
   },
