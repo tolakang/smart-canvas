@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T6.6 — Download
+**Next:** T6.7 — Caps
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -57,7 +57,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T6.3 — PDF — [#34](https://github.com/tolakang/smart-canvas/pull/34)
 - [ ] T6.4 — SVG — needs S3 · live text done [#35](https://github.com/tolakang/smart-canvas/pull/35); outline text waits on S3
 - [x] T6.5 — Job queue — [#36](https://github.com/tolakang/smart-canvas/pull/36)
-- [ ] T6.6 — Download
+- [x] T6.6 — Download — [#37](https://github.com/tolakang/smart-canvas/pull/37)
 - [ ] T6.7 — Caps
 
 ## P7 Library and polish
