@@ -6,6 +6,7 @@ import { assetRoutes } from './routes/assets';
 import { authRoutes } from './routes/auth';
 import { exportRoutes } from './routes/exports';
 import { inviteRoutes } from './routes/invites';
+import { libraryRoutes } from './routes/library';
 import { memberRoutes } from './routes/members';
 import { presetRoutes } from './routes/presets';
 import { projectRoutes } from './routes/projects';
@@ -34,6 +35,7 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
   await app.register(memberRoutes);
   await app.register(projectRoutes);
   await app.register(presetRoutes);
+  await app.register(libraryRoutes);
   await app.register(assetRoutes, { store: opts.store });
   await app.register(exportRoutes, { queue: opts.queue, store: opts.store });
 

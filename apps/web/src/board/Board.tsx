@@ -33,6 +33,7 @@ import { OutputEditor } from '../editor/OutputEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
 import { ExportDialog } from './ExportDialog';
+import { LibraryDialog } from './LibraryDialog';
 import { ReconnectDialog } from './ReconnectDialog';
 import { useAssetSizes, useLayoutDeps } from './layout-deps';
 import { BoardContext, type BoardActions } from './context';
@@ -133,6 +134,7 @@ function BoardCanvas(props: {
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [reconnecting, setReconnecting] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   const [showFonts, setShowFonts] = useState(false);
   const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
   const [fontsKey, setFontsKey] = useState(0);
@@ -363,6 +365,9 @@ function BoardCanvas(props: {
         <button type="button" onClick={() => setShowFonts(true)}>
           Fonts
         </button>
+        <button type="button" onClick={() => setShowLibrary(true)}>
+          Library
+        </button>
         {!readOnly && (
           <button type="button" onClick={() => void autosave.flush().then(() => setExporting(true))} disabled={outputCount === 0}>
             Export
@@ -424,6 +429,7 @@ function BoardCanvas(props: {
           onClose={() => setReconnecting(null)}
         />
       )}
+      {showLibrary && <LibraryDialog teamId={teamId} readOnly={readOnly} sourceCount={sourceCount} run={run} onClose={() => setShowLibrary(false)} />}
       {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} onClose={() => setExporting(false)} />}
       {addingOutput && <AddOutputDialog presets={presets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
