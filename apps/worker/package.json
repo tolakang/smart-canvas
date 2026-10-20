@@ -18,6 +18,7 @@
     "sharp": "^0.34.5"
   },
   "devDependencies": {
+    "@smart-canvas/api": "workspace:*",
     "@fontsource/noto-sans-khmer": "^5.3.0",
     "@types/fontkit": "^2.0.9",
     "@types/pg": "^8.23.1",
