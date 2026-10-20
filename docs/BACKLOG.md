@@ -63,3 +63,11 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T7.5 — E2E tests — create project → 4 inputs → 3 outputs → override → export.
 - T7.7 — Team screen — admins invite by link (role, optional email), change roles, remove members, revoke invites; invite page joins a new or signed-in user. (Added: the API from T1.3 had no UI.)
 - T7.6 — `.af` importer (experimental) — only if S1 says go; one `.af` creates sources from named layers; unreadable layers become empty sources.
+
+## P8 Board UX (user feedback, 2026-10-20)
+- T8.1 — Layer list: drag & drop to reorder ports (front ↔ back); each row has only Duplicate (+) and Delete (trash); no ▲ ▼ arrows. (D8, D11)
+- T8.2 — Duplicate any input from the canvas (node button and Ctrl/⌘+D), placed next to the original. (D8)
+- T8.3 — Drop an image file onto any image/vector/background input to set its file (same validation as the file picker).
+- T8.4 — Right-click the empty canvas: add an input (type + behaviour) or an output (preset) at the click point.
+- T8.5 — Wires: draw and remove every wire by dragging (input → main port, main → output); drag a wire end away to detach. (D11, D12)
+- T8.6 — Main preview editor: move and resize assets directly on the canvas (click to select, drag, handles), easier than today.
