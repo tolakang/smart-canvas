@@ -82,4 +82,4 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T9.1 — Layout v2: outputs fill the space and re-arrange (D30) — [#55](https://github.com/tolakang/smart-canvas/pull/55)
 
 ## P10 — Figma-style editing
-- [ ] T10.1 — Editor like Figma: tools, pan / zoom, Design panel, Figma look
+- [x] T10.1 — Editor like Figma: tools, pan / zoom, Design panel, Figma look — [#56](https://github.com/tolakang/smart-canvas/pull/56)
