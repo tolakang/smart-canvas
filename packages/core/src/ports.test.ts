@@ -71,6 +71,6 @@ describe('ports stay contiguous and wires follow, whatever the edit', () => {
     const ports = doc.sources.map((s) => s.port).sort((a, b) => a - b);
     expect(ports).toEqual(ports.map((_, i) => i));
     expect(consistent(doc)).toBe(true);
-    expect(Object.keys(wirePorts(doc)).sort()).toEqual(['background', 'logo', 'subject']);
+    expect(Object.keys(wirePorts(doc)).sort()).toEqual(['background', 'logo', 's2', 'subject']); // the copy of a wired source is wired (T8.1)
   });
 });

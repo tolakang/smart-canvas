@@ -136,7 +136,10 @@ export function setSourceVisible(doc: ProjectDoc, id: string, visible: boolean):
   return update(doc, id, (s) => ({ ...s, visible }));
 }
 
-/** Copies a source (content, behaviour, visibility) directly in front of the original. Wires are not copied. */
+/**
+ * Copies a source (content, behaviour, visibility) directly in front of the original. A wired original's copy
+ * is wired too, at the same spot on the main preview (T8.1: duplicate = "the same layer again").
+ */
 export function duplicateSource(doc: ProjectDoc, id: string, newId: string): SourceResult {
   const original = doc.sources.find((s) => s.id === id);
   if (!original) return fail('not_found');
@@ -148,7 +151,16 @@ export function duplicateSource(doc: ProjectDoc, id: string, newId: string): Sou
     board: { x: original.board.x + 40, y: original.board.y + 40 },
   };
   delete copy.libraryItemId; // a detached copy (T7.1 semantics)
-  return { ok: true, doc: insertAt(doc, copy, original.port) };
+  const wired = doc.wires.some((w) => w.from === id && w.to === 'main');
+  const placement = doc.master.placements[id];
+  const withCopy: ProjectDoc = wired
+    ? {
+        ...doc,
+        wires: [...doc.wires, { id: `in:${newId}`, from: newId, to: 'main', port: original.port }],
+        master: placement ? { ...doc.master, placements: { ...doc.master.placements, [newId]: { ...placement } } } : doc.master,
+      }
+    : doc;
+  return { ok: true, doc: insertAt(withCopy, copy, original.port) };
 }
 
 /** Removes a source and everything that refers to it; remaining ports close the gap. */
