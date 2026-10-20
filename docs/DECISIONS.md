@@ -48,6 +48,6 @@
 - O2 Defaults: safe margin 5%, print bleed 3 mm, print dpi 300, min font 12 design px, min logo width 8%.
 - O3 Caps: max export edge 12000 px, max upload 50 MB.
 - O4 `.af` import: only after test file shows named layers and text can be read (S1).
-- O5 SVG text outlines method: harfbuzzjs + fontkit, to be proven in spike S3.
+- O5 SVG text outlines method: harfbuzzjs + fontkit, to be proven in spike S3. → S3 passed with harfbuzzjs alone (shaping + glyph outlines, within 1 px of the screen); fontkit not needed for outlining. See `docs/spikes/S3-SVG-OUTLINES.md`.
 - O6 Undo/redo scope: board edits and editor edits, per session (T7.2).
 - O7 "Frozen" (disconnected) output freezes layout frames only; text and image content edits still show. Change to full freeze (content snapshot) if you prefer.

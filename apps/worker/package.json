@@ -12,14 +12,15 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
     "@smart-canvas/core": "workspace:*",
+    "harfbuzzjs": "1.6.3",
     "pg": "^8.23.1",
     "pg-boss": "12.35.1",
     "playwright": "1.56.1",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@smart-canvas/api": "workspace:*",
     "@fontsource/noto-sans-khmer": "^5.3.0",
+    "@smart-canvas/api": "workspace:*",
     "@types/fontkit": "^2.0.9",
     "@types/pg": "^8.23.1",
     "fontkit": "^2.0.4",
