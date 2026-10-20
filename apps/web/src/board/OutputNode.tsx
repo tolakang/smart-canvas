@@ -46,7 +46,7 @@ export function unitSettings(o: OutputNode, unit: Unit): OutputSettings {
 
 export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
   const { output, connected } = data;
-  const { doc, readOnly, run, teamId, layoutDeps, presets } = useBoard();
+  const { doc, readOnly, run, teamId, layoutDeps, presets, disconnectOutput, reconnectOutput } = useBoard();
   const set = (patch: OutputSettings) => run((d) => updateOutput(d, output.id, patch));
   // The node can outlive its output by a render (React Flow syncs nodes after the doc changes).
   const scene = useMemo(
@@ -61,7 +61,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
 
   return (
     <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`} aria-label={`Output ${output.label}`}>
-      <Handle type="target" position={Position.Left} isConnectable={false} />
+      <Handle type="target" position={Position.Left} isConnectable={!readOnly && !connected} />
       <div className="sc-node__head">
         <div className="sc-node__title" title={output.label}>
           {output.label}
@@ -80,8 +80,12 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
       <div className="sc-node__meta">
         {output.size.width} × {output.size.height} {output.size.unit}
         {bleed > 0 && ` · bleed ${bleed} mm`}
-        {!connected && ' · disconnected'}
       </div>
+      {!connected && (
+        <div className="sc-node__meta sc-output__frozen">
+          Disconnected — layout frozen{output.overrides.length > 0 && ` · ${output.overrides.length} override${output.overrides.length === 1 ? '' : 's'}`}
+        </div>
+      )}
       <div className="sc-main-thumb" aria-label={`${output.label} preview`}>
         {scene ? (
           <RenderThumbnail scene={scene} sources={doc.sources} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={236} maxHeight={180} />
@@ -176,6 +180,15 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
           />
         </div>
       </fieldset>
+      {!readOnly && (
+        <button
+          type="button"
+          className={`sc-link ${NO_CANVAS}`}
+          onClick={() => (connected ? disconnectOutput(output.id) : reconnectOutput(output.id))}
+        >
+          {connected ? 'Disconnect' : 'Reconnect'}
+        </button>
+      )}
       <div className={`sc-node__meta${overCap ? ' sc-error' : ''}`} role={overCap ? 'alert' : undefined}>
         Export {px.w} × {px.h} px{bleed > 0 && ' incl. bleed'}
         {overCap && ` — over the ${LIMITS.maxExportEdgePx} px limit; lower the size, ${mm ? 'DPI' : 'scale'} or bleed`}

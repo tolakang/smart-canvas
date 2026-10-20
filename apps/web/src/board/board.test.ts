@@ -5,7 +5,9 @@ import {
   docToEdges,
   docToNodes,
   isInputToMain,
+  isMainToOutput,
   MAIN_ID,
+  outputIdOfNode,
   portFromHandle,
   portRows,
   sourceIdOfNode,
@@ -49,10 +51,10 @@ describe('docToNodes / docToEdges', () => {
     ]);
   });
 
-  it('maps wires to edges: inputs land on their port handle and are deletable; output wires are not', () => {
+  it('maps wires to edges: inputs land on their port handle; all wires are deletable', () => {
     expect(docToEdges(sampleDoc())).toEqual([
       { id: 'w1', source: 'src:bg', target: 'main', targetHandle: 'p0', deletable: true },
-      { id: 'w2', source: 'main', target: 'out:ig', sourceHandle: 'out', deletable: false },
+      { id: 'w2', source: 'main', target: 'out:ig', sourceHandle: 'out', deletable: true },
     ]);
   });
 
@@ -75,6 +77,10 @@ describe('docToNodes / docToEdges', () => {
     expect(isInputToMain({ source: 'src:logo', target: 'main' })).toBe(true);
     expect(isInputToMain({ source: 'main', target: 'out:ig' })).toBe(false);
     expect(isInputToMain({ source: 'src:logo', target: 'src:bg' })).toBe(false);
+    expect(isMainToOutput({ source: 'main', target: 'out:ig' })).toBe(true);
+    expect(isMainToOutput({ source: 'src:logo', target: 'out:ig' })).toBe(false);
+    expect(outputIdOfNode('out:ig')).toBe('ig');
+    expect(outputIdOfNode('main')).toBeUndefined();
     expect(sourceIdOfNode('src:logo')).toBe('logo');
     expect(sourceIdOfNode('main')).toBeUndefined();
   });

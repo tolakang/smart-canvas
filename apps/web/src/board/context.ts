@@ -21,6 +21,10 @@ export interface BoardActions {
   presets: readonly SizePreset[];
   /** Records a newly uploaded asset's size for the engine. */
   rememberAsset: (asset: AssetMeta) => void;
+  /** Disconnects an output, freezing its current layout (D20). */
+  disconnectOutput: (outputId: string) => void;
+  /** Reconnects an output: silently, or after asking when it has overrides (D21). */
+  reconnectOutput: (outputId: string) => void;
   /** Applies a core source operation; returns its error, if any. */
   run: (op: (doc: ProjectDoc) => SourceResult) => SourceResult;
 }

@@ -1,4 +1,13 @@
-import { addOutput, addSource, connectSource, disconnectSource, LIMITS, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
+import {
+  addOutput,
+  addSource,
+  connectSource,
+  disconnectOutput,
+  disconnectSource,
+  isOutputConnected,
+  LIMITS,
+  reconnectNeedsChoice,
+  reconnectOutput, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -22,6 +31,7 @@ import { registerTeamFonts, type TeamFont } from '../fonts/loader';
 import { MainEditor } from '../editor/MainEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
+import { ReconnectDialog } from './ReconnectDialog';
 import { useAssetSizes, useLayoutDeps } from './layout-deps';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
@@ -30,6 +40,9 @@ import {
   docToEdges,
   docToNodes,
   isInputToMain,
+  isMainToOutput,
+  MAIN_ID,
+  outputIdOfNode,
   portFromHandle,
   sourceIdOfNode,
   syncNodes,
@@ -111,6 +124,7 @@ function BoardCanvas(props: {
   const [adding, setAdding] = useState(false);
   const [addingOutput, setAddingOutput] = useState(false);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
+  const [reconnecting, setReconnecting] = useState<string | null>(null);
   const [showFonts, setShowFonts] = useState(false);
   const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
   const [fontsKey, setFontsKey] = useState(0);
@@ -203,6 +217,24 @@ function BoardCanvas(props: {
   const { sizes, remember } = useAssetSizes(teamId);
   const layoutDeps = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
 
+  const disconnect = useCallback(
+    (outputId: string) => {
+      if (!layoutDeps) {
+        setNotice('Fonts are still loading; try again in a moment.');
+        return;
+      }
+      run((d) => disconnectOutput(d, outputId, layoutDeps));
+    },
+    [layoutDeps, run],
+  );
+  const reconnect = useCallback(
+    (outputId: string) => {
+      if (reconnectNeedsChoice(docRef.current, outputId)) setReconnecting(outputId);
+      else run((d) => reconnectOutput(d, outputId, 'keep'));
+    },
+    [run],
+  );
+
   const actions = useMemo<BoardActions>(
     () => ({
       teamId,
@@ -215,21 +247,31 @@ function BoardCanvas(props: {
       layoutDeps,
       presets,
       rememberAsset: remember,
+      disconnectOutput: disconnect,
+      reconnectOutput: reconnect,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, presets, remember, apply, run],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, presets, remember, disconnect, reconnect, apply, run],
   );
 
-  const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && isInputToMain(c), [readOnly]);
+  const isValidConnection = useCallback<IsValidConnection>(
+    (c) => !readOnly && (isInputToMain(c) || (isMainToOutput(c) && !isOutputConnected(docRef.current, outputIdOfNode(c.target) ?? ''))),
+    [readOnly],
+  );
 
   /** Wire input → a port row: connects it, and moves it to that port if different (D11). */
   const onConnect = useCallback(
     (c: Connection) => {
+      const outputId = isMainToOutput(c) ? outputIdOfNode(c.target) : undefined;
+      if (outputId) {
+        reconnect(outputId);
+        return;
+      }
       const sourceId = sourceIdOfNode(c.source);
       if (!sourceId || !isInputToMain(c)) return;
       run((doc) => connectSource(doc, sourceId, portFromHandle(c.targetHandle)));
     },
-    [run],
+    [run, reconnect],
   );
 
   // Edges are controlled: apply selection here; removals go through the doc (onEdgesDelete).
@@ -242,10 +284,12 @@ function BoardCanvas(props: {
     (deleted: Edge[]) => {
       for (const e of deleted) {
         const sourceId = sourceIdOfNode(e.source);
+        const outputId = e.source === MAIN_ID ? outputIdOfNode(e.target) : undefined;
         if (sourceId) run((doc) => disconnectSource(doc, sourceId));
+        else if (outputId) disconnect(outputId);
       }
     },
-    [run],
+    [run, disconnect],
   );
 
   const addInput = (input: NewInput) => {
@@ -350,6 +394,17 @@ function BoardCanvas(props: {
         </BoardContext.Provider>
       </div>
       {adding && <AddInputDialog onAdd={addInput} onClose={() => setAdding(false)} />}
+      {reconnecting && (
+        <ReconnectDialog
+          label={doc.outputs.find((o) => o.id === reconnecting)?.label ?? 'output'}
+          overrides={doc.outputs.find((o) => o.id === reconnecting)?.overrides.length ?? 0}
+          onChoose={(choice) => {
+            run((d) => reconnectOutput(d, reconnecting, choice));
+            setReconnecting(null);
+          }}
+          onClose={() => setReconnecting(null)}
+        />
+      )}
       {addingOutput && <AddOutputDialog presets={presets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
         <FontsDialog

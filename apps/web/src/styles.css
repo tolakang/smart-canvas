@@ -147,3 +147,4 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-presets h2 { margin: 12px 0 4px; font-size: 14px; }
 .sc-presets .sc-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .sc-presets form label { display: grid; gap: 2px; font-size: 13px; }
+.sc-output__frozen { color: #8a5a00; }
