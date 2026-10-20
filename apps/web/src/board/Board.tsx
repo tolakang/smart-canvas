@@ -512,7 +512,12 @@ function BoardCanvas(props: {
           )}
         </span>
       </header>
-      <div className="sc-board__canvas">
+      <div
+        className="sc-board__canvas"
+        // A file dropped outside an input must not make the browser open it (and leave the board).
+        onDragOver={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
+        onDrop={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
+      >
         <BoardContext.Provider value={actions}>
           <ReactFlow
             nodes={nodes}

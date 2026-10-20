@@ -26,6 +26,18 @@ export function setAsset(s: InputSource, assetId: string | null): InputSource {
   return s.content.kind === 'image' || s.content.kind === 'vector' ? { ...s, content: { ...s.content, assetId } } : s;
 }
 
+/** D9: a fill background takes a photo — it becomes an image background (undo brings the fill back). */
+export function photoBackground(s: InputSource, assetId: string): InputSource {
+  if (s.content.kind !== 'fill' || s.behavesLike !== 'background') return s;
+  return { ...s, kind: 'image', content: { kind: 'image', assetId, focal: { x: 0.5, y: 0.5 } } };
+}
+
+/** D9 the other way: an image background goes back to a solid colour. */
+export function colourBackground(s: InputSource): InputSource {
+  if (s.content.kind !== 'image' || s.behavesLike !== 'background') return s;
+  return { ...s, kind: 'fill', content: { kind: 'fill', fill: { type: 'solid', color: '#ffffff' } } };
+}
+
 export function setFill(s: InputSource, fill: Fill): InputSource {
   return s.content.kind === 'fill' ? { ...s, content: { kind: 'fill', fill } } : s;
 }

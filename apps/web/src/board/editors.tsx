@@ -1,7 +1,7 @@
 import { fillToCss, fontStack, LIMITS, type Fill, type InputSource } from '@smart-canvas/core';
-import { useState, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent, type DragEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
-import { addStop, removeStop, setAsset, setFill, setStop, setText, switchFillType } from './content';
+import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, switchFillType } from './content';
 import { useBoard } from './context';
 
 // Interactive elements inside a node must not start a node drag, pan or zoom.
@@ -22,16 +22,25 @@ function uploadMessage(err: unknown, kind: 'image' | 'vector'): string {
   return 'Upload failed. Try again.';
 }
 
-export function AssetEditor({ source }: { source: InputSource & { content: { kind: 'image' | 'vector' } } }) {
+/** What kind of file an input takes: its own kind, or a photo for a fill background (D9); null = none. */
+export function fileKindOf(source: InputSource): 'image' | 'vector' | null {
+  if (source.content.kind === 'image' || source.content.kind === 'vector') return source.content.kind;
+  if (source.content.kind === 'fill' && source.behavesLike === 'background') return 'image';
+  return null;
+}
+
+/**
+ * Upload a file into an input (T8.3: the same path for the file picker and for a file dropped on the node):
+ * size cap, upload (the API validates the bytes), kind check, then the input's content.
+ */
+export function useAssetUpload(source: InputSource) {
   const { teamId, readOnly, editSource, rememberAsset } = useBoard();
-  const kind = source.content.kind;
+  const kind = fileKindOf(source);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function onFile(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = ''; // allow picking the same file again
-    if (!file) return;
+  async function upload(file: File) {
+    if (!kind || readOnly) return;
     setError(null);
     if (file.size > LIMITS.maxUploadMB * 1024 * 1024) {
       setError(`File is larger than ${LIMITS.maxUploadMB} MB.`);
@@ -43,7 +52,7 @@ export function AssetEditor({ source }: { source: InputSource & { content: { kin
       if (asset.kind !== kind) setError(kind === 'image' ? 'This input takes PNG, JPEG or WebP.' : 'This input takes SVG files.');
       else {
         rememberAsset(asset);
-        editSource(source.id, (s) => setAsset(s, asset.id));
+        editSource(source.id, (s) => (s.content.kind === 'fill' ? photoBackground(s, asset.id) : setAsset(s, asset.id)));
       }
     } catch (err) {
       setError(uploadMessage(err, kind));
@@ -51,6 +60,49 @@ export function AssetEditor({ source }: { source: InputSource & { content: { kin
       setBusy(false);
     }
   }
+
+  function onFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow picking the same file again
+    if (file) void upload(file);
+  }
+
+  // Drag & drop of files from the desktop onto the node.
+  const [over, setOver] = useState(false);
+  const hasFiles = (e: DragEvent) => e.dataTransfer.types.includes('Files');
+  const dropProps =
+    kind && !readOnly
+      ? {
+          onDragOver: (e: DragEvent) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'copy';
+            setOver(true);
+          },
+          onDragLeave: (e: DragEvent) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOver(false);
+          },
+          onDrop: (e: DragEvent) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            e.stopPropagation();
+            setOver(false);
+            const file = e.dataTransfer.files[0];
+            if (file) void upload(file);
+          },
+        }
+      : {};
+
+  return { kind, busy, error, onFile, over, dropProps, accept: kind ? ACCEPT[kind] : '' };
+}
+
+export type AssetUpload = ReturnType<typeof useAssetUpload>;
+
+export function AssetEditor({ source, upload }: { source: InputSource & { content: { kind: 'image' | 'vector' } }; upload: AssetUpload }) {
+  const { teamId, readOnly, editSource } = useBoard();
+  const kind = source.content.kind;
+  const { busy, error, onFile } = upload;
 
   const { assetId } = source.content;
   return (
@@ -62,9 +114,14 @@ export function AssetEditor({ source }: { source: InputSource & { content: { kin
       )}
       {!readOnly && (
         <label className={`sc-upload ${NO_CANVAS}`}>
-          {busy ? 'Uploading…' : assetId ? 'Replace…' : 'Upload…'}
+          {busy ? 'Uploading…' : assetId ? 'Replace… or drop' : 'Upload… or drop'}
           <input type="file" accept={ACCEPT[kind]} onChange={onFile} disabled={busy} hidden />
         </label>
+      )}
+      {!readOnly && kind === 'image' && source.behavesLike === 'background' && (
+        <button type="button" className={`sc-link ${NO_CANVAS}`} onClick={() => editSource(source.id, colourBackground)}>
+          Use a colour instead
+        </button>
       )}
       {error && (
         <p className="sc-error" role="alert">
@@ -91,7 +148,7 @@ export function TextEditor({ source }: { source: InputSource & { content: { kind
   );
 }
 
-export function FillEditor({ source }: { source: InputSource & { content: { kind: 'fill' } } }) {
+export function FillEditor({ source, upload }: { source: InputSource & { content: { kind: 'fill' } }; upload: AssetUpload }) {
   const { readOnly, editSource } = useBoard();
   const { fill } = source.content;
   const change = (next: Fill) => editSource(source.id, (s) => setFill(s, next));
@@ -157,6 +214,17 @@ export function FillEditor({ source }: { source: InputSource & { content: { kind
           </>
         )}
       </fieldset>
+      {!readOnly && upload.kind && (
+        <label className={`sc-upload ${NO_CANVAS}`} title="A background can be a photo (D9)">
+          {upload.busy ? 'Uploading…' : 'Use a photo… or drop'}
+          <input type="file" accept={upload.accept} onChange={upload.onFile} disabled={upload.busy} hidden />
+        </label>
+      )}
+      {upload.error && (
+        <p className="sc-error" role="alert">
+          {upload.error}
+        </p>
+      )}
     </div>
   );
 }

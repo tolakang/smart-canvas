@@ -197,3 +197,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-menu__item:disabled { color: var(--muted); }
 .sc-menu__item--danger { color: #c62828; }
 .sc-menu__item--sep { margin-top: 4px; border-top: 1px solid var(--line); border-radius: 0 0 5px 5px; }
+
+/* T8.3 file dropped on an input */
+.sc-node--drop { outline: 2px dashed var(--accent); outline-offset: 2px; }
