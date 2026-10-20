@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError, type Me } from './api';
 import { Board } from './board/Board';
 import { parseRenderPath, RenderPage } from './render/RenderPage';
+import { InvitePage, parseInvitePath } from './shell/InvitePage';
 import { Projects } from './shell/Projects';
 import { SignIn } from './shell/SignIn';
 
-/** Routes: #/ (projects of the first team) and #/t/<teamId>/p/<projectId> (board). */
+/** Routes: #/ (projects of the first team), #/t/<teamId>/p/<projectId> (board), /invite/<token> (join a team). */
 function parseHash(hash: string): { teamId: string; projectId: string } | null {
   const m = /^#\/t\/([^/]+)\/p\/([^/]+)$/.exec(hash);
   return m?.[1] && m[2] ? { teamId: m[1], projectId: m[2] } : null;
@@ -39,6 +40,9 @@ function Shell() {
   useEffect(loadMe, [loadMe]);
 
   if (me === undefined) return <p className="sc-muted">Loading…</p>;
+  const invite = parseInvitePath(window.location.pathname);
+  // After joining, leave the invite path for the app (a fresh load picks up the new team).
+  if (invite) return <InvitePage token={invite} me={me} onSignedIn={loadMe} onJoined={() => window.location.assign('/')} />;
   if (me === null) return <SignIn onSignedIn={loadMe} />;
 
   const route = parseHash(hash);
@@ -56,5 +60,5 @@ function Shell() {
       />
     );
   }
-  return <Projects team={team} onOpen={(id) => (window.location.hash = `#/t/${team.id}/p/${id}`)} />;
+  return <Projects team={team} userId={me.user.id} onOpen={(id) => (window.location.hash = `#/t/${team.id}/p/${id}`)} />;
 }

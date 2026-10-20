@@ -61,4 +61,5 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T7.3 — Duplicate project, project templates.
 - T7.4 — Performance — 10 inputs × 10 outputs stays smooth; thumbnails throttled/cached.
 - T7.5 — E2E tests — create project → 4 inputs → 3 outputs → override → export.
+- T7.7 — Team screen — admins invite by link (role, optional email), change roles, remove members, revoke invites; invite page joins a new or signed-in user. (Added: the API from T1.3 had no UI.)
 - T7.6 — `.af` importer (experimental) — only if S1 says go; one `.af` creates sources from named layers; unreadable layers become empty sources.

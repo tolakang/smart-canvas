@@ -67,3 +67,4 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T7.4 — Performance — [#42](https://github.com/tolakang/smart-canvas/pull/42)
 - [x] T7.5 — E2E tests — [#43](https://github.com/tolakang/smart-canvas/pull/43)
 - [ ] T7.6 — `.af` importer (experimental) — needs S1 go
+- [ ] T7.7 — Team screen (invite links, roles)
