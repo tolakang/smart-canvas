@@ -20,6 +20,8 @@ export interface BoardActions {
   editSource: (id: string, edit: (s: InputSource) => InputSource) => void;
   /** Engine deps for live output previews; null until text fonts are loaded. */
   layoutDeps: LayoutDeps | null;
+  /** Text font families that failed to load (D35: an error on the nodes that use them). */
+  missingFonts: readonly string[];
   /** Size presets for output pickers (built-in + team). */
   presets: readonly SizePreset[];
   /** Records a newly uploaded asset's size for the engine. */

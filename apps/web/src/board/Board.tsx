@@ -297,7 +297,7 @@ function BoardCanvas(props: {
     };
   }, [teamId]);
   const { sizes, remember } = useAssetSizes(teamId);
-  const layoutDeps = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
+  const { deps: layoutDeps, missingFonts } = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
 
   const disconnect = useCallback(
     (outputId: string) => {
@@ -333,13 +333,14 @@ function BoardCanvas(props: {
       // Typing in one input's field is one undo step (coalesced by key).
       editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit), `source:${id}`),
       layoutDeps,
+      missingFonts,
       presets,
       rememberAsset: remember,
       disconnectOutput: disconnect,
       reconnectOutput: reconnect,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, presets, remember, disconnect, reconnect, author, apply, run],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, remember, disconnect, reconnect, author, apply, run],
   );
 
   const isValidConnection = useCallback<IsValidConnection>(

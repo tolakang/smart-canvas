@@ -1,10 +1,11 @@
-import { connectSource, disconnectSource } from '@smart-canvas/core';
+import { compositionHealth, connectSource, disconnectSource } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { assetUrl } from '../api';
 import { RenderThumbnail } from '../render/OutputRenderer';
 import { useBoard } from './context';
-import { OUTPUT_HANDLE, portHandleId, type MainFlowNode } from './flow';
+import { MAIN_ID, OUTPUT_HANDLE, portHandleId, type MainFlowNode } from './flow';
+import { HealthBadge } from './HealthBadge';
 import { Icon, LayerActions, LayerThumb, useLayerReorder } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
@@ -14,7 +15,8 @@ const NO_CANVAS = 'nodrag nopan nowheel';
  * row to connect it there; drag a row to re-order (T8.1); the dot connects / disconnects; + duplicates.
  */
 export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
-  const { readOnly, run, teamId, openMainEditor } = useBoard();
+  const { readOnly, run, teamId, openMainEditor, doc, missingFonts } = useBoard();
+  const health = useMemo(() => compositionHealth(doc, MAIN_ID, missingFonts), [doc, missingFonts]);
   const updateInternals = useUpdateNodeInternals();
   const { dropAt, rowProps } = useLayerReorder();
   const handleKey = data.ports.map((p) => p.port).join(',');
@@ -27,6 +29,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
     <div className="sc-node sc-node--main">
       <div className="sc-node__head">
         <div className="sc-node__title">Main preview</div>
+        <HealthBadge health={health} />
         <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={openMainEditor}>
           {readOnly ? 'View' : 'Edit'}
         </button>
