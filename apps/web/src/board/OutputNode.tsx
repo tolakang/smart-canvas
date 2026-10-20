@@ -46,7 +46,7 @@ export function unitSettings(o: OutputNode, unit: Unit): OutputSettings {
 
 export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
   const { output, connected } = data;
-  const { doc, readOnly, run, teamId, layoutDeps, presets, disconnectOutput, reconnectOutput } = useBoard();
+  const { doc, readOnly, run, teamId, layoutDeps, presets, disconnectOutput, reconnectOutput, openOutputEditor } = useBoard();
   const set = (patch: OutputSettings) => run((d) => updateOutput(d, output.id, patch));
   // The node can outlive its output by a render (React Flow syncs nodes after the doc changes).
   const scene = useMemo(
@@ -66,6 +66,9 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
         <div className="sc-node__title" title={output.label}>
           {output.label}
         </div>
+        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} output ${output.label}`}>
+          {readOnly ? 'View' : 'Edit'}
+        </button>
         {!readOnly && (
           <button
             type="button"

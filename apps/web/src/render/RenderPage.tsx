@@ -68,7 +68,7 @@ export function RenderPage({ route }: { route: RenderRoute }) {
     const byId = new Map(loaded.sources.map((s) => [s.id, s]));
     const texts = loaded.scene.items.flatMap((item) => {
       const c = byId.get(item.sourceId)?.content;
-      return c?.kind === 'text' ? [{ style: c.style, text: item.lines?.join('\n') ?? c.text }] : [];
+      return c?.kind === 'text' ? [{ style: { ...c.style, ...item.style }, text: item.lines?.join('\n') ?? c.text }] : [];
     });
     const images = [...(root.current?.querySelectorAll('img') ?? [])];
     Promise.all([ensureFonts(texts), ...images.map((img) => img.decode())]).then(

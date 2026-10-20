@@ -72,17 +72,25 @@ export function deleteOutput(doc: ProjectDoc, id: string): SourceResult {
   return { ok: true, doc: { ...doc, outputs: doc.outputs.filter((o) => o.id !== id), wires: doc.wires.filter((w) => w.to !== id && w.from !== id) } };
 }
 
-/** What the OutputRenderer draws for an output: its full canvas (incl. bleed) and the engine's items. */
-export function outputScene(layout: LayoutResult): RenderScene {
+/**
+ * What the OutputRenderer draws for an output: its full canvas (incl. bleed) and the engine's items,
+ * with each text layer's style override (when `output` is given) so colour, font and alignment follow it.
+ */
+export function outputScene(layout: LayoutResult, output?: Pick<OutputNode, 'overrides'>): RenderScene {
+  const styles = new Map(output?.overrides.filter((o) => o.style).map((o) => [o.sourceId, o.style]));
   return {
     width: layout.metrics.full.w,
     height: layout.metrics.full.h,
-    items: layout.items.map(({ sourceId, frame, fontSizePx, lines }) => ({
-      sourceId,
-      frame,
-      ...(fontSizePx !== undefined ? { fontSizePx } : {}),
-      ...(lines ? { lines } : {}),
-    })),
+    items: layout.items.map(({ sourceId, frame, fontSizePx, lines }) => {
+      const style = styles.get(sourceId);
+      return {
+        sourceId,
+        frame,
+        ...(fontSizePx !== undefined ? { fontSizePx } : {}),
+        ...(lines ? { lines } : {}),
+        ...(style ? { style } : {}),
+      };
+    }),
   };
 }
 

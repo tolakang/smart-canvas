@@ -1,0 +1,70 @@
+import { describe, expect, it } from 'vitest';
+import { computeLayout } from './layout';
+import { mockMeasure, output, place, project } from './layout/test-doc';
+import type { ProjectDoc } from './model';
+import { outputScene } from './outputs';
+import { setOverrideFrame, setOverrideHidden, setOverrideStyle } from './overrides';
+import type { SourceResult } from './sources';
+
+const ok = (r: SourceResult): ProjectDoc => {
+  if (!r.ok) throw new Error(r.error);
+  return r.doc;
+};
+const ada = { by: 'u1', at: '2026-10-20T00:00:00.000Z' };
+const bob = { by: 'u2', at: '2026-10-20T01:00:00.000Z' };
+const base = () => place(project(output()), 'subject', { x: 900, y: 750, w: 1200, h: 1800 });
+const ovOf = (doc: ProjectDoc, id: string) => doc.outputs[0]?.overrides.find((o) => o.sourceId === id);
+const deps = { measure: mockMeasure, assets: {} };
+
+describe('setOverrideFrame', () => {
+  it('stores the frame (rounded, rotation normalized) with author and time; later writes merge', () => {
+    let doc = ok(setOverrideFrame(base(), 'o1', 'subject', { x: 10.12345, y: 20, w: 300, h: 0.2, rotation: -30 }, ada));
+    expect(ovOf(doc, 'subject')).toEqual({ sourceId: 'subject', frame: { x: 10.123, y: 20, w: 300, h: 1, rotation: 330 }, updatedBy: 'u1', updatedAt: ada.at });
+    doc = ok(setOverrideFrame(doc, 'o1', 'subject', { x: 50 }, bob));
+    expect(ovOf(doc, 'subject')).toMatchObject({ frame: { x: 50, y: 20, w: 300 }, updatedBy: 'u2', updatedAt: bob.at });
+    expect(doc.outputs[0]?.overrides).toHaveLength(1);
+  });
+
+  it('is applied by the engine', () => {
+    const doc = ok(setOverrideFrame(base(), 'o1', 'subject', { x: 5, y: 6 }, ada));
+    expect(computeLayout(doc, 'o1', deps).items.find((i) => i.sourceId === 'subject')).toMatchObject({ frame: { x: 5, y: 6, w: 432 }, overridden: true });
+  });
+
+  it('fails for unknown outputs or sources', () => {
+    expect(setOverrideFrame(base(), 'nope', 'subject', { x: 1 }, ada)).toEqual({ ok: false, error: 'not_found' });
+    expect(setOverrideFrame(base(), 'o1', 'nope', { x: 1 }, ada)).toEqual({ ok: false, error: 'not_found' });
+  });
+});
+
+describe('setOverrideStyle', () => {
+  it('keeps only fields that differ from the source style, validated like the text panel', () => {
+    let doc = ok(setOverrideStyle(base(), 'o1', 'headline', { color: '#FF0000', fontWeight: 700, fontSizePx: 33.3 }, ada));
+    // default weight is 700 → not stored; size snapped to the 0.5 grid
+    expect(ovOf(doc, 'headline')?.style).toEqual({ color: '#ff0000', fontSizePx: 33.5 });
+    doc = ok(setOverrideStyle(doc, 'o1', 'headline', { color: '#111111' }, ada)); // back to the source colour
+    expect(ovOf(doc, 'headline')?.style).toEqual({ fontSizePx: 33.5 });
+  });
+
+  it('drops the override when nothing differs any more', () => {
+    let doc = ok(setOverrideStyle(base(), 'o1', 'headline', { align: 'left' }, ada));
+    doc = ok(setOverrideStyle(doc, 'o1', 'headline', { align: 'center' }, ada));
+    expect(ovOf(doc, 'headline')).toBeUndefined();
+  });
+
+  it('rejects non-text sources and reaches the renderer scene', () => {
+    expect(setOverrideStyle(base(), 'o1', 'subject', { color: '#ff0000' }, ada)).toEqual({ ok: false, error: 'bad_behavior' });
+    const doc = ok(setOverrideStyle(base(), 'o1', 'headline', { color: '#00ff00' }, ada));
+    const scene = outputScene(computeLayout(doc, 'o1', deps), doc.outputs[0]);
+    expect(scene.items.find((i) => i.sourceId === 'headline')?.style).toEqual({ color: '#00ff00' });
+  });
+});
+
+describe('setOverrideHidden', () => {
+  it('hides on one output only, and showing again removes an empty override', () => {
+    let doc = ok(setOverrideHidden(base(), 'o1', 'logo', true, ada));
+    expect(computeLayout(doc, 'o1', deps).items.some((i) => i.sourceId === 'logo')).toBe(false);
+    expect(doc.sources.find((s) => s.id === 'logo')?.visible).toBe(true);
+    doc = ok(setOverrideHidden(doc, 'o1', 'logo', false, ada));
+    expect(ovOf(doc, 'logo')).toBeUndefined();
+  });
+});
