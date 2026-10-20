@@ -3,7 +3,7 @@
  * override on that output (move/resize/rotate → frame, text panel → style, eye → hidden); the master
  * and the other outputs are untouched.
  */
-import { computeLayout, outputScene, setOverrideFrame, type Frame } from '@smart-canvas/core';
+import { computeLayout, outputScene, resetOutputOverrides, setOverrideFrame, type Frame } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
@@ -12,7 +12,7 @@ import { OverrideInspector } from './OverrideInspector';
 import { TextPanel } from './TextPanel';
 
 export function OutputEditor({ outputId, onClose }: { outputId: string; onClose: () => void }) {
-  const { doc, run, layoutDeps, author } = useBoard();
+  const { doc, run, layoutDeps, author, readOnly } = useBoard();
   const output = doc.outputs.find((o) => o.id === outputId);
   const scene = useMemo(
     () => (output && layoutDeps ? outputScene(computeLayout(doc, output.id, layoutDeps), output) : null),
@@ -35,6 +35,15 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
             {!connected && ' · disconnected (frozen)'}
           </span>
           <span className="sc-muted">Changes here are overrides on this output only</span>
+          {!readOnly && (
+            <button
+              type="button"
+              disabled={output.overrides.length === 0}
+              onClick={() => window.confirm(`Reset all ${output.overrides.length} overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}
+            >
+              Reset output
+            </button>
+          )}
         </>
       }
       scene={scene}

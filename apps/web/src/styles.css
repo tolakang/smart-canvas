@@ -159,3 +159,4 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-inspector__table th { text-align: left; font-weight: 600; color: var(--muted); }
 .sc-inspector__table td, .sc-inspector__table th { padding: 2px 4px; border-bottom: 1px solid var(--line); }
 .sc-lock { font-size: 11px; }
+.sc-inspector__actions { padding: 4px 12px; }

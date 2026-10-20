@@ -3,7 +3,7 @@ import { computeLayout } from './layout';
 import { mockMeasure, output, place, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { outputScene } from './outputs';
-import { overrideDiff, setOverrideFrame, setOverrideHidden, setOverrideStyle } from './overrides';
+import { overrideDiff, resetOutputOverrides, resetOverride, setOverrideFrame, setOverrideHidden, setOverrideStyle } from './overrides';
 import type { SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -83,5 +83,29 @@ describe('overrideDiff (T5.2)', () => {
 
   it('is empty without an override', () => {
     expect(overrideDiff(base(), 'o1', 'subject', deps)).toEqual([]);
+  });
+});
+
+describe('reset (T5.3)', () => {
+  const edited = () => {
+    let doc = ok(setOverrideFrame(base(), 'o1', 'subject', { x: 5 }, ada));
+    doc = ok(setOverrideHidden(doc, 'o1', 'logo', true, ada));
+    return ok(setOverrideStyle(doc, 'o1', 'headline', { color: '#ff0000' }, ada));
+  };
+  const auto = computeLayout(base(), 'o1', deps);
+  const item = (doc: ProjectDoc, id: string) => computeLayout(doc, 'o1', deps).items.find((i) => i.sourceId === id);
+
+  it('reset layer removes one override; that layer is auto again, others stay', () => {
+    const doc = ok(resetOverride(edited(), 'o1', 'subject'));
+    expect(item(doc, 'subject')).toEqual(auto.items.find((i) => i.sourceId === 'subject'));
+    expect(doc.outputs[0]?.overrides.map((o) => o.sourceId).sort()).toEqual(['headline', 'logo']);
+    expect(ok(resetOverride(doc, 'o1', 'subject'))).toBe(doc);
+  });
+
+  it('reset output clears all overrides; the layout equals auto', () => {
+    const doc = ok(resetOutputOverrides(edited(), 'o1'));
+    expect(doc.outputs[0]?.overrides).toEqual([]);
+    expect(computeLayout(doc, 'o1', deps)).toEqual(auto);
+    expect(resetOutputOverrides(doc, 'nope')).toEqual({ ok: false, error: 'not_found' });
   });
 });

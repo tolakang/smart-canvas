@@ -2,7 +2,7 @@
  * Override inspector (T5.2): for the selected layer of an output, which fields its override changes and
  * what the automatic layout would give instead.
  */
-import { overrideDiff, type OverrideField } from '@smart-canvas/core';
+import { overrideDiff, resetOverride, type OverrideField } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 
 const LABEL: Record<string, string> = {
@@ -27,7 +27,7 @@ const LABEL: Record<string, string> = {
 const show = (v: OverrideField['auto']) => (v === undefined ? 'auto' : typeof v === 'number' ? String(Math.round(v * 10) / 10) : String(v));
 
 export function OverrideInspector({ outputId, sourceId }: { outputId: string; sourceId: string }) {
-  const { doc, layoutDeps } = useBoard();
+  const { doc, layoutDeps, run, readOnly } = useBoard();
   const fields = layoutDeps ? overrideDiff(doc, outputId, sourceId, layoutDeps) : [];
   const override = doc.outputs.find((o) => o.id === outputId)?.overrides.find((o) => o.sourceId === sourceId);
   return (
@@ -59,6 +59,13 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
         <p className="sc-muted sc-props__note">
           Last changed {new Date(override.updatedAt).toLocaleString()}
         </p>
+      )}
+      {override && !readOnly && (
+        <div className="sc-inspector__actions">
+          <button type="button" onClick={() => run((d) => resetOverride(d, outputId, sourceId))}>
+            Reset layer
+          </button>
+        </div>
       )}
     </section>
   );

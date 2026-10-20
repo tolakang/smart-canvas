@@ -13,6 +13,7 @@ import {
   LIMITS,
   outputDefaults,
   outputScene,
+  resetOutputOverrides,
   updateOutput,
   type OutputNode,
   type OutputSettings,
@@ -87,6 +88,15 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
           <span title="Layers changed by hand on this output" aria-label={`${output.overrides.length} overridden layers`}>
             {' '}· 🔒 {output.overrides.length}
           </span>
+        )}
+        {output.overrides.length > 0 && !readOnly && (
+          <button
+            type="button"
+            className={`sc-link ${NO_CANVAS}`}
+            onClick={() => window.confirm(`Reset all overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}
+          >
+            {' '}Reset output
+          </button>
         )}
       </div>
       {!connected && (
