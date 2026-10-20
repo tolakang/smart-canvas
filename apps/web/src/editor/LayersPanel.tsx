@@ -4,20 +4,22 @@
  * delete; inputs not wired into main are greyed with Connect. In an output editor (`outputId`, T5.1) the eye
  * hides the layer on that output only (an override); stacking order and wiring stay the master's.
  */
-import { connectSource, layerOrder, setOverrideHidden, wiredLayers, type InputSource } from '@smart-canvas/core';
+import { connectSource, layerOrder, MAIN, outputComposition, setOverrideHidden, wiredLayers, type InputSource } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 
 const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 
-export function LayersPanel(props: { selected: string | null; onSelect: (id: string) => void; outputId?: string }) {
+export function LayersPanel(props: { selected: string | null; onSelect: (id: string) => void; outputId?: string; compositionId?: string }) {
   const { doc, run, readOnly, author } = useBoard();
   const { outputId } = props;
+  // T12.3: the rows of this editor's composition (an output's: the one it is wired to).
+  const compositionId = props.compositionId ?? (outputId ? outputComposition(doc, outputId) : undefined) ?? MAIN;
   const overrides = new Map(doc.outputs.find((o) => o.id === outputId)?.overrides.map((o) => [o.sourceId, o]));
-  const wired = wiredLayers(doc);
+  const wired = wiredLayers(doc, compositionId);
   const byId = new Map(doc.sources.map((s) => [s.id, s]));
-  const layers = layerOrder(doc).flatMap((id, port) => (byId.get(id) ? [{ s: byId.get(id) as InputSource, port }] : []));
-  const { dropAt, rowProps } = useLayerReorder();
+  const layers = layerOrder(doc, compositionId).flatMap((id, port) => (byId.get(id) ? [{ s: byId.get(id) as InputSource, port }] : []));
+  const { dropAt, rowProps } = useLayerReorder(compositionId);
   const reorder = !readOnly && !outputId;
 
   return (
@@ -77,11 +79,11 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
               {reorder && (
                 <span className="sc-layer__actions">
                   {!isWired && (
-                    <button type="button" aria-label={`Connect ${s.label} to main`} title="Connect to main" onClick={() => run((d) => connectSource(d, s.id))}>
+                    <button type="button" aria-label={`Connect ${s.label} to main`} title="Connect to main" onClick={() => run((d) => connectSource(d, s.id, undefined, compositionId))}>
                       ○
                     </button>
                   )}
-                  <LayerActions source={s} />
+                  <LayerActions source={s} compositionId={compositionId} />
                 </span>
               )}
             </li>

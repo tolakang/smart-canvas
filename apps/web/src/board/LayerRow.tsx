@@ -3,7 +3,7 @@
  * drag & drop re-ordering (the row dropped on takes that port, D11), and the row actions — show/hide,
  * duplicate (+) and delete (trash). Port 0 = front = top row.
  */
-import { deleteSource, duplicateSource, fillToCss, LIMITS, moveSourceToPort, setSourceVisible, type InputSource } from '@smart-canvas/core';
+import { deleteSource, duplicateSource, fillToCss, LIMITS, MAIN, moveSourceToPort, removeRow, setSourceVisible, type InputSource } from '@smart-canvas/core';
 import { useState, type DragEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from './context';
@@ -31,7 +31,7 @@ const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 const firstGrapheme = (text: string) => graphemes.segment(text.trim())[Symbol.iterator]().next().value?.segment ?? '';
 
 /** Drag & drop re-ordering for a list of layer rows. */
-export function useLayerReorder() {
+export function useLayerReorder(compositionId: string = MAIN) {
   const { run, readOnly } = useBoard();
   const [dropAt, setDropAt] = useState<number | null>(null);
   const rowProps = (source: { id: string; port: number }) => ({
@@ -52,15 +52,17 @@ export function useLayerReorder() {
       e.preventDefault();
       setDropAt(null);
       const id = e.dataTransfer.getData(DRAG_TYPE);
-      if (id && id !== source.id) run((doc) => moveSourceToPort(doc, id, source.port));
+      if (id && id !== source.id) run((doc) => moveSourceToPort(doc, id, source.port, compositionId));
     },
   });
   return { dropAt, rowProps };
 }
 
 /** Eye, duplicate (+) and delete for one layer. */
-export function LayerActions({ source }: { source: InputSource }) {
+/** On a composition other than main (T12.3), the trash takes the row out of that preview; the input stays. */
+export function LayerActions({ source, compositionId = MAIN }: { source: InputSource; compositionId?: string }) {
   const { run, doc } = useBoard();
+  const rowOnly = compositionId !== MAIN;
   const full = doc.sources.length >= LIMITS.maxSources;
   return (
     <>
@@ -84,10 +86,11 @@ export function LayerActions({ source }: { source: InputSource }) {
       </button>
       <button
         type="button"
-        aria-label={`Delete ${source.label}`}
-        title="Delete"
+        aria-label={rowOnly ? `Remove ${source.label} from this preview` : `Delete ${source.label}`}
+        title={rowOnly ? 'Remove from this preview' : 'Delete'}
         onClick={() => {
-          if (confirmDelete(source.label)) run((d) => deleteSource(d, source.id));
+          if (rowOnly) run((d) => removeRow(d, compositionId, source.id));
+          else if (confirmDelete(source.label)) run((d) => deleteSource(d, source.id));
         }}
       >
         <Icon name="trash" />

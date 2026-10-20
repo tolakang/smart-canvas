@@ -1,5 +1,7 @@
 import {
+  addComposition,
   addOutput,
+  canAddComposition,
   addSource,
   connectSource,
   deleteSource,
@@ -51,8 +53,9 @@ import { withSource } from './content';
 import {
   docToEdges,
   docToNodes,
-  isInputToMain,
-  isMainToOutput,
+  compositionIdOfNode,
+  compositionToOutput,
+  inputToComposition,
   connectionRefusal,
   MAIN_ID,
   OUTPUT_HANDLE,
@@ -143,7 +146,8 @@ function BoardCanvas(props: {
   const { teamId, projectId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
   const [doc, setDoc] = useState(initial.doc);
-  const [editingMain, setEditingMain] = useState(false);
+  /** The composition open in the main preview editor (T12.3: any composition). */
+  const [editingMain, setEditingMain] = useState<string | null>(null);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const nodesRef = useRef(nodes);
@@ -162,7 +166,7 @@ function BoardCanvas(props: {
   const [placeAt, setPlaceAt] = useState<{ x: number; y: number } | null>(null);
   const flow = useRef<ReactFlowInstance<BoardNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
-  const [reconnecting, setReconnecting] = useState<string | null>(null);
+  const [reconnecting, setReconnecting] = useState<{ outputId: string; compositionId: string } | null>(null);
   const [exporting, setExporting] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showFonts, setShowFonts] = useState(false);
@@ -314,10 +318,11 @@ function BoardCanvas(props: {
     },
     [layoutDeps, run],
   );
+  /** Wires an output to a composition (main by default): silently, or after asking when it has overrides (D21). */
   const reconnect = useCallback(
-    (outputId: string) => {
-      if (reconnectNeedsChoice(docRef.current, outputId)) setReconnecting(outputId);
-      else run((d) => reconnectOutput(d, outputId, 'keep'));
+    (outputId: string, compositionId: string = MAIN_ID) => {
+      if (reconnectNeedsChoice(docRef.current, outputId)) setReconnecting({ outputId, compositionId });
+      else run((d) => reconnectOutput(d, outputId, 'keep', compositionId));
     },
     [run],
   );
@@ -330,7 +335,7 @@ function BoardCanvas(props: {
       teamId,
       readOnly,
       doc,
-      openMainEditor: () => setEditingMain(true),
+      openMainEditor: (compositionId: string = MAIN_ID) => setEditingMain(compositionId),
       openOutputEditor: (id: string) => setEditingOutput(id),
       author,
       teamFonts,
@@ -351,17 +356,19 @@ function BoardCanvas(props: {
   // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.
   const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && connectionRefusal(docRef.current, c) === null, [readOnly]);
 
-  /** Wire input → a port row: connects it, and moves it to that port if different (D11). */
+  /** Wire input → a composition row: connects it there, and moves it to that row if different (D11). */
   const onConnect = useCallback(
     (c: Connection) => {
-      const outputId = isMainToOutput(c) ? outputIdOfNode(c.target) : undefined;
-      if (outputId) {
-        reconnect(outputId);
+      const fromComposition = compositionToOutput(c);
+      const outputId = fromComposition ? outputIdOfNode(c.target) : undefined;
+      if (fromComposition && outputId) {
+        reconnect(outputId, fromComposition);
         return;
       }
       const sourceId = sourceIdOfNode(c.source);
-      if (!sourceId || !isInputToMain(c)) return;
-      run((doc) => connectSource(doc, sourceId, portFromHandle(c.targetHandle)));
+      const into = inputToComposition(c);
+      if (!sourceId || !into) return;
+      run((doc) => connectSource(doc, sourceId, portFromHandle(c.targetHandle), into));
     },
     [run, reconnect],
   );
@@ -376,8 +383,9 @@ function BoardCanvas(props: {
     (deleted: Edge[]) => {
       for (const e of deleted) {
         const sourceId = sourceIdOfNode(e.source);
-        const outputId = e.source === MAIN_ID ? outputIdOfNode(e.target) : undefined;
-        if (sourceId) run((doc) => disconnectSource(doc, sourceId));
+        const into = compositionIdOfNode(e.target);
+        const outputId = compositionIdOfNode(e.source) ? outputIdOfNode(e.target) : undefined;
+        if (sourceId && into) run((doc) => disconnectSource(doc, sourceId, into));
         else if (outputId) disconnect(outputId);
       }
     },
@@ -400,21 +408,24 @@ function BoardCanvas(props: {
     (old: Edge, c: Connection) => {
       reconnectDone.current = true;
       const oldSource = sourceIdOfNode(old.source);
+      const oldInto = compositionIdOfNode(old.target);
       const newSource = sourceIdOfNode(c.source);
-      if (oldSource && newSource && isInputToMain(c)) {
-        // Same input to another row = move it to that port; another input onto this row = swap who feeds it.
+      const into = inputToComposition(c);
+      if (oldSource && oldInto && newSource && into) {
+        // Same input to another row = move it to that row; another input onto this row = swap who feeds it.
         const port = portFromHandle(c.targetHandle);
         run((doc) => {
-          const freed = newSource === oldSource ? { ok: true as const, doc } : disconnectSource(doc, oldSource);
-          return freed.ok ? connectSource(freed.doc, newSource, port) : freed;
+          const freed = newSource === oldSource && oldInto === into ? { ok: true as const, doc } : disconnectSource(doc, oldSource, oldInto);
+          return freed.ok ? connectSource(freed.doc, newSource, port, into) : freed;
         });
         return;
       }
-      const oldOutput = old.source === MAIN_ID ? outputIdOfNode(old.target) : undefined;
-      const newOutput = isMainToOutput(c) ? outputIdOfNode(c.target) : undefined;
-      if (oldOutput && newOutput && oldOutput !== newOutput) {
+      const oldOutput = compositionIdOfNode(old.source) ? outputIdOfNode(old.target) : undefined;
+      const fromComposition = compositionToOutput(c);
+      const newOutput = fromComposition ? outputIdOfNode(c.target) : undefined;
+      if (oldOutput && newOutput && fromComposition && oldOutput !== newOutput) {
         disconnect(oldOutput);
-        reconnect(newOutput);
+        reconnect(newOutput, fromComposition);
       }
     },
     [run, disconnect, reconnect],
@@ -441,12 +452,13 @@ function BoardCanvas(props: {
       }
       const r = wireEndDrag.current;
       if (r.active || performance.now() - r.endedAt < 100) return;
-      if (state.fromNode?.id !== MAIN_ID || state.fromHandle?.id !== OUTPUT_HANDLE) return;
+      const composition = compositionIdOfNode(state.fromNode?.id);
+      if (!composition || state.fromHandle?.id !== OUTPUT_HANDLE) return;
       const point = 'changedTouches' in e ? e.changedTouches[0] : e;
       if (!point) return;
       const at = flow.current.screenToFlowPosition({ x: point.clientX, y: point.clientY });
       const size = { ...NEW_OUTPUT_SIZE };
-      run((doc) => addOutput(doc, { id: newId(), label: sizeLabel(size), size, ...outputDefaults('px'), board: { x: at.x, y: at.y - NEW_OUTPUT_HANDLE_Y } }));
+      run((doc) => addOutput(doc, { id: newId(), label: sizeLabel(size), size, ...outputDefaults('px'), composition, board: { x: at.x, y: at.y - NEW_OUTPUT_HANDLE_Y } }));
     },
     [readOnly, run],
   );
@@ -542,9 +554,15 @@ function BoardCanvas(props: {
           },
         },
         {
+          // T12.3: another main preview (e.g. a campaign variant); wire inputs into it and outputs out of it.
+          label: canAddComposition(doc) ? 'Main preview' : `Main preview (${LIMITS.maxCompositions} max)`,
+          disabled: !canAddComposition(doc),
+          separated: true,
+          onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Main preview ${d.compositions.length + 1}`, board: at })),
+        },
+        {
           label: outputsFull ? `Output… (${LIMITS.maxOutputs} max)` : 'Output…',
           disabled: outputsFull,
-          separated: true,
           onSelect: () => {
             setPlaceAt(at);
             setAddingOutput(true);
@@ -719,17 +737,17 @@ function BoardCanvas(props: {
           </div>
           <Inspector selected={selectedNode} />
           {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
-          {editingMain && <MainEditor onClose={() => setEditingMain(false)} />}
+          {editingMain && <MainEditor compositionId={editingMain} onClose={() => setEditingMain(null)} />}
           {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}
         </BoardContext.Provider>
       </div>
       {adding && <AddInputDialog onAdd={(input) => addInput(input)} onClose={() => setAdding(false)} />}
       {reconnecting && (
         <ReconnectDialog
-          label={doc.outputs.find((o) => o.id === reconnecting)?.label ?? 'output'}
-          overrides={doc.outputs.find((o) => o.id === reconnecting)?.overrides.length ?? 0}
+          label={doc.outputs.find((o) => o.id === reconnecting.outputId)?.label ?? 'output'}
+          overrides={doc.outputs.find((o) => o.id === reconnecting.outputId)?.overrides.length ?? 0}
           onChoose={(choice) => {
-            run((d) => reconnectOutput(d, reconnecting, choice));
+            run((d) => reconnectOutput(d, reconnecting.outputId, choice, reconnecting.compositionId));
             setReconnecting(null);
           }}
           onClose={() => setReconnecting(null)}

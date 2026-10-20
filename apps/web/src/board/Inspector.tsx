@@ -1,13 +1,16 @@
 /**
  * The right inspector (T13.2): settings of the selected node, so node cards stay small (thumbnail, name, size,
  * health). An output: name, layout health (D35), size / preset / scale / bleed, connection, hand edits. An
- * input: name, behaviour, visibility and its content editor. The main preview: size, rows and health.
+ * input: name, behaviour, visibility and its content editor. A composition (main preview, T12.3): name, canvas
+ * size, rows and health.
  */
 import {
+  compositionById,
   compositionHealth,
+  renameComposition,
+  setCompositionSize,
   computeLayout,
   isOutputConnected,
-  mainComposition,
   outputHealth,
   renameSource,
   resetOutputOverrides,
@@ -21,7 +24,8 @@ import {
 import { useMemo, useState, type ReactNode } from 'react';
 import { useBoard } from './context';
 import { useAssetUpload } from './editors';
-import { inputNodeId, MAIN_ID, outputNodeId } from './flow';
+import { NumberField } from '../ui/NumberField';
+import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId } from './flow';
 import { HealthIssues, healthSummary } from './HealthBadge';
 import { BehaviorPicker, SourceEditor } from './nodes';
 import { OutputSettings } from './OutputSettings';
@@ -32,14 +36,15 @@ export function Inspector({ selected }: { selected: string | null }) {
   const { doc } = useBoard();
   const source = doc.sources.find((s) => inputNodeId(s.id) === selected);
   const output = doc.outputs.find((o) => outputNodeId(o.id) === selected);
+  const composition = compositionIdOfNode(selected);
   return (
     <aside className="sc-inspector-panel" aria-label="Inspector">
       {source ? (
         <InputInspector key={source.id} source={source} />
       ) : output ? (
         <OutputInspector key={output.id} output={output} />
-      ) : selected === MAIN_ID ? (
-        <MainInspector />
+      ) : composition && compositionById(doc, composition) ? (
+        <CompositionInspector key={composition} compositionId={composition} />
       ) : (
         <Section title="Nothing selected">
           <p className="sc-muted sc-inspector-panel__hint">Click a node to see its settings here. Drag a wire out of the main preview to add an output; right-click the canvas to add inputs.</p>
@@ -142,19 +147,34 @@ function InputInspector({ source }: { source: InputSource }) {
   );
 }
 
-function MainInspector() {
-  const { doc, missingFonts, openMainEditor, readOnly } = useBoard();
-  const main = mainComposition(doc);
-  const wired = wiredLayers(doc, main.id);
-  const health = useMemo(() => compositionHealth(doc, main.id, missingFonts), [doc, main.id, missingFonts]);
+function CompositionInspector({ compositionId }: { compositionId: string }) {
+  const { doc, run, missingFonts, openMainEditor, readOnly } = useBoard();
+  const comp = compositionById(doc, compositionId);
+  if (!comp) return null;
+  const health = compositionHealth(doc, compositionId, missingFonts);
+  const wired = wiredLayers(doc, comp.id);
+  const outputs = doc.edges.filter((e) => e.kind === 'composition' && e.from === comp.id).length;
+  const setSize = (patch: Partial<typeof comp.size>) => run((d) => setCompositionSize(d, comp.id, { ...comp.size, ...patch }));
   return (
     <>
-      <Section title="Main preview" aside={<button type="button" className="sc-btn" onClick={openMainEditor}>{readOnly ? 'View' : 'Edit'}</button>}>
+      <Section title="Main preview" aside={<button type="button" className="sc-btn" onClick={() => openMainEditor(comp.id)}>{readOnly ? 'View' : 'Edit'}</button>}>
+        {comp.id === MAIN_ID ? (
+          <p className="sc-inspector-panel__hint">{comp.label}</p>
+        ) : (
+          <NameField label="Main preview name" value={comp.label} onCommit={(label) => run((d) => renameComposition(d, comp.id, label))} />
+        )}
         <p className="sc-inspector-panel__hint">
-          {main.size.width} × {main.size.height} {main.size.unit} · {wired.size} of {main.layers.length} layers wired · {doc.outputs.length} outputs
+          {wired.size} of {comp.layers.length} layers wired · {outputs} {outputs === 1 ? 'output follows' : 'outputs follow'} it
         </p>
       </Section>
       <HealthSection health={health} />
+      <Section title="Canvas">
+        <div className="sc-output__row">
+          <NumberField label="Width" value={comp.size.width} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ width: n })} />
+          <NumberField label="Height" value={comp.size.height} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ height: n })} />
+          <span className="sc-muted">{comp.size.unit}</span>
+        </div>
+      </Section>
     </>
   );
 }
