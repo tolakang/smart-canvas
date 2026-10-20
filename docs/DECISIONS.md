@@ -65,3 +65,14 @@
   - Layout is still computed and never stored (D30 rules per composition). Preview and export still use one `OutputRenderer`.
   - The model moves to `schema: 2`; v1 documents are migrated on load (pure function in core, tested). Model change note (T12.1): `master` + `wires` + `InputSource.port` became `compositions[]` (rows in `layers`) + typed `edges` + `processes[]`.
 
+- D33 Responsive workspace, desktop to phone (owner, 2026-10-20). One app, three layouts:
+  - **≥ 1280 px:** the left library and right inspector are docked, with a floating canvas toolbar and a minimap.
+  - **768–1279 px:** the sidebars become overlays, one at a time.
+  - **< 768 px (phone):** the canvas is full screen, the library and inspector are bottom sheets, and the top bar is condensed into an overflow menu.
+  - **Touch:** pinch to zoom, two fingers to pan, long-press for the context menu, tap a port then tap a target to wire, and hit targets of at least 44 px.
+  - **Editors on a phone:** the canvas, with the Design panel as a bottom sheet.
+- D34 Theme: light and dark with a toggle in the top bar. The default follows the system setting; the choice is remembered per browser. All colours are tokens (DESIGN-SYSTEM.md), so both themes come from one set of rules.
+- D35 Node status = layout health. Nodes show how their layout is doing; export progress stays in the export dialog.
+  - **Output:** green = fine, amber = warnings (text overflow or below the minimum size, logo clamped, a layer clamped into the safe area), red = errors (missing font or file), grey = frozen (disconnected).
+  - **Main preview:** amber for wired layers with no file or text yet.
+  - The node shows a dot and a count; the inspector lists each issue and its layer.
