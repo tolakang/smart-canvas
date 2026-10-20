@@ -103,8 +103,8 @@ describe('override-safe re-flow (10 inputs × 10 outputs)', () => {
 
   it('lays out all 10 × 10 quickly', () => {
     const doc = bigProject();
-    const t0 = performance.now();
+    const t0 = Date.now();
     for (let n = 0; n < 5; n++) for (const o of doc.outputs) computeLayout(doc, o.id, deps);
-    expect((performance.now() - t0) / 5).toBeLessThan(250); // one full pass over 10 outputs
+    expect((Date.now() - t0) / 5).toBeLessThan(250); // one full pass over 10 outputs
   });
 });
