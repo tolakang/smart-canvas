@@ -79,7 +79,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T8.7 — Behaviours: right quick-add defaults; change "behaves like" on the node — [#54](https://github.com/tolakang/smart-canvas/pull/54)
 
 ## P9 — Smart outputs
-- [ ] T9.1 — Layout v2: outputs fill the space and re-arrange (D30)
+- [x] T9.1 — Layout v2: outputs fill the space and re-arrange (D30) — [#55](https://github.com/tolakang/smart-canvas/pull/55)
 
 ## P10 — Figma-style editing
 - [ ] T10.1 — Editor like Figma: tools, pan / zoom, Design panel, Figma look
