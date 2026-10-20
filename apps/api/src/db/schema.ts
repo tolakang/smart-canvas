@@ -6,6 +6,7 @@
  */
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   doublePrecision,
   index,
   integer,
@@ -127,6 +128,8 @@ export const projects = pgTable(
     name: text('name').notNull(),
     doc: jsonb('doc').$type<ProjectDoc>().notNull(),
     rev: integer('rev').notNull().default(0),
+    /** T7.3: a team template — listed apart; "New from template" copies its doc. */
+    isTemplate: boolean('is_template').notNull().default(false),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

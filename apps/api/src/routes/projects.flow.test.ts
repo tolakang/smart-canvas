@@ -128,4 +128,30 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     expect((await call('GET', `/teams/${otherTeam}/projects/${p.id}`, editor)).statusCode).toBe(404);
     expect((await call('GET', `${base()}/not-a-uuid`, editor)).statusCode).toBe(400);
   });
+
+  it('duplicates a project as a full detached copy (T7.3)', async () => {
+    const p = await create('Spring');
+    const doc = { ...p.doc, sources: p.doc.sources.map((x) => (x.id === 'headline' ? { ...x, label: 'Title' } : x)) };
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: p.rev, doc })).statusCode).toBe(200);
+    const res = await call('POST', `${base()}/${p.id}/duplicate`, editor, {});
+    expect(res.statusCode).toBe(201);
+    const copy = res.json<{ id: string; rev: number; doc: ProjectDoc; isTemplate: boolean }>();
+    expect(copy).toMatchObject({ rev: 0, isTemplate: false, doc: { name: 'Spring (copy)', rev: 0 } });
+    expect(copy.doc.sources.find((x) => x.id === 'headline')?.label).toBe('Title');
+    expect(copy.id).not.toBe(p.id);
+    expect((await call('POST', `${base()}/${p.id}/duplicate`, viewer, {})).statusCode).toBe(403);
+  });
+
+  it('templates: save as template, list apart, new project from a template (T7.3)', async () => {
+    const p = await create('Brand kit');
+    const tpl = (await call('POST', `${base()}/${p.id}/duplicate`, editor, { name: 'Brand template', isTemplate: true })).json<{ id: string; isTemplate: boolean }>();
+    expect(tpl.isTemplate).toBe(true);
+    const list = (await call('GET', base(), viewer)).json<{ id: string; isTemplate: boolean }[]>();
+    expect(list.find((x) => x.id === tpl.id)?.isTemplate).toBe(true);
+    const fromTpl = await call('POST', base(), editor, { name: 'Autumn', templateId: tpl.id });
+    expect(fromTpl.statusCode).toBe(201);
+    expect(fromTpl.json()).toMatchObject({ isTemplate: false, doc: { name: 'Autumn', rev: 0 } });
+    // Only templates can seed a project, and only from this team.
+    expect((await call('POST', base(), editor, { name: 'X', templateId: p.id })).json()).toEqual({ error: 'template_not_found' });
+  });
 });

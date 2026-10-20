@@ -1,9 +1,10 @@
 /**
- * Projects: the whole ProjectDoc lives in `projects.doc` (JSONB).
+ * Projects: the whole ProjectDoc lives in `projects.doc` (JSONB). Templates (T7.3) are projects with
+ * `is_template`: listed apart, and "New from template" / "Duplicate" copy a doc into a new project.
  * Saves are optimistic: the client sends the `rev` it loaded; a save against an older rev gets 409
  * with the current rev so the UI can offer "reload latest". The server owns `rev` (and mirrors it into doc.rev).
  */
-import { createProjectDoc, type ProjectDoc } from '@smart-canvas/core';
+import { copyProjectDoc, createProjectDoc, type ProjectDoc } from '@smart-canvas/core';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { currentUser, requireTeam } from '../auth/plugin';
@@ -25,24 +26,62 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
 
   app.get<{ Params: { teamId: string } }>('/teams/:teamId/projects', { preHandler: member }, async (req) => {
     return db
-      .select({ id: projects.id, name: projects.name, rev: projects.rev, createdAt: projects.createdAt, updatedAt: projects.updatedAt })
+      .select({ id: projects.id, name: projects.name, rev: projects.rev, isTemplate: projects.isTemplate, createdAt: projects.createdAt, updatedAt: projects.updatedAt })
       .from(projects)
       .where(eq(projects.teamId, req.params.teamId))
       .orderBy(desc(projects.updatedAt));
   });
 
-  app.post<{ Params: { teamId: string }; Body: { name: string } }>(
+  app.post<{ Params: { teamId: string }; Body: { name: string; templateId?: string; isTemplate?: boolean } }>(
     '/teams/:teamId/projects',
     {
       preHandler: member,
-      schema: { body: { type: 'object', required: ['name'], additionalProperties: false, properties: { name: nameSchema } } },
+      schema: {
+        body: {
+          type: 'object',
+          required: ['name'],
+          additionalProperties: false,
+          properties: { name: nameSchema, templateId: { type: 'string', format: 'uuid' }, isTemplate: { type: 'boolean' } },
+        },
+      },
     },
     async (req, reply) => {
-      const doc = createProjectDoc(req.body.name);
+      let doc = createProjectDoc(req.body.name);
+      if (req.body.templateId) {
+        const [template] = await db
+          .select({ doc: projects.doc })
+          .from(projects)
+          .where(and(inTeam({ teamId: req.params.teamId, projectId: req.body.templateId }), eq(projects.isTemplate, true)));
+        if (!template) return reply.code(404).send({ error: 'template_not_found' });
+        doc = copyProjectDoc(template.doc, req.body.name);
+      }
       const [row] = await db
         .insert(projects)
-        .values({ teamId: req.params.teamId, name: doc.name, doc, rev: doc.rev, createdBy: currentUser(req).id })
-        .returning({ id: projects.id, rev: projects.rev, doc: projects.doc });
+        .values({ teamId: req.params.teamId, name: doc.name, doc, rev: doc.rev, isTemplate: req.body.isTemplate ?? false, createdBy: currentUser(req).id })
+        .returning({ id: projects.id, rev: projects.rev, doc: projects.doc, isTemplate: projects.isTemplate });
+      return reply.code(201).send(row);
+    },
+  );
+
+  /** Duplicate a project (or save it as a template, or turn a template into a project): a full copy. */
+  app.post<{ Params: Params; Body: { name?: string; isTemplate?: boolean } }>(
+    '/teams/:teamId/projects/:projectId/duplicate',
+    {
+      preHandler: member,
+      schema: {
+        params: projectParams,
+        body: { type: 'object', additionalProperties: false, properties: { name: nameSchema, isTemplate: { type: 'boolean' } } },
+      },
+    },
+    async (req, reply) => {
+      const [source] = await db.select({ doc: projects.doc, isTemplate: projects.isTemplate }).from(projects).where(inTeam(req.params));
+      if (!source) return reply.code(404).send({ error: 'not_found' });
+      const isTemplate = req.body.isTemplate ?? source.isTemplate;
+      const doc = copyProjectDoc(source.doc, req.body.name ?? `${source.doc.name} (copy)`.slice(0, 200));
+      const [row] = await db
+        .insert(projects)
+        .values({ teamId: req.params.teamId, name: doc.name, doc, rev: 0, isTemplate, createdBy: currentUser(req).id })
+        .returning({ id: projects.id, rev: projects.rev, doc: projects.doc, isTemplate: projects.isTemplate });
       return reply.code(201).send(row);
     },
   );
