@@ -21,6 +21,8 @@ import {
   type Connection,
   type Edge,
   type EdgeChange,
+  type FinalConnectionState,
+  type HandleType,
   type IsValidConnection,
   type Node,
   type NodeChange,
@@ -370,6 +372,45 @@ function BoardCanvas(props: {
     [run, disconnect],
   );
 
+  /**
+   * T8.5: every wire can be picked up by either end. Drop it on another valid handle to re-route it;
+   * drop it on empty canvas to detach (same as deleting the wire). Dropping on a handle that refuses it
+   * leaves the wire as it was.
+   */
+  const reconnectDone = useRef(false);
+  const onReconnectStart = useCallback(() => {
+    reconnectDone.current = false;
+  }, []);
+  const onReconnect = useCallback(
+    (old: Edge, c: Connection) => {
+      reconnectDone.current = true;
+      const oldSource = sourceIdOfNode(old.source);
+      const newSource = sourceIdOfNode(c.source);
+      if (oldSource && newSource && isInputToMain(c)) {
+        // Same input to another row = move it to that port; another input onto this row = swap who feeds it.
+        const port = portFromHandle(c.targetHandle);
+        run((doc) => {
+          const freed = newSource === oldSource ? { ok: true as const, doc } : disconnectSource(doc, oldSource);
+          return freed.ok ? connectSource(freed.doc, newSource, port) : freed;
+        });
+        return;
+      }
+      const oldOutput = old.source === MAIN_ID ? outputIdOfNode(old.target) : undefined;
+      const newOutput = isMainToOutput(c) ? outputIdOfNode(c.target) : undefined;
+      if (oldOutput && newOutput && oldOutput !== newOutput) {
+        disconnect(oldOutput);
+        reconnect(newOutput);
+      }
+    },
+    [run, disconnect, reconnect],
+  );
+  const onReconnectEnd = useCallback(
+    (_e: MouseEvent | TouchEvent, edge: Edge, _type: HandleType, state: FinalConnectionState) => {
+      if (!reconnectDone.current && !state.toHandle) onEdgesDelete([edge]);
+    },
+    [onEdgesDelete],
+  );
+
   /** Duplicates inputs (each copy right next to its original), as one undo step. */
   const duplicateInputs = useCallback(
     (ids: string[]) => {
@@ -583,6 +624,12 @@ function BoardCanvas(props: {
             onEdgesChange={onEdgesChange}
             onEdgesDelete={onEdgesDelete}
             isValidConnection={isValidConnection}
+            edgesReconnectable={!readOnly}
+            onReconnectStart={onReconnectStart}
+            onReconnect={onReconnect}
+            onReconnectEnd={onReconnectEnd}
+            reconnectRadius={16}
+            connectionRadius={36}
             nodesDraggable={!readOnly}
             nodesConnectable={!readOnly}
             edgesFocusable={!readOnly}

@@ -200,3 +200,10 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 /* T8.3 file dropped on an input */
 .sc-node--drop { outline: 2px dashed var(--accent); outline-offset: 2px; }
+
+/* T8.5 wires: bigger handles (with a wider invisible hit area) and a visible grab state */
+.react-flow__handle { width: 10px; height: 10px; background: #fff; border: 2px solid var(--accent); }
+.react-flow__handle::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+.react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); }
+.react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
+.react-flow__edgeupdater { cursor: grab; }
