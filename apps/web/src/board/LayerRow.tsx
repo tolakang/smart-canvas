@@ -87,7 +87,7 @@ export function LayerActions({ source }: { source: InputSource }) {
         aria-label={`Delete ${source.label}`}
         title="Delete"
         onClick={() => {
-          if (window.confirm(`Delete input "${source.label}"? Its wires and output overrides go with it.`)) run((d) => deleteSource(d, source.id));
+          if (confirmDelete(source.label)) run((d) => deleteSource(d, source.id));
         }}
       >
         <Icon name="trash" />
@@ -95,6 +95,9 @@ export function LayerActions({ source }: { source: InputSource }) {
     </>
   );
 }
+
+/** The one confirm before deleting an input (row trash, node header, right-click menu). */
+export const confirmDelete = (label: string) => window.confirm(`Delete input "${label}"? Its wires and output overrides go with it.`);
 
 const PATHS = {
   eye: 'M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5zm7 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',

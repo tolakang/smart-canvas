@@ -2,12 +2,15 @@ import {
   addOutput,
   addSource,
   connectSource,
+  deleteSource,
   disconnectOutput,
   disconnectSource,
+  duplicateSource,
   isOutputConnected,
   LIMITS,
   reconnectNeedsChoice,
-  reconnectOutput, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
+  reconnectOutput,
+  setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -32,7 +35,9 @@ import { MainEditor } from '../editor/MainEditor';
 import { OutputEditor } from '../editor/OutputEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
+import { ContextMenu, type MenuState } from './ContextMenu';
 import { ExportDialog } from './ExportDialog';
+import { confirmDelete } from './LayerRow';
 import { History } from './history';
 import { LibraryDialog } from './LibraryDialog';
 import { ReconnectDialog } from './ReconnectDialog';
@@ -128,6 +133,11 @@ function BoardCanvas(props: {
   const [editingMain, setEditingMain] = useState(false);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
+  const nodesRef = useRef(nodes);
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+  const [menu, setMenu] = useState<MenuState | null>(null);
   const [edges, setEdges] = useState(() => docToEdges(initial.doc));
   const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
   const [adding, setAdding] = useState(false);
@@ -356,6 +366,59 @@ function BoardCanvas(props: {
     [run, disconnect],
   );
 
+  /** Duplicates inputs (each copy right next to its original), as one undo step. */
+  const duplicateInputs = useCallback(
+    (ids: string[]) => {
+      if (readOnly) return;
+      run((doc) => {
+        let next = doc;
+        for (const id of ids) {
+          const r = duplicateSource(next, id, newId());
+          if (!r.ok) return r;
+          next = r.doc;
+        }
+        return { ok: true, doc: next };
+      });
+    },
+    [readOnly, run],
+  );
+  // T8.2: Ctrl/⌘+D duplicates the selected inputs (not while typing in a field).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'd') return;
+      const ids = nodesRef.current.flatMap((n) => (n.selected ? [sourceIdOfNode(n.id)] : [])).filter((id): id is string => !!id);
+      if (ids.length === 0) return;
+      e.preventDefault(); // the browser's "bookmark this page"
+      duplicateInputs(ids);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [duplicateInputs]);
+
+  // T8.2: right-click an input node → Duplicate / Show or hide / Delete.
+  const onNodeContextMenu = useCallback(
+    (e: React.MouseEvent, node: Node) => {
+      const sourceId = sourceIdOfNode(node.id);
+      const source = docRef.current.sources.find((s) => s.id === sourceId);
+      if (!source || readOnly) return;
+      e.preventDefault();
+      const full = docRef.current.sources.length >= LIMITS.maxSources;
+      setMenu({
+        x: e.clientX,
+        y: e.clientY,
+        title: source.label,
+        items: [
+          { label: full ? `Duplicate (${LIMITS.maxSources} inputs max)` : 'Duplicate', disabled: full, onSelect: () => duplicateInputs([source.id]) },
+          { label: source.visible ? 'Hide' : 'Show', onSelect: () => run((d) => setSourceVisible(d, source.id, !source.visible)) },
+          { label: 'Delete', danger: true, separated: true, onSelect: () => confirmDelete(source.label) && run((d) => deleteSource(d, source.id)) },
+        ],
+      });
+    },
+    [duplicateInputs, readOnly, run],
+  );
+
   const addInput = (input: NewInput) => {
     const result = run((doc) => addSource(doc, { id: newId(), ...input }));
     if (result.ok) setAdding(false);
@@ -457,6 +520,7 @@ function BoardCanvas(props: {
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onNodeDragStop={onNodeDragStop}
+            onNodeContextMenu={onNodeContextMenu}
             onConnect={onConnect}
             onEdgesChange={onEdgesChange}
             onEdgesDelete={onEdgesDelete}
@@ -475,6 +539,7 @@ function BoardCanvas(props: {
             <Controls showInteractive={false} />
             <MiniMap pannable zoomable />
           </ReactFlow>
+          {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
           {editingMain && <MainEditor onClose={() => setEditingMain(false)} />}
           {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}
         </BoardContext.Provider>

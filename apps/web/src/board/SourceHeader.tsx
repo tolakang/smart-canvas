@@ -3,6 +3,7 @@ import { api } from '../api';
 import { useState, type KeyboardEvent } from 'react';
 import { useBoard } from './context';
 import { newId } from './ids';
+import { confirmDelete, Icon } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
@@ -22,7 +23,7 @@ export function SourceHeader({ source }: { source: InputSource }) {
     if (e.key === 'Escape') setEditing(false);
   }
   function remove() {
-    if (window.confirm(`Delete input "${source.label}"? Its wires and output overrides go with it.`)) {
+    if (confirmDelete(source.label)) {
       run((doc) => deleteSource(doc, source.id));
     }
   }
@@ -74,7 +75,7 @@ export function SourceHeader({ source }: { source: InputSource }) {
             aria-pressed={!source.visible}
             onClick={() => run((doc) => setSourceVisible(doc, source.id, !source.visible))}
           >
-            {source.visible ? '◉' : '○'}
+            <Icon name={source.visible ? 'eye' : 'eye-off'} />
           </button>
           <button
             type="button"
@@ -83,7 +84,7 @@ export function SourceHeader({ source }: { source: InputSource }) {
             disabled={sourceCount >= LIMITS.maxSources}
             onClick={() => run((doc) => duplicateSource(doc, source.id, newId()))}
           >
-            ⧉
+            <Icon name="plus" />
           </button>
           <button
             type="button"
@@ -94,7 +95,7 @@ export function SourceHeader({ source }: { source: InputSource }) {
             {saved === 'saved' ? '✓' : '📚'}
           </button>
           <button type="button" title="Delete" aria-label={`Delete ${source.label}`} onClick={remove}>
-            🗑
+            <Icon name="trash" />
           </button>
         </div>
       )}
