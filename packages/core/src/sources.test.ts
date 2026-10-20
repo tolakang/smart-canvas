@@ -109,12 +109,23 @@ describe('duplicateSource', () => {
     expect(orig?.content.kind === 'text' && orig.content.style.fontSizePx).toBe(160);
   });
 
-  it('does not copy wires or the library link', () => {
-    const doc0 = { ...createProjectDoc('P'), wires: [{ id: 'w', from: 'logo', to: 'main', port: 0 }] };
+  it('wires the copy of a wired source at the same spot, without the library link (T8.1)', () => {
+    const frame = { x: 0.7, y: 0.05, w: 0.2, h: 0.1 };
+    const base = createProjectDoc('P');
+    const doc0: ProjectDoc = { ...base, wires: [{ id: 'in:logo', from: 'logo', to: 'main', port: 0 }], master: { ...base.master, placements: { logo: frame } } };
     doc0.sources = doc0.sources.map((s) => (s.id === 'logo' ? { ...s, libraryItemId: 'lib1' } : s));
     const doc = ok(duplicateSource(doc0, 'logo', 'logo2'));
-    expect(doc.wires).toHaveLength(1);
     expect(doc.sources.find((s) => s.id === 'logo2')?.libraryItemId).toBeUndefined();
+    // The copy takes port 0 (front); the original moves to 1 and its wire follows.
+    expect(doc.wires.map((w) => [w.from, w.port]).sort()).toEqual([['logo', 1], ['logo2', 0]]);
+    expect(doc.master.placements.logo2).toEqual(frame);
+    expect(doc.master.placements.logo2).not.toBe(doc.master.placements.logo); // its own frame
+  });
+
+  it('leaves the copy of an unwired source unwired', () => {
+    const doc = ok(duplicateSource(createProjectDoc('P'), 'logo', 'logo2'));
+    expect(doc.wires).toEqual([]);
+    expect(doc.master.placements.logo2).toBeUndefined();
   });
 });
 

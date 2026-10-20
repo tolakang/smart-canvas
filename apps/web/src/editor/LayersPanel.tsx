@@ -1,11 +1,12 @@
 /**
- * Layers panel (T3.3): every input in port order (port 0 = front, D11), visibility toggle, re-order,
- * and selection kept in sync with the canvas. Inputs not wired into main are listed greyed with Connect.
- * In an output editor (`outputId`, T5.1) the eye hides the layer on that output only (an override);
- * stacking order and wiring stay the master's, so those buttons are not shown.
+ * Layers panel (T3.3, T8.1): every input in port order (port 0 = front = top, D11), selection kept in sync
+ * with the canvas. In the main editor rows re-order by drag & drop and have show/hide, duplicate (+) and
+ * delete; inputs not wired into main are greyed with Connect. In an output editor (`outputId`, T5.1) the eye
+ * hides the layer on that output only (an override); stacking order and wiring stay the master's.
  */
-import { connectSource, moveSourceToPort, setOverrideHidden, setSourceVisible } from '@smart-canvas/core';
+import { connectSource, setOverrideHidden } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
+import { Icon, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 
 const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 
@@ -15,14 +16,16 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
   const overrides = new Map(doc.outputs.find((o) => o.id === outputId)?.overrides.map((o) => [o.sourceId, o]));
   const wired = new Set(doc.wires.filter((w) => w.to === 'main').map((w) => w.from));
   const layers = [...doc.sources].sort((a, b) => a.port - b.port);
+  const { dropAt, rowProps } = useLayerReorder();
+  const reorder = !readOnly && !outputId;
 
   return (
     <aside className="sc-layers" aria-label="Layers">
       <div className="sc-layers__title">
-        Layers <span className="sc-muted">front ↑</span>
+        Layers <span className="sc-muted">top = front</span>
       </div>
       <ol className="sc-layers__list">
-        {layers.map((s, i) => {
+        {layers.map((s) => {
           const isWired = wired.has(s.id);
           const isSelected = props.selected === s.id;
           const hiddenHere = !!overrides.get(s.id)?.hidden;
@@ -30,10 +33,17 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
           return (
             <li
               key={s.id}
-              className={`sc-layer${isSelected ? ' sc-layer--selected' : ''}${visible ? '' : ' sc-layer--hidden'}${isWired ? '' : ' sc-layer--unwired'}`}
+              className={`sc-layer${isSelected ? ' sc-layer--selected' : ''}${visible ? '' : ' sc-layer--hidden'}${isWired ? '' : ' sc-layer--unwired'}${dropAt === s.port ? ' sc-layer--drop' : ''}`}
               aria-selected={isSelected}
               data-layer={s.id}
+              {...(reorder ? rowProps(s) : {})}
             >
+              {reorder && (
+                <span className="sc-port__grip" title="Drag to re-order">
+                  <Icon name="grip" />
+                </span>
+              )}
+              <LayerThumb source={s} />
               <button type="button" className="sc-layer__name" onClick={() => props.onSelect(s.id)}>
                 <span>
                   {s.label}
@@ -63,33 +73,14 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                   </button>
                 </span>
               )}
-              {!readOnly && !outputId && (
+              {reorder && (
                 <span className="sc-layer__actions">
-                  <button
-                    type="button"
-                    aria-label={`${s.visible ? 'Hide' : 'Show'} layer ${s.label}`}
-                    aria-pressed={!s.visible}
-                    title={s.visible ? 'Hide' : 'Show'}
-                    onClick={() => run((d) => setSourceVisible(d, s.id, !s.visible))}
-                  >
-                    {s.visible ? '◉' : '○'}
-                  </button>
-                  <button type="button" aria-label={`Bring ${s.label} forward`} disabled={i === 0} onClick={() => run((d) => moveSourceToPort(d, s.id, s.port - 1))}>
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Send ${s.label} back`}
-                    disabled={i === layers.length - 1}
-                    onClick={() => run((d) => moveSourceToPort(d, s.id, s.port + 1))}
-                  >
-                    ▼
-                  </button>
                   {!isWired && (
-                    <button type="button" aria-label={`Connect ${s.label} to main`} onClick={() => run((d) => connectSource(d, s.id))}>
-                      +
+                    <button type="button" aria-label={`Connect ${s.label} to main`} title="Connect to main" onClick={() => run((d) => connectSource(d, s.id))}>
+                      ○
                     </button>
                   )}
+                  <LayerActions source={s} />
                 </span>
               )}
             </li>
