@@ -63,6 +63,7 @@ import {
   withPositions,
   type BoardNode,
 } from './flow';
+import { Inspector } from './Inspector';
 import { nodeTypes } from './nodes';
 import { sizeLabel } from './OutputNode';
 
@@ -154,6 +155,8 @@ function BoardCanvas(props: {
   const [adding, setAdding] = useState(false);
   const [addingOutput, setAddingOutput] = useState(false);
   /** Where a node added from the canvas menu goes (flow coordinates); null = the default column (T8.4). */
+  /** T13.2: the one selected node (React Flow id), shown in the inspector. */
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [placeAt, setPlaceAt] = useState<{ x: number; y: number } | null>(null);
   const flow = useRef<ReactFlowInstance<BoardNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
@@ -662,6 +665,7 @@ function BoardCanvas(props: {
         onDrop={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
       >
         <BoardContext.Provider value={actions}>
+          <div className="sc-board__flow">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -670,6 +674,7 @@ function BoardCanvas(props: {
             onNodeDragStop={onNodeDragStop}
             onNodeContextMenu={onNodeContextMenu}
             onPaneContextMenu={onPaneContextMenu}
+            onSelectionChange={({ nodes: picked }) => setSelectedNode(picked.length === 1 ? (picked[0]?.id ?? null) : null)}
             onInit={(instance) => {
               flow.current = instance;
             }}
@@ -698,6 +703,8 @@ function BoardCanvas(props: {
             <Controls showInteractive={false} />
             <MiniMap pannable zoomable />
           </ReactFlow>
+          </div>
+          <Inspector selected={selectedNode} />
           {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
           {editingMain && <MainEditor onClose={() => setEditingMain(false)} />}
           {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}

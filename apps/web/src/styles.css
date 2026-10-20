@@ -451,3 +451,32 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .react-flow__edge.sc-edge--composition .react-flow__edge-path { stroke: color-mix(in srgb, var(--type-main) 55%, #b3b3b3); stroke-dasharray: none; }
 .react-flow__edge.sc-edge--layer.selected .react-flow__edge-path, .react-flow__edge.sc-edge--layer:hover .react-flow__edge-path { stroke: var(--type-input); }
 .react-flow__edge.sc-edge--composition.selected .react-flow__edge-path, .react-flow__edge.sc-edge--composition:hover .react-flow__edge-path { stroke: var(--type-main); }
+
+/* T13.2 right inspector: the selected node's settings; the canvas takes the rest */
+.sc-board__canvas { display: flex; min-height: 0; }
+.sc-board__flow { flex: 1; min-width: 0; position: relative; }
+.sc-inspector-panel { width: 300px; flex: none; overflow: auto; background: var(--surface); border-left: 1px solid var(--line); font-size: var(--fs-sm); }
+.sc-inspector-panel__section { display: grid; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
+.sc-inspector-panel__title { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: var(--field-h); font-size: var(--fs-sm); font-weight: 600; }
+.sc-inspector-panel__hint { margin: 0; font-size: var(--fs-xs); line-height: 1.5; }
+.sc-inspector-panel__level { padding: 2px var(--sp-2); border-radius: 99px; font-size: var(--fs-xs); font-weight: 600; }
+.sc-inspector-panel__level.sc-health--ok { background: #e8f7ee; color: #0f7a40; }
+.sc-inspector-panel__level.sc-health--frozen { background: var(--surface-2); color: var(--muted); }
+.sc-inspector-panel__issues { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: var(--fs-xs); }
+.sc-inspector-panel__issues li { padding: 6px var(--sp-2); border-radius: var(--r-sm); border-left: 3px solid var(--warn); background: var(--surface-2); }
+.sc-inspector-panel__issues li[data-level='error'] { border-left-color: var(--danger); }
+.sc-inspector-panel__issues strong { display: block; }
+.sc-inspector-panel__form { display: grid; gap: var(--sp-2); }
+/* The inspector reuses the node controls: give them the node field look there too */
+.sc-inspector-panel input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-inspector-panel select, .sc-inspector-panel textarea {
+  max-width: 100%; min-width: 0; font: inherit; font-size: var(--fs-sm); border: 1px solid transparent; border-radius: var(--r-md); background: var(--surface-2); color: var(--fg);
+}
+.sc-inspector-panel input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-inspector-panel select { height: var(--field-h); padding: 0 var(--sp-2); width: 100%; }
+.sc-inspector-panel input:focus, .sc-inspector-panel select:focus, .sc-inspector-panel textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+.sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; display: inline-flex; }
+.sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+.sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
+.sc-inspector-panel .sc-output__settings { margin: 0; color: var(--muted); font-size: var(--fs-xs); }
+.sc-inspector-panel .sc-upload, .sc-inspector-panel .sc-fill button, .sc-inspector-panel .sc-link { display: inline-flex; align-items: center; height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); justify-self: start; }
+.sc-inspector-panel .sc-behavior { height: var(--field-h); font-size: var(--fs-sm); }
+.sc-inspector-panel .sc-thumb { height: 160px; }

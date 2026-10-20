@@ -70,7 +70,8 @@ describe.skipIf(!adminUrl)('layout health on nodes (T13.1)', () => {
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     await page.reload();
     await expect.poll(() => badge(banner()).getAttribute('data-health'), { timeout: 15_000 }).toBe('ok');
-    await banner().getByRole('button', { name: 'Disconnect' }).click();
+    await banner().locator('.sc-node__title').click();
+    await page.getByRole('complementary', { name: 'Inspector' }).getByRole('button', { name: 'Disconnect' }).click();
     await expect.poll(() => badge(banner()).getAttribute('data-health')).toBe('frozen');
     expect(await banner().locator('.sc-health__btn').getAttribute('aria-label')).toMatch(/^Layout health: Frozen/);
   }, 60_000);

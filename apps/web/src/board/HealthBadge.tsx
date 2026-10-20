@@ -45,15 +45,20 @@ export function HealthBadge({ health }: { health: Health }) {
         <span className="sc-health__dot" aria-hidden="true" />
         {count > 0 && <span className="sc-health__count">{count}</span>}
       </button>
-      {open && count > 0 && (
-        <ul className="sc-health__list" aria-label="Layout issues">
-          {health.issues.map((i) => (
-            <li key={`${i.sourceId}:${i.code}`} data-level={i.level}>
-              <strong>{i.label}</strong> {i.message}
-            </li>
-          ))}
-        </ul>
-      )}
+      {open && count > 0 && <HealthIssues health={health} className="sc-health__list" />}
     </span>
+  );
+}
+
+/** The issues, one per layer and kind (the badge's pop-up and the inspector's list). */
+export function HealthIssues({ health, className }: { health: Health; className: string }) {
+  return (
+    <ul className={className} aria-label="Layout issues">
+      {health.issues.map((i) => (
+        <li key={`${i.sourceId}:${i.code}`} data-level={i.level}>
+          <strong>{i.label}</strong> {i.message}
+        </li>
+      ))}
+    </ul>
   );
 }

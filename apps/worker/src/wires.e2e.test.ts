@@ -97,7 +97,9 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     const [sq, pt] = (await doc()).outputs;
     if (!sq || !pt) throw new Error('outputs missing');
     const outHandle = (id: string) => page.locator(`.react-flow__node-outputNode[data-id="out:${id}"] .react-flow__handle`);
-    await page.locator(`.react-flow__node-outputNode[data-id="out:${pt.id}"]`).getByRole('button', { name: 'Disconnect' }).click();
+    // T13.2: an output's settings (Disconnect included) are in the inspector of the selected node.
+    await page.locator(`.react-flow__node-outputNode[data-id="out:${pt.id}"] .sc-node__title`).click();
+    await page.getByRole('complementary', { name: 'Inspector' }).getByRole('button', { name: 'Disconnect' }).click();
     await saved();
 
     await drag(end(`out:${sq.id}`, 'target'), outHandle(pt.id));
