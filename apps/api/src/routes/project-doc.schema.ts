@@ -48,6 +48,7 @@ const output = {
     family: { enum: ['auto', 'stack', 'side'] },
     overrides: { type: 'array', items: { type: 'object', required: ['sourceId'], properties: { sourceId: id } } },
     frozen: { type: 'object' },
+    layers: { type: 'array', maxItems: LIMITS.maxSources, items: id },
     board: point,
   },
 } as const;

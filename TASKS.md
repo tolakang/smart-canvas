@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** order — T13.6 responsive → T12.4–T12.8 → T13.7 groups → T13.8 wire polish
+**Next:** order — T12.4 output-only layers → T12.5–T12.8 → T13.7 groups → T13.8 wire polish
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -107,6 +107,6 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T13.3 — Dark theme + toggle — [#68](https://github.com/tolakang/smart-canvas/pull/68)
 - [x] T13.4 — Left node library — [#70](https://github.com/tolakang/smart-canvas/pull/70)
 - [x] T13.5 — Floating toolbar, minimap, grid snap, guides — [#71](https://github.com/tolakang/smart-canvas/pull/71)
-- [ ] T13.6 — Responsive: tablet + phone, touch
+- [x] T13.6 — Responsive: tablet + phone, touch — [#72](https://github.com/tolakang/smart-canvas/pull/72)
 - [ ] T13.7 — Groups
 - [ ] T13.8 — Wire polish

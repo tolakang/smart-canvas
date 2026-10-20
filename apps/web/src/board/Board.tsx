@@ -4,9 +4,11 @@ import {
   addOutput,
   canAddComposition,
   addSource,
+  connectOutputLayer,
   connectSource,
   deleteSource,
   disconnectOutput,
+  disconnectOutputLayer,
   disconnectSource,
   duplicateSource,
   LIMITS,
@@ -57,6 +59,7 @@ import {
   compositionIdOfNode,
   compositionToOutput,
   inputToComposition,
+  inputToOutput,
   connectionRefusal,
   MAIN_ID,
   OUTPUT_HANDLE,
@@ -138,6 +141,21 @@ export function Board(props: { teamId: string; projectId: string; userId: string
       onReload={() => setReloadKey((k) => k + 1)}
     />
   );
+}
+
+/** A layer wire into a node (T12.4): a composition row or an output's own row; the node id from React Flow. */
+function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, port: number | undefined): SourceResult {
+  const composition = compositionIdOfNode(target);
+  if (composition) return connectSource(doc, sourceId, port, composition);
+  const outputId = target ? outputIdOfNode(target) : undefined;
+  return outputId ? connectOutputLayer(doc, outputId, sourceId, port) : { ok: false, error: 'not_found' };
+}
+
+function disconnectLayer(doc: ProjectDoc, sourceId: string, target: string): SourceResult {
+  const composition = compositionIdOfNode(target);
+  if (composition) return disconnectSource(doc, sourceId, composition);
+  const outputId = outputIdOfNode(target);
+  return outputId ? disconnectOutputLayer(doc, outputId, sourceId) : { ok: false, error: 'not_found' };
 }
 
 function BoardCanvas(props: {
@@ -397,9 +415,7 @@ function BoardCanvas(props: {
         return;
       }
       const sourceId = sourceIdOfNode(c.source);
-      const into = inputToComposition(c);
-      if (!sourceId || !into) return;
-      run((doc) => connectSource(doc, sourceId, portFromHandle(c.targetHandle), into));
+      if (sourceId) run((doc) => connectLayer(doc, sourceId, c.target, portFromHandle(c.targetHandle)));
     },
     [run, reconnect],
   );
@@ -414,9 +430,8 @@ function BoardCanvas(props: {
     (deleted: Edge[]) => {
       for (const e of deleted) {
         const sourceId = sourceIdOfNode(e.source);
-        const into = compositionIdOfNode(e.target);
         const outputId = compositionIdOfNode(e.source) ? outputIdOfNode(e.target) : undefined;
-        if (sourceId && into) run((doc) => disconnectSource(doc, sourceId, into));
+        if (sourceId) run((doc) => disconnectLayer(doc, sourceId, e.target));
         else if (outputId) disconnect(outputId);
       }
     },
@@ -439,15 +454,13 @@ function BoardCanvas(props: {
     (old: Edge, c: Connection) => {
       reconnectDone.current = true;
       const oldSource = sourceIdOfNode(old.source);
-      const oldInto = compositionIdOfNode(old.target);
       const newSource = sourceIdOfNode(c.source);
-      const into = inputToComposition(c);
-      if (oldSource && oldInto && newSource && into) {
+      if (oldSource && newSource && (inputToComposition(c) || inputToOutput(c))) {
         // Same input to another row = move it to that row; another input onto this row = swap who feeds it.
         const port = portFromHandle(c.targetHandle);
         run((doc) => {
-          const freed = newSource === oldSource && oldInto === into ? { ok: true as const, doc } : disconnectSource(doc, oldSource, oldInto);
-          return freed.ok ? connectSource(freed.doc, newSource, port, into) : freed;
+          const freed = newSource === oldSource && old.target === c.target ? { ok: true as const, doc } : disconnectLayer(doc, oldSource, old.target);
+          return freed.ok ? connectLayer(freed.doc, newSource, c.target, port) : freed;
         });
         return;
       }
@@ -477,7 +490,7 @@ function BoardCanvas(props: {
     (e: MouseEvent | TouchEvent, state: FinalConnectionState) => {
       if (readOnly || state.isValid || !flow.current) return;
       if (state.toHandle) {
-        const why = connectionRefusal(docRef.current, { source: state.fromNode?.id ?? null, target: state.toNode?.id ?? null });
+        const why = connectionRefusal(docRef.current, { source: state.fromNode?.id ?? null, target: state.toNode?.id ?? null, targetHandle: state.toHandle?.id ?? null });
         if (why) setNotice(why);
         return;
       }

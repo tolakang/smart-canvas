@@ -252,7 +252,12 @@ describe('typed connections (T12.2, D32)', () => {
     expect(connectionRefusal(doc, { source: 'src:bg', target: MAIN_ID })).toBeNull();
     expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4' })).toBeNull();
     expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:ig' })).toBe('This output already has a main preview: drag its wire off first.');
-    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig' })).toBe('An input wires into a row of a main preview.'); // output-only layers: T12.4
+    // T12.4 output-only layers: onto a layer row of an output, for an input the output's main preview doesn't draw.
+    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBe('This input is already a layer of the output’s main preview.');
+    const unwired = { ...doc, edges: doc.edges.filter((e) => e.from !== 'bg') };
+    expect(connectionRefusal(unwired, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBeNull();
+    expect(connectionRefusal(unwired, { source: 'src:bg', target: 'out:ig', targetHandle: null })).toBe('An input wires into a layer row of an output.');
+    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4', targetHandle: 'p0' })).toBe('A main preview wires into the output’s main preview port.');
     expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of a main preview.');
   });
 });

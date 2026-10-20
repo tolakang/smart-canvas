@@ -126,6 +126,9 @@ export interface OutputNode {
   safeMarginPct?: number; // default DEFAULTS.safeMarginPct
   family: LayoutFamily; // default 'auto'
   overrides: Override[]; // empty = fully automatic
+  /** Output-only layers (D32, T12.4): its own rows, front first (row index = port), drawn above the composition's
+   *  layers while a `layer` edge feeds them. Absent = none. */
+  layers?: string[];
   /** Only present while disconnected: frames captured at disconnect time. Deleted on reconnect.
    *  Frames only: text/asset content edits on sources still show; positions/sizes stay frozen. */
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };

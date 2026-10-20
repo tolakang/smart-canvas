@@ -187,6 +187,7 @@ export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
       outputs: doc.outputs.map((o) => ({
         ...o,
         overrides: o.overrides.filter((ov) => ov.sourceId !== id),
+        ...(o.layers ? { layers: o.layers.filter((l) => l !== id) } : {}),
         ...(o.frozen ? { frozen: { items: o.frozen.items.filter((it) => it.sourceId !== id) } } : {}),
       })),
     },

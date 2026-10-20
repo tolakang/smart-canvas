@@ -44,6 +44,7 @@ interface Composition { id: string; label: string; size: Size; placements: Recor
 type EdgeKind = 'layer' | 'composition';
 interface Edge { id: string; from: string; to: string; kind: EdgeKind }   // replaces Wire
 interface ProcessNode { id: string; label: string; op: ProcessOp; board: XY }
+// OutputNode gains layers?: string[] — its own rows (output-only layers, T12.4), front first
 interface ProjectDoc {
   schema: 2; rev: number; name: string;
   compositions: Composition[];   // [0] is 'main' (the v1 master)
