@@ -3,7 +3,7 @@
 Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.md` and the files named in the ticket.
 
 ## P0 Spikes (time-box 1 session each)
-- S1 — Affinity 3 `.af` reader check — Needs the named-layer test file. Output: `AFFINITY-IMPORT.md` saying what is readable (names, text, rasters, vectors) and go/no-go for T7.6.
+- ~~S1 — Affinity 3 `.af` reader check~~ — Dropped (D6). Was: Needs the named-layer test file. Output: `AFFINITY-IMPORT.md` saying what is readable (names, text, rasters, vectors) and go/no-go for T7.6.
 - S2 — Khmer text parity — Browser measure + `Intl.Segmenter('km')` gives the same line breaks in Chromium worker as on screen for 5 sample headlines; no clipped diacritics.
 - S3 — SVG text outlines — harfbuzzjs + fontkit produces outlined Khmer text that matches the screen render within 1 px.
 
@@ -62,7 +62,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T7.4 — Performance — 10 inputs × 10 outputs stays smooth; thumbnails throttled/cached.
 - T7.5 — E2E tests — create project → 4 inputs → 3 outputs → override → export.
 - T7.7 — Team screen — admins invite by link (role, optional email), change roles, remove members, revoke invites; invite page joins a new or signed-in user. (Added: the API from T1.3 had no UI.)
-- T7.6 — `.af` importer (experimental) — only if S1 says go; one `.af` creates sources from named layers; unreadable layers become empty sources.
+- ~~T7.6 — `.af` importer (experimental)~~ — Dropped (D6). Was: only if S1 says go; one `.af` creates sources from named layers; unreadable layers become empty sources.
 
 ## P8 Board UX (user feedback, 2026-10-20)
 - T8.1 — Layer list: drag & drop to reorder ports (front ↔ back); each row has only Duplicate (+) and Delete (trash); no ▲ ▼ arrows. (D8, D11)

@@ -6,7 +6,7 @@
 - D3 Khmer + Latin text. Bundle Khmer fonts, allow font upload (ttf/otf/woff2). Word breaks via `Intl.Segmenter('km')`. Same fonts in browser and export worker.
 - D4 Subjects are transparent PNG cutouts. Background removal is v2.
 - D5 No AI in v1. Rules only.
-- D6 Import formats: SVG, PNG, JPG, WebP. Not supported: PSD, AI, PDF, legacy Affinity. Direct `.af` (Affinity 3) import is an experimental later ticket (S1, T7.6), gated on a test file with named layers.
+- D6 Import formats: SVG, PNG, JPG, WebP. Not supported: PSD, AI, PDF, legacy Affinity. No `.af` (Affinity 3) import: dropped by the owner (2026-10-20), too hard to read reliably; export from Affinity to SVG/PNG instead. (S1, T7.6 dropped.)
 
 ## Board and inputs
 - D7 One main preview per project. Up to 10 input sources (the 4 defaults count) and up to 10 outputs.
@@ -48,7 +48,7 @@
 - O1 Preset sizes: verify against current platform docs before seeding. Default list in `packages/presets`.
 - O2 Defaults: safe margin 5%, print bleed 3 mm, print dpi 300, min font 12 design px, min logo width 8%.
 - O3 Caps: max export edge 12000 px, max upload 50 MB.
-- O4 `.af` import: only after test file shows named layers and text can be read (S1).
+- O4 `.af` import: closed — dropped (see D6).
 - O5 SVG text outlines method: harfbuzzjs + fontkit, to be proven in spike S3. → S3 passed with harfbuzzjs alone (shaping + glyph outlines, within 1 px of the screen); fontkit not needed for outlining. See `docs/spikes/S3-SVG-OUTLINES.md`.
 - O6 Undo/redo scope: board edits and editor edits, per session (T7.2).
 - O7 "Frozen" (disconnected) output freezes layout frames only; text and image content edits still show. Change to full freeze (content snapshot) if you prefer.

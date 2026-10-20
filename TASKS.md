@@ -5,10 +5,10 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** S1 — needs the Affinity `.af` test file with named layers; then T7.6 if S1 says go S1 still needs the `.af` test file
+**Next:** nothing queued — waiting for the next request (S1 / T7.6 `.af` import dropped, D6)
 
 ## P0 Spikes (time-box 1 session each)
-- [ ] S1 — Affinity 3 `.af` reader check
+- [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
 - [x] S2 — Khmer text parity — pass — [#44](https://github.com/tolakang/smart-canvas/pull/44)
 - [x] S3 — SVG text outlines — pass — [#45](https://github.com/tolakang/smart-canvas/pull/45)
 
@@ -66,7 +66,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T7.3 — Duplicate project, project templates — [#41](https://github.com/tolakang/smart-canvas/pull/41)
 - [x] T7.4 — Performance — [#42](https://github.com/tolakang/smart-canvas/pull/42)
 - [x] T7.5 — E2E tests — [#43](https://github.com/tolakang/smart-canvas/pull/43)
-- [ ] T7.6 — `.af` importer (experimental) — needs S1 go
+- [~] ~~T7.6 — `.af` importer (experimental)~~ — dropped (D6)
 - [x] T7.7 — Team screen (invite links, roles) — [#47](https://github.com/tolakang/smart-canvas/pull/47)
 
 ## P8 Board UX (user feedback)
@@ -82,4 +82,4 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T9.1 — Layout v2: outputs fill the space and re-arrange (D30) — [#55](https://github.com/tolakang/smart-canvas/pull/55)
 
 ## P10 — Figma-style editing
-- [ ] T10.1 — Editor like Figma: tools, pan / zoom, Design panel, Figma look
+- [x] T10.1 — Editor like Figma: tools, pan / zoom, Design panel, Figma look — [#56](https://github.com/tolakang/smart-canvas/pull/56)

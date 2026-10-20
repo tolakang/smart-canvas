@@ -23,4 +23,4 @@ Team app (login), deployed on Dokploy. Khmer + Latin text.
 
 ## Status
 Spec v1.0 (2026-10-19). Open items with defaults: `DECISIONS.md` §Open.
-Not yet written: ARCHITECTURE.md, API-SPEC.yaml, UI-WIREFRAMES.html, PRESETS.json, KHMER-TEXT.md, AFFINITY-IMPORT.md, deploy templates.
+Not yet written: ARCHITECTURE.md, API-SPEC.yaml, UI-WIREFRAMES.html, PRESETS.json, KHMER-TEXT.md, deploy templates.
