@@ -9,7 +9,7 @@ import { OutputNodeView } from './OutputNode';
 
 function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
-  const { readOnly, run, doc } = useBoard();
+  const { doc, readOnly } = useBoard();
   const port = portOf(doc, source.id);
   // T8.3: drop an image file anywhere on a picture input (or a photo on a fill background, D9).
   const upload = useAssetUpload(source);
@@ -17,25 +17,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
       <div className="sc-node__meta">
-        {source.kind} ·{' '}
-        {readOnly || ALLOWED_BEHAVIORS[source.kind].length < 2 ? (
-          BEHAVIOR_LABEL[source.behavesLike].toLowerCase()
-        ) : (
-          // T8.7: how this input adapts in outputs (its behaviour's rules), changeable any time.
-          <select
-            className="sc-behavior nodrag nopan nowheel"
-            aria-label={`${source.label} behaves like`}
-            title="How this input adapts in outputs"
-            value={source.behavesLike}
-            onChange={(e) => run((doc) => setBehavior(doc, source.id, e.target.value as Behavior))}
-          >
-            {ALLOWED_BEHAVIORS[source.kind].map((b) => (
-              <option key={b} value={b}>
-                {BEHAVIOR_LABEL[b]}
-              </option>
-            ))}
-          </select>
-        )}{' '}
+        {source.kind} · <BehaviorPicker source={source} />{' '}
         <span title={`Port ${port} on the main preview (0 = front)`}>· layer {port + 1}</span>
         {!source.visible && ' · hidden'}
         {source.libraryItemId && ' · from library'}
@@ -46,9 +28,31 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   );
 }
 
+/** T8.7: how an input adapts in outputs (its behaviour's rules), changeable any time (node and inspector). */
+export function BehaviorPicker({ source, id }: { source: InputSource; id?: string }) {
+  const { readOnly, run } = useBoard();
+  if (readOnly || ALLOWED_BEHAVIORS[source.kind].length < 2) return <>{BEHAVIOR_LABEL[source.behavesLike].toLowerCase()}</>;
+  return (
+    <select
+      id={id}
+      className="sc-behavior nodrag nopan nowheel"
+      aria-label={`${source.label} behaves like`}
+      title="How this input adapts in outputs"
+      value={source.behavesLike}
+      onChange={(e) => run((doc) => setBehavior(doc, source.id, e.target.value as Behavior))}
+    >
+      {ALLOWED_BEHAVIORS[source.kind].map((b) => (
+        <option key={b} value={b}>
+          {BEHAVIOR_LABEL[b]}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 const BEHAVIOR_LABEL: Record<Behavior, string> = { background: 'Background', subject: 'Subject', text: 'Text', logo: 'Logo', decoration: 'Decoration' };
 
-function SourceEditor({ source, upload }: { source: InputSource; upload: AssetUpload }) {
+export function SourceEditor({ source, upload }: { source: InputSource; upload: AssetUpload }) {
   const { content } = source;
   switch (content.kind) {
     case 'image':
