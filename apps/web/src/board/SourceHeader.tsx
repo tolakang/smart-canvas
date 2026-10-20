@@ -53,7 +53,9 @@ export function SourceHeader({ source }: { source: InputSource }) {
           onKeyDown={onKey}
         />
       ) : (
-        <div className="sc-node__title">{source.label}</div>
+        <div className="sc-node__title" title={`${source.label} — double-click to rename`} onDoubleClick={() => !readOnly && (setDraft(source.label), setEditing(true))}>
+          {source.label}
+        </div>
       )}
       {!readOnly && !editing && (
         <div className={`sc-actions ${NO_CANVAS}`}>
@@ -66,7 +68,7 @@ export function SourceHeader({ source }: { source: InputSource }) {
               setEditing(true);
             }}
           >
-            ✎
+            <Icon name="pencil" />
           </button>
           <button
             type="button"
@@ -92,7 +94,7 @@ export function SourceHeader({ source }: { source: InputSource }) {
             aria-label={`Save ${source.label} to library`}
             onClick={() => void saveToLibrary()}
           >
-            {saved === 'saved' ? '✓' : '📚'}
+            <Icon name={saved === 'saved' ? 'check' : 'library'} />
           </button>
           <button type="button" title="Delete" aria-label={`Delete ${source.label}`} onClick={remove}>
             <Icon name="trash" />

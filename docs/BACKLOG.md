@@ -78,3 +78,8 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P10 — Figma-style editing
 - T10.1 — Editor works like Figma: dark toolbar with Move (V) / Hand (H) tools; pan with Space/H + drag and the wheel; zoom at the pointer (Ctrl/⌘ + wheel), Ctrl/⌘ ±, Shift+1 fit, Shift+0 100%; Design panel with X / Y / W / H / rotation and constrain proportions; size badge on the selection; Shift keeps proportions / snaps rotation to 15°; compact Figma-style layers and panels. Main preview and output editors (shared editor).
+- T10.2 — Board design-system pass (`docs/DESIGN-SYSTEM.md`):
+  - tokens (colour, type, space, radius, elevation) and white node cards with a type stripe;
+  - one field style and one button style; line icons instead of ✎ / 📚 / ×; selects stay inside the card;
+  - an output named after its size follows size / preset changes; double-click renames outputs and inputs;
+  - a "N edited by hand" chip plus Reset; "layer N" instead of "port N".
