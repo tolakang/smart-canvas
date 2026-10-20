@@ -10,6 +10,7 @@ import { chromium, type Browser, type Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadOutlineFont, outlineLine, woffToSfnt } from './outline';
+import { CHROMIUM_ARGS } from './render';
 
 // The web app's bundled font files (the preview and the export page use these).
 const web = createRequire(new URL('../../web/package.json', import.meta.url));
@@ -72,7 +73,7 @@ describe('S3 SVG text outlines (harfbuzzjs)', () => {
   let browser: Browser;
   let page: Page;
   beforeAll(async () => {
-    browser = await chromium.launch();
+    browser = await chromium.launch({ args: CHROMIUM_ARGS });
     page = await browser.newPage({ viewport: { width: 1400, height: 400 } });
   }, 60_000);
   afterAll(async () => {

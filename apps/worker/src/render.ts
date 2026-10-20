@@ -39,6 +39,13 @@ export function renderUrl(webUrl: string, t: RenderTarget): string {
   return `${webUrl.replace(/\/$/, '')}/render/${t.teamId}/${t.projectId}/${t.target}${qs ? `?${qs}` : ''}`;
 }
 
+/**
+ * Chromium flags for every render. Hinting off: glyph advances keep their design widths, as on an unhinted
+ * screen, instead of depending on the host's font settings (a hinting host rounds each advance to whole
+ * pixels; at 24 px a Khmer line came out 3.7 px narrower). See docs/spikes/S3-SVG-OUTLINES.md.
+ */
+export const CHROMIUM_ARGS = ['--font-render-hinting=none'];
+
 export class RenderError extends Error {}
 
 export async function openRender(browser: Browser, webUrl: string, t: RenderTarget, apiFetch: ApiFetch, timeoutMs = 60_000): Promise<Page> {

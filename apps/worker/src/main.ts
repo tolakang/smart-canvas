@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 import { httpApiFetch } from './api-fetch';
 import { runExportJob } from './jobs';
 import { pgJobStore } from './pg-jobs';
-import { openRender } from './render';
+import { CHROMIUM_ARGS, openRender } from './render';
 import { s3FileStore } from './s3-files';
 import { EXPORT_QUEUE, WORKER_NAME } from './worker';
 
@@ -27,7 +27,7 @@ const api = httpApiFetch(required('API_URL'), required('RENDER_TOKEN'));
 const concurrency = Math.max(1, Number(process.env.EXPORT_CONCURRENCY ?? 2));
 
 const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: CHROMIUM_ARGS });
 const boss = new PgBoss(databaseUrl);
 boss.on('error', (err) => console.error('pg-boss', err));
 await boss.start();

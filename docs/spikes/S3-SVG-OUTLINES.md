@@ -33,6 +33,14 @@ Two thresholds are needed because anti-aliasing puts the same thin stroke at alp
 3. **Shape and draw.** HarfBuzz shapes each run (`guessSegmentProperties`: script, direction, language). This covers Khmer reordering, coeng subscripts and mark positioning. Each glyph becomes `glyphToPath` scaled to the font size, placed at its pen position plus HarfBuzz's x/y offsets.
 4. **Letter spacing** is added after each cluster, as in CSS. Marks and subscripts share their base's cluster.
 
+## Finding: font hinting must be off in the worker
+
+On a host whose font settings turn hinting on (the GitHub Actions runner does), headless Chromium rounds each glyph advance to whole pixels. At 24 px the Khmer test line came out **3.7 px narrower** with Noto Sans Khmer (5.7 px at weight 700), so the outlines and the browser disagreed.
+
+The same rounding would also make the worker's text widths, and therefore its line breaks, depend on the host instead of the font. So the worker now launches Chromium with `--font-render-hinting=none` (`CHROMIUM_ARGS` in `render.ts`, used by the worker and the tests). Advances then keep their design widths everywhere, as on an unhinted screen.
+
+Reproduced locally with `--font-render-hinting=full`: the exact CI numbers, 3.680 and 5.704 px.
+
 ## fontkit is not needed
 
 O5 named "harfbuzzjs + fontkit". HarfBuzz alone gives both the shaping and the outlines (`glyphToPath`), so fontkit adds nothing here. fontkit stays where it already is (font upload validation in the API, and Khmer metrics in tests).
