@@ -15,7 +15,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
 
   beforeAll(async () => {
     stack = await startStack();
-    page = await stack.env.browser.newPage({ viewport: { width: 1600, height: 1000 } });
+    page = await stack.env.browser.newPage({ viewport: { width: 1920, height: 1080 } });
     const { teamId, projectId } = await setupAndCreateProject(page, stack.env.webUrl, 'Menu');
     url = `${stack.env.webUrl}api/teams/${teamId}/projects/${projectId}`;
   }, 120_000);
