@@ -82,13 +82,15 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     await dialog.getByRole('button', { name: /^Export 3 outputs/ }).click();
     const list = dialog.getByRole('list', { name: 'Export progress' });
     await expect.poll(async () => list.locator('li').evaluateAll((els) => els.map((e) => e.getAttribute('data-status'))), { timeout: 90_000, interval: 500 }).toEqual(['done', 'done', 'done']);
+    // D31: these sizes are made in the browser (up to 4096 px), not by the worker.
+    expect(await list.locator('li').evaluateAll((els) => els.map((e) => e.getAttribute('data-where')))).toEqual(['browser', 'browser', 'browser']);
 
     const [file] = await Promise.all([page.waitForEvent('download'), list.getByRole('link', { name: 'Download' }).nth(1).click()]);
     expect(file.suggestedFilename()).toBe('Grand-opening_Instagram-square_1080x1080.png');
     const bytes = readFileSync((await file.path()) as string);
     expect(pngSize(bytes)).toEqual([1080, 1080]);
 
-    const [zip] = await Promise.all([page.waitForEvent('download'), dialog.getByRole('link', { name: /Download all \(ZIP/ }).click()]);
+    const [zip] = await Promise.all([page.waitForEvent('download'), dialog.getByRole('button', { name: /Download all \(ZIP/ }).click()]);
     expect(zip.suggestedFilename()).toMatch(/\.zip$/);
     const names = readFileSync((await zip.path()) as string).toString('latin1');
     for (const n of ['Instagram-portrait-4-5_1080x1350.png', 'Instagram-square_1080x1080.png', 'A5-flyer_']) expect(names).toContain(n);

@@ -17,9 +17,10 @@ import {
   type ProjectDoc,
   type RenderScene,
 } from '@smart-canvas/core';
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { api, ApiError, assetUrl, type AssetMeta } from '../api';
-import { ensureFonts, prepareTextMeasure, registerTeamFonts, type TeamFont } from '../fonts/loader';
+import { ensureFonts, prepareTextMeasure, registerTeamFonts, type FontRequest, type TeamFont } from '../fonts/loader';
+import { frameToSvg } from './exportFile';
 import { OutputRenderer } from './OutputRenderer';
 
 export interface RenderRoute {
@@ -57,6 +58,38 @@ export function cropToTrim(scene: RenderScene, layout: LayoutResult): RenderScen
   };
 }
 
+/** What an output's export draws: its laid-out scene, cropped to the trim box without bleed (shared with browser export, D31). */
+export function exportScene(layout: LayoutResult, output: Parameters<typeof outputScene>[1], bleed: boolean): RenderScene {
+  const full = outputScene(layout, output);
+  return bleed ? full : cropToTrim(full, layout);
+}
+
+/** The text a scene draws, for loading its fonts. */
+export function sceneTexts(scene: RenderScene, sources: readonly InputSource[]): FontRequest[] {
+  const byId = new Map(sources.map((s) => [s.id, s]));
+  return scene.items.flatMap((item) => {
+    const c = byId.get(item.sourceId)?.content;
+    return c?.kind === 'text' ? [{ style: { ...c.style, ...item.style }, text: item.lines?.join('\n') ?? c.text }] : [];
+  });
+}
+
+/** Resolves once every text font of the scene is loaded and every image in the frame has decoded. */
+export async function frameReady(frame: HTMLElement, scene: RenderScene, sources: readonly InputSource[]): Promise<void> {
+  await Promise.all([ensureFonts(sceneTexts(scene, sources)), ...[...frame.querySelectorAll('img')].map((img) => img.decode())]);
+}
+
+/** The export frame: whole pixels (same rounding as exportPixels), clipping the canvas' fraction. */
+export const RenderFrame = forwardRef<HTMLDivElement, { scene: RenderScene; sources: readonly InputSource[]; assetUrl: (id: string) => string; scale: number }>(
+  function RenderFrame({ scene, sources, assetUrl: urlOf, scale }, ref) {
+    const frame = { width: Math.round(scene.width * scale), height: Math.round(scene.height * scale) };
+    return (
+      <div ref={ref} className="sc-render-frame" style={{ ...frame, overflow: 'hidden' }} data-export-width={frame.width} data-export-height={frame.height} data-exact-width={scene.width * scale} data-exact-height={scene.height * scale}>
+        <OutputRenderer scene={scene} sources={sources} assetUrl={urlOf} scale={scale} mode="export" />
+      </div>
+    );
+  },
+);
+
 type Loaded = { scene: RenderScene; sources: InputSource[]; scale: number } | { error: string };
 
 function setStatus(status: 'true' | 'error', error?: string) {
@@ -70,6 +103,8 @@ export function RenderPage({ route }: { route: RenderRoute }) {
 
   useEffect(() => {
     document.documentElement.classList.add('sc-render-page');
+    // The worker builds SVG files with the same code as the browser (D31).
+    (window as unknown as { scExport: unknown }).scExport = { frameToSvg };
     let live = true;
     (async () => {
       const [project, fonts] = await Promise.all([
@@ -91,8 +126,7 @@ export function RenderPage({ route }: { route: RenderRoute }) {
       const { measure, missing } = await prepareTextMeasure(requests);
       if (missing.length) return { error: 'font_missing' };
       const layout = computeLayout(doc, output.id, { measure, assets: sizes });
-      const full = outputScene(layout, output);
-      return { scene: route.bleed ? full : cropToTrim(full, layout), sources: doc.sources, scale: route.scale ?? exportScaleOf(output) };
+      return { scene: exportScene(layout, output, route.bleed), sources: doc.sources, scale: route.scale ?? exportScaleOf(output) };
     })().then(
       (r) => live && setLoaded(r),
       (e: unknown) => live && setLoaded({ error: e instanceof ApiError ? `api_${e.status}` : 'load_failed' }),
@@ -109,30 +143,14 @@ export function RenderPage({ route }: { route: RenderRoute }) {
       setStatus('error', loaded.error);
       return;
     }
-    const byId = new Map(loaded.sources.map((s) => [s.id, s]));
-    const texts = loaded.scene.items.flatMap((item) => {
-      const c = byId.get(item.sourceId)?.content;
-      return c?.kind === 'text' ? [{ style: { ...c.style, ...item.style }, text: item.lines?.join('\n') ?? c.text }] : [];
-    });
-    const images = [...(root.current?.querySelectorAll('img') ?? [])];
-    Promise.all([ensureFonts(texts), ...images.map((img) => img.decode())]).then(
+    const frame = root.current;
+    if (!frame) return;
+    frameReady(frame, loaded.scene, loaded.sources).then(
       () => setStatus('true'),
       () => setStatus('error', 'image_failed'),
     );
   }, [loaded]);
 
   if (!loaded || 'error' in loaded) return null;
-  // The frame is the export: whole pixels (same rounding as exportPixels), clipping the canvas' fraction.
-  const frame = { width: Math.round(loaded.scene.width * loaded.scale), height: Math.round(loaded.scene.height * loaded.scale) };
-  return (
-    <div ref={root} className="sc-render-frame" style={{ ...frame, overflow: 'hidden' }} data-export-width={frame.width} data-export-height={frame.height} data-exact-width={loaded.scene.width * loaded.scale} data-exact-height={loaded.scene.height * loaded.scale}>
-      <OutputRenderer
-        scene={loaded.scene}
-        sources={loaded.sources}
-        assetUrl={(id) => assetUrl(route.teamId, id)}
-        scale={loaded.scale}
-        mode="export"
-      />
-    </div>
-  );
+  return <RenderFrame ref={root} scene={loaded.scene} sources={loaded.sources} assetUrl={(id) => assetUrl(route.teamId, id)} scale={loaded.scale} />;
 }

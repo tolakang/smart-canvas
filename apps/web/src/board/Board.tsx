@@ -712,7 +712,7 @@ function BoardCanvas(props: {
         />
       )}
       {showLibrary && <LibraryDialog teamId={teamId} readOnly={readOnly} sourceCount={sourceCount} run={run} onClose={() => setShowLibrary(false)} />}
-      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} onClose={() => setExporting(false)} />}
+      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} onClose={() => setExporting(false)} />}
       {addingOutput && <AddOutputDialog presets={presets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
         <FontsDialog
