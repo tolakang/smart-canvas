@@ -110,6 +110,9 @@ jobs:
           done
           cat /tmp/out; echo
           test "$status" = done
+          # Download (T6.6): the exported PNG at its export size (320×200 at 2× = 640×400).
+          test "$(code $base/teams/$team/exports/$job/file)" = 200
+          python3 -c "import struct;d=open('/tmp/out','rb').read();assert d[:8]==b'\\x89PNG\\r\\n\\x1a\\n';w,h=struct.unpack('>II',d[16:24]);print('png',w,h);assert (w,h)==(640,400)"
           echo "stack OK"
       - name: Logs on failure
         if: failure()

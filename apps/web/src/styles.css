@@ -168,3 +168,4 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-export__outputs label, .sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-export__jobs { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
 .sc-export__jobs li { display: grid; grid-template-columns: 1fr 120px 1fr; gap: 8px; align-items: center; }
+.sc-button { display: inline-block; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: inherit; text-decoration: none; }

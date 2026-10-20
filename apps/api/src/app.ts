@@ -35,7 +35,7 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
   await app.register(projectRoutes);
   await app.register(presetRoutes);
   await app.register(assetRoutes, { store: opts.store });
-  await app.register(exportRoutes, { queue: opts.queue });
+  await app.register(exportRoutes, { queue: opts.queue, store: opts.store });
 
   return app;
 }

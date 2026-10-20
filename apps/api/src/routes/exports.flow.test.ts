@@ -1,4 +1,6 @@
-import { addOutput, type ExportJob, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addOutput, exportStorageKey, type ExportJob, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { eq } from 'drizzle-orm';
+import { exportJobs } from '../db/schema';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
@@ -14,6 +16,8 @@ const ok = (r: SourceResult): ProjectDoc => {
 describe.skipIf(!adminUrl)('exports API (Postgres)', () => {
   let app: FastifyInstance;
   let drop: () => Promise<void>;
+  let db: Awaited<ReturnType<typeof freshDb>>['db'];
+  const store = new MemoryStore();
   let call: ReturnType<typeof caller>;
   let teamId = '';
   let projectId = '';
@@ -25,7 +29,8 @@ describe.skipIf(!adminUrl)('exports API (Postgres)', () => {
   beforeAll(async () => {
     const fresh = await freshDb();
     drop = fresh.drop;
-    app = await buildApp({ db: fresh.db, store: new MemoryStore(), secureCookie: false, logger: false, queue: { send: async (id) => void sent.push(id) } });
+    db = fresh.db;
+    app = await buildApp({ db: fresh.db, store, secureCookie: false, logger: false, queue: { send: async (id) => void sent.push(id) } });
     call = caller(app);
     const team = await setupTeam(app);
     teamId = team.teamId;
@@ -34,6 +39,7 @@ describe.skipIf(!adminUrl)('exports API (Postgres)', () => {
     const p = (await call('POST', `/teams/${teamId}/projects`, editor, { name: 'Poster' })).json<{ id: string; rev: number; doc: ProjectDoc }>();
     projectId = p.id;
     let doc = ok(addOutput(p.doc, { id: 'ig', label: 'Instagram', size: { width: 1080, height: 1350, unit: 'px' } }));
+    doc = ok(addOutput(doc, { id: 'km', label: 'ផ្ទាំង', size: { width: 1080, height: 1080, unit: 'px' } }));
     doc = ok(addOutput(doc, { id: 'a4', label: 'A4', size: { width: 210, height: 297, unit: 'mm' }, dpi: 300, bleedMm: 3 }));
     doc = ok(addOutput(doc, { id: 'huge', label: 'Huge', size: { width: 6001, height: 100, unit: 'px' } }));
     expect((await call('PUT', `/teams/${teamId}/projects/${projectId}`, editor, { rev: p.rev, doc })).statusCode).toBe(200);
@@ -81,5 +87,37 @@ describe.skipIf(!adminUrl)('exports API (Postgres)', () => {
     expect((await caller(noQueue)('POST', `/teams/${t.teamId}/projects/${p.id}/exports`, t.admin, { outputIds: ['x'], format: 'png' })).statusCode).toBe(503);
     await noQueue.close();
     await fresh.drop();
+  });
+
+  it('downloads one finished file with its export name (T6.6)', async () => {
+    const [job] = (await call('POST', base(), editor, { outputIds: ['ig'], format: 'png', options: { scale: 2 } })).json<ExportJob[]>();
+    if (!job) throw new Error('no job');
+    const url = `/teams/${teamId}/exports/${job.id}/file`;
+    expect((await call('GET', url, viewer)).statusCode).toBe(404); // not done yet
+    await store.put(exportStorageKey(teamId, job.id, 'png'), new Uint8Array([137, 80, 78, 71]), 'image/png');
+    await db.update(exportJobs).set({ status: 'done', progress: 1 }).where(eq(exportJobs.id, job.id));
+    const res = await call('GET', url, viewer);
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toBe('image/png');
+    expect(res.headers['content-disposition']).toBe(`attachment; filename="Poster_Instagram_2160x2700.png"; filename*=UTF-8''Poster_Instagram_2160x2700.png`);
+    expect([...res.rawPayload]).toEqual([137, 80, 78, 71]);
+    expect((await call('GET', `/teams/00000000-0000-4000-8000-000000000000/exports/${job.id}/file`, viewer)).statusCode).toBe(404);
+  });
+
+  it('downloads several as one ZIP with unique, UTF-8 names (T6.6)', async () => {
+    const jobs = (await call('POST', base(), editor, { outputIds: ['ig', 'km'], format: 'svg' })).json<ExportJob[]>();
+    for (const j of jobs) {
+      await store.put(exportStorageKey(teamId, j.id, 'svg'), new TextEncoder().encode(`<svg id="${j.id}"/>`), 'image/svg+xml');
+      await db.update(exportJobs).set({ status: 'done', progress: 1 }).where(eq(exportJobs.id, j.id));
+    }
+    const res = await call('GET', `${base()}/zip?ids=${jobs.map((j) => j.id).join(',')}`, viewer);
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toBe('application/zip');
+    expect(res.headers['content-disposition']).toContain('Poster_exports.zip');
+    const zip = res.rawPayload;
+    expect(zip.subarray(0, 2).toString()).toBe('PK');
+    expect(zip.includes(Buffer.from('Poster_Instagram_1080x1350px.svg'))).toBe(true);
+    expect(zip.includes(Buffer.from('Poster_ផ្ទាំង_1080x1080px.svg'))).toBe(true);
+    expect((await call('GET', `${base()}/zip?ids=`, viewer)).statusCode).toBe(404);
   });
 });

@@ -63,3 +63,8 @@ export function exportFileName(project: string, o: OutputNode, format: ExportFor
   const size = px ? `${px.w}x${px.h}` : `${o.size.width}x${o.size.height}${o.size.unit}`;
   return `${safe(project)}_${safe(o.label)}_${size}.${format}`;
 }
+
+/** Where a finished export file is stored (worker writes, API serves). */
+export function exportStorageKey(teamId: string, jobId: string, format: ExportFormat): string {
+  return `teams/${teamId}/exports/${jobId}.${format}`;
+}
