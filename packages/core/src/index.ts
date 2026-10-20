@@ -6,6 +6,7 @@ export * from './model';
 export * from './project';
 export * from './sources';
 export * from './ports';
+export * from './output-layers';
 export * from './graph';
 export * from './compositions';
 export * from './health';

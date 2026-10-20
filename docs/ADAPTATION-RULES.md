@@ -47,6 +47,13 @@ The layers that carry the design are fitted **as a group** into the output's fre
 7. **side family**: all text sources form one column (`x = column.x`, `w = column.w`), stacked in master top→bottom order with gap `2%·Ht`; block is vertically centred in `S`. If the block is taller than `S.h`, scale all font sizes by `S.h/blockHeight` (not below `minFontPx`).
 8. Override rule: if `override.style.fontSizePx` exists, use it as-is (no fit). If only `override.frame` exists, fit still runs inside that frame.
 
+## Output-only layers (T12.4, D32)
+An output's own `layer` ports (`output.layers`, front first) are drawn **above** the composition's layers, back→front, while a `layer` edge feeds them. They are not in a content group and don't move the composition's layers. A source the composition already draws is skipped here (the composition wins). Overrides, `hidden` and frozen frames apply as for any layer. Default frames, in the output's canvas:
+- **background** — as above (cover / full rect).
+- **logo** — top-right corner of `S`; width `max(0.15·min(S.w,S.h), minLogoWidthPct%·min(Wt,Ht))`, height by the asset's aspect (square if unknown).
+- **text** — a full-width band over the bottom quarter of `S`: `{S.x, S.y + 0.75·S.h, S.w, 0.25·S.h}`; fit-to-box starting at `fontSizePx·k`.
+- **subject / decoration** — contain-fit of the asset's aspect (square if unknown) into `0.6·S.w × 0.6·S.h`, centred in `S`.
+
 ## Worked examples (must be unit tests)
 Mock measure for tests: `width = text.length · 0.5 · fontPx`.
 
@@ -72,6 +79,12 @@ Visuals get the right half `R = {1500,50,1450,900}`: `c = min(1450/1200, 900/180
 `U = {300,300,2400,1860}`; `c = px = 972/2400 = 0.405`, `py = 1242/1860`; `f0 = 81`, `bw = 972`, `bh = 202.5`; box `{x:54, y:119.685484, w:972, h:202.5}`.
 - maxLines 2 → **81 px**, 2 lines (4 words + 1), height 194.4 ≤ 202.5.
 - maxLines 1 → largest 0.5-step with `29·0.5·f ≤ 972` → **67 px**, 1 line.
+
+**I. Output-only layers.** Output 1080×1350 px, no bleed: `S={54,54,972,1242}`, `k=0.36`.
+- Logo, asset 400×200: `w = max(145.8, 86.4) = 145.8`, `h = 72.9` → `{x:880.2, y:54, w:145.8, h:72.9}`.
+- Text "SALE", font 200: band `{x:54, y:985.5, w:972, h:310.5}`; fit starts at 72 px and fits on one line → **72 px**.
+- Subject, asset 1000×500: `w = min(583.2, 745.2·2) = 583.2`, `h = 291.6` → `{x:248.4, y:529.2, w:583.2, h:291.6}`.
+- Each is drawn after (above) every composition layer; with an override frame `{x:10}` the logo is at `x:10`.
 
 **F. Export size.** A4 210×297 mm, 300 dpi: trim 2480×3508 px; with 3 mm bleed (216×303 mm) 2551×3579 px. 1080×1350 px at scale 2 → 2160×2700.
 

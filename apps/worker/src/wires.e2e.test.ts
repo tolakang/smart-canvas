@@ -96,7 +96,7 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     await saved();
     const [sq, pt] = (await doc()).outputs;
     if (!sq || !pt) throw new Error('outputs missing');
-    const outHandle = (id: string) => page.locator(`.react-flow__node-outputNode[data-id="out:${id}"] .react-flow__handle`);
+    const outHandle = (id: string) => page.locator(`.react-flow__node-outputNode[data-id="out:${id}"] .sc-handle--composition`);
     // T13.2: an output's settings (Disconnect included) are in the inspector of the selected node.
     await page.locator(`.react-flow__node-outputNode[data-id="out:${pt.id}"] .sc-node__title`).click();
     await page.getByRole('complementary', { name: 'Inspector' }).getByRole('button', { name: 'Disconnect' }).click();
@@ -121,7 +121,7 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     expect(added).toMatchObject({ label: '1080×1350 px', size: { width: 1080, height: 1350, unit: 'px' } });
     expect((await doc()).edges).toContainEqual(expect.objectContaining({ from: 'main', to: added?.id }));
     // The new node sits where the wire was dropped (its input handle under the pointer).
-    const handle = await centre(page.locator(`.react-flow__node-outputNode[data-id="out:${added?.id}"] .react-flow__handle`));
+    const handle = await centre(page.locator(`.react-flow__node-outputNode[data-id="out:${added?.id}"] .sc-handle--composition`));
     expect(Math.abs(handle.x - spot.x)).toBeLessThan(30);
     expect(Math.abs(handle.y - spot.y)).toBeLessThan(80);
   }, 60_000);
@@ -130,8 +130,9 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     const before = (await doc()).edges.length;
     const out = (await doc()).outputs[0];
     if (!out) throw new Error('no output');
-    await drag(inputHandle('Logo'), page.locator(`.react-flow__node-outputNode[data-id="out:${out.id}"] .react-flow__handle`));
-    await expect.poll(() => page.getByRole('alert').innerText()).toBe('An input wires into a row of a main preview.');
+    await drag(inputHandle('Logo'), page.locator(`.react-flow__node-outputNode[data-id="out:${out.id}"] .sc-handle--composition`));
+    // T12.4: inputs go onto an output's layer rows, not its main preview port.
+    await expect.poll(() => page.getByRole('alert').innerText()).toBe('An input wires into a layer row of an output.');
     expect((await doc()).edges.length).toBe(before);
     // Ports are typed by class (layer / composition) for their colours.
     expect(await inputHandle('Logo').getAttribute('class')).toContain('sc-handle--layer');

@@ -1,13 +1,15 @@
 /**
  * Output node (T4.7): name, size, layout health and a live thumbnail computed by the layout engine and drawn
  * by the same OutputRenderer as export. Its settings (preset, size, scale / DPI, bleed, disconnect) are in the
- * inspector (T13.2, OutputSettings.tsx).
+ * inspector (T13.2, OutputSettings.tsx). Its own layer rows (T12.4): inputs only this output gets, drawn above the
+ * main preview's layers; wire an input onto "Add a layer".
  */
 import {
   computeLayout,
   outputHealth,
   convertSize,
   deleteOutput,
+  disconnectOutputLayer,
   outputDefaults,
   outputScene,
   resetOutputOverrides,
@@ -17,14 +19,14 @@ import {
   type SizePreset,
   type Unit,
 } from '@smart-canvas/core';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { assetUrl } from '../api';
 import { RenderThumbnail } from '../render/OutputRenderer';
 import { useBoard } from './context';
-import type { OutputFlowNode } from './flow';
+import { portHandleId, type OutputFlowNode } from './flow';
 import { HealthBadge } from './HealthBadge';
-import { Icon } from './LayerRow';
+import { Icon, LayerThumb } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
@@ -57,8 +59,11 @@ export function unitSettings(o: OutputNode, unit: Unit): OutputSettings {
   return { size: convertSize(o.size, unit), ...(unit === 'mm' && o.dpi === undefined ? { dpi: outputDefaults('mm').dpi } : {}) };
 }
 
-export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
-  const { output, connected } = data;
+export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
+  const { output, connected, layers } = data;
+  const updateInternals = useUpdateNodeInternals();
+  const handleKey = layers.map((l) => l.sourceId).join(',');
+  useEffect(() => updateInternals(id), [id, handleKey, updateInternals]);
   const { doc, readOnly, run, teamId, layoutDeps, missingFonts, openOutputEditor } = useBoard();
   const [renaming, setRenaming] = useState<string | null>(null);
   const rename = () => {
@@ -148,6 +153,31 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
           <span className="sc-muted">Loading fonts…</span>
         )}
       </div>
+      {(layers.length > 0 || !readOnly) && (
+        <ol className="sc-ports sc-ports--output" aria-label={`${output.label} own layers (front first)`}>
+          {layers.map((l) => {
+            const source = shownDoc.sources.find((s) => s.id === l.sourceId) ?? doc.sources.find((s) => s.id === l.sourceId);
+            return (
+              <li key={l.sourceId} className={`sc-port sc-port--wired${l.visible ? '' : ' sc-port--hidden'}`} data-port={l.port}>
+                <Handle type="target" position={Position.Left} id={portHandleId(l.port)} isConnectable={!readOnly} className="sc-handle--layer" title="Output-only layer in" />
+                {source && <LayerThumb source={source} />}
+                <span className="sc-port__label">{l.label}</span>
+                {!readOnly && (
+                  <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Remove ${l.label} from ${output.label}`} title="Remove from this output" onClick={() => run((d) => disconnectOutputLayer(d, output.id, l.sourceId))}>
+                    <Icon name="close" />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+          {!readOnly && (
+            <li className="sc-port sc-port--add" data-port={layers.length}>
+              <Handle type="target" position={Position.Left} id={portHandleId(layers.length)} isConnectable className="sc-handle--layer" title="Output-only layer in: wire an input here" />
+              <span className="sc-port__label">Add a layer only this output gets</span>
+            </li>
+          )}
+        </ol>
+      )}
     </div>
   );
 }

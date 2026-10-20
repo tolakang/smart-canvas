@@ -9,6 +9,8 @@ import { backgroundFrame } from './background';
 import { groupMap, regions, type GroupMap } from './content';
 import type { RuleContext } from './context';
 import { logoFrame } from './logo';
+import { outputOnlyFrame } from './output-only';
+import { wiredOutputLayers } from '../output-layers';
 import { decorationFrame, subjectFrame } from './subject';
 import { fitInFrame, sideColumn, stackTextFrame, type TextJob } from './text';
 import { wrapAt } from './text-fit';
@@ -129,5 +131,22 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
     const p = placed[i];
     if (item && p) items[c.index] = { ...item, ...p };
   });
+
+  // Output-only layers (T12.4): above the composition's layers, back to front; the composition wins a layer both draw.
+  const drawn = new Set(items.map((i) => i.sourceId));
+  const ownWired = wiredOutputLayers(doc, outputId);
+  for (const source of [...(output.layers ?? [])].reverse().flatMap((id) => byId.get(id) ?? [])) {
+    const override = overrides.get(source.id);
+    if (!source.visible || !ownWired.has(source.id) || override?.hidden || drawn.has(source.id)) continue;
+    const snap = frozen.get(source.id);
+    const base = snap?.frame ?? outputOnlyFrame(source, metrics, deps);
+    const frame = override?.frame ? { ...base, ...override.frame } : base;
+    if (source.content.kind === 'text') {
+      const style = { ...source.content.style, ...override?.style };
+      const fixed = override?.style?.fontSizePx ?? snap?.fontSizePx;
+      const job: TextJob = { text: source.content.text, style, master: frame, fixedSizePx: fixed, scale: ctx.k };
+      items.push({ sourceId: source.id, ...fitInFrame(job, frame, deps.measure), overridden: !!override });
+    } else items.push({ sourceId: source.id, frame, overridden: !!override, warnings: [] });
+  }
   return { metrics, family, items };
 }

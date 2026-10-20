@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "main preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { compositionById, connectRefusal, isOutputConnected, masterScene, MAIN, outputComposition, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { compositionById, connectRefusal, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -44,7 +44,8 @@ export function portFromHandle(handle: string | null | undefined): number | unde
   const m = handle ? /^p(\d+)$/.exec(handle) : null;
   return m?.[1] === undefined ? undefined : Number(m[1]);
 }
-export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean }, 'outputNode'>;
+/** `layers`: the output's own rows (T12.4), front first. */
+export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean; layers: PortRow[] }, 'outputNode'>;
 export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode;
 
 /** An edge's `from`/`to` are source, composition or output ids; map them to node ids (null: not on this board). */
@@ -60,6 +61,16 @@ export function portRows(doc: ProjectDoc, compositionId: string = MAIN): PortRow
   const wired = new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === compositionId).map((e) => e.from));
   const byId = new Map(doc.sources.map((s) => [s.id, s]));
   return (compositionById(doc, compositionId)?.layers ?? []).flatMap((id, port) => {
+    const s = byId.get(id);
+    return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
+  });
+}
+
+/** An output's own rows (output-only layers, T12.4), front first. */
+export function outputRows(doc: ProjectDoc, outputId: string): PortRow[] {
+  const wired = wiredOutputLayers(doc, outputId);
+  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  return (doc.outputs.find((o) => o.id === outputId)?.layers ?? []).flatMap((id, port) => {
     const s = byId.get(id);
     return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
   });
@@ -100,7 +111,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         id: outputNodeId(output.id),
         type: 'outputNode',
         position: output.board,
-        data: { output, connected: connected.has(output.id) },
+        data: { output, connected: connected.has(output.id), layers: outputRows(doc, output.id) },
         deletable: false,
       }),
     ),
@@ -113,7 +124,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
     const source = endpoint(doc, e.from);
     const target = endpoint(doc, e.to);
     if (!source || !target) return [];
-    const rows = e.kind === 'layer' ? compositionById(doc, e.to)?.layers : undefined;
+    const rows = e.kind === 'layer' ? (compositionById(doc, e.to)?.layers ?? doc.outputs.find((o) => o.id === e.to)?.layers) : undefined;
     const port = rows ? rows.indexOf(e.from) : -1;
     return [
       {
@@ -138,8 +149,11 @@ export function edgeOfConnection(c: { source: string | null; target: string | nu
   return { from, to, kind: compositionIdOfNode(c.source) ? 'composition' : 'layer' };
 }
 
-/** Why a wire may not go there (null = it may): port types and loops (core), one composition per output. */
-export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; target: string | null }): string | null {
+/**
+ * Why a wire may not go there (null = it may): port types and loops (core), one composition per output, and on
+ * an output the right port (T12.4: layer rows vs the main preview port). Without `targetHandle` the port isn't checked.
+ */
+export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; target: string | null; targetHandle?: string | null }): string | null {
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
@@ -147,8 +161,16 @@ export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; t
     return e.kind === 'composition' ? 'A main preview wires into an output.' : 'An input wires into a row of a main preview.';
   if (refusal === 'cycle') return 'That would make a loop.';
   if (refusal) return 'Drop the wire on a port.';
-  // Output-only layers (layer → output) come with T12.4; until then layers go into main preview rows.
-  if (e.kind === 'layer' && !compositionById(doc, e.to)) return 'An input wires into a row of a main preview.';
+  const toOutput = doc.outputs.some((o) => o.id === e.to);
+  if (toOutput && 'targetHandle' in c) {
+    const onRow = portFromHandle(c.targetHandle) !== undefined;
+    if (e.kind === 'layer' && !onRow) return 'An input wires into a layer row of an output.';
+    if (e.kind === 'composition' && onRow) return 'A main preview wires into the output’s main preview port.';
+  }
+  if (e.kind === 'layer' && toOutput) {
+    const comp = outputComposition(doc, e.to);
+    if (comp && wiredLayers(doc, comp).has(e.from)) return 'This input is already a layer of the output’s main preview.';
+  }
   if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This output already has a main preview: drag its wire off first.';
   return null;
 }
@@ -156,6 +178,11 @@ export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; t
 /** Input → composition connections (wire onto a row); the composition id, if so. */
 export function inputToComposition(c: { source: string | null; target: string | null }): string | undefined {
   return c.source?.startsWith('src:') ? compositionIdOfNode(c.target) : undefined;
+}
+
+/** Input → output connections (an output-only layer, T12.4); the output id, if so. */
+export function inputToOutput(c: { source: string | null; target: string | null }): string | undefined {
+  return c.source?.startsWith('src:') && c.target?.startsWith('out:') ? c.target.slice(4) : undefined;
 }
 
 /** Composition → output connections (reconnecting a disconnected output); the composition id, if so. */

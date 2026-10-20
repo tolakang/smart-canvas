@@ -2,9 +2,10 @@
  * Layers panel (T3.3, T8.1): every input in port order (port 0 = front = top, D11), selection kept in sync
  * with the canvas. In the main editor rows re-order by drag & drop and have show/hide, duplicate (+) and
  * delete; inputs not wired into main are greyed with Connect. In an output editor (`outputId`, T5.1) the eye
- * hides the layer on that output only (an override); stacking order and wiring stay the master's.
+ * hides the layer on that output only (an override); stacking order and wiring stay the master's. Its own
+ * layers (T12.4) are listed first: they draw above the main preview's.
  */
-import { connectSource, layerOrder, MAIN, outputComposition, setOverrideHidden, wiredLayers, type InputSource } from '@smart-canvas/core';
+import { connectSource, layerOrder, MAIN, outputComposition, outputLayers, setOverrideHidden, wiredLayers, wiredOutputLayers, type InputSource } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 
@@ -16,9 +17,13 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
   // T12.3: the rows of this editor's composition (an output's: the one it is wired to).
   const compositionId = props.compositionId ?? (outputId ? outputComposition(doc, outputId) : undefined) ?? MAIN;
   const overrides = new Map(doc.outputs.find((o) => o.id === outputId)?.overrides.map((o) => [o.sourceId, o]));
-  const wired = wiredLayers(doc, compositionId);
+  const compWired = wiredLayers(doc, compositionId);
+  const wired = new Set([...compWired, ...(outputId ? wiredOutputLayers(doc, outputId) : [])]);
   const byId = new Map(doc.sources.map((s) => [s.id, s]));
-  const layers = layerOrder(doc, compositionId).flatMap((id, port) => (byId.get(id) ? [{ s: byId.get(id) as InputSource, port }] : []));
+  // An output's own layer is listed once, on top; the composition still draws it if it wires it (the composition wins).
+  const own = outputId ? outputLayers(doc, outputId).filter((id) => !compWired.has(id)) : [];
+  const rows = layerOrder(doc, compositionId).filter((id) => !own.includes(id));
+  const layers = [...own.map((id) => ({ id, port: -1 })), ...rows.map((id, port) => ({ id, port }))].flatMap(({ id, port }) => (byId.get(id) ? [{ s: byId.get(id) as InputSource, port }] : []));
   const { dropAt, rowProps } = useLayerReorder(compositionId);
   const reorder = !readOnly && !outputId;
 
@@ -35,7 +40,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
           const visible = s.visible && !hiddenHere;
           return (
             <li
-              key={s.id}
+              key={`${port < 0 ? 'own' : 'row'}:${s.id}`}
               className={`sc-layer${isSelected ? ' sc-layer--selected' : ''}${visible ? '' : ' sc-layer--hidden'}${isWired ? '' : ' sc-layer--unwired'}${dropAt === port ? ' sc-layer--drop' : ''}`}
               aria-selected={isSelected}
               data-layer={s.id}
@@ -58,6 +63,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                 </span>
                 <span className="sc-muted">
                   {KIND_LABEL[s.kind]} · {s.behavesLike}
+                  {port < 0 && ' · only this output'}
                   {!isWired && ' · not wired'}
                   {outputId && !s.visible && ' · hidden everywhere'}
                 </span>
