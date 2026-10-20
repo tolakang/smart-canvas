@@ -4,7 +4,7 @@
  * on its node, re-flowing the outputs.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import type { ProjectDoc } from '@smart-canvas/core';
+import { portOf, type ProjectDoc } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
@@ -63,7 +63,7 @@ describe.skipIf(!adminUrl)('input behaviours (T8.7)', () => {
     await saved();
     const added = (await doc()).sources.find((s) => s.kind === 'fill' && s.id !== 'background');
     expect(added).toMatchObject({ behavesLike: 'background' });
-    await page.locator(`.react-flow__node-mainNode .sc-port[data-port="${added?.port}"] .sc-port__dot`).click();
+    await page.locator(`.react-flow__node-mainNode .sc-port[data-port="${portOf(await doc(), added?.id ?? '')}"] .sc-port__dot`).click();
     await saved();
     await expect.poll(() => coverage(added?.id ?? '')).toEqual({ w: 1, h: 1 });
   }, 90_000);

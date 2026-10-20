@@ -1,7 +1,8 @@
 /**
  * What the OutputRenderer draws: a canvas size and items back→front (ADAPTATION-RULES: highest port first).
- * The layout engine produces these for outputs; the main preview's come straight from master placements.
+ * The layout engine produces these for outputs; a composition's come straight from its placements.
  */
+import { compositionById, MAIN, mainComposition, wiredLayers } from './graph';
 import { toDesignPx, type Frame, type NFrame, type ProjectDoc, type Size, type TextStyle } from './model';
 
 /** One drawn layer. Same shape as the engine's LayoutItem minus bookkeeping. Frame in design px; rotation in degrees. */
@@ -36,16 +37,18 @@ export function toDesignFrame(n: NFrame, canvas: { width: number; height: number
 }
 
 /**
- * The main preview: inputs wired into main (D12), visible, back→front by port. Each uses its master
- * placement; a background with no placement yet covers the whole canvas; anything else unplaced is skipped.
+ * A composition (default: the main preview): its wired rows, visible, back→front. Each uses its placement;
+ * a background with no placement yet covers the whole canvas; anything else unplaced is skipped.
  */
-export function masterScene(doc: ProjectDoc): RenderScene {
-  const canvas = sizeInDesignPx(doc.master.size);
-  const wired = new Set(doc.wires.filter((w) => w.to === 'main').map((w) => w.from));
+export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): RenderScene {
+  const comp = compositionById(doc, compositionId) ?? mainComposition(doc);
+  const canvas = sizeInDesignPx(comp.size);
+  const wired = wiredLayers(doc, comp.id);
+  const byId = new Map(doc.sources.map((s) => [s.id, s]));
   const items: RenderItem[] = [];
-  for (const s of [...doc.sources].sort((a, b) => b.port - a.port)) {
+  for (const s of [...comp.layers].reverse().flatMap((id) => byId.get(id) ?? [])) {
     if (!s.visible || !wired.has(s.id)) continue;
-    const placement = doc.master.placements[s.id];
+    const placement = comp.placements[s.id];
     if (placement) items.push({ sourceId: s.id, frame: toDesignFrame(placement, canvas) });
     else if (s.behavesLike === 'background') items.push({ sourceId: s.id, frame: { x: 0, y: 0, w: canvas.width, h: canvas.height } });
   }

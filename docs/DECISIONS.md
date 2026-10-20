@@ -63,5 +63,5 @@
   - Wires connect typed ports (layer, composition). Cycles are refused.
   - An output takes one composition and can also take extra output-only layers.
   - Layout is still computed and never stored (D30 rules per composition). Preview and export still use one `OutputRenderer`.
-  - The model moves to `schema: 2`; v1 documents are migrated on load (pure function in core, tested).
+  - The model moves to `schema: 2`; v1 documents are migrated on load (pure function in core, tested). Model change note (T12.1): `master` + `wires` + `InputSource.port` became `compositions[]` (rows in `layers`) + typed `edges` + `processes[]`.
 

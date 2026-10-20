@@ -1,48 +1,50 @@
 /**
- * Ports and input wiring (D11, D12). Every source owns a port (0 = front layer); a source→main wire
- * means the source is connected and carries that port. Re-ordering is "move this source to port k":
- * the others shift to keep ports contiguous, and wires follow.
+ * Rows and input wiring of a composition (D11, D32). A composition's rows are its `layers`, front first
+ * (row index = port). A `layer` edge into the composition means the row is connected. Re-ordering is
+ * "move this node to row k": the others shift and keep their order.
  */
-import type { ProjectDoc, Wire } from './model';
+import { edgeId, isLayerWired, MAIN, withComposition } from './graph';
+import type { Edge, ProjectDoc } from './model';
 import { ensurePlacement } from './placement';
-import { withSources, type SourceResult } from './sources';
+import type { SourceResult } from './sources';
 
-export const MAIN = 'main';
-export const inputWireId = (sourceId: string) => `in:${sourceId}`;
+export { MAIN } from './graph';
 
-export function inputWire(doc: ProjectDoc, sourceId: string): Wire | undefined {
-  return doc.wires.find((w) => w.from === sourceId && w.to === MAIN);
+export function inputWire(doc: ProjectDoc, sourceId: string, compositionId: string = MAIN): Edge | undefined {
+  return doc.edges.find((e) => e.kind === 'layer' && e.from === sourceId && e.to === compositionId);
 }
 
-/** Moves a source to `port` (clamped to 0..n-1); sources in between shift by one. */
-export function moveSourceToPort(doc: ProjectDoc, sourceId: string, port: number): SourceResult {
-  const source = doc.sources.find((s) => s.id === sourceId);
-  if (!source) return { ok: false, error: 'not_found' };
-  const order = [...doc.sources].sort((a, b) => a.port - b.port).filter((s) => s.id !== sourceId);
+/** Moves a row to `port` (clamped to 0..n-1); rows in between shift by one. */
+export function moveSourceToPort(doc: ProjectDoc, sourceId: string, port: number, compositionId: string = MAIN): SourceResult {
+  const comp = doc.compositions.find((c) => c.id === compositionId);
+  if (!comp || !comp.layers.includes(sourceId)) return { ok: false, error: 'not_found' };
+  const order = comp.layers.filter((id) => id !== sourceId);
   const at = Math.max(0, Math.min(Math.round(port), order.length));
-  order.splice(at, 0, source);
-  const portOf = new Map(order.map((s, i) => [s.id, i]));
-  return { ok: true, doc: withSources(doc, doc.sources.map((s) => ({ ...s, port: portOf.get(s.id) ?? s.port }))) };
+  order.splice(at, 0, sourceId);
+  return { ok: true, doc: withComposition(doc, compositionId, (c) => ({ ...c, layers: order })) };
 }
 
 /**
- * Wires a source into the main preview. With `port`, the source also moves there (re-wire reorders).
- * A source has at most one wire into main; connecting again just moves it.
- * First wire auto-places the source by its behaviour if it has no master placement yet (Flow 3).
+ * Wires a node into a composition's row. With `port`, the row also moves there (re-wire reorders). A node
+ * not yet a row of that composition becomes one (in front, or at `port`). Connecting again just moves it.
+ * The first wire auto-places the node by its behaviour if it has no placement yet (Flow 3).
  */
-export function connectSource(doc: ProjectDoc, sourceId: string, port?: number): SourceResult {
-  const moved = port === undefined ? { ok: true as const, doc } : moveSourceToPort(doc, sourceId, port);
-  if (!moved.ok) return moved;
-  const next = moved.doc;
-  const source = next.sources.find((s) => s.id === sourceId);
-  if (!source) return { ok: false, error: 'not_found' };
-  if (inputWire(next, sourceId)) return { ok: true, doc: next };
-  const placed = ensurePlacement(next, sourceId);
-  return { ok: true, doc: { ...placed, wires: [...placed.wires, { id: inputWireId(sourceId), from: sourceId, to: MAIN, port: source.port }] } };
+export function connectSource(doc: ProjectDoc, sourceId: string, port?: number, compositionId: string = MAIN): SourceResult {
+  const comp = doc.compositions.find((c) => c.id === compositionId);
+  if (!comp || !doc.sources.some((s) => s.id === sourceId)) return { ok: false, error: 'not_found' };
+  let next = comp.layers.includes(sourceId) ? doc : withComposition(doc, compositionId, (c) => ({ ...c, layers: [sourceId, ...c.layers] }));
+  if (port !== undefined) {
+    const moved = moveSourceToPort(next, sourceId, port, compositionId);
+    if (!moved.ok) return moved;
+    next = moved.doc;
+  }
+  if (isLayerWired(next, sourceId, compositionId)) return { ok: true, doc: next };
+  const placed = ensurePlacement(next, sourceId, compositionId);
+  return { ok: true, doc: { ...placed, edges: [...placed.edges, { id: edgeId(sourceId, compositionId, 'layer'), from: sourceId, to: compositionId, kind: 'layer' }] } };
 }
 
-/** Removes the source's wire into main; the source keeps its port (its place in the stack). */
-export function disconnectSource(doc: ProjectDoc, sourceId: string): SourceResult {
+/** Removes the node's wire into the composition; the node keeps its row (its place in the stack). */
+export function disconnectSource(doc: ProjectDoc, sourceId: string, compositionId: string = MAIN): SourceResult {
   if (!doc.sources.some((s) => s.id === sourceId)) return { ok: false, error: 'not_found' };
-  return { ok: true, doc: { ...doc, wires: doc.wires.filter((w) => !(w.from === sourceId && w.to === MAIN)) } };
+  return { ok: true, doc: { ...doc, edges: doc.edges.filter((e) => !(e.kind === 'layer' && e.from === sourceId && e.to === compositionId)) } };
 }

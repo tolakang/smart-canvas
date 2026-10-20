@@ -88,7 +88,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T10.4 — Drag a wire out of main onto the canvas → new wired output — [#60](https://github.com/tolakang/smart-canvas/pull/60)
 
 ## P11 — Hybrid export (D31)
-- [ ] T11.1 — Hybrid export: browser engine, routing, server fallback, browser ZIP
+- [x] T11.1 — Hybrid export: browser engine, routing, server fallback, browser ZIP — [#62](https://github.com/tolakang/smart-canvas/pull/62)
 - [~] T11.2 — folded into T11.1
 
 ## P12 — Node graph (D32)

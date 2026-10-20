@@ -2,10 +2,10 @@
  * Input-source operations on a ProjectDoc (pure; ids are passed in, never generated here).
  * Invariants kept by every operation:
  * - at most LIMITS.maxSources sources;
- * - ports are unique and contiguous 0..n-1 (port 0 = front layer, D11);
- * - a source→main wire always carries its source's current port;
- * - nothing in the doc points at a deleted source (wires, master placements, output overrides, frozen frames).
+ * - every source is a row of the main preview (`layers`, front first: row = port, D11), exactly once;
+ * - nothing in the doc points at a deleted source (rows, edges, placements, output overrides, frozen frames).
  */
+import { edgeId, MAIN, withComposition } from './graph';
 import { LIMITS, type Behavior, type InputSource, type ProjectDoc, type SourceContent, type SourceKind, type TextStyle } from './model';
 
 export const DEFAULT_TEXT_STYLE: TextStyle = {
@@ -44,21 +44,20 @@ export const SOURCE_ROW_GAP = 300;
 
 /** The 4 inputs every new project starts with (D8), front to back: Logo, Headline, Subject, Background. */
 export function defaultSources(): InputSource[] {
-  const make = (id: string, label: string, kind: SourceKind, behavesLike: Behavior, port: number, row: number): InputSource => ({
+  const make = (id: string, label: string, kind: SourceKind, behavesLike: Behavior, row: number): InputSource => ({
     id,
     label,
     kind,
     behavesLike,
-    port,
     visible: true,
     content: defaultContent(kind),
     board: { x: SOURCE_COLUMN_X, y: (row - 1.5) * SOURCE_ROW_GAP },
   });
   return [
-    make('background', 'Background', 'fill', 'background', 3, 0),
-    make('subject', 'Subject', 'image', 'subject', 2, 1),
-    make('headline', 'Headline', 'text', 'text', 1, 2),
-    make('logo', 'Logo', 'vector', 'logo', 0, 3),
+    make('background', 'Background', 'fill', 'background', 0),
+    make('subject', 'Subject', 'image', 'subject', 1),
+    make('headline', 'Headline', 'text', 'text', 2),
+    make('logo', 'Logo', 'vector', 'logo', 3),
   ];
 }
 
@@ -71,33 +70,22 @@ export function canAddSource(doc: ProjectDoc): boolean {
   return doc.sources.length < LIMITS.maxSources;
 }
 
-/** Renumbers ports 0..n-1 keeping the current stacking order. */
-export function normalizePorts(sources: InputSource[]): InputSource[] {
-  const order = [...sources].sort((a, b) => a.port - b.port).map((s) => s.id);
-  return sources.map((s) => (s.port === order.indexOf(s.id) ? s : { ...s, port: order.indexOf(s.id) }));
-}
-
-/** Sets the sources (ports renumbered 0..n-1) and brings every source→main wire's port in line. */
-export function withSources(doc: ProjectDoc, sources: InputSource[]): ProjectDoc {
-  const normalized = normalizePorts(sources);
-  const portOf = new Map(normalized.map((s) => [s.id, s.port]));
-  const wires = doc.wires.map((w) => {
-    const port = w.to === 'main' ? portOf.get(w.from) : undefined;
-    return port === undefined || w.port === port ? w : { ...w, port };
-  });
-  return { ...doc, sources: normalized, wires };
-}
-
 function nextRowY(doc: ProjectDoc): number {
   const ys = doc.sources.map((s) => s.board.y);
   return ys.length === 0 ? 0 : Math.max(...ys) + SOURCE_ROW_GAP;
 }
 
-/** Inserts `source` at `port`, pushing that port and everything behind it one step back. */
+/** Adds `source` and makes it row `port` of the main preview (that row and everything behind it move back). */
 function insertAt(doc: ProjectDoc, source: InputSource, port: number): ProjectDoc {
-  const shifted = doc.sources.map((s) => (s.port >= port ? { ...s, port: s.port + 1 } : s));
-  return withSources(doc, [...shifted, { ...source, port }]);
+  const withRow = withComposition(doc, MAIN, (c) => {
+    const layers = [...c.layers];
+    layers.splice(Math.max(0, Math.min(port, layers.length)), 0, source.id);
+    return { ...c, layers };
+  });
+  return { ...withRow, sources: [...doc.sources, source] };
 }
+
+const mainRows = (doc: ProjectDoc) => doc.compositions.find((c) => c.id === MAIN)?.layers ?? [];
 
 /**
  * Adds a new input. It goes to the front (port 0), except backgrounds, which go to the back.
@@ -114,12 +102,11 @@ export function addSource(
     label: spec.label.trim() || spec.kind,
     kind: spec.kind,
     behavesLike: spec.behavesLike,
-    port: 0,
     visible: true,
     content: defaultContent(spec.kind),
     board: spec.board ? { x: Math.round(spec.board.x), y: Math.round(spec.board.y) } : { x: SOURCE_COLUMN_X, y: nextRowY(doc) },
   };
-  const port = spec.behavesLike === 'background' ? doc.sources.length : 0;
+  const port = spec.behavesLike === 'background' ? mainRows(doc).length : 0;
   return { ok: true, doc: insertAt(doc, source, port) };
 }
 
@@ -130,7 +117,8 @@ function update(doc: ProjectDoc, id: string, edit: (s: InputSource) => InputSour
 
 /**
  * Changes how an input adapts in outputs (D8: its behaviour's rules). Only behaviours that fit its kind;
- * an input that becomes a background goes to the back (like adding one), the others keep their port.
+ * an input that becomes a background goes to the back of every composition it is a row of (like adding one);
+ * the others keep their row.
  */
 export function setBehavior(doc: ProjectDoc, id: string, behavesLike: Behavior): SourceResult {
   const source = doc.sources.find((s) => s.id === id);
@@ -139,8 +127,8 @@ export function setBehavior(doc: ProjectDoc, id: string, behavesLike: Behavior):
   if (source.behavesLike === behavesLike) return { ok: true, doc };
   const sources = doc.sources.map((s) => (s.id === id ? { ...s, behavesLike } : s));
   if (behavesLike !== 'background') return { ok: true, doc: { ...doc, sources } };
-  const back = doc.sources.length - 1;
-  return { ok: true, doc: withSources(doc, sources.map((s) => (s.id === id ? { ...s, port: back + 1 } : s))) };
+  const compositions = doc.compositions.map((c) => (c.layers.includes(id) ? { ...c, layers: [...c.layers.filter((l) => l !== id), id] } : c));
+  return { ok: true, doc: { ...doc, sources, compositions } };
 }
 
 export function renameSource(doc: ProjectDoc, id: string, label: string): SourceResult {
@@ -153,8 +141,9 @@ export function setSourceVisible(doc: ProjectDoc, id: string, visible: boolean):
 }
 
 /**
- * Copies a source (content, behaviour, visibility) directly in front of the original. A wired original's copy
- * is wired too, at the same spot on the main preview (T8.1: duplicate = "the same layer again").
+ * Copies a source (content, behaviour, visibility) directly in front of the original in every composition it
+ * is a row of. Where the original is wired, so is the copy, at the same spot (T8.1: duplicate = "the same
+ * layer again").
  */
 export function duplicateSource(doc: ProjectDoc, id: string, newId: string): SourceResult {
   const original = doc.sources.find((s) => s.id === id);
@@ -167,28 +156,34 @@ export function duplicateSource(doc: ProjectDoc, id: string, newId: string): Sou
     board: { x: original.board.x + 40, y: original.board.y + 40 },
   };
   delete copy.libraryItemId; // a detached copy (T7.1 semantics)
-  const wired = doc.wires.some((w) => w.from === id && w.to === 'main');
-  const placement = doc.master.placements[id];
-  const withCopy: ProjectDoc = wired
-    ? {
-        ...doc,
-        wires: [...doc.wires, { id: `in:${newId}`, from: newId, to: 'main', port: original.port }],
-        master: placement ? { ...doc.master, placements: { ...doc.master.placements, [newId]: { ...placement } } } : doc.master,
-      }
-    : doc;
-  return { ok: true, doc: insertAt(withCopy, copy, original.port) };
+  const compositions = doc.compositions.map((c) => {
+    const at = c.layers.indexOf(id);
+    if (at < 0) return c;
+    const layers = [...c.layers];
+    layers.splice(at, 0, newId);
+    const placement = c.placements[id];
+    return { ...c, layers, placements: placement ? { ...c.placements, [newId]: { ...placement } } : c.placements };
+  });
+  const copiedEdges = doc.edges
+    .filter((e) => e.kind === 'layer' && e.from === id && doc.compositions.some((c) => c.id === e.to))
+    .map((e) => ({ ...e, id: edgeId(newId, e.to, 'layer'), from: newId }));
+  return { ok: true, doc: { ...doc, sources: [...doc.sources, copy], compositions, edges: [...doc.edges, ...copiedEdges] } };
 }
 
-/** Removes a source and everything that refers to it; remaining ports close the gap. */
+/** Removes a source and everything that refers to it; the rows behind it move up. */
 export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
   if (!doc.sources.some((s) => s.id === id)) return fail('not_found');
-  const placements = Object.fromEntries(Object.entries(doc.master.placements).filter(([sourceId]) => sourceId !== id));
-  const rest = { ...doc, wires: doc.wires.filter((w) => w.from !== id && w.to !== id) };
   return {
     ok: true,
     doc: {
-      ...withSources(rest, doc.sources.filter((s) => s.id !== id)),
-      master: { ...doc.master, placements },
+      ...doc,
+      sources: doc.sources.filter((s) => s.id !== id),
+      compositions: doc.compositions.map((c) => ({
+        ...c,
+        layers: c.layers.filter((l) => l !== id),
+        placements: Object.fromEntries(Object.entries(c.placements).filter(([sourceId]) => sourceId !== id)),
+      })),
+      edges: doc.edges.filter((e) => e.from !== id && e.to !== id),
       outputs: doc.outputs.map((o) => ({
         ...o,
         overrides: o.overrides.filter((ov) => ov.sourceId !== id),

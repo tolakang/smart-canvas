@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { mainComposition } from './graph';
 import type { ProjectDoc } from './model';
 import { defaultPlacement, ensurePlacement, setPlacement } from './placement';
 import { connectSource } from './ports';
@@ -13,10 +14,10 @@ const ok = (r: { ok: true; doc: ProjectDoc } | { ok: false }) => {
 describe('placements', () => {
   it('first wire auto-places by behaviour (Flow 3); re-wiring keeps a moved placement', () => {
     let doc = ok(connectSource(createProjectDoc('P'), 'logo'));
-    expect(doc.master.placements.logo).toEqual(defaultPlacement('logo'));
+    expect(mainComposition(doc).placements.logo).toEqual(defaultPlacement('logo'));
     doc = ok(setPlacement(doc, 'logo', { x: 0.1, y: 0.1, w: 0.2, h: 0.1 }));
     doc = ok(connectSource(doc, 'logo', 3));
-    expect(doc.master.placements.logo).toEqual({ x: 0.1, y: 0.1, w: 0.2, h: 0.1 });
+    expect(mainComposition(doc).placements.logo).toEqual({ x: 0.1, y: 0.1, w: 0.2, h: 0.1 });
   });
 
   it('every behaviour has a default inside the canvas', () => {
@@ -28,15 +29,15 @@ describe('placements', () => {
 
   it('setPlacement rounds, normalizes rotation to 0..360 and drops zero rotation', () => {
     const doc = ok(setPlacement(createProjectDoc('P'), 'subject', { x: 0.1234567891, y: 0.2, w: 0.3, h: 0.4, rotation: -30 }));
-    expect(doc.master.placements.subject).toEqual({ x: 0.123457, y: 0.2, w: 0.3, h: 0.4, rotation: 330 });
+    expect(mainComposition(doc).placements.subject).toEqual({ x: 0.123457, y: 0.2, w: 0.3, h: 0.4, rotation: 330 });
     const flat = ok(setPlacement(doc, 'subject', { x: 0, y: 0, w: 1, h: 1, rotation: 360 }));
-    expect(flat.master.placements.subject).toEqual({ x: 0, y: 0, w: 1, h: 1 });
+    expect(mainComposition(flat).placements.subject).toEqual({ x: 0, y: 0, w: 1, h: 1 });
     expect(setPlacement(doc, 'nope', { x: 0, y: 0, w: 1, h: 1 })).toEqual({ ok: false, error: 'not_found' });
   });
 
   it('ensurePlacement leaves existing placements alone; wired + placed inputs show in the master scene', () => {
     const doc = ensurePlacement(ok(setPlacement(createProjectDoc('P'), 'headline', { x: 0, y: 0, w: 0.5, h: 0.1 })), 'headline');
-    expect(doc.master.placements.headline).toEqual({ x: 0, y: 0, w: 0.5, h: 0.1 });
+    expect(mainComposition(doc).placements.headline).toEqual({ x: 0, y: 0, w: 0.5, h: 0.1 });
     let wired = createProjectDoc('P');
     for (const id of ['background', 'subject', 'headline', 'logo']) wired = ok(connectSource(wired, id));
     expect(masterScene(wired).items.map((i) => i.sourceId)).toEqual(['background', 'subject', 'headline', 'logo']);

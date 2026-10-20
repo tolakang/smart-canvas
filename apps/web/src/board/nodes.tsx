@@ -1,5 +1,5 @@
 import { Handle, Position, type NodeProps, type NodeTypes } from '@xyflow/react';
-import { ALLOWED_BEHAVIORS, setBehavior, type Behavior, type InputSource } from '@smart-canvas/core';
+import { ALLOWED_BEHAVIORS, portOf, setBehavior, type Behavior, type InputSource } from '@smart-canvas/core';
 import { AssetEditor, FillEditor, TextEditor, useAssetUpload, type AssetUpload } from './editors';
 import { useBoard } from './context';
 import { MainNodeView } from './MainNode';
@@ -9,7 +9,8 @@ import { OutputNodeView } from './OutputNode';
 
 function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
-  const { readOnly, run } = useBoard();
+  const { readOnly, run, doc } = useBoard();
+  const port = portOf(doc, source.id);
   // T8.3: drop an image file anywhere on a picture input (or a photo on a fill background, D9).
   const upload = useAssetUpload(source);
   return (
@@ -35,7 +36,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
             ))}
           </select>
         )}{' '}
-        <span title={`Port ${source.port} on the main preview (0 = front)`}>· layer {source.port + 1}</span>
+        <span title={`Port ${port} on the main preview (0 = front)`}>· layer {port + 1}</span>
         {!source.visible && ' · hidden'}
         {source.libraryItemId && ' · from library'}
       </div>

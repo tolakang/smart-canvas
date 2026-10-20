@@ -34,7 +34,7 @@ const firstGrapheme = (text: string) => graphemes.segment(text.trim())[Symbol.it
 export function useLayerReorder() {
   const { run, readOnly } = useBoard();
   const [dropAt, setDropAt] = useState<number | null>(null);
-  const rowProps = (source: Pick<InputSource, 'id' | 'port'>) => ({
+  const rowProps = (source: { id: string; port: number }) => ({
     draggable: !readOnly,
     onDragStart: (e: DragEvent) => {
       e.dataTransfer.setData(DRAG_TYPE, source.id);

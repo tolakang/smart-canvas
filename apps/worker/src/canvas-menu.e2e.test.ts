@@ -84,7 +84,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
     expect(await near(page.locator('.react-flow__node-outputNode').first(), at)).toBe(true);
     await saved();
     const d = await doc();
-    expect(d.wires.some((w) => w.from === 'main' && w.to === d.outputs[0]?.id)).toBe(true);
+    expect(d.edges.some((e) => e.kind === 'composition' && e.to === d.outputs[0]?.id)).toBe(true);
   }, 60_000);
 
   it('the toolbar "+ Add input" still uses the default column, not the last click', async () => {

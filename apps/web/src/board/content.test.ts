@@ -7,7 +7,6 @@ const text: InputSource = {
   label: 'Headline',
   kind: 'text',
   behavesLike: 'text',
-  port: 0,
   visible: true,
   content: {
     kind: 'text',

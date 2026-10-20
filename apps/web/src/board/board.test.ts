@@ -1,4 +1,4 @@
-import { createProjectDoc, type ProjectDoc } from '@smart-canvas/core';
+import { createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
 import {
@@ -16,13 +16,13 @@ import {
 } from './flow';
 
 function sampleDoc(): ProjectDoc {
-  const doc = { ...createProjectDoc('P'), sources: [] as ProjectDoc['sources'] };
+  const base = createProjectDoc('P');
+  const doc: ProjectDoc = { ...base, sources: [], compositions: base.compositions.map((c) => ({ ...c, layers: ['bg'] })) };
   doc.sources.push({
     id: 'bg',
     label: 'Background',
     kind: 'fill',
     behavesLike: 'background',
-    port: 0,
     visible: true,
     content: { kind: 'fill', fill: { type: 'solid', color: '#fff' } },
     board: { x: -300, y: 0 },
@@ -31,7 +31,7 @@ function sampleDoc(): ProjectDoc {
     { id: 'ig', label: 'Instagram', size: { width: 1080, height: 1080, unit: 'px' }, family: 'auto', overrides: [], board: { x: 400, y: 0 } },
     { id: 'a4', label: 'A4', size: { width: 210, height: 297, unit: 'mm' }, family: 'auto', overrides: [], board: { x: 400, y: 200 } },
   );
-  doc.wires.push({ id: 'w1', from: 'bg', to: 'main', port: 0 }, { id: 'w2', from: 'main', to: 'ig' });
+  doc.edges.push({ id: 'w1', from: 'bg', to: 'main', kind: 'layer' }, { id: 'w2', from: 'main', to: 'ig', kind: 'composition' });
   return doc;
 }
 
@@ -60,7 +60,7 @@ describe('docToNodes / docToEdges', () => {
 
   it('lists the main preview ports front first, with wired state', () => {
     const doc = createProjectDoc('P');
-    doc.wires.push({ id: 'in:subject', from: 'subject', to: 'main', port: 2 });
+    doc.edges.push({ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' });
     doc.sources = doc.sources.map((s) => (s.id === 'logo' ? { ...s, visible: false } : s));
     expect(portRows(doc)).toEqual([
       { port: 0, sourceId: 'logo', label: 'Logo', visible: false, connected: false },
@@ -125,11 +125,11 @@ describe('withPositions', () => {
       { id: 'out:a4', position: { x: 500, y: 300 } },
       { id: 'src:missing', position: { x: 1, y: 1 } },
     ]);
-    expect(next.master.board).toEqual({ x: 10, y: 21 });
+    expect(mainComposition(next).board).toEqual({ x: 10, y: 21 });
     expect(next.outputs[1]?.board).toEqual({ x: 500, y: 300 });
     expect(next.outputs[0]).toBe(doc.outputs[0]);
     expect(next.sources[0]).toBe(doc.sources[0]);
-    expect(doc.master.board).toEqual({ x: 0, y: 0 }); // input not mutated
+    expect(mainComposition(doc).board).toEqual({ x: 0, y: 0 }); // input not mutated
   });
 });
 

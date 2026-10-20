@@ -15,7 +15,7 @@ describe('addOutput', () => {
   it('adds an automatic output wired to main, right of the main preview', () => {
     const doc = ok(addOutput(createProjectDoc('P'), insta));
     expect(doc.outputs).toEqual([{ ...insta, family: 'auto', overrides: [], board: { x: 420, y: 0 } }]);
-    expect(doc.wires).toEqual([{ id: outputWireId('o1'), from: 'main', to: 'o1' }]);
+    expect(doc.edges).toEqual([{ id: outputWireId('o1'), from: 'main', to: 'o1', kind: 'composition' }]);
     const two = ok(addOutput(doc, { ...insta, id: 'o2' }));
     expect(two.outputs[1]?.board).toEqual({ x: 420, y: 480 });
   });
@@ -52,14 +52,14 @@ describe('updateOutput / deleteOutput', () => {
   it('delete removes the output and its wire', () => {
     const doc = ok(deleteOutput(ok(addOutput(createProjectDoc('P'), insta)), 'o1'));
     expect(doc.outputs).toEqual([]);
-    expect(doc.wires).toEqual([]);
+    expect(doc.edges).toEqual([]);
   });
 });
 
 describe('outputScene', () => {
   it('is the full canvas (incl. bleed) with the engine items', () => {
     const doc = ok(addOutput(createProjectDoc('P'), { ...insta, bleedMm: 25.4 }));
-    const layout = computeLayout({ ...doc, wires: [...doc.wires, { id: 'in:background', from: 'background', to: 'main', port: 3 }] }, 'o1', {
+    const layout = computeLayout({ ...doc, edges: [...doc.edges, { id: 'in:background', from: 'background', to: 'main', kind: 'layer' }] }, 'o1', {
       measure: () => 0,
       assets: {},
     });

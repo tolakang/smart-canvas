@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { layerOrder, MAIN, mainComposition, portOf, withComposition } from './graph';
 import { LIMITS, type ProjectDoc } from './model';
 import { createProjectDoc } from './project';
 import { addOutput } from './outputs';
@@ -9,7 +10,6 @@ import {
   deleteSource,
   duplicateSource,
   setBehavior,
-  normalizePorts,
   renameSource,
   setSourceVisible,
   type SourceResult,
@@ -19,18 +19,25 @@ const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(`expected ok, got ${r.error}`);
   return r.doc;
 };
-const ports = (doc: ProjectDoc) => Object.fromEntries(doc.sources.map((s) => [s.id, s.port]));
-const contiguous = (doc: ProjectDoc) => doc.sources.map((s) => s.port).sort((a, b) => a - b).every((p, i) => p === i);
+const ports = (doc: ProjectDoc) => Object.fromEntries(doc.sources.map((s) => [s.id, portOf(doc, s.id)]));
+const placements = (doc: ProjectDoc) => mainComposition(doc).placements;
+/** Every source is a row of main exactly once (ports 0..n-1). */
+const contiguous = (doc: ProjectDoc) => {
+  const rows = layerOrder(doc);
+  return rows.length === doc.sources.length && new Set(rows).size === rows.length;
+};
+const wired = (doc: ProjectDoc) => doc.edges.filter((e) => e.kind === 'layer' && e.to === MAIN).map((e) => [e.from, portOf(doc, e.from)]);
 
 describe('default sources (D8)', () => {
   it('are Background, Subject, Headline, Logo with Logo in front and Background at the back', () => {
     const s = defaultSources();
-    expect(s.map((x) => [x.label, x.kind, x.behavesLike, x.port])).toEqual([
-      ['Background', 'fill', 'background', 3],
-      ['Subject', 'image', 'subject', 2],
-      ['Headline', 'text', 'text', 1],
-      ['Logo', 'vector', 'logo', 0],
+    expect(s.map((x) => [x.label, x.kind, x.behavesLike])).toEqual([
+      ['Background', 'fill', 'background'],
+      ['Subject', 'image', 'subject'],
+      ['Headline', 'text', 'text'],
+      ['Logo', 'vector', 'logo'],
     ]);
+    expect(layerOrder(createProjectDoc('P'))).toEqual(['logo', 'headline', 'subject', 'background']);
     expect(s.every((x) => x.visible)).toBe(true);
     expect(s.map((x) => x.content.kind)).toEqual(['fill', 'image', 'text', 'vector']);
   });
@@ -103,7 +110,7 @@ describe('duplicateSource', () => {
     const doc0 = createProjectDoc('P');
     const doc = ok(duplicateSource(doc0, 'headline', 'h2'));
     const copy = doc.sources.find((s) => s.id === 'h2');
-    expect(copy).toMatchObject({ label: 'Headline copy', kind: 'text', behavesLike: 'text', port: 1 });
+    expect(copy).toMatchObject({ label: 'Headline copy', kind: 'text', behavesLike: 'text' });
     expect(ports(doc)).toEqual({ background: 4, subject: 3, headline: 2, h2: 1, logo: 0 });
     // Deep copy: editing the copy's style must not touch the original.
     if (copy?.content.kind === 'text') copy.content.style.fontSizePx = 1;
@@ -114,20 +121,21 @@ describe('duplicateSource', () => {
   it('wires the copy of a wired source at the same spot, without the library link (T8.1)', () => {
     const frame = { x: 0.7, y: 0.05, w: 0.2, h: 0.1 };
     const base = createProjectDoc('P');
-    const doc0: ProjectDoc = { ...base, wires: [{ id: 'in:logo', from: 'logo', to: 'main', port: 0 }], master: { ...base.master, placements: { logo: frame } } };
+    const doc0: ProjectDoc = withComposition({ ...base, edges: [{ id: 'in:logo', from: 'logo', to: 'main', kind: 'layer' }] }, MAIN, (c) => ({ ...c, placements: { logo: frame } }));
     doc0.sources = doc0.sources.map((s) => (s.id === 'logo' ? { ...s, libraryItemId: 'lib1' } : s));
     const doc = ok(duplicateSource(doc0, 'logo', 'logo2'));
     expect(doc.sources.find((s) => s.id === 'logo2')?.libraryItemId).toBeUndefined();
-    // The copy takes port 0 (front); the original moves to 1 and its wire follows.
-    expect(doc.wires.map((w) => [w.from, w.port]).sort()).toEqual([['logo', 1], ['logo2', 0]]);
-    expect(doc.master.placements.logo2).toEqual(frame);
-    expect(doc.master.placements.logo2).not.toBe(doc.master.placements.logo); // its own frame
+    // The copy takes row 0 (front); the original moves to 1, both wired.
+    expect(wired(doc).sort()).toEqual([['logo', 1], ['logo2', 0]]);
+    expect(doc.edges.find((e) => e.from === 'logo2')?.id).toBe('in:logo2');
+    expect(placements(doc).logo2).toEqual(frame);
+    expect(placements(doc).logo2).not.toBe(placements(doc).logo); // its own frame
   });
 
   it('leaves the copy of an unwired source unwired', () => {
     const doc = ok(duplicateSource(createProjectDoc('P'), 'logo', 'logo2'));
-    expect(doc.wires).toEqual([]);
-    expect(doc.master.placements.logo2).toBeUndefined();
+    expect(doc.edges).toEqual([]);
+    expect(placements(doc).logo2).toBeUndefined();
   });
 });
 
@@ -135,9 +143,9 @@ describe('deleteSource', () => {
   it('removes the source and every reference to it, closing the port gap', () => {
     const doc0: ProjectDoc = {
       ...createProjectDoc('P'),
-      wires: [
-        { id: 'w1', from: 'subject', to: 'main', port: 2 },
-        { id: 'w2', from: 'logo', to: 'main', port: 0 },
+      edges: [
+        { id: 'w1', from: 'subject', to: 'main', kind: 'layer' },
+        { id: 'w2', from: 'logo', to: 'main', kind: 'layer' },
       ],
       outputs: [
         {
@@ -154,12 +162,12 @@ describe('deleteSource', () => {
         },
       ],
     };
-    doc0.master.placements = { subject: { x: 0, y: 0, w: 1, h: 1 }, logo: { x: 0, y: 0, w: 0.1, h: 0.1 } };
-    const doc = ok(deleteSource(doc0, 'subject'));
+    const doc1 = withComposition(doc0, MAIN, (c) => ({ ...c, placements: { subject: { x: 0, y: 0, w: 1, h: 1 }, logo: { x: 0, y: 0, w: 0.1, h: 0.1 } } }));
+    const doc = ok(deleteSource(doc1, 'subject'));
     expect(doc.sources.map((s) => s.id)).toEqual(['background', 'headline', 'logo']);
     expect(ports(doc)).toEqual({ background: 2, headline: 1, logo: 0 });
-    expect(doc.wires.map((w) => w.id)).toEqual(['w2']);
-    expect(Object.keys(doc.master.placements)).toEqual(['logo']);
+    expect(doc.edges.map((e) => e.id)).toEqual(['w2']);
+    expect(Object.keys(placements(doc))).toEqual(['logo']);
     expect(doc.outputs[0]?.overrides.map((o) => o.sourceId)).toEqual(['logo']);
     expect(doc.outputs[0]?.frozen?.items).toEqual([]);
     expect(deleteSource(doc, 'subject')).toEqual({ ok: false, error: 'not_found' });
@@ -169,13 +177,6 @@ describe('deleteSource', () => {
     let doc = createProjectDoc('P');
     for (const id of ['background', 'subject', 'headline', 'logo']) doc = ok(deleteSource(doc, id));
     expect(doc.sources).toEqual([]);
-  });
-});
-
-describe('normalizePorts', () => {
-  it('keeps the order and closes gaps', () => {
-    const s = defaultSources().map((x) => ({ ...x, port: x.port * 3 }));
-    expect(normalizePorts(s).map((x) => x.port)).toEqual([3, 2, 1, 0]);
   });
 });
 
@@ -191,13 +192,15 @@ describe('placing new nodes (T8.4)', () => {
 describe('setBehavior (T8.7)', () => {
   it('changes the behaviour within what the kind allows; a new background goes to the back', () => {
     let doc = ok(addSource(createProjectDoc('P'), { id: 'g', kind: 'fill', label: 'Gradient', behavesLike: 'decoration' }));
-    expect(doc.sources.find((s) => s.id === 'g')?.port).toBe(0);
+    expect(portOf(doc, 'g')).toBe(0);
     doc = ok(setBehavior(doc, 'g', 'background'));
-    const g = doc.sources.find((s) => s.id === 'g');
-    expect(g).toMatchObject({ behavesLike: 'background', port: 4 });
-    expect(contiguous(doc)).toBe(true);
+    expect(doc.sources.find((s) => s.id === 'g')).toMatchObject({ behavesLike: 'background' });
+    expect(portOf(doc, 'g')).toBe(4);
+    expect(layerOrder(doc)).toHaveLength(5);
     expect(setBehavior(doc, 'g', 'subject')).toEqual({ ok: false, error: 'bad_behavior' }); // a fill can't be a subject
     expect(setBehavior(doc, 'nope', 'logo')).toEqual({ ok: false, error: 'not_found' });
-    expect(ok(setBehavior(doc, 'logo', 'decoration')).sources.find((s) => s.id === 'logo')).toMatchObject({ behavesLike: 'decoration', port: 0 });
+    const d2 = ok(setBehavior(doc, 'logo', 'decoration'));
+    expect(d2.sources.find((s) => s.id === 'logo')).toMatchObject({ behavesLike: 'decoration' });
+    expect(portOf(d2, 'logo')).toBe(0);
   });
 });

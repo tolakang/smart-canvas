@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { layerOrder } from '../graph';
 import type { ProjectDoc } from '../model';
 import { connectSource } from '../ports';
 import { addSource } from '../sources';
@@ -68,7 +69,7 @@ describe('computeLayout', () => {
     const r2 = connectSource(doc, 'bg2');
     if (!r2.ok) throw new Error(r2.error);
     doc = r2.doc;
-    const order = [...doc.sources].sort((a, b) => b.port - a.port).map((s) => s.id).filter((id) => id === 'bg2' || id === 'background');
+    const order = [...layerOrder(doc)].reverse().filter((id) => id === 'bg2' || id === 'background');
     expect(backgrounds(doc)).toEqual(order);
     doc = { ...doc, sources: doc.sources.map((s) => (s.id === 'bg2' ? { ...s, visible: false } : s)) };
     expect(backgrounds(doc)).toEqual(['background']);

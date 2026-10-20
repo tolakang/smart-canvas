@@ -1,11 +1,12 @@
 /**
  * ProjectDoc ↔ React Flow. The doc is the source of truth: node positions live in `board`
- * on each source / the master / each output; edges come from `wires`.
+ * on each source / the main composition / each output; wires come from the doc's typed `edges` (D32).
+ * The board shows the main composition (more compositions and process nodes: T12.2+).
  */
-import { masterScene, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Wire } from '@smart-canvas/core';
+import { mainComposition, masterScene, MAIN, withComposition, type Edge as DocEdge, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
-export const MAIN_ID = 'main';
+export const MAIN_ID = MAIN;
 export const inputNodeId = (sourceId: string) => `src:${sourceId}`;
 export const outputNodeId = (outputId: string) => `out:${outputId}`;
 
@@ -21,7 +22,7 @@ export interface PortRow {
 }
 export type MainFlowNode = Node<
   {
-    size: ProjectDoc['master']['size'];
+    size: Size;
     ports: PortRow[];
     inputs: number;
     outputs: number;
@@ -41,23 +42,28 @@ export function portFromHandle(handle: string | null | undefined): number | unde
 export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean }, 'outputNode'>;
 export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode;
 
-/** A wire's `from`/`to` are source ids, 'main' or output ids; map them to node ids. */
-function endpoint(doc: ProjectDoc, id: string): string {
+/** An edge's `from`/`to` are source ids, 'main' or output ids; map them to node ids (null: not on this board yet). */
+function endpoint(doc: ProjectDoc, id: string): string | null {
   if (id === MAIN_ID) return MAIN_ID;
   if (doc.sources.some((s) => s.id === id)) return inputNodeId(id);
-  return outputNodeId(id);
+  if (doc.outputs.some((o) => o.id === id)) return outputNodeId(id);
+  return null;
 }
 
+/** The main preview's rows, front (port 0) first. */
 export function portRows(doc: ProjectDoc): PortRow[] {
-  const wired = new Set(doc.wires.filter((w) => w.to === MAIN_ID).map((w) => w.from));
-  return [...doc.sources]
-    .sort((a, b) => a.port - b.port)
-    .map((s) => ({ port: s.port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }));
+  const wired = new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === MAIN_ID).map((e) => e.from));
+  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  return mainComposition(doc).layers.flatMap((id, port) => {
+    const s = byId.get(id);
+    return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
+  });
 }
 
 // Nodes are never removed with the Delete key (inputs have a delete button with a confirm).
 export function docToNodes(doc: ProjectDoc): BoardNode[] {
-  const connected = new Set(doc.wires.filter((w) => w.from === MAIN_ID).map((w) => w.to));
+  const connected = new Set(doc.edges.filter((e) => e.kind === 'composition').map((e) => e.to));
+  const main = mainComposition(doc);
   return [
     ...doc.sources.map(
       (source): InputFlowNode => ({
@@ -71,9 +77,9 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
     {
       id: MAIN_ID,
       type: 'mainNode',
-      position: doc.master.board,
+      position: main.board,
       data: {
-        size: doc.master.size,
+        size: main.size,
         ports: portRows(doc),
         inputs: doc.sources.length,
         outputs: doc.outputs.length,
@@ -94,18 +100,24 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
   ];
 }
 
-/** Input wires land on their port's handle; deleting one disconnects the input, deleting main→output freezes the output (T4.9). */
+/** Layer edges into main land on their row's handle; deleting one disconnects the input, deleting main→output freezes the output (T4.9). */
 export function docToEdges(doc: ProjectDoc): Edge[] {
-  return doc.wires.map((w: Wire): Edge => {
-    const intoMain = w.to === MAIN_ID;
-    return {
-      id: w.id,
-      source: endpoint(doc, w.from),
-      target: endpoint(doc, w.to),
-      ...(intoMain && w.port !== undefined ? { targetHandle: portHandleId(w.port) } : {}),
-      ...(w.from === MAIN_ID ? { sourceHandle: OUTPUT_HANDLE } : {}),
-      deletable: true,
-    };
+  const rows = mainComposition(doc).layers;
+  return doc.edges.flatMap((e: DocEdge): Edge[] => {
+    const source = endpoint(doc, e.from);
+    const target = endpoint(doc, e.to);
+    if (!source || !target) return [];
+    const port = e.kind === 'layer' && e.to === MAIN_ID ? rows.indexOf(e.from) : -1;
+    return [
+      {
+        id: e.id,
+        source,
+        target,
+        ...(port >= 0 ? { targetHandle: portHandleId(port) } : {}),
+        ...(e.kind === 'composition' ? { sourceHandle: OUTPUT_HANDLE } : {}),
+        deletable: true,
+      },
+    ];
   });
 }
 
@@ -132,8 +144,7 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     return board ? { ...item, board } : item;
   };
   return {
-    ...doc,
-    master: place(doc.master, MAIN_ID),
+    ...withComposition(doc, MAIN_ID, (c) => place(c, MAIN_ID)),
     sources: doc.sources.map((s) => place(s, inputNodeId(s.id))),
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };

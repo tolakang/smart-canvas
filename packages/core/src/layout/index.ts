@@ -2,6 +2,7 @@
  * Layout engine v2 (ADAPTATION-RULES, D30: content fit). Pure and deterministic: layout is computed, never
  * stored; only overrides are applied on top.
  */
+import { compositionById, MAIN, mainComposition, outputComposition, wiredLayers } from '../graph';
 import { canvasMetrics, DEFAULTS, type Frame, type OutputNode, type ProjectDoc } from '../model';
 import { sizeInDesignPx, toDesignFrame } from '../render';
 import { backgroundFrame } from './background';
@@ -31,10 +32,12 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   if (!output) throw new Error(`unknown output ${outputId}`);
   const metrics = canvasMetrics(output);
   const family = familyOf(output, metrics.trim);
-  const masterSize = sizeInDesignPx(doc.master.size);
+  // The output's composition (D32): the one wired to it; a disconnected (frozen) output keeps main's rows.
+  const comp = compositionById(doc, outputComposition(doc, outputId) ?? MAIN) ?? mainComposition(doc);
+  const masterSize = sizeInDesignPx(comp.size);
   const master = { w: masterSize.width, h: masterSize.height };
   const ctx: RuleContext = { metrics, family, master, k: Math.min(metrics.trim.w / master.w, metrics.trim.h / master.h) };
-  const wired = new Set(doc.wires.filter((w) => w.to === 'main').map((w) => w.from));
+  const wired = wiredLayers(doc, comp.id);
   const overrides = new Map(output.overrides.map((o) => [o.sourceId, o]));
   // Disconnected (D20/D21, O7): frames frozen at disconnect time; content still updates, overrides still apply.
   const frozen = new Map(output.frozen?.items.map((i) => [i.sourceId, i]));
@@ -42,7 +45,7 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   // Content groups (v2): the master frames of the layers that carry the design, fitted together.
   const visible = doc.sources.filter((s) => s.visible && wired.has(s.id) && !overrides.get(s.id)?.hidden && !frozen.has(s.id));
   const masterFrame = (id: string) => {
-    const p = doc.master.placements[id];
+    const p = comp.placements[id];
     return p ? toDesignFrame(p, masterSize) : undefined;
   };
   const framesOf = (pick: (b: string) => boolean) =>
@@ -59,7 +62,8 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
 
   const items: LayoutItem[] = [];
   const column: { index: number; job: TextJob }[] = []; // side-family texts, placed together after the loop
-  for (const source of [...doc.sources].sort((a, b) => b.port - a.port)) {
+  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  for (const source of [...comp.layers].reverse().flatMap((id) => byId.get(id) ?? [])) {
     const override = overrides.get(source.id);
     if (!source.visible || !wired.has(source.id) || override?.hidden) continue;
     const snap = frozen.get(source.id);
@@ -73,7 +77,7 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
       } else items.push({ sourceId: source.id, frame, overridden: !!override, warnings: [] });
       continue;
     }
-    const placement = doc.master.placements[source.id];
+    const placement = comp.placements[source.id];
     const f = placement ? toDesignFrame(placement, masterSize) : undefined;
     let frame: Frame;
     let warnings: LayoutWarning[] = [];

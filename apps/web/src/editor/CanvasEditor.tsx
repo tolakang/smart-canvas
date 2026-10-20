@@ -2,7 +2,7 @@
  * The canvas editor shared by the main preview (T3.2) and the output editors (T5.1): select, move, resize
  * and rotate layers with react-moveable (D26), snapping to the canvas edges, centre lines and other layers,
  * arrow-key nudging (1 design px, Shift 10). Draws with the same OutputRenderer as export. What an edit
- * writes is the caller's: master placements for the main preview, overrides for an output.
+ * writes is the caller's: placements on the main composition, overrides for an output.
  * Figma-style workspace (T10.1): toolbar with Move / Hand tools, pan (Space or H + drag, wheel), zoom at the
  * pointer (Ctrl/⌘ + wheel) and Figma's zoom keys, a size badge on the selection, and a Design panel with
  * X / Y / W / H / rotation.

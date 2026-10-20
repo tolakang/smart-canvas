@@ -2,7 +2,7 @@
  * Main preview editor (T3.2): the shared canvas editor on the master; edits write master.placements
  * (normalized to the master canvas) through the board (autosave).
  */
-import { masterScene, setPlacement } from '@smart-canvas/core';
+import { mainComposition, masterScene, setPlacement } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
@@ -12,6 +12,7 @@ import { TextPanel } from './TextPanel';
 export function MainEditor({ onClose }: { onClose: () => void }) {
   const { doc, run } = useBoard();
   const scene = useMemo(() => masterScene(doc), [doc]);
+  const main = mainComposition(doc);
   const { width, height } = scene;
   const onCommit = useCallback(
     (id: string, f: { x: number; y: number; w: number; h: number; rotation?: number }) =>
@@ -25,7 +26,7 @@ export function MainEditor({ onClose }: { onClose: () => void }) {
         <>
           <strong>Main preview</strong>
           <span className="sc-muted">
-            {doc.master.size.width} × {doc.master.size.height} {doc.master.size.unit}
+            {main.size.width} × {main.size.height} {main.size.unit}
           </span>
         </>
       }

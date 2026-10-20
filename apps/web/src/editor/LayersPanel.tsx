@@ -4,7 +4,7 @@
  * delete; inputs not wired into main are greyed with Connect. In an output editor (`outputId`, T5.1) the eye
  * hides the layer on that output only (an override); stacking order and wiring stay the master's.
  */
-import { connectSource, setOverrideHidden } from '@smart-canvas/core';
+import { connectSource, layerOrder, setOverrideHidden, wiredLayers, type InputSource } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 
@@ -14,8 +14,9 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
   const { doc, run, readOnly, author } = useBoard();
   const { outputId } = props;
   const overrides = new Map(doc.outputs.find((o) => o.id === outputId)?.overrides.map((o) => [o.sourceId, o]));
-  const wired = new Set(doc.wires.filter((w) => w.to === 'main').map((w) => w.from));
-  const layers = [...doc.sources].sort((a, b) => a.port - b.port);
+  const wired = wiredLayers(doc);
+  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  const layers = layerOrder(doc).flatMap((id, port) => (byId.get(id) ? [{ s: byId.get(id) as InputSource, port }] : []));
   const { dropAt, rowProps } = useLayerReorder();
   const reorder = !readOnly && !outputId;
 
@@ -25,7 +26,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
         Layers <span className="sc-muted">top = front</span>
       </div>
       <ol className="sc-layers__list">
-        {layers.map((s) => {
+        {layers.map(({ s, port }) => {
           const isWired = wired.has(s.id);
           const isSelected = props.selected === s.id;
           const hiddenHere = !!overrides.get(s.id)?.hidden;
@@ -33,10 +34,10 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
           return (
             <li
               key={s.id}
-              className={`sc-layer${isSelected ? ' sc-layer--selected' : ''}${visible ? '' : ' sc-layer--hidden'}${isWired ? '' : ' sc-layer--unwired'}${dropAt === s.port ? ' sc-layer--drop' : ''}`}
+              className={`sc-layer${isSelected ? ' sc-layer--selected' : ''}${visible ? '' : ' sc-layer--hidden'}${isWired ? '' : ' sc-layer--unwired'}${dropAt === port ? ' sc-layer--drop' : ''}`}
               aria-selected={isSelected}
               data-layer={s.id}
-              {...(reorder ? rowProps(s) : {})}
+              {...(reorder ? rowProps({ id: s.id, port }) : {})}
             >
               {reorder && (
                 <span className="sc-port__grip" title="Drag to re-order">

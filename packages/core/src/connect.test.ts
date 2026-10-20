@@ -16,7 +16,7 @@ function wiredProject(overrides: Override[] = []): ProjectDoc {
   const doc = place(project(output({ overrides })), 'subject', { x: 900, y: 750, w: 1200, h: 1800 });
   return {
     ...doc,
-    wires: [...doc.wires, { id: outputWireId('o1'), from: 'main', to: 'o1' }],
+    edges: [...doc.edges, { id: outputWireId('o1'), from: 'main', to: 'o1', kind: 'composition' }],
     sources: doc.sources.map((s) => (s.id === 'headline' && s.content.kind === 'text' ? { ...s, content: { ...s.content, text: 'AAAAA BBBBB' } } : s)),
   };
 }
@@ -69,7 +69,7 @@ describe('reconnect (D21)', () => {
     expect(isOutputConnected(doc, 'o1')).toBe(true);
     expect(doc.outputs[0]?.frozen).toBeUndefined();
     expect(at(doc, 'subject')?.frame.w).toBeCloseTo(231.428571);
-    expect(doc.wires.filter((w) => w.to === 'o1')).toHaveLength(1);
+    expect(doc.edges.filter((e) => e.to === 'o1')).toHaveLength(1);
   });
 
   it('with overrides: asks; keep keeps them, reset clears them', () => {

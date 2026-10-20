@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { mainComposition } from './graph';
 import { fillToCss } from './css';
 import type { ProjectDoc } from './model';
 import { connectSource } from './ports';
@@ -62,12 +63,12 @@ describe('masterScene', () => {
 
   it('draws only wired, visible inputs, back→front, with unplaced backgrounds covering the canvas', () => {
     let doc = createProjectDoc('P');
-    doc.master.placements = { subject: { x: 0.25, y: 0.25, w: 0.5, h: 0.5 }, headline: { x: 0.1, y: 0.8, w: 0.8, h: 0.1 } };
+    mainComposition(doc).placements = { subject: { x: 0.25, y: 0.25, w: 0.5, h: 0.5 }, headline: { x: 0.1, y: 0.8, w: 0.8, h: 0.1 } };
     expect(masterScene(doc).items).toEqual([]); // nothing wired yet
     for (const id of ['background', 'subject', 'headline', 'logo']) doc = ok(connectSource(doc, id));
     doc = ok(setSourceVisible(doc, 'headline', false));
     // Wiring auto-places (Flow 3); clear background and logo to exercise the unplaced rules.
-    doc.master.placements = { subject: { x: 0.25, y: 0.25, w: 0.5, h: 0.5 }, headline: { x: 0.1, y: 0.8, w: 0.8, h: 0.1 } };
+    mainComposition(doc).placements = { subject: { x: 0.25, y: 0.25, w: 0.5, h: 0.5 }, headline: { x: 0.1, y: 0.8, w: 0.8, h: 0.1 } };
     const scene = masterScene(doc);
     expect(scene).toMatchObject({ width: 3000, height: 3000 });
     // logo (port 0) is wired but has no placement and is not a background → skipped
