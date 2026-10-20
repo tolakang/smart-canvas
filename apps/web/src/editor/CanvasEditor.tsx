@@ -5,7 +5,7 @@
  * writes is the caller's: master placements for the main preview, overrides for an output.
  */
 import type { Frame, InputSource, RenderScene } from '@smart-canvas/core';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 import Moveable from 'react-moveable';
 import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
@@ -32,12 +32,17 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
   const stage = useRef<HTMLDivElement>(null);
   const canvasEl = useRef<HTMLDivElement>(null);
   const control = useRef<HTMLDivElement>(null);
+  const moveable = useRef<Moveable>(null);
+  /** The current press just selected a new layer: its mousedown starts a drag of it (T8.6). */
+  const dragOnPress = useRef(false);
+  const [zoom, setZoom] = useState(1); // × the fit scale
+  const [hovered, setHovered] = useState<string | null>(null);
   const [area, setArea] = useState({ width: 800, height: 600 });
   const [selected, setSelected] = useState<string | null>(null);
   const [live, setLive] = useState<Box | null>(null); // the selected box while a gesture is running
   const liveRef = useRef<Box | null>(null);
 
-  const scale = fitScale(scene, area);
+  const scale = fitScale(scene, area) * zoom;
 
   useLayoutEffect(() => {
     const el = stage.current;
@@ -50,6 +55,8 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
   // An input that left the scene (hidden, disconnected, deleted) can't stay selected.
   const selectedItem = scene.items.find((i) => i.sourceId === selected) ?? null;
   const selectedSource = doc.sources.find((s) => s.id === selected) ?? null;
+  // What a click would grab (T8.6): an outline on the layer under the pointer.
+  const hoveredItem = hovered && hovered !== selected ? (scene.items.find((i) => i.sourceId === hovered) ?? null) : null;
 
   const boxNow: Box | null = selectedItem
     ? live ?? {
@@ -84,6 +91,19 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
     liveRef.current = b;
     setLive(b);
   };
+  /**
+   * During a gesture the selection box must change size/position at once: Moveable measures it between
+   * events, and a React render comes too late (resizing then snapped back every other event, T8.6).
+   */
+  const moveTo = (b: Box) => {
+    const el = control.current;
+    if (el) {
+      el.style.width = `${b.w}px`;
+      el.style.height = `${b.h}px`;
+      el.style.transform = `translate(${b.x}px, ${b.y}px) rotate(${b.rotation}deg)`;
+    }
+    setGesture(b);
+  };
   const commit = useCallback(() => {
     const b = liveRef.current;
     if (b && selected) onCommit(selected, { x: b.x / scale, y: b.y / scale, w: b.w / scale, h: b.h / scale, ...(b.rotation ? { rotation: b.rotation } : {}) });
@@ -111,14 +131,56 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
     return () => window.removeEventListener('keydown', onKey);
   }, [selected, selectedItem, readOnly, onCommit, onClose]);
 
-  // Click selects the front-most layer under the pointer; empty canvas clears the selection.
+  /**
+   * The layers under a point, front first (T8.6). Looks through the selection box and Moveable's handles,
+   * so a click inside the selected box can still pick a layer in front of it or behind it.
+   */
+  const layersAt = (x: number, y: number): string[] => {
+    const ids: string[] = [];
+    for (const el of document.elementsFromPoint(x, y)) {
+      if (!canvasEl.current?.contains(el)) continue;
+      const id = (el as HTMLElement).closest<HTMLElement>('.sc-render [data-source-id]')?.dataset.sourceId;
+      if (id && !ids.includes(id)) ids.push(id);
+    }
+    return ids;
+  };
+
+  // Press on a layer selects the front-most one under the pointer and drags it in the same gesture (the new
+  // selection box is under the pointer when the browser's mousedown follows). Alt+press picks the next layer
+  // behind the selected one. Empty canvas clears the selection. Handles keep resizing/rotating.
   function onPointerDown(e: PointerEvent<HTMLDivElement>) {
     const t = e.target as HTMLElement;
-    if (t.closest('.moveable-control-box') || t === control.current) return;
-    const id = t.closest<HTMLElement>('[data-source-id]')?.dataset.sourceId ?? null;
+    if (t.closest('.moveable-control-box') && !t.classList.contains('moveable-area')) return;
+    const under = layersAt(e.clientX, e.clientY);
+    let id = under[0] ?? null;
+    if (e.altKey && selected && under.includes(selected)) id = under[(under.indexOf(selected) + 1) % under.length] ?? id;
+    if (id === selected) return; // Moveable drags the current selection
     setSelected(id);
     setGesture(null);
+    dragOnPress.current = !!id && !readOnly;
   }
+
+  // The browser's mousedown follows the pointerdown that selected a layer; by then its Moveable is mounted,
+  // so the same press goes on as a drag of the new selection.
+  function onMouseDown(e: MouseEvent<HTMLDivElement>) {
+    if (!dragOnPress.current) return;
+    dragOnPress.current = false;
+    if (moveable.current && control.current) moveable.current.dragStart(e.nativeEvent, control.current);
+  }
+
+  // Zoom: buttons, and Ctrl/⌘ + wheel over the stage.
+  const zoomBy = (f: number) => setZoom((z) => Math.min(8, Math.max(0.25, Math.round(z * f * 100) / 100)));
+  useEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
 
   const guidesV = [0, (scene.width * scale) / 2, scene.width * scale];
   const guidesH = [0, (scene.height * scale) / 2, scene.height * scale];
@@ -138,7 +200,19 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
           </span>
         )}
         <span className="sc-muted sc-editor__hint">
-          {readOnly ? 'View only' : 'Drag to move · handles resize/rotate · arrows nudge (Shift ×10) · Esc'}
+          {readOnly ? 'View only' : 'Drag an asset to move it · handles resize/rotate · Alt+click: layer behind · arrows nudge (Shift ×10) · Esc'}
+        </span>
+        <span className="sc-zoom" role="group" aria-label="Zoom">
+          <button type="button" aria-label="Zoom out" onClick={() => zoomBy(1 / 1.25)}>
+            −
+          </button>
+          <span className="sc-zoom__value">{Math.round(zoom * 100)}%</span>
+          <button type="button" aria-label="Zoom in" onClick={() => zoomBy(1.25)}>
+            +
+          </button>
+          <button type="button" onClick={() => setZoom(1)}>
+            Fit
+          </button>
         </span>
         <button type="button" onClick={onClose}>
           Close
@@ -146,9 +220,30 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
       </header>
       <div className="sc-editor__body">
         {layers(selected, select)}
-        <div className="sc-editor__stage" ref={stage}>
-          <div className="sc-editor__canvas" ref={canvasEl} onPointerDown={onPointerDown} style={{ width: scene.width * scale, height: scene.height * scale }}>
+        <div
+          className={`sc-editor__stage${zoom > 1 ? ' sc-editor__stage--zoomed' : ''}`}
+          ref={stage}
+          onPointerDown={(e) => {
+            if (e.target === e.currentTarget) select(null); // the empty stage around the canvas
+          }}
+        >
+          <div className="sc-editor__canvas" ref={canvasEl}
+            onPointerDown={onPointerDown}
+            onMouseDown={onMouseDown}
+            onPointerMove={(e) => e.buttons === 0 && setHovered(layersAt(e.clientX, e.clientY)[0] ?? null)}
+            onPointerLeave={() => setHovered(null)} style={{ width: scene.width * scale, height: scene.height * scale }}>
             <OutputRenderer scene={drawn} sources={doc.sources} assetUrl={(id) => assetUrl(teamId, id)} scale={scale} mode="preview" />
+            {hoveredItem && !live && (
+              <div
+                className="sc-editor__hover"
+                aria-hidden="true"
+                style={{
+                  width: hoveredItem.frame.w * scale,
+                  height: hoveredItem.frame.h * scale,
+                  transform: `translate(${hoveredItem.frame.x * scale}px, ${hoveredItem.frame.y * scale}px) rotate(${hoveredItem.frame.rotation ?? 0}deg)`,
+                }}
+              />
+            )}
             {boxNow && (
               <div
                 ref={control}
@@ -160,6 +255,7 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
             {boxNow && !readOnly && (
               <Moveable
                 key={selected ?? ''}
+                ref={moveable}
                 target={control}
                 draggable
                 resizable
@@ -178,14 +274,14 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
                 horizontalGuidelines={guidesH}
                 elementGuidelines={otherLayers}
                 onDragStart={(e) => e.set([boxNow.x, boxNow.y])}
-                onDrag={(e) => setGesture({ ...(liveRef.current ?? boxNow), x: e.beforeTranslate[0] ?? 0, y: e.beforeTranslate[1] ?? 0 })}
+                onDrag={(e) => moveTo({ ...(liveRef.current ?? boxNow), x: e.beforeTranslate[0] ?? 0, y: e.beforeTranslate[1] ?? 0 })}
                 onDragEnd={commit}
                 onResizeStart={(e) => {
                   e.setOrigin(['%', '%']);
                   if (e.dragStart) e.dragStart.set([boxNow.x, boxNow.y]);
                 }}
                 onResize={(e) =>
-                  setGesture({
+                  moveTo({
                     ...(liveRef.current ?? boxNow),
                     w: e.width,
                     h: e.height,
@@ -195,7 +291,7 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
                 }
                 onResizeEnd={commit}
                 onRotateStart={(e) => e.set(boxNow.rotation)}
-                onRotate={(e) => setGesture({ ...(liveRef.current ?? boxNow), rotation: e.beforeRotate })}
+                onRotate={(e) => moveTo({ ...(liveRef.current ?? boxNow), rotation: e.beforeRotate })}
                 onRotateEnd={commit}
               />
             )}

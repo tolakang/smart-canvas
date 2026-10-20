@@ -207,3 +207,15 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); }
 .react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
 .react-flow__edgeupdater { cursor: grab; }
+
+/* T8.6 editor: bigger handles, zoom */
+.sc-editor__canvas .moveable-control { width: 16px !important; height: 16px !important; margin-top: -8px !important; margin-left: -8px !important; border: 2px solid #fff !important; background: var(--accent) !important; }
+.sc-editor__canvas .moveable-line { background: var(--accent) !important; }
+.sc-editor__canvas .moveable-rotation .moveable-rotation-control { width: 18px !important; height: 18px !important; margin-top: -9px !important; margin-left: -9px !important; }
+.sc-editor__stage { min-width: 0; min-height: 0; }
+.sc-editor__stage--zoomed { place-items: start; overflow: auto; }
+.sc-editor__stage--zoomed .sc-editor__canvas { margin: 32px; }
+.sc-editor__hover { position: absolute; left: 0; top: 0; outline: 1.5px dashed var(--accent); outline-offset: -1px; pointer-events: none; }
+.sc-zoom { display: inline-flex; align-items: center; gap: 4px; }
+.sc-zoom button { min-width: 28px; }
+.sc-zoom__value { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; font-size: 12px; }
