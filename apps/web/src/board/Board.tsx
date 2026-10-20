@@ -41,7 +41,7 @@ import { MainEditor } from '../editor/MainEditor';
 import { OutputEditor } from '../editor/OutputEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
-import { ContextMenu, type MenuState } from './ContextMenu';
+import { ContextMenu, type MenuItem, type MenuState } from './ContextMenu';
 import { ExportDialog } from './ExportDialog';
 import { confirmDelete, Icon } from './LayerRow';
 import { History } from './history';
@@ -72,6 +72,8 @@ import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
 import { CanvasToolbar, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
+import { COARSE_QUERY, useScreen } from '../ui/responsive';
+import { useLongPress } from '../ui/long-press';
 import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
 import { nodeTypes } from './nodes';
 import { presetSettings, sizeLabel } from './OutputNode';
@@ -236,7 +238,14 @@ function BoardCanvas(props: {
     }
     setNodes((ns) => applyNodeChanges(changes, ns));
   }, []);
-  const [tool, setTool] = useState<CanvasTool>('select');
+  // T13.6 (D33): touch screens start with the Hand tool (one finger pans, pinch zooms).
+  const [tool, setTool] = useState<CanvasTool>(() => (window.matchMedia?.(COARSE_QUERY).matches ? 'hand' : 'select'));
+  const screen = useScreen();
+  const floating = screen === 'phone' ? 'sheet' : screen === 'tablet' ? 'overlay' : undefined;
+  /** Tablet / phone: the one floating panel that is open. */
+  const [panel, setPanel] = useState<'library' | 'inspector' | null>(null);
+  const flowEl = useRef<HTMLDivElement>(null);
+  useLongPress(flowEl);
   const [grid, setGrid] = useStoredFlag('sc-board-grid', false);
   const [minimap, setMinimap] = useStoredFlag('sc-board-minimap', true);
 
@@ -578,6 +587,30 @@ function BoardCanvas(props: {
   };
 
   // T8.4: right-click the empty canvas → add an input or an output right there.
+  /** Phone top bar (T13.6): what doesn't fit goes in a "More" menu under the button. */
+  const openMore = (button: HTMLElement) => {
+    const r = button.getBoundingClientRect();
+    const edit: MenuItem[] = readOnly
+      ? []
+      : [
+          { label: 'Undo', disabled: !canStep.undo, onSelect: undo },
+          { label: 'Redo', disabled: !canStep.redo, onSelect: redo },
+          { label: `Add input (${sourceCount}/${LIMITS.maxSources})`, disabled: sourceCount >= LIMITS.maxSources, separated: true, onSelect: () => (setPlaceAt(null), setAdding(true)) },
+          { label: `Add output (${outputCount}/${LIMITS.maxOutputs})`, disabled: outputCount >= LIMITS.maxOutputs, onSelect: () => (setPlaceAt(null), setAddingOutput(true)) },
+        ];
+    setMenu({
+      x: r.right - 220,
+      y: r.bottom + 4,
+      title: 'More',
+      items: [
+        ...edit,
+        { label: 'Team fonts', separated: edit.length > 0, onSelect: () => setShowFonts(true) },
+        { label: 'Team library', onSelect: () => setShowLibrary(true) },
+        { label: theme === 'dark' ? 'Light theme' : 'Dark theme', onSelect: toggleTheme },
+      ],
+    });
+  };
+
   const onPaneContextMenu = (e: MouseEvent | React.MouseEvent) => {
     if (readOnly || !flow.current) return;
     e.preventDefault();
@@ -650,7 +683,7 @@ function BoardCanvas(props: {
             {initial.doc.name}
           </strong>
           {readOnly && <span className="sc-badge">View only</span>}
-          {!readOnly && (
+          {!readOnly && screen !== 'phone' && (
             <>
               <span className="sc-topbar__sep" aria-hidden="true" />
               <button type="button" className="sc-topbar__icon" onClick={undo} disabled={!canStep.undo} aria-label="Undo" title="Undo (Ctrl/⌘+Z)">
@@ -662,7 +695,7 @@ function BoardCanvas(props: {
             </>
           )}
         </div>
-        {!readOnly && (
+        {!readOnly && screen !== 'phone' && (
           <div className="sc-topbar__group sc-topbar__add" role="group" aria-label="Add">
             <button
               type="button"
@@ -690,7 +723,7 @@ function BoardCanvas(props: {
             </button>
           </div>
         )}
-        {readOnly && (
+        {readOnly && screen !== 'phone' && (
           <span className="sc-muted sc-topbar__counts">
             {sourceCount} inputs · {outputCount} outputs
           </span>
@@ -710,6 +743,12 @@ function BoardCanvas(props: {
               </button>
             )}
           </span>
+          {screen === 'phone' ? (
+            <button type="button" className="sc-topbar__icon" aria-label="More" aria-haspopup="menu" title="More" onClick={(e) => openMore(e.currentTarget)}>
+              <Icon name="more" />
+            </button>
+          ) : (
+          <>
           <span className="sc-topbar__sep" aria-hidden="true" />
           <button
             type="button"
@@ -727,6 +766,8 @@ function BoardCanvas(props: {
           <button type="button" className="sc-topbar__ghost" onClick={() => setShowLibrary(true)} title="Team library">
             <Icon name="library" /> Library
           </button>
+          </>
+          )}
           {!readOnly && (
             <button
               type="button"
@@ -757,8 +798,17 @@ function BoardCanvas(props: {
         }}
       >
         <BoardContext.Provider value={actions}>
-          <NodeLibrary onAdd={(spec) => addFromLibrary(spec)} />
-          <div className="sc-board__flow">
+          {(!floating || panel === 'library') && (
+            <NodeLibrary
+              floating={floating}
+              onClose={() => setPanel(null)}
+              onAdd={(spec) => {
+                addFromLibrary(spec);
+                if (floating) setPanel(null);
+              }}
+            />
+          )}
+          <div className="sc-board__flow" ref={flowEl}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -801,8 +851,17 @@ function BoardCanvas(props: {
             proOptions={{ hideAttribution: false }}
           >
             <Background gap={16} />
-            {minimap && <MiniMap pannable zoomable position="bottom-right" />}
-            <CanvasToolbar tool={tool} onTool={setTool} grid={grid} onGrid={setGrid} minimap={minimap} onMinimap={setMinimap} />
+            {minimap && screen !== 'phone' && <MiniMap pannable zoomable position="bottom-right" />}
+            <CanvasToolbar
+              tool={tool}
+              onTool={setTool}
+              grid={grid}
+              onGrid={setGrid}
+              minimap={minimap}
+              onMinimap={setMinimap}
+              panels={floating && { open: panel, onOpen: setPanel, library: !readOnly }}
+              compact={screen === 'phone'}
+            />
             <ViewportPortal>
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
               {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}
@@ -810,7 +869,7 @@ function BoardCanvas(props: {
             <BoardKeys onTool={setTool} disabled={Boolean(editingMain || editingOutput)} />
           </ReactFlow>
           </div>
-          <Inspector selected={selectedNode} />
+          {(!floating || panel === 'inspector') && <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} />}
           {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
           {editingMain && <MainEditor compositionId={editingMain} onClose={() => setEditingMain(null)} />}
           {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}
