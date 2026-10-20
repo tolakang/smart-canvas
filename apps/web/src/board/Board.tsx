@@ -33,6 +33,7 @@ import { OutputEditor } from '../editor/OutputEditor';
 import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
 import { ExportDialog } from './ExportDialog';
+import { History } from './history';
 import { LibraryDialog } from './LibraryDialog';
 import { ReconnectDialog } from './ReconnectDialog';
 import { useAssetSizes, useLayoutDeps } from './layout-deps';
@@ -184,20 +185,67 @@ function BoardCanvas(props: {
     setNodes((ns) => applyNodeChanges(changes, ns));
   }, []);
 
-  /** The single way the doc changes from the UI: board state follows, autosave picks it up. */
-  const apply = useCallback(
-    (doc: ProjectDoc) => {
-      if (readOnly || doc === docRef.current) return;
+  // Undo / redo (T7.2): snapshots of the doc, per session.
+  const history = useRef(new History<ProjectDoc>());
+  const [canStep, setCanStep] = useState({ undo: false, redo: false });
+  const syncHistory = useCallback(() => setCanStep({ undo: history.current.canUndo, redo: history.current.canRedo }), []);
+
+  /** Shows `doc` everywhere and saves it; `positionsFromDoc` when node positions must follow (undo/redo). */
+  const show = useCallback(
+    (doc: ProjectDoc, positionsFromDoc = false) => {
       docRef.current = doc;
       setDoc(doc);
-      setNodes((ns) => syncNodes(ns, docToNodes(doc)));
+      setNodes((ns) => syncNodes(ns, docToNodes(doc), positionsFromDoc));
       setEdges(docToEdges(doc));
       setSourceCount(doc.sources.length);
       setOutputCount(doc.outputs.length);
       autosave.change(doc);
     },
-    [readOnly, autosave],
+    [autosave],
   );
+
+  /** The single way the doc changes from the UI: recorded for undo, board state follows, autosave picks it up. */
+  const apply = useCallback(
+    (doc: ProjectDoc, key: string | null = null) => {
+      if (readOnly || doc === docRef.current) return;
+      history.current.record(docRef.current, key);
+      syncHistory();
+      show(doc);
+    },
+    [readOnly, show, syncHistory],
+  );
+
+  const undo = useCallback(() => {
+    const prev = readOnly ? null : history.current.undo(docRef.current);
+    if (!prev) return;
+    syncHistory();
+    show(prev, true);
+  }, [readOnly, show, syncHistory]);
+  const redo = useCallback(() => {
+    const next = readOnly ? null : history.current.redo(docRef.current);
+    if (!next) return;
+    syncHistory();
+    show(next, true);
+  }, [readOnly, show, syncHistory]);
+
+  // Ctrl/⌘+Z undo, Ctrl/⌘+Shift+Z or Ctrl+Y redo — except while typing in a field (its own undo).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const k = e.key.toLowerCase();
+      if (k === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((k === 'z' && e.shiftKey) || k === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [undo, redo]);
 
   const run = useCallback(
     (op: (doc: ProjectDoc) => SourceResult): SourceResult => {
@@ -258,7 +306,8 @@ function BoardCanvas(props: {
       author,
       teamFonts,
       sourceCount,
-      editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit)),
+      // Typing in one input's field is one undo step (coalesced by key).
+      editSource: (id: string, edit: (s: InputSource) => InputSource) => apply(withSource(docRef.current, id, edit), `source:${id}`),
       layoutDeps,
       presets,
       rememberAsset: remember,
@@ -320,12 +369,15 @@ function BoardCanvas(props: {
   const onNodeDragStop = useCallback(
     (_e: unknown, _node: Node, dragged: Node[]) => {
       const doc = withPositions(docRef.current, dragged);
-      if (doc === docRef.current) return;
+      if (doc === docRef.current || readOnly) return;
+      // Recorded for undo; React Flow already shows the new positions.
+      history.current.record(docRef.current);
+      syncHistory();
       docRef.current = doc;
       setDoc(doc);
       autosave.change(doc);
     },
-    [autosave],
+    [autosave, readOnly, syncHistory],
   );
 
   return (
@@ -336,6 +388,16 @@ function BoardCanvas(props: {
         </button>
         <strong>{initial.doc.name}</strong>
         {readOnly && <span className="sc-badge">View only</span>}
+        {!readOnly && (
+          <>
+            <button type="button" onClick={undo} disabled={!canStep.undo} aria-label="Undo" title="Undo (Ctrl/⌘+Z)">
+              ↶
+            </button>
+            <button type="button" onClick={redo} disabled={!canStep.redo} aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)">
+              ↷
+            </button>
+          </>
+        )}
         {!readOnly && (
           <button
             type="button"
