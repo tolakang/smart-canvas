@@ -2,7 +2,8 @@
  * Right-click menu for the board (T8.2 nodes, T8.4 empty canvas): a small list at the pointer, closed by a
  * click elsewhere, Escape or choosing an item.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { COARSE_QUERY } from '../ui/responsive';
 
 export interface MenuItem {
   label: string;
@@ -38,9 +39,16 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
     };
   }, [onClose]);
 
+  // A menu wider than the guess (long labels) still stays on screen (T13.6: phones).
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const over = el ? el.getBoundingClientRect().right - (window.innerWidth - 8) : 0;
+    if (el && over > 0) el.style.left = `${Math.max(8, el.offsetLeft - over)}px`;
+  });
   // Keep the menu inside the window.
-  const left = Math.min(menu.x, window.innerWidth - 220);
-  const top = Math.min(menu.y, window.innerHeight - 40 - menu.items.length * 30);
+  const left = Math.max(8, Math.min(menu.x, window.innerWidth - 220));
+  const row = window.matchMedia?.(COARSE_QUERY).matches ? 44 : 30; // T13.6: 44 px rows on touch
+  const top = Math.max(8, Math.min(menu.y, window.innerHeight - 40 - menu.items.length * row));
   return (
     <div ref={ref} className="sc-menu" role="menu" aria-label={menu.title ?? 'Menu'} style={{ left, top }} onContextMenu={(e) => e.preventDefault()}>
       {menu.title && <div className="sc-menu__title">{menu.title}</div>}

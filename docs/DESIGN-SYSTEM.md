@@ -51,3 +51,15 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - `--canvas` (the editor stage);
   - `--checker-a` / `--checker-b` (transparency).
 - Rule: no raw colours in the UI CSS. The artwork itself (`OutputRenderer`, inline styles) never depends on the theme.
+
+## Responsive (T13.6, D33)
+- **Breakpoints** (`ui/responsive.ts`, `useScreen()`):
+  - **desktop** ≥ 1280 px: the library and inspector are docked.
+  - **tablet** 768–1279 px: they open as overlays (`.sc-floating--overlay`) from the canvas toolbar's *Add nodes* and *Inspector* buttons, one at a time.
+  - **phone** < 768 px: they open as bottom sheets (`.sc-floating--sheet`). The top bar keeps only Back, the name, the save dot, *More* and Export; everything else is in the *More* menu. The toolbar drops the zoom buttons, grid and minimap.
+- **Touch** (`(pointer: coarse)`):
+  - Hand is the default tool, and pinch zooms.
+  - A long-press (`ui/long-press.ts`) opens the right-click menus.
+  - Tap a port, then tap a target, to wire.
+  - Buttons, menu rows and ports are at least 44 px to tap.
+- **Editors on a phone:** the canvas, with the Design panel as a bottom sheet (45 vh). The layers panel is hidden, so layers are picked on the canvas.

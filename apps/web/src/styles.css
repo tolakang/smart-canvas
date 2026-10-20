@@ -563,3 +563,32 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-guide { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--danger); z-index: 1000; }
 .sc-guide--v { width: 1px; height: 100000px; margin-top: -50000px; }
 .sc-guide--h { height: 1px; width: 100000px; margin-left: -50000px; }
+
+/* T13.6 responsive workspace (D33): tablet overlays, phone bottom sheets, touch targets */
+.sc-board__canvas { position: relative; }
+.sc-floating { z-index: 30; box-shadow: var(--shadow-2); }
+.sc-floating--overlay { position: absolute; top: var(--sp-2); bottom: var(--sp-2); max-width: calc(100% - 16px); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: auto; }
+.sc-floating--overlay.sc-floating--start { left: var(--sp-2); }
+.sc-floating--overlay.sc-floating--end { right: var(--sp-2); }
+.sc-floating--sheet { position: fixed; left: 0; right: 0; bottom: 0; width: auto !important; max-height: 62vh; overflow: auto; border: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; padding-bottom: env(safe-area-inset-bottom); }
+.sc-floating--sheet::before { content: ''; display: block; width: 36px; height: 4px; margin: 6px auto 0; border-radius: 2px; background: var(--line-strong); }
+.sc-floating__head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--line); background: var(--surface); font-weight: 600; }
+@media (max-width: 767px) {
+  .sc-topbar { gap: var(--sp-1); padding-left: var(--sp-1); padding-right: var(--sp-1); }
+  .sc-topbar__name { min-width: 0; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sc-topbar .sc-save { font-size: 0; }
+  .sc-topbar__primary { font-size: 0 !important; gap: 0 !important; }
+  .sc-canvasbar { margin-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom)); }
+  /* Editors: the canvas, with the Design panel as a bottom sheet; layers are picked on the canvas. */
+  .sc-fig__bar { overflow-x: auto; gap: var(--sp-2); }
+  .sc-editor__body { flex-direction: column; }
+  .sc-editor__body > .sc-layers { display: none; }
+  .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side { width: auto; max-height: 45vh; border-left: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: var(--shadow-2); }
+}
+@media (pointer: coarse) {
+  .sc-canvasbar__btn, .sc-topbar__icon, .sc-icon-btn { min-width: 44px; min-height: 44px; }
+  .sc-menu__item, .sc-library__item, .sc-topbar__primary, .sc-open-editor { min-height: 44px; }
+  /* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
+  .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
+  .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
+}

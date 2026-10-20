@@ -130,12 +130,14 @@ const PATHS = {
   grid: 'M2.5 2.5h11v11h-11zM6.2 2.5v11M9.8 2.5v11M2.5 6.2h11M2.5 9.8h11',
   map: 'M2.5 4l3.5-1.5 4 1.5 3.5-1.5v9.5L10 13.5 6 12l-3.5 1.5zM6 2.5V12M10 4v9.5',
   sun: 'M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1',
+  more: 'M3.5 8h.01M8 8h.01M12.5 8h.01',
+  panel: 'M2.5 2.5h11v11h-11zM10 2.5v11',
   moon: 'M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z',
 } as const;
 
 export function Icon({ name }: { name: keyof typeof PATHS }) {
   return (
-    <svg className={`sc-icon sc-icon--${name}`} viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={name === 'grip' ? 2.4 : 1.4} strokeLinecap="round" strokeLinejoin="round">
+    <svg className={`sc-icon sc-icon--${name}`} viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={name === 'grip' || name === 'more' ? 2.4 : 1.4} strokeLinecap="round" strokeLinejoin="round">
       <path d={PATHS[name]} />
     </svg>
   );

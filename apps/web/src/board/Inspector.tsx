@@ -27,18 +27,28 @@ import { useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
 import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId } from './flow';
 import { HealthIssues, healthSummary } from './HealthBadge';
+import { Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
 import { OutputSettings } from './OutputSettings';
 
 const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
 
-export function Inspector({ selected }: { selected: string | null }) {
+/** Docked on desktop; on tablets and phones (T13.6) an overlay or a bottom sheet with a close button. */
+export function Inspector({ selected, floating, onClose }: { selected: string | null; floating?: 'overlay' | 'sheet'; onClose?: () => void }) {
   const { doc } = useBoard();
   const source = doc.sources.find((s) => inputNodeId(s.id) === selected);
   const output = doc.outputs.find((o) => outputNodeId(o.id) === selected);
   const composition = compositionIdOfNode(selected);
   return (
-    <aside className="sc-inspector-panel" aria-label="Inspector">
+    <aside className={`sc-inspector-panel${floating ? ` sc-floating sc-floating--${floating} sc-floating--end` : ''}`} aria-label="Inspector">
+      {floating && (
+        <div className="sc-floating__head">
+          <span>Inspector</span>
+          <button type="button" className="sc-icon-btn" onClick={onClose} aria-label="Close inspector" title="Close">
+            <Icon name="close" />
+          </button>
+        </div>
+      )}
       {source ? (
         <InputInspector key={source.id} source={source} />
       ) : output ? (

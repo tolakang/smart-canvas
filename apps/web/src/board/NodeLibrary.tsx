@@ -2,6 +2,7 @@
  * Left node library (T13.4, D33): everything that can go on the board — inputs, a main preview, output
  * presets and the team library's saved items — with a search. Drag an item onto the canvas to place it there,
  * or click it to add it in the middle of the view (touch, keyboard). Collapses to a slim rail (remembered).
+ * On tablets and phones (T13.6, D33) it floats instead — an overlay or a bottom sheet — and closes with `onClose`.
  */
 import { fillToCss, LIMITS, type LibraryItem, type SizePreset } from '@smart-canvas/core';
 import { useEffect, useState, type DragEvent, type ReactNode } from 'react';
@@ -36,9 +37,10 @@ const readCollapsed = () => {
   }
 };
 
-export function NodeLibrary({ onAdd }: { onAdd: (spec: AddSpec) => void }) {
+export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpec) => void; floating?: 'overlay' | 'sheet'; onClose?: () => void }) {
   const { teamId, readOnly, presets, doc } = useBoard();
-  const [collapsed, setCollapsed] = useState(readCollapsed);
+  const [stored, setCollapsed] = useState(readCollapsed);
+  const collapsed = stored && !floating;
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<LibraryItem[]>([]);
   useEffect(() => {
@@ -82,12 +84,18 @@ export function NodeLibrary({ onAdd }: { onAdd: (spec: AddSpec) => void }) {
   const libraryItems = items.filter((i) => match(i.name, ...i.tags));
 
   return (
-    <aside className="sc-library" aria-label="Node library">
+    <aside className={`sc-library${floating ? ` sc-floating sc-floating--${floating} sc-floating--start` : ''}`} aria-label="Node library">
       <div className="sc-library__head">
         <input className="sc-library__search" type="search" placeholder="Search nodes…" aria-label="Search nodes" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <button type="button" className="sc-icon-btn" onClick={toggle} aria-label="Hide node library" title="Hide node library">
-          <Icon name="back" />
-        </button>
+        {floating ? (
+          <button type="button" className="sc-icon-btn" onClick={onClose} aria-label="Close node library" title="Close">
+            <Icon name="close" />
+          </button>
+        ) : (
+          <button type="button" className="sc-icon-btn" onClick={toggle} aria-label="Hide node library" title="Hide node library">
+            <Icon name="back" />
+          </button>
+        )}
       </div>
       <div className="sc-library__body">
         {inputs.length > 0 && (
@@ -131,7 +139,7 @@ export function NodeLibrary({ onAdd }: { onAdd: (spec: AddSpec) => void }) {
           <p className="sc-muted sc-library__empty">Nothing matches “{query}”.</p>
         )}
       </div>
-      <p className="sc-muted sc-library__tip">Drag onto the canvas, or click to add in the middle.</p>
+      <p className="sc-muted sc-library__tip">{floating ? 'Tap to add in the middle of the view.' : 'Drag onto the canvas, or click to add in the middle.'}</p>
     </aside>
   );
 }
