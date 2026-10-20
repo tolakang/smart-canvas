@@ -114,6 +114,8 @@ const PATHS = {
   redo: 'M10.5 3.5l3 3-3 3M13.5 6.5h-7a4 4 0 0 0 0 8H9',
   font: 'M3 13L7 3h2l4 10M5 9.5h6',
   export: 'M8 10V2.5M5 5.5l3-3 3 3M3 10v3.5h10V10',
+  sun: 'M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1',
+  moon: 'M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z',
 } as const;
 
 export function Icon({ name }: { name: keyof typeof PATHS }) {

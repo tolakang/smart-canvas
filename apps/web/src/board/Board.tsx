@@ -63,6 +63,7 @@ import {
   withPositions,
   type BoardNode,
 } from './flow';
+import { useTheme } from '../ui/theme';
 import { Inspector } from './Inspector';
 import { nodeTypes } from './nodes';
 import { sizeLabel } from './OutputNode';
@@ -155,6 +156,7 @@ function BoardCanvas(props: {
   const [adding, setAdding] = useState(false);
   const [addingOutput, setAddingOutput] = useState(false);
   /** Where a node added from the canvas menu goes (flow coordinates); null = the default column (T8.4). */
+  const [theme, toggleTheme] = useTheme();
   /** T13.2: the one selected node (React Flow id), shown in the inspector. */
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [placeAt, setPlaceAt] = useState<{ x: number; y: number } | null>(null);
@@ -638,6 +640,16 @@ function BoardCanvas(props: {
             )}
           </span>
           <span className="sc-topbar__sep" aria-hidden="true" />
+          <button
+            type="button"
+            className="sc-topbar__icon sc-theme-toggle"
+            onClick={toggleTheme}
+            aria-label="Dark theme"
+            aria-pressed={theme === 'dark'}
+            title={theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'}
+          >
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+          </button>
           <button type="button" className="sc-topbar__ghost" onClick={() => setShowFonts(true)} title="Team fonts">
             <Icon name="font" /> Fonts
           </button>
@@ -674,6 +686,7 @@ function BoardCanvas(props: {
             onNodeDragStop={onNodeDragStop}
             onNodeContextMenu={onNodeContextMenu}
             onPaneContextMenu={onPaneContextMenu}
+            colorMode={theme}
             onSelectionChange={({ nodes: picked }) => setSelectedNode(picked.length === 1 ? (picked[0]?.id ?? null) : null)}
             onInit={(instance) => {
               flow.current = instance;

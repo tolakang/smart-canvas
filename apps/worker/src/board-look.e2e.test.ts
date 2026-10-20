@@ -95,4 +95,22 @@ describe.skipIf(!adminUrl)('board look (T10.2)', () => {
     const d = (await (await page.request.get(url)).json()).doc as { sources: { id: string; label: string; content: { text?: string } }[] };
     expect(d.sources.find((s) => s.id === 'headline')).toMatchObject({ label: 'Title', content: { text: 'From the inspector' } });
   }, 30_000);
+
+  it('dark theme toggle (T13.3, D34): switches the tokens, is remembered, and leaves the artwork alone', async () => {
+    const theme = () => page.evaluate(() => document.documentElement.dataset.theme);
+    const bg = (sel: string) => page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(await theme()).toBe('light'); // headless Chromium reports a light system theme
+    const lightCard = await bg('.react-flow__node-outputNode .sc-node');
+    await page.getByRole('button', { name: 'Dark theme' }).click();
+    expect(await theme()).toBe('dark');
+    expect(await page.getByRole('button', { name: 'Dark theme' }).getAttribute('aria-pressed')).toBe('true');
+    expect(await bg('.react-flow__node-outputNode .sc-node')).not.toBe(lightCard);
+    await page.reload();
+    await page.locator('.react-flow__node-outputNode').waitFor();
+    expect(await theme()).toBe('dark'); // remembered
+    expect(await page.locator('.react-flow').getAttribute('class')).toContain('dark'); // React Flow's own colours follow
+    if (process.env.T133_SHOT) await page.screenshot({ path: process.env.T133_SHOT });
+    await page.getByRole('button', { name: 'Dark theme' }).click();
+    expect(await theme()).toBe('light');
+  }, 30_000);
 });
