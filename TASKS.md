@@ -5,12 +5,12 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** S3 — SVG text outlines (S1 needs the `.af` test file; T6.4 outline text and T7.6 wait on S3 / S1)
+**Next:** T6.4 — SVG outline text option (S3 passed). S1 needs the `.af` test file; T7.6 waits on S1
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
 - [x] S2 — Khmer text parity — pass — [#44](https://github.com/tolakang/smart-canvas/pull/44)
-- [ ] S3 — SVG text outlines
+- [x] S3 — SVG text outlines — pass — [#45](https://github.com/tolakang/smart-canvas/pull/45)
 
 ## P1 Foundation
 - [x] T1.1 — Monorepo scaffold — [#1](https://github.com/tolakang/smart-canvas/pull/1)

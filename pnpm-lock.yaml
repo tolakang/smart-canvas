@@ -148,6 +148,9 @@ importers:
       '@smart-canvas/core':
         specifier: workspace:*
         version: link:../../packages/core
+      harfbuzzjs:
+        specifier: 1.6.3
+        version: 1.6.3
       pg:
         specifier: ^8.23.1
         version: 8.23.1
@@ -1898,6 +1901,9 @@ packages:
   globals@17.13.0:
     resolution: {integrity: sha512-RwMTC61u7hrG3ZJMkZQOK4JLJrKS8QtoTii63EmWvFXHqycY9FObBJQCbsLxSO8kjKhWE5kV1GC+Vb1g3RI0Zg==}
     engines: {node: '>=18'}
+
+  harfbuzzjs@1.6.3:
+    resolution: {integrity: sha512-R5Mfo1UUvQmZJmtScP7fBLKYKnYu82ZdtFT7WbQYeGb3Ut5PR3xfFCJ5/FjbcW5SAfb9cqCSny/KNjp+NJBx0w==}
 
   hashery@1.5.1:
     resolution: {integrity: sha512-iZyKG96/JwPz1N55vj2Ie2vXbhu440zfUfJvSwEqEbeLluk7NnapfGqa7LH0mOsnDxTF85Mx8/dyR6HfqcbmbQ==}
@@ -4128,6 +4134,8 @@ snapshots:
       is-glob: 4.0.3
 
   globals@17.13.0: {}
+
+  harfbuzzjs@1.6.3: {}
 
   hashery@1.5.1:
     dependencies:

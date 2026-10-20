@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import type { ProjectDoc, SourceResult } from '@smart-canvas/core';
 import { chromium, type Browser } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
-import type { ApiFetch } from '../render';
+import { CHROMIUM_ARGS, type ApiFetch } from '../render';
 
 export const TEAM = '11111111-1111-4111-8111-111111111111';
 export const PROJECT = '22222222-2222-4222-8222-222222222222';
@@ -41,7 +41,7 @@ export async function startRenderEnv(apiUrl?: string): Promise<{ webUrl: string;
     server: { port: 0, host: '127.0.0.1', ...(proxy && { proxy }) },
   });
   await vite.listen();
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: CHROMIUM_ARGS });
   return {
     webUrl: vite.resolvedUrls?.local[0] ?? '',
     browser,
