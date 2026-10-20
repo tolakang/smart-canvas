@@ -39,3 +39,15 @@ other shared names onto its palette.
 2. Colour means something: node type, selection, warning, error. Inputs and outputs no longer have tinted backgrounds.
 3. One size for controls (28 px) and one icon style.
 4. Keep the accessible names when restyling (tests and screen readers use them).
+
+## Themes (T13.3, D34)
+
+Light is the token set on `:root`. Dark redefines the same tokens on `:root[data-theme='dark']`: surfaces `#262626`/`#333` on a `#1a1a1a` board, brighter type colours, and stronger shadows.
+- `apps/web/src/ui/theme.ts` sets `data-theme` before the first paint. It follows the system setting until the user picks a theme with the top-bar toggle; the pick is remembered per browser.
+- React Flow gets `colorMode`, so its dots, controls and minimap follow the theme.
+- New tokens:
+  - `--ok` / `--ok-soft`, `--warn-soft`, `--danger-soft` (states);
+  - `--faint` (idle wires, disabled text);
+  - `--canvas` (the editor stage);
+  - `--checker-a` / `--checker-b` (transparency).
+- Rule: no raw colours in the UI CSS. The artwork itself (`OutputRenderer`, inline styles) never depends on the theme.
