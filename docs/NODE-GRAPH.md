@@ -38,6 +38,10 @@ output port also offering `layer`.
   image's own 0..1 coordinates, then mirror, then a clockwise quarter turn, with colour as `filter` and `opacity`.
   The renderer draws the crop and turn by nesting boxes (`effectBoxes`, which needs the asset's intrinsic size).
   The browser and worker parity test covers a full chain.
+- **Text variant and Recolor (T12.6).** These change the effective layer's content, in chain order. A Text
+  variant replaces the words (empty keeps the input's) and merges its style. Recolor makes a fill solid and sets
+  a text's colour. A picture gets `tint`, which is drawn as a box of that colour masked by the picture's shape
+  (CSS `mask-image`); SVG export inlines the mask file like an `<img>`. Text variants' fonts load like any text's.
 
 ## Model (schema 2)
 

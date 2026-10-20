@@ -49,7 +49,7 @@ describe.skipIf(!adminUrl)('output-only layers (T12.4)', () => {
     if (!box) throw new Error('no pane');
     await panel().getByRole('button', { name: /^Instagram square/ }).dragTo(pane, { targetPosition: { x: 30, y: box.height - 300 } });
     await panel().getByRole('button', { name: /^Instagram square/ }).dragTo(pane, { targetPosition: { x: 30, y: 300 } });
-    await panel().getByRole('button', { name: /^Text/ }).dragTo(pane, { targetPosition: { x: 30, y: 30 } });
+    await panel().getByRole('button', { name: /^Text(?! variant)/ }).dragTo(pane, { targetPosition: { x: 30, y: 30 } });
     await expect.poll(async () => (await doc()).outputs.length).toBe(2);
     await saved();
     const d = await doc();

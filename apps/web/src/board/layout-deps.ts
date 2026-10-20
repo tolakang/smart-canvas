@@ -2,16 +2,16 @@
  * What the layout engine needs in the browser: a TextMeasure (only after the text's fonts have loaded,
  * CLAUDE.md) and the intrinsic size of every image/vector asset.
  */
-import type { LayoutDeps, ProjectDoc } from '@smart-canvas/core';
+import { layerSources, type LayoutDeps, type ProjectDoc } from '@smart-canvas/core';
 import { useEffect, useMemo, useState } from 'react';
 import { api, type AssetMeta } from '../api';
 import { prepareTextMeasure, type FontRequest } from '../fonts/loader';
 
 export type AssetSizes = LayoutDeps['assets'];
 
-/** The fonts every text input needs, as a stable string (effect key). */
+/** The fonts every text layer needs (inputs and text variants, T12.6), as a stable string (effect key). */
 function fontRequestsJson(doc: ProjectDoc): string {
-  const requests: FontRequest[] = doc.sources.flatMap((s) =>
+  const requests: FontRequest[] = layerSources(doc).flatMap((s) =>
     s.content.kind === 'text' ? [{ style: { fontFamily: s.content.style.fontFamily, fontWeight: s.content.style.fontWeight }, text: s.content.text }] : [],
   );
   return JSON.stringify(requests);

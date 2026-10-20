@@ -117,3 +117,43 @@ describe('process nodes on the graph', () => {
     expect(gone.edges.some((e) => e.from === 'p1' || e.to === 'p1')).toBe(false);
   });
 });
+
+describe('Text variant and Recolor (T12.6)', () => {
+  const base = () => {
+    let doc = ok(addProcess(project(), { id: 'fr', op: { type: 'textVariant', text: 'Bonjour', style: { color: '#ff0000', fontSizePx: 120 } }, board: { x: 0, y: 0 }, input: 'headline' }));
+    doc = { ...doc, edges: doc.edges.filter((e) => !(e.from === 'headline' && e.to === 'main')) };
+    return ok(connectSource(doc, 'fr'));
+  };
+
+  it('a text variant replaces the words (empty keeps them) and merges its style', () => {
+    const doc = base();
+    const fr = resolveProcess(doc, 'fr');
+    expect(fr?.content).toMatchObject({ kind: 'text', text: 'Bonjour', style: { color: '#ff0000', fontSizePx: 120, fontFamily: 'Noto Sans' } });
+    expect(fr?.effect).toBeUndefined();
+    const keep = ok(updateProcess(doc, 'fr', { op: { type: 'textVariant', text: '', style: { color: '#00ff00' } } }));
+    const headline = keep.sources.find((s) => s.id === 'headline');
+    expect(resolveProcess(keep, 'fr')?.content).toMatchObject({ text: headline?.content.kind === 'text' ? headline.content.text : '', style: { color: '#00ff00' } });
+    // The layout fits the variant's words, not the input's.
+    const item = computeLayout({ ...doc, outputs: [output()] }, 'o1', { measure: mockMeasure, assets: {} }).items.find((i) => i.sourceId === 'fr');
+    expect(item?.lines?.join(' ')).toBe('Bonjour');
+  });
+
+  it('recolor: a fill goes solid, text takes the colour, a picture gets a tint', () => {
+    let doc = base();
+    doc = ok(addProcess(doc, { id: 'bg', op: { type: 'recolor', color: '#123456' }, board: { x: 0, y: 0 }, input: 'background' }));
+    doc = ok(addProcess(doc, { id: 'red', op: { type: 'recolor', color: '#abcdef' }, board: { x: 0, y: 0 }, input: 'fr' }));
+    doc = ok(addProcess(doc, { id: 'pic', op: { type: 'recolor', color: '#ffffff' }, board: { x: 0, y: 0 }, input: 'subject' }));
+    expect(resolveProcess(doc, 'bg')?.content).toEqual({ kind: 'fill', fill: { type: 'solid', color: '#123456' } });
+    expect(resolveProcess(doc, 'bg')?.effect).toBeUndefined();
+    expect(resolveProcess(doc, 'red')?.content).toMatchObject({ text: 'Bonjour', style: { color: '#abcdef' } }); // chain order: variant, then recolor
+    expect(resolveProcess(doc, 'pic')?.effect?.tint).toBe('#ffffff');
+  });
+
+  it('ops are validated: #rrggbb colours, text length, font size range', () => {
+    const doc = base();
+    expect(addProcess(doc, { id: 'x', op: { type: 'recolor', color: 'red' }, board: { x: 0, y: 0 } }).ok).toBe(false);
+    expect(updateProcess(doc, 'fr', { op: { type: 'textVariant', text: 'a'.repeat(2001) } }).ok).toBe(false);
+    expect(updateProcess(doc, 'fr', { op: { type: 'textVariant', style: { fontSizePx: 1 } } }).ok).toBe(false);
+    expect(updateProcess(doc, 'fr', { op: { type: 'textVariant', style: { color: 'blue' } } }).ok).toBe(false);
+  });
+});

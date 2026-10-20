@@ -29,13 +29,13 @@ describe.skipIf(!adminUrl)('node library panel (T13.4)', () => {
 
   it('click adds an input; search filters the list', async () => {
     const before = (await doc()).sources.length;
-    await panel().getByRole('button', { name: /^Text/ }).click();
+    await panel().getByRole('button', { name: /^Text(?! variant)/ }).click();
     await saved();
     expect((await doc()).sources.length).toBe(before + 1);
     expect((await doc()).sources.at(-1)).toMatchObject({ kind: 'text', behavesLike: 'text' });
     await panel().getByLabel('Search nodes').fill('square');
     expect(await panel().getByRole('button', { name: /^Instagram square/ }).count()).toBe(1);
-    expect(await panel().getByRole('button', { name: /^Text/ }).count()).toBe(0);
+    expect(await panel().getByRole('button', { name: /^Text(?! variant)/ }).count()).toBe(0);
   }, 60_000);
 
   it('drag a preset onto the canvas: an output of that size, placed at the drop point', async () => {
