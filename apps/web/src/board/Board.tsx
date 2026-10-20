@@ -40,7 +40,7 @@ import { AddInputDialog, type NewInput } from './AddInputDialog';
 import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
 import { ContextMenu, type MenuState } from './ContextMenu';
 import { ExportDialog } from './ExportDialog';
-import { confirmDelete } from './LayerRow';
+import { confirmDelete, Icon } from './LayerRow';
 import { History } from './history';
 import { LibraryDialog } from './LibraryDialog';
 import { ReconnectDialog } from './ReconnectDialog';
@@ -530,78 +530,95 @@ function BoardCanvas(props: {
 
   return (
     <div className="sc-board">
-      <header className="sc-board__bar">
-        <button type="button" onClick={props.onBack}>
-          ← Projects
-        </button>
-        <strong>{initial.doc.name}</strong>
-        {readOnly && <span className="sc-badge">View only</span>}
+      <header className="sc-board__bar sc-topbar">
+        <div className="sc-topbar__group">
+          <button type="button" className="sc-topbar__icon" onClick={props.onBack} aria-label="Back to projects" title="All projects">
+            <Icon name="back" />
+          </button>
+          <strong className="sc-topbar__name" title={initial.doc.name}>
+            {initial.doc.name}
+          </strong>
+          {readOnly && <span className="sc-badge">View only</span>}
+          {!readOnly && (
+            <>
+              <span className="sc-topbar__sep" aria-hidden="true" />
+              <button type="button" className="sc-topbar__icon" onClick={undo} disabled={!canStep.undo} aria-label="Undo" title="Undo (Ctrl/⌘+Z)">
+                <Icon name="undo" />
+              </button>
+              <button type="button" className="sc-topbar__icon" onClick={redo} disabled={!canStep.redo} aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)">
+                <Icon name="redo" />
+              </button>
+            </>
+          )}
+        </div>
         {!readOnly && (
-          <>
-            <button type="button" onClick={undo} disabled={!canStep.undo} aria-label="Undo" title="Undo (Ctrl/⌘+Z)">
-              ↶
+          <div className="sc-topbar__group sc-topbar__add" role="group" aria-label="Add">
+            <button
+              type="button"
+              aria-label="+ Add input"
+              onClick={() => {
+                setPlaceAt(null);
+                setAdding(true);
+              }}
+              disabled={sourceCount >= LIMITS.maxSources}
+              title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : 'Add an input (or right-click the canvas)'}
+            >
+              <Icon name="plus" /> Input <span className="sc-count">{sourceCount}/{LIMITS.maxSources}</span>
             </button>
-            <button type="button" onClick={redo} disabled={!canStep.redo} aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)">
-              ↷
+            <button
+              type="button"
+              aria-label="+ Add output"
+              onClick={() => {
+                setPlaceAt(null);
+                setAddingOutput(true);
+              }}
+              disabled={outputCount >= LIMITS.maxOutputs}
+              title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : 'Add an output size (or drag a wire out of the main preview)'}
+            >
+              <Icon name="plus" /> Output <span className="sc-count">{outputCount}/{LIMITS.maxOutputs}</span>
             </button>
-          </>
+          </div>
         )}
-        {!readOnly && (
-          <button
-            type="button"
-            onClick={() => {
-              setPlaceAt(null);
-              setAdding(true);
-            }}
-            disabled={sourceCount >= LIMITS.maxSources}
-            title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : undefined}
-          >
-            + Add input
-          </button>
-        )}
-        <span className="sc-muted">
-          {sourceCount}/{LIMITS.maxSources} inputs
-        </span>
-        {!readOnly && (
-          <button
-            type="button"
-            onClick={() => {
-              setPlaceAt(null);
-              setAddingOutput(true);
-            }}
-            disabled={outputCount >= LIMITS.maxOutputs}
-            title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : undefined}
-          >
-            + Add output
-          </button>
-        )}
-        <span className="sc-muted">
-          {outputCount}/{LIMITS.maxOutputs} outputs
-        </span>
-        <button type="button" onClick={() => setShowFonts(true)}>
-          Fonts
-        </button>
-        <button type="button" onClick={() => setShowLibrary(true)}>
-          Library
-        </button>
-        {!readOnly && (
-          <button type="button" onClick={() => void autosave.flush().then(() => setExporting(true))} disabled={outputCount === 0}>
-            Export
-          </button>
-        )}
-        {notice && (
-          <span className="sc-error" role="alert">
-            {notice}
+        {readOnly && (
+          <span className="sc-muted sc-topbar__counts">
+            {sourceCount} inputs · {outputCount} outputs
           </span>
         )}
-        <span className={`sc-save sc-save--${saveState}`} role="status">
-          {STATE_LABEL[saveState]}
-          {saveState === 'conflict' && (
-            <button type="button" onClick={props.onReload}>
-              Reload latest
+        <div className="sc-topbar__group sc-topbar__end">
+          {notice && (
+            <span className="sc-error" role="alert">
+              {notice}
+            </span>
+          )}
+          <span className={`sc-save sc-save--${saveState}`} role="status">
+            <span className="sc-save__dot" aria-hidden="true" />
+            {STATE_LABEL[saveState]}
+            {saveState === 'conflict' && (
+              <button type="button" onClick={props.onReload}>
+                Reload latest
+              </button>
+            )}
+          </span>
+          <span className="sc-topbar__sep" aria-hidden="true" />
+          <button type="button" className="sc-topbar__ghost" onClick={() => setShowFonts(true)} title="Team fonts">
+            <Icon name="font" /> Fonts
+          </button>
+          <button type="button" className="sc-topbar__ghost" onClick={() => setShowLibrary(true)} title="Team library">
+            <Icon name="library" /> Library
+          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              className="sc-topbar__primary"
+              aria-label="Export"
+              onClick={() => void autosave.flush().then(() => setExporting(true))}
+              disabled={outputCount === 0}
+              title={outputCount === 0 ? 'Add an output first' : 'Export outputs'}
+            >
+              <Icon name="export" /> Export
             </button>
           )}
-        </span>
+        </div>
       </header>
       <div
         className="sc-board__canvas"

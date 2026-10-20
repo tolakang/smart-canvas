@@ -83,3 +83,5 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
   - one field style and one button style; line icons instead of ✎ / 📚 / ×; selects stay inside the card;
   - an output named after its size follows size / preset changes; double-click renames outputs and inputs;
   - a "N edited by hand" chip plus Reset; "layer N" instead of "port N".
+- T10.3 — Top bar: three groups — back · project name · undo/redo (icons) | Add input / Add output with count chips | save status dot · Fonts · Library · Export (primary). Compact 48 px, labels collapse to icons on narrow screens.
+- T10.4 — Drag a wire out of the main preview and release it on empty canvas: a new output is added there, already wired (D12).
