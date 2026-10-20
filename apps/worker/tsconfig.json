@@ -1,5 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "types": ["node"] },
+  // DOM: callbacks passed to page.evaluate / waitForFunction run in the browser.
+  "compilerOptions": { "types": ["node"], "lib": ["ES2022", "DOM"] },
   "include": ["src"]
 }

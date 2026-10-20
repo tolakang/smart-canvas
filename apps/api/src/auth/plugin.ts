@@ -4,6 +4,8 @@
  * - `requireUser` → 401 when signed out;
  * - `requireTeam(min?)` → for routes with `:teamId`: 404 if not a member, 403 if the role is too low.
  *   Without `min`, viewers may only read (GET/HEAD/OPTIONS).
+ * - the export worker (D27) reads with `x-render-token` = RENDER_TOKEN: viewer access to any team's
+ *   viewer routes, GET/HEAD only, never a user session.
  */
 import cookie from '@fastify/cookie';
 import type { TeamRole } from '@smart-canvas/core';
@@ -13,6 +15,7 @@ import fp from 'fastify-plugin';
 import type { Db } from '../db/client';
 import { memberships, sessions, users } from '../db/schema';
 import { hasRole, minRoleForMethod } from './roles';
+import { timingSafeEqual } from 'node:crypto';
 import { hashToken, newToken } from './tokens';
 
 export const SESSION_COOKIE = 'sc_session';
@@ -34,6 +37,8 @@ declare module 'fastify' {
     db: Db;
     startSession(reply: FastifyReply, userId: string): Promise<void>;
     endSession(req: FastifyRequest, reply: FastifyReply): Promise<void>;
+    /** True when the request carries the export worker's render token. */
+    isRenderer(req: FastifyRequest): boolean;
   }
 }
 
@@ -41,7 +46,12 @@ export interface AuthOptions {
   db: Db;
   /** Secure cookie flag; on unless explicitly disabled (local http dev, tests). */
   secureCookie?: boolean;
+  /** Shared secret of the export worker (≥ 32 chars); unset = no renderer access. */
+  renderToken?: string;
 }
+
+export const RENDER_TOKEN_HEADER = 'x-render-token';
+export const MIN_RENDER_TOKEN = 32;
 
 export const authPlugin = fp<AuthOptions>(async (app, opts) => {
   const { db } = opts;
@@ -52,6 +62,14 @@ export const authPlugin = fp<AuthOptions>(async (app, opts) => {
   app.decorateRequest('user', null);
   app.decorateRequest('sessionId', null);
   app.decorateRequest('membership', null);
+
+  const expected = opts.renderToken && opts.renderToken.length >= MIN_RENDER_TOKEN ? Buffer.from(opts.renderToken) : null;
+  app.decorate('isRenderer', (req: FastifyRequest) => {
+    const given = req.headers[RENDER_TOKEN_HEADER];
+    if (!expected || typeof given !== 'string') return false;
+    const buf = Buffer.from(given);
+    return buf.length === expected.length && timingSafeEqual(buf, expected);
+  });
 
   app.addHook('onRequest', async (req) => {
     const token = req.cookies[SESSION_COOKIE];
@@ -100,8 +118,17 @@ export const requireUser: preHandlerAsyncHookHandler = async (req, reply) => {
 
 export function requireTeam(min?: TeamRole): preHandlerAsyncHookHandler {
   return async function (req, reply) {
-    if (!req.user) return reply.code(401).send({ error: 'unauthenticated' });
     const { teamId } = req.params as { teamId?: string };
+    if (!req.user && this.isRenderer(req)) {
+      // The export worker: read-only, and only on routes a viewer may use.
+      if (!teamId || !UUID.test(teamId)) return reply.code(404).send({ error: 'not_found' });
+      if (!(req.method === 'GET' || req.method === 'HEAD') || !hasRole('viewer', min ?? minRoleForMethod(req.method))) {
+        return reply.code(403).send({ error: 'forbidden' });
+      }
+      req.membership = { teamId, role: 'viewer' };
+      return;
+    }
+    if (!req.user) return reply.code(401).send({ error: 'unauthenticated' });
     if (!teamId || !UUID.test(teamId)) return reply.code(404).send({ error: 'not_found' });
     const [m] = await this.db
       .select({ role: memberships.role })

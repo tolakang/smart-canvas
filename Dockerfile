@@ -32,12 +32,13 @@ HEALTHCHECK --interval=10s --timeout=3s --start-period=20s \
   CMD ["node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
 CMD ["sh", "-c", "node dist/db/migrate-cli.js && exec node dist/main.js"]
 
-# ---- worker (export). T6.1 moves this to the Playwright image (Chromium + the same fonts). ----
-FROM node:22-trixie-slim AS worker
-ENV NODE_ENV=production
+# ---- worker (export, D27): Playwright's image ships Chromium and its system libraries; the version must
+#      match apps/worker's playwright dependency. Fonts come from the web app it renders (D3). ----
+FROM mcr.microsoft.com/playwright:v1.56.1-noble AS worker
+ENV NODE_ENV=production PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 WORKDIR /app
-COPY --from=build --chown=node:node /out/worker ./
-USER node
+COPY --from=build --chown=pwuser:pwuser /out/worker ./
+USER pwuser
 CMD ["node", "dist/main.js"]
 
 # ---- web: static SPA + /api reverse proxy ----

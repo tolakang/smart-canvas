@@ -14,7 +14,7 @@ const { db } = createDb(databaseUrl);
 const store = new S3Store(s3ConfigFromEnv(process.env));
 await store.ensureBucket();
 
-const app = await buildApp({ db, store, secureCookie: process.env.COOKIE_SECURE !== 'false' });
+const app = await buildApp({ db, store, secureCookie: process.env.COOKIE_SECURE !== 'false', renderToken: process.env.RENDER_TOKEN });
 app.listen({ port, host }).catch((err: unknown) => {
   app.log.error(err);
   process.exit(1);
