@@ -109,6 +109,11 @@ const PATHS = {
   library: 'M4 2.5h8v11l-4-2.5-4 2.5z',
   check: 'M3 8.5l3 3 7-7',
   close: 'M4 4l8 8M12 4l-8 8',
+  back: 'M10 3L5 8l5 5',
+  undo: 'M5.5 3.5L2.5 6.5l3 3M2.5 6.5h7a4 4 0 0 1 0 8H7',
+  redo: 'M10.5 3.5l3 3-3 3M13.5 6.5h-7a4 4 0 0 0 0 8H9',
+  font: 'M3 13L7 3h2l4 10M5 9.5h6',
+  export: 'M8 10V2.5M5 5.5l3-3 3 3M3 10v3.5h10V10',
 } as const;
 
 export function Icon({ name }: { name: keyof typeof PATHS }) {
