@@ -18,9 +18,9 @@ import {
   applyEdgeChanges,
   applyNodeChanges,
   Background,
-  Controls,
   MiniMap,
   ReactFlow,
+  ViewportPortal,
   type Connection,
   type Edge,
   type EdgeChange,
@@ -68,6 +68,9 @@ import {
   type BoardNode,
 } from './flow';
 import { useTheme } from '../ui/theme';
+import { align } from './guides';
+import { BoardKeys, useStoredFlag } from './board-keys';
+import { CanvasToolbar, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
 import { nodeTypes } from './nodes';
@@ -216,9 +219,26 @@ function BoardCanvas(props: {
     };
   }, [autosave]);
 
+  // T13.5: a dragged node snaps to other nodes' edges and centres; the guide lines show where.
+  const [guides, setGuides] = useState<{ vertical?: number; horizontal?: number }>({});
   const onNodesChange = useCallback((changes: NodeChange<BoardNode>[]) => {
+    const [moving] = changes;
+    if (changes.length === 1 && moving?.type === 'position') {
+      const ns = nodesRef.current;
+      const node = ns.find((n) => n.id === moving.id);
+      const size = (n: BoardNode) => ({ w: n.measured?.width ?? 0, h: n.measured?.height ?? 0 });
+      if (moving.dragging && moving.position && node && size(node).w) {
+        const others = ns.filter((n) => n.id !== moving.id && !n.selected && size(n).w).map((n) => ({ x: n.position.x, y: n.position.y, ...size(n) }));
+        const a = align({ ...moving.position, ...size(node) }, others);
+        moving.position = { x: a.x ?? moving.position.x, y: a.y ?? moving.position.y };
+        setGuides({ vertical: a.vertical, horizontal: a.horizontal });
+      } else if (!moving.dragging) setGuides({});
+    }
     setNodes((ns) => applyNodeChanges(changes, ns));
   }, []);
+  const [tool, setTool] = useState<CanvasTool>('select');
+  const [grid, setGrid] = useStoredFlag('sc-board-grid', false);
+  const [minimap, setMinimap] = useStoredFlag('sc-board-minimap', true);
 
   // Undo / redo (T7.2): snapshots of the doc, per session.
   const history = useRef(new History<ProjectDoc>());
@@ -605,7 +625,9 @@ function BoardCanvas(props: {
 
   const onNodeDragStop = useCallback(
     (_e: unknown, _node: Node, dragged: Node[]) => {
-      const doc = withPositions(docRef.current, dragged);
+      // The shown positions, not React Flow's drag positions: alignment guides may have snapped them (T13.5).
+      const shown = new Map(nodesRef.current.map((n) => [n.id, n.position]));
+      const doc = withPositions(docRef.current, dragged.map((n) => ({ id: n.id, position: shown.get(n.id) ?? n.position })));
       if (doc === docRef.current || readOnly) return;
       // Recorded for undo; React Flow already shows the new positions.
       history.current.record(docRef.current);
@@ -767,13 +789,25 @@ function BoardCanvas(props: {
             deleteKeyCode={readOnly ? null : ['Backspace', 'Delete']}
             fitView
             fitViewOptions={{ maxZoom: 1 }}
+            // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
+            panOnScroll
+            zoomOnScroll={false}
+            selectionOnDrag={tool === 'select' && !readOnly}
+            panOnDrag={tool === 'hand' || readOnly ? true : [1]}
+            snapToGrid={grid}
+            snapGrid={[16, 16]}
             minZoom={0.1}
             maxZoom={2}
             proOptions={{ hideAttribution: false }}
           >
-            <Background />
-            <Controls showInteractive={false} />
-            <MiniMap pannable zoomable />
+            <Background gap={16} />
+            {minimap && <MiniMap pannable zoomable position="bottom-right" />}
+            <CanvasToolbar tool={tool} onTool={setTool} grid={grid} onGrid={setGrid} minimap={minimap} onMinimap={setMinimap} />
+            <ViewportPortal>
+              {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
+              {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}
+            </ViewportPortal>
+            <BoardKeys onTool={setTool} disabled={Boolean(editingMain || editingOutput)} />
           </ReactFlow>
           </div>
           <Inspector selected={selectedNode} />
