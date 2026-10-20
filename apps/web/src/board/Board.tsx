@@ -133,7 +133,7 @@ function BoardCanvas(props: {
   const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
   const [fontsKey, setFontsKey] = useState(0);
 
-  // Team fonts become FontFaces as soon as the board opens, so text renders and measures in them.
+  // Team fonts are registered (@font-face) as soon as the board opens, so text renders and measures in them.
   useEffect(() => {
     let live = true;
     api<TeamFont[]>('GET', `/teams/${teamId}/fonts`).then(
