@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T8.6 — Main preview editor: easier move / resize. S1 still needs the `.af` test file
+**Next:** S1 — needs the Affinity `.af` test file with named layers; then T7.6 if S1 says go S1 still needs the `.af` test file
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -75,4 +75,4 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T8.3 — Drop an image file onto an input — [#50](https://github.com/tolakang/smart-canvas/pull/50)
 - [x] T8.4 — Right-click canvas: add input / output — [#51](https://github.com/tolakang/smart-canvas/pull/51)
 - [x] T8.5 — Wires: attach and detach by dragging — [#52](https://github.com/tolakang/smart-canvas/pull/52)
-- [ ] T8.6 — Main preview editor: easier move / resize
+- [x] T8.6 — Main preview editor: easier move / resize — [#53](https://github.com/tolakang/smart-canvas/pull/53)
