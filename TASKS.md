@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T12.1 — node graph model schema 2 + migration (D32)
+**Next:** order — T13.1 health → T12.2 typed ports → T13.2 inspector → T13.3 dark theme → T12.3 compositions → T13.4 library → T13.5 canvas chrome → T13.6 responsive → T12.4–T12.8 → T13.7 groups → T13.8 wire polish
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -100,3 +100,13 @@ Legend: `[x]` done · `[ ]` to do
 - [ ] T12.6 — Process nodes II: Text variant, Recolor
 - [ ] T12.7 — Node palette from any port
 - [ ] T12.8 — Nested compositions
+
+## P13 — Workspace UX (D33–D35)
+- [ ] T13.1 — Layout health status on nodes
+- [ ] T13.2 — Right inspector (settings off the cards)
+- [ ] T13.3 — Dark theme + toggle
+- [ ] T13.4 — Left node library
+- [ ] T13.5 — Floating toolbar, minimap, grid snap, guides
+- [ ] T13.6 — Responsive: tablet + phone, touch
+- [ ] T13.7 — Groups
+- [ ] T13.8 — Wire polish

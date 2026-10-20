@@ -99,3 +99,13 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T12.6 — Process nodes II: Text variant, Recolor.
 - T12.7 — Node palette: drag a wire out of any port or right-click to add a compatible node.
 - T12.8 — Nested compositions.
+
+## P13 — Workspace UX (D33, D34, D35)
+- T13.1 — Layout health (D35): core `layoutHealth` (level + issues per layer) from the layout result; a status dot + count on output and main nodes; the issue list on hover/tap.
+- T13.2 — Right inspector: selection-driven panel; output settings move off the cards (cards keep thumbnail, name, size, status); input content editing too.
+- T13.3 — Dark theme + toggle (D34): dark token set, system default, remembered per browser; the board, editors and dialogs.
+- T13.4 — Left node library: drag inputs, presets (as outputs), team-library items, and later process nodes onto the canvas; search.
+- T13.5 — Canvas chrome: floating glass toolbar (select / hand / fit / grid / minimap), minimap, optional 16 px grid snap and alignment guides; wheel pans, Ctrl/⌘ + wheel zooms at the pointer (as in the editor).
+- T13.6 — Responsive (D33): tablet overlays, phone bottom sheets and condensed top bar, touch gestures, tap-to-connect, 44 px targets; editors on phones.
+- T13.7 — Groups: frame nodes into a named, coloured, collapsible group; export a group.
+- T13.8 — Wire polish: wires dim unless related to the selection, a short pulse when a change flows, reroute points.
