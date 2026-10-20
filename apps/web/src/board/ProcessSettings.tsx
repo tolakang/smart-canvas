@@ -1,7 +1,8 @@
 /**
- * Process settings in the inspector (T12.5): name, what feeds it, and its op — Crop (a rect in % of the
- * picture), Adjust (opacity, brightness, contrast, saturation in %, blur in px), Flip / Rotate. Numbers commit
- * on blur or Enter, so each edit is one undo step.
+ * Process settings in the inspector (T12.5, T12.6): name, what feeds it, and its op — Crop (a rect in % of
+ * the picture), Adjust (opacity, brightness, contrast, saturation in %, blur in px), Flip / Rotate, Text variant
+ * (other words and/or size and colour; empty = keep the input's) and Recolor. Numbers and text commit on blur or
+ * Enter, so each edit is one undo step.
  */
 import { processInput, updateProcess, type ProcessNode, type ProcessOp } from '@smart-canvas/core';
 import { useState } from 'react';
@@ -11,6 +12,7 @@ import { useBoard } from './context';
 export function ProcessSettings({ process }: { process: ProcessNode }) {
   const { doc, readOnly, run } = useBoard();
   const [name, setName] = useState(process.label);
+  const [text, setText] = useState(process.op.type === 'textVariant' ? (process.op.text ?? '') : '');
   const set = (op: ProcessOp) => run((d) => updateProcess(d, process.id, { op }));
   const from = processInput(doc, process.id);
   const fromLabel = doc.sources.find((s) => s.id === from)?.label ?? doc.processes.find((p) => p.id === from)?.label;
@@ -58,6 +60,65 @@ export function ProcessSettings({ process }: { process: ProcessNode }) {
           {percent('Saturation %', op.saturation, 1, 300, (saturation) => set({ ...op, saturation }), 'Saturation')}
           <NumberField label="Blur px" ariaLabel="Blur" value={op.blurPx ?? 0} min={0} max={100} step={1} disabled={readOnly} onCommit={(n) => n !== null && set({ ...op, blurPx: Math.min(100, Math.max(0, n)) })} />
         </div>
+      )}
+      {op.type === 'textVariant' && (
+        <>
+          <label className="sc-field sc-field--stack">
+            <span>Text (empty = the input’s)</span>
+            <textarea
+              aria-label="Variant text"
+              rows={3}
+              value={text}
+              disabled={readOnly}
+              maxLength={2000}
+              onChange={(e) => setText(e.target.value)}
+              onBlur={() => text !== (op.text ?? '') && set({ ...op, text })}
+            />
+          </label>
+          <div className="sc-grid-2">
+            <NumberField
+              label="Size px"
+              ariaLabel="Variant font size"
+              value={op.style?.fontSizePx ?? ''}
+              placeholder="Input’s"
+              min={4}
+              max={2000}
+              step={1}
+              disabled={readOnly}
+              onCommit={(n) => {
+                const style = { ...op.style };
+                if (n === null) delete style.fontSizePx;
+                else style.fontSizePx = Math.min(2000, Math.max(4, n));
+                set({ ...op, style });
+              }}
+            />
+            <label className="sc-check">
+              <input
+                type="checkbox"
+                aria-label="Own colour"
+                checked={op.style?.color !== undefined}
+                disabled={readOnly}
+                onChange={(e) => {
+                  const style = { ...op.style };
+                  if (e.target.checked) style.color = '#000000';
+                  else delete style.color;
+                  set({ ...op, style });
+                }}
+              />
+              Colour
+              {op.style?.color !== undefined && (
+                <input type="color" aria-label="Variant colour" value={op.style.color} disabled={readOnly} onChange={(e) => set({ ...op, style: { ...op.style, color: e.target.value } })} />
+              )}
+            </label>
+          </div>
+        </>
+      )}
+      {op.type === 'recolor' && (
+        <label className="sc-field">
+          <span>Colour</span>
+          <input type="color" aria-label="Recolor colour" value={op.color} disabled={readOnly} onChange={(e) => set({ ...op, color: e.target.value })} />
+          <span className="sc-muted">Fills and text take it; pictures become this colour in their own shape.</span>
+        </label>
       )}
       {op.type === 'flip' && (
         <>

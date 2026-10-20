@@ -601,3 +601,4 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-library__glyph--process { color: var(--type-process); }
 .sc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
 .sc-port__hint { flex: 1; color: var(--muted); font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-field--stack { flex-direction: column; align-items: stretch; }

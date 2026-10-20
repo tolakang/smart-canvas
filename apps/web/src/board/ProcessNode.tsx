@@ -34,8 +34,12 @@ export function opSummary(op: ProcessOp): string {
       const parts = [op.x ? 'Mirror' : '', op.y ? 'Flip vertical' : '', op.rotate ? `${op.rotate}°` : ''].filter(Boolean);
       return parts.join(' · ') || 'No change yet';
     }
-    default:
-      return '';
+    case 'textVariant': {
+      const parts = [op.text ? `“${op.text.length > 24 ? `${op.text.slice(0, 24)}…` : op.text}”` : '', op.style && Object.keys(op.style).length ? 'restyled' : ''].filter(Boolean);
+      return parts.join(' · ') || 'No change yet';
+    }
+    case 'recolor':
+      return `Colour ${op.color}`;
   }
 }
 

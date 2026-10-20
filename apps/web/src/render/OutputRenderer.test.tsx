@@ -100,3 +100,16 @@ describe('OutputRenderer: process effects (T12.5)', () => {
     expect(out).toContain('rotate(90deg) scaleX(-1)');
   });
 });
+
+describe('OutputRenderer: recolor (T12.6)', () => {
+  it('a tinted picture is a box of that colour masked by the picture (data-mask-src for export)', () => {
+    const layer = { ...src('logo', { content: { kind: 'vector', assetId: 'svg1', focal: { x: 0.5, y: 0.5 } } }), id: 'p2', effect: { ...NO_EFFECT, tint: '#ff00aa' } };
+    const scene: RenderScene = { width: 100, height: 100, items: [{ sourceId: 'p2', frame: { x: 0, y: 0, w: 50, h: 50 } }] };
+    const out = renderToStaticMarkup(<OutputRenderer scene={scene} sources={[layer]} assetUrl={assetUrl} scale={1} />);
+    expect(out).toContain('data-mask-src="/a/svg1"');
+    expect(out).toContain('background-color:#ff00aa');
+    expect(out).toContain('mask-image:url(&quot;/a/svg1&quot;)');
+    expect(out).toContain('mask-size:contain');
+    expect(out).not.toContain('<img');
+  });
+});

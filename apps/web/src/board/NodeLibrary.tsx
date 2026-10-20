@@ -30,10 +30,12 @@ const INPUTS: { label: string; hint: string; input: NewInput; icon: 'image' | 'v
 ];
 
 /** T12.5 process nodes: change a layer without touching its input. */
-const PROCESSES: { kind: keyof typeof DEFAULT_OPS; hint: string; icon: 'crop' | 'adjust' | 'flip' }[] = [
+const PROCESSES: { kind: keyof typeof DEFAULT_OPS; hint: string; icon: 'crop' | 'adjust' | 'flip' | 'text' | 'fill' }[] = [
   { kind: 'crop', hint: 'Keep part of a picture', icon: 'crop' },
   { kind: 'adjust', hint: 'Opacity, brightness, contrast, saturation, blur', icon: 'adjust' },
   { kind: 'flip', hint: 'Mirror or turn a picture', icon: 'flip' },
+  { kind: 'textVariant', hint: 'Other words or style, e.g. a translation', icon: 'text' },
+  { kind: 'recolor', hint: 'One colour for a fill, text or logo', icon: 'fill' },
 ];
 
 const COLLAPSE_KEY = 'sc-library-collapsed';

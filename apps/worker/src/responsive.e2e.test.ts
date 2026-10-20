@@ -53,7 +53,7 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(Math.round((sheet?.y ?? 0) + (sheet?.height ?? 0))).toBe(844); // docked to the bottom
     expect(Math.round(sheet?.width ?? 0)).toBe(390);
     const before = (await doc()).sources.length;
-    await lib.getByRole('button', { name: /^Text/ }).tap();
+    await lib.getByRole('button', { name: /^Text(?! variant)/ }).tap();
     await saved(phone);
     expect((await doc()).sources.length).toBe(before + 1);
     expect(await lib.count()).toBe(0);

@@ -1,6 +1,6 @@
 /**
- * Process nodes (D32, T12.5): a node that changes a layer without touching its input — Crop, Adjust,
- * Flip/Rotate (Text variant and Recolor come with T12.6). A process has one `layer` in port and one `layer`
+ * Process nodes (D32, T12.5, T12.6): a node that changes a layer without touching its input — Crop, Adjust,
+ * Flip/Rotate, Text variant (replace text and/or style, e.g. a translation) and Recolor. A process has one `layer` in port and one `layer`
  * out port; chains are evaluated in order, the input first (NODE-GRAPH "Effective layer").
  *
  * Wherever a layer id is looked up (composition and output rows, placements, overrides, the renderer), a
@@ -8,7 +8,7 @@
  * gives all of them — the inputs as they are, plus one per process whose chain reaches an input.
  */
 import { edgeId } from './graph';
-import { LIMITS, type Frame, type InputSource, type NFrame, type ProcessNode, type ProcessOp, type ProjectDoc } from './model';
+import { LIMITS, type Frame, type InputSource, type NFrame, type ProcessNode, type ProcessOp, type ProjectDoc, type SourceContent } from './model';
 import type { SourceResult } from './sources';
 
 /** An input, or a process standing for its effective layer. `effect`: the chain's ops folded into one. */
@@ -30,6 +30,8 @@ export interface LayerEffect {
   contrast: number;
   saturation: number;
   blurPx: number;
+  /** Recolor on a picture (T12.6): drawn as a one-colour silhouette of its shape (CSS mask). */
+  tint?: string;
 }
 
 export const NO_EFFECT: LayerEffect = { flipX: false, rotate: 0, opacity: 1, brightness: 1, contrast: 1, saturation: 1, blurPx: 0 };
@@ -74,13 +76,29 @@ export function applyOp(e: LayerEffect, op: ProcessOp): LayerEffect {
         saturation: e.saturation * Math.max(0, op.saturation ?? 1),
         blurPx: e.blurPx + Math.max(0, op.blurPx ?? 0),
       };
+    case 'recolor':
+      return { ...e, tint: op.color };
     default:
-      return e; // textVariant / recolor: T12.6
+      return e;
   }
 }
 
+/**
+ * Content-changing ops (T12.6), in chain order: a Text variant replaces the text (when given) and merges its
+ * style; Recolor makes a fill solid and sets a text's colour (pictures get `tint` on the effect instead).
+ */
+export function applyContentOp(c: SourceContent, op: ProcessOp): SourceContent {
+  if (op.type === 'textVariant' && c.kind === 'text')
+    return { ...c, ...(op.text !== undefined && op.text !== '' ? { text: op.text } : {}), style: { ...c.style, ...op.style } };
+  if (op.type === 'recolor') {
+    if (c.kind === 'fill') return { ...c, fill: { type: 'solid', color: op.color } };
+    if (c.kind === 'text') return { ...c, style: { ...c.style, color: op.color } };
+  }
+  return c;
+}
+
 export function isNoEffect(e: LayerEffect | undefined): boolean {
-  return !e || (!e.crop && !e.flipX && e.rotate === 0 && e.opacity === 1 && e.brightness === 1 && e.contrast === 1 && e.saturation === 1 && e.blurPx === 0);
+  return !e || (!e.crop && !e.flipX && e.rotate === 0 && e.opacity === 1 && e.brightness === 1 && e.contrast === 1 && e.saturation === 1 && e.blurPx === 0 && !e.tint);
 }
 
 /** The node feeding a process's in port, if wired. */
@@ -103,8 +121,10 @@ export function resolveProcess(doc: ProjectDoc, processId: string): LayerSource 
   const input = id ? doc.sources.find((s) => s.id === id) : undefined;
   const self = chain.at(-1);
   if (!input || !self || self.id !== processId) return undefined;
-  const effect = chain.reduce((e, p) => applyOp(e, p.op), NO_EFFECT);
-  return { ...input, id: self.id, label: self.label, board: self.board, ...(isNoEffect(effect) ? {} : { effect }) };
+  const picture = input.content.kind === 'image' || input.content.kind === 'vector';
+  const effect = chain.reduce((e, p) => (p.op.type === 'recolor' && !picture ? e : applyOp(e, p.op)), NO_EFFECT);
+  const content = chain.reduce((c, p) => applyContentOp(c, p.op), input.content);
+  return { ...input, id: self.id, label: self.label, board: self.board, content, ...(isNoEffect(effect) ? {} : { effect }) };
 }
 
 /** Every layer a row can show: the inputs, plus each process whose chain reaches an input. */
@@ -175,13 +195,23 @@ const round = (n: number) => Math.round(n * 1e4) / 1e4;
 
 // ---------- editing ----------
 
-export const DEFAULT_OPS: Record<'crop' | 'adjust' | 'flip', ProcessOp> = {
+export const DEFAULT_OPS: Record<ProcessOp['type'], ProcessOp> = {
   crop: { type: 'crop', rect: { x: 0.1, y: 0.1, w: 0.8, h: 0.8 } },
   adjust: { type: 'adjust', opacity: 1, brightness: 1, contrast: 1, saturation: 1, blurPx: 0 },
   flip: { type: 'flip', x: true, y: false, rotate: 0 },
+  textVariant: { type: 'textVariant', text: '', style: {} },
+  recolor: { type: 'recolor', color: '#ffffff' },
 };
 
 export const PROCESS_LABEL: Record<ProcessOp['type'], string> = { crop: 'Crop', adjust: 'Adjust', flip: 'Flip / Rotate', textVariant: 'Text variant', recolor: 'Recolor' };
+
+const HEX = /^#[0-9a-f]{6}$/i;
+/** An op the renderer can draw: colours are #rrggbb, a text variant is at most 2000 characters. */
+export function validOp(op: ProcessOp): boolean {
+  if (op.type === 'recolor') return HEX.test(op.color);
+  if (op.type === 'textVariant') return (op.text ?? '').length <= 2000 && (op.style?.color === undefined || HEX.test(op.style.color)) && (op.style?.fontSizePx === undefined || (op.style.fontSizePx >= 4 && op.style.fontSizePx <= 2000));
+  return true;
+}
 
 export function canAddProcess(doc: ProjectDoc): boolean {
   return doc.processes.length < LIMITS.maxProcesses;
@@ -193,7 +223,7 @@ const taken = (doc: ProjectDoc, id: string) =>
 /** Adds a process node; with `input`, its in port is wired from that input or process. */
 export function addProcess(doc: ProjectDoc, spec: { id: string; op: ProcessOp; label?: string; board: { x: number; y: number }; input?: string }): SourceResult {
   if (!canAddProcess(doc)) return { ok: false, error: 'limit' };
-  if (taken(doc, spec.id)) return { ok: false, error: 'invalid' };
+  if (taken(doc, spec.id) || !validOp(spec.op)) return { ok: false, error: 'invalid' };
   const node: ProcessNode = { id: spec.id, label: spec.label?.trim() || PROCESS_LABEL[spec.op.type], op: spec.op, board: { x: Math.round(spec.board.x), y: Math.round(spec.board.y) } };
   const next = { ...doc, processes: [...doc.processes, node] };
   return spec.input ? connectProcessInput(next, spec.id, spec.input) : { ok: true, doc: next };
@@ -202,7 +232,7 @@ export function addProcess(doc: ProjectDoc, spec: { id: string; op: ProcessOp; l
 export function updateProcess(doc: ProjectDoc, id: string, patch: { op?: ProcessOp; label?: string }): SourceResult {
   const p = doc.processes.find((x) => x.id === id);
   if (!p) return { ok: false, error: 'not_found' };
-  if (patch.op && patch.op.type !== p.op.type) return { ok: false, error: 'invalid' };
+  if (patch.op && (patch.op.type !== p.op.type || !validOp(patch.op))) return { ok: false, error: 'invalid' };
   const label = patch.label?.trim();
   return { ok: true, doc: { ...doc, processes: doc.processes.map((x) => (x.id === id ? { ...x, ...(patch.op ? { op: patch.op } : {}), ...(label ? { label } : {}) } : x)) } };
 }

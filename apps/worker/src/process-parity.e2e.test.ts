@@ -1,10 +1,11 @@
 /**
- * T12.5 end to end: a process chain (Crop → Flip/Rotate → Adjust) on a photo draws the same in the user's
- * browser and in the export worker: one OutputRenderer, so the PNGs match within anti-aliasing and the SVGs
- * are the same file. The board's main preview shows the processed layer, not the input.
+ * T12.5 / T12.6 end to end: a process chain (Crop → Flip/Rotate → Adjust) on a photo, a Text variant of the
+ * headline and a Recolor of the photo (an output-only layer) draw the same in the user's browser and in the
+ * export worker: one OutputRenderer, so the PNGs match within anti-aliasing and the SVGs are the same file.
+ * The board's main preview shows the processed layers, not the inputs.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import { addOutput, addProcess, connectSource, disconnectSource, type ExportJob, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addOutput, addProcess, connectOutputLayer, connectSource, disconnectSource, type ExportJob, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { readFileSync } from 'node:fs';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
@@ -46,10 +47,16 @@ describe.skipIf(!adminUrl)('process nodes: browser export matches the worker (T1
     doc = ok(addProcess(doc, { id: 'tone', op: { type: 'adjust', brightness: 1.2, saturation: 0.6, opacity: 0.85, blurPx: 1 }, board: { x: -200, y: 600 }, input: 'turn' }));
     doc = ok(disconnectSource(doc, 'subject'));
     doc = ok(connectSource(doc, 'tone'));
+    // T12.6: other words for the headline (white), and the photo in one colour on the output only.
+    doc = ok(addProcess(doc, { id: 'words', op: { type: 'textVariant', text: 'Grand opening', style: { color: '#ffffff' } }, board: { x: -200, y: 900 }, input: 'headline' }));
+    doc = ok(connectSource(doc, 'words'));
+    doc = ok(addProcess(doc, { id: 'mono', op: { type: 'recolor', color: '#ffeb3b' }, board: { x: -200, y: 1200 }, input: 'subject' }));
     doc = ok(addOutput(doc, { id: 'post', label: 'Post', size: { width: 1080, height: 1350, unit: 'px' } }));
+    doc = ok(connectOutputLayer(doc, 'post', 'mono'));
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     await page.reload();
     await page.getByLabel('Output Post', { exact: true }).locator('.sc-render [data-source-id="tone"] img').waitFor();
+    await page.getByLabel('Output Post', { exact: true }).locator('.sc-render [data-source-id="mono"][data-mask-src]').waitFor();
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
@@ -62,6 +69,12 @@ describe.skipIf(!adminUrl)('process nodes: browser export matches the worker (T1
     expect(style).toContain('opacity: 0.85');
     expect(style).toContain('filter: brightness(1.2) saturate(0.6) blur(1px)');
     expect(await layer.locator('img').locator('..').getAttribute('style')).toContain('rotate(90deg) scaleX(-1)'); // mirror, then a quarter turn clockwise
+    // T12.6: the variant's words and colour; the recolor as a mask of the photo's shape in yellow.
+    const words = page.getByLabel('Main preview', { exact: true }).locator('.sc-render [data-source-id="words"]');
+    expect(await words.innerText()).toContain('Grand opening');
+    expect(await words.getAttribute('style')).toContain('color: rgb(255, 255, 255)');
+    const mono = page.getByLabel('Output Post', { exact: true }).locator('.sc-render [data-source-id="mono"]');
+    expect(await mono.getAttribute('style')).toContain('background-color: rgb(255, 235, 59)');
     // The process node shows its result too.
     await page.getByLabel('Process Adjust').locator('.sc-render [data-source-id="tone"]').waitFor();
   }, 60_000);
@@ -103,6 +116,10 @@ describe.skipIf(!adminUrl)('process nodes: browser export matches the worker (T1
       if (d > 24) off++;
     }
     expect(off / (1080 * 1350)).toBeLessThan(0.002);
+    // The recolored photo (an opaque rectangle) is drawn: a large yellow area.
+    let yellow = 0;
+    for (let i = 0; i < db.length; i += 4) if (Math.abs((db[i] ?? 0) - 255) < 8 && Math.abs((db[i + 1] ?? 0) - 235) < 8 && Math.abs((db[i + 2] ?? 0) - 59) < 8) yellow++;
+    expect(yellow).toBeGreaterThan(100_000);
   }, 120_000);
 
   it('SVG: the same file as the worker', async () => {

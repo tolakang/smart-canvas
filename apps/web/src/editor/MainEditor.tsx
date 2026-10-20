@@ -33,7 +33,8 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
       scene={scene}
       onCommit={onCommit}
       layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} compositionId={main.id} />}
-      props={(s) => (s.content.kind === 'text' ? <TextPanel key={s.id} source={{ ...s, content: s.content }} /> : null)}
+      // A process row's text belongs to its Text variant (inspector), not to its input (T12.6).
+      props={(s) => (s.content.kind === 'text' && doc.sources.some((x) => x.id === s.id) ? <TextPanel key={s.id} source={{ ...s, content: s.content }} /> : null)}
       onClose={onClose}
     />
   );

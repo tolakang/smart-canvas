@@ -100,7 +100,7 @@ function Layer({ item, source, assetSizes, assetUrl, mode }: { item: RenderItem;
         const turn = `rotate(${effect.rotate}deg)${effect.flipX ? ' scaleX(-1)' : ''}`;
         if (!size) {
           // Size not known yet: mirror / turn the whole picture (a crop needs the size).
-          return <img {...data} src={assetUrl(content.assetId)} alt="" draggable={false} style={{ ...box, objectFit: cover ? 'cover' : 'contain', transform: [box.transform, turn].filter(Boolean).join(' ') }} />;
+          return <Picture data={data} url={assetUrl(content.assetId)} tint={effect.tint} fit={cover ? 'cover' : 'contain'} style={{ ...box, transform: [box.transform, turn].filter(Boolean).join(' ') }} />;
         }
         const b = effectBoxes(frame, size, effect, cover, content.focal);
         const at = (r: { x: number; y: number; w: number; h: number }): CSSProperties => ({ position: 'absolute', left: r.x, top: r.y, width: r.w, height: r.h });
@@ -108,25 +108,13 @@ function Layer({ item, source, assetSizes, assetUrl, mode }: { item: RenderItem;
           <div {...data} style={{ ...box, overflow: 'hidden' }}>
             <div style={{ ...at(b.view), overflow: 'hidden' }}>
               <div style={{ ...at(b.pane), overflow: 'hidden', transform: turn, transformOrigin: '50% 50%' }}>
-                <img src={assetUrl(content.assetId)} alt="" draggable={false} style={{ ...at(b.img), maxWidth: 'none' }} />
+                <Picture url={assetUrl(content.assetId)} tint={effect.tint} fit="fill" style={{ ...at(b.img), maxWidth: 'none' }} />
               </div>
             </div>
           </div>
         );
       }
-      return (
-        <img
-          {...data}
-          src={assetUrl(content.assetId)}
-          alt=""
-          draggable={false}
-          style={{
-            ...box,
-            objectFit: cover ? 'cover' : 'contain',
-            objectPosition: `${content.focal.x * 100}% ${content.focal.y * 100}%`,
-          }}
-        />
-      );
+      return <Picture data={data} url={assetUrl(content.assetId)} tint={effect?.tint} fit={cover ? 'cover' : 'contain'} position={`${content.focal.x * 100}% ${content.focal.y * 100}%`} style={box} />;
     }
 
     case 'text': {
@@ -163,6 +151,23 @@ function Layer({ item, source, assetSizes, assetUrl, mode }: { item: RenderItem;
       );
     }
   }
+}
+
+/**
+ * A picture: an <img>, or with a Recolor tint (T12.6) a box of that colour masked by the picture's shape (its
+ * alpha), fitted the same way. `data-mask-src` lets export wait for (and inline) the mask's file.
+ */
+function Picture({ url, tint, fit, position = '50% 50%', style, data }: { url: string; tint?: string; fit: 'contain' | 'cover' | 'fill'; position?: string; style: CSSProperties; data?: Record<string, string> }) {
+  if (!tint) return <img {...data} src={url} alt="" draggable={false} style={{ ...style, objectFit: fit, objectPosition: position }} />;
+  const size = fit === 'fill' ? '100% 100%' : fit;
+  const mask = `url("${url}")`;
+  return (
+    <div
+      {...data}
+      data-mask-src={url}
+      style={{ ...style, backgroundColor: tint, maskImage: mask, WebkitMaskImage: mask, maskSize: size, WebkitMaskSize: size, maskPosition: position, WebkitMaskPosition: position, maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat' }}
+    />
+  );
 }
 
 /** A scene scaled to fit a box (main node, output nodes, lists). */

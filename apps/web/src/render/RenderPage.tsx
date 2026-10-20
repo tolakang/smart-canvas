@@ -77,7 +77,12 @@ export function sceneTexts(scene: RenderScene, sources: readonly InputSource[]):
 
 /** Resolves once every text font of the scene is loaded and every image in the frame has decoded. */
 export async function frameReady(frame: HTMLElement, scene: RenderScene, sources: readonly InputSource[]): Promise<void> {
-  await Promise.all([ensureFonts(sceneTexts(scene, sources)), ...[...frame.querySelectorAll('img')].map((img) => img.decode())]);
+  const masks = [...frame.querySelectorAll<HTMLElement>('[data-mask-src]')].map((el) => {
+    const img = new Image();
+    img.src = el.dataset.maskSrc ?? '';
+    return img.decode();
+  });
+  await Promise.all([ensureFonts(sceneTexts(scene, sources)), ...[...frame.querySelectorAll('img')].map((img) => img.decode()), ...masks]);
 }
 
 /** The export frame: whole pixels (same rounding as exportPixels), clipping the canvas' fraction. */

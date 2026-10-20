@@ -79,4 +79,22 @@ describe.skipIf(!adminUrl)('process nodes on the board (T12.5)', () => {
     expect(after.compositions[0]?.layers.includes(crop.id)).toBe(false);
     expect(after.edges.some((e) => e.from === crop.id || e.to === crop.id)).toBe(false);
   }, 90_000);
+
+  it('T12.6: a Text variant takes the headline and other words, set in the inspector', async () => {
+    const pane = page.locator('.react-flow__pane');
+    await panel().getByRole('button', { name: /^Text variant/ }).dragTo(pane, { targetPosition: { x: 30, y: 300 } });
+    await expect.poll(async () => (await doc()).processes.length).toBe(1);
+    const variant = (await doc()).processes[0];
+    if (!variant) throw new Error('no process');
+    const node = page.locator(`.react-flow__node-processNode[data-id="proc:${variant.id}"]`);
+    await drag(page.locator('.react-flow__node-inputNode[data-id="src:headline"] .react-flow__handle.source'), node.locator('.react-flow__handle.target'));
+    await expect.poll(async () => (await doc()).edges.some((e) => e.from === 'headline' && e.to === variant.id)).toBe(true);
+    await node.locator('.sc-node__title').click();
+    const inspector = page.getByRole('complementary', { name: 'Inspector' });
+    await inspector.getByLabel('Variant text').fill('សួស្តី Hola');
+    await inspector.getByLabel('Variant font size').click(); // blur commits the text
+    await expect.poll(async () => (await doc()).processes[0]?.op).toEqual({ type: 'textVariant', text: 'សួស្តី Hola', style: {} });
+    await node.getByText('“សួស្តី Hola”').waitFor();
+    await node.locator('.sc-render [data-source-id]').getByText('សួស្តី Hola').waitFor();
+  }, 90_000);
 });
