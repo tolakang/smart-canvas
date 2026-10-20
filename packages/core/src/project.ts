@@ -15,3 +15,9 @@ export function createProjectDoc(name: string): ProjectDoc {
     wires: [],
   };
 }
+
+/** T7.3: a copy of a project's document under a new name (duplicate, template ↔ project). */
+export function copyProjectDoc(doc: ProjectDoc, name: string): ProjectDoc {
+  const copy = JSON.parse(JSON.stringify(doc)) as ProjectDoc;
+  return { ...copy, name: name.trim() || doc.name, rev: 0 };
+}

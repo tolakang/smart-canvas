@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T7.3 — Duplicate project, project templates (T6.4 outline text, T7.6 and spikes S1–S3 open)
+**Next:** T7.4 — Performance (T6.4 outline text, T7.6 and spikes S1–S3 open)
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
@@ -63,7 +63,7 @@ Legend: `[x]` done · `[ ]` to do
 ## P7 Library and polish
 - [x] T7.1 — Team library — [#39](https://github.com/tolakang/smart-canvas/pull/39)
 - [x] T7.2 — Undo/redo — [#40](https://github.com/tolakang/smart-canvas/pull/40)
-- [ ] T7.3 — Duplicate project, project templates
+- [x] T7.3 — Duplicate project, project templates — [#41](https://github.com/tolakang/smart-canvas/pull/41)
 - [ ] T7.4 — Performance
 - [ ] T7.5 — E2E tests
 - [ ] T7.6 — `.af` importer (experimental) — needs S1 go
