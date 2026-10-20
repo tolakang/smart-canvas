@@ -83,6 +83,11 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
       <div className="sc-node__meta">
         {output.size.width} × {output.size.height} {output.size.unit}
         {bleed > 0 && ` · bleed ${bleed} mm`}
+        {output.overrides.length > 0 && (
+          <span title="Layers changed by hand on this output" aria-label={`${output.overrides.length} overridden layers`}>
+            {' '}· 🔒 {output.overrides.length}
+          </span>
+        )}
       </div>
       {!connected && (
         <div className="sc-node__meta sc-output__frozen">

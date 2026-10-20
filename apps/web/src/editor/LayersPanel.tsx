@@ -35,7 +35,14 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
               data-layer={s.id}
             >
               <button type="button" className="sc-layer__name" onClick={() => props.onSelect(s.id)}>
-                <span>{s.label}</span>
+                <span>
+                  {s.label}
+                  {overrides.has(s.id) && (
+                    <span className="sc-lock" role="img" aria-label="Overridden on this output" title="Overridden on this output">
+                      {' '}🔒
+                    </span>
+                  )}
+                </span>
                 <span className="sc-muted">
                   {KIND_LABEL[s.kind]} · {s.behavesLike}
                   {!isWired && ' · not wired'}

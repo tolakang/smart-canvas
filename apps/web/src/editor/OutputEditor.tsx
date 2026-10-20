@@ -8,6 +8,7 @@ import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
 import { LayersPanel } from './LayersPanel';
+import { OverrideInspector } from './OverrideInspector';
 import { TextPanel } from './TextPanel';
 
 export function OutputEditor({ outputId, onClose }: { outputId: string; onClose: () => void }) {
@@ -39,7 +40,12 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
       scene={scene}
       onCommit={onCommit}
       layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} outputId={output.id} />}
-      props={(s) => (s.content.kind === 'text' ? <TextPanel key={s.id} source={{ ...s, content: s.content }} outputId={output.id} /> : null)}
+      props={(s) => (
+        <div className="sc-editor__side">
+          <OverrideInspector outputId={output.id} sourceId={s.id} />
+          {s.content.kind === 'text' && <TextPanel key={s.id} source={{ ...s, content: s.content }} outputId={output.id} />}
+        </div>
+      )}
       onClose={onClose}
     />
   );
