@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, type Me } from '../api';
 import { PresetsDialog } from './PresetsDialog';
+import { TeamDialog } from './TeamDialog';
 
 interface ProjectRow {
   id: string;
@@ -9,11 +10,12 @@ interface ProjectRow {
   updatedAt: string;
 }
 
-export function Projects(props: { team: Me['teams'][number]; onOpen: (projectId: string) => void }) {
+export function Projects(props: { team: Me['teams'][number]; userId: string; onOpen: (projectId: string) => void }) {
   const { team } = props;
   const [rows, setRows] = useState<ProjectRow[] | null>(null);
   const canEdit = team.role !== 'viewer';
   const [showPresets, setShowPresets] = useState(false);
+  const [showTeam, setShowTeam] = useState(false);
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
@@ -51,9 +53,14 @@ export function Projects(props: { team: Me['teams'][number]; onOpen: (projectId:
     <section className="sc-card sc-card--wide">
       <div className="sc-row sc-row--between">
         <h1>{team.name} · Projects</h1>
-        <button type="button" onClick={() => setShowPresets(true)}>
-          Size presets
-        </button>
+        <span className="sc-row">
+          <button type="button" onClick={() => setShowTeam(true)}>
+            Team
+          </button>
+          <button type="button" onClick={() => setShowPresets(true)}>
+            Size presets
+          </button>
+        </span>
       </div>
       {canEdit && (
         <form className="sc-row" onSubmit={create}>
@@ -116,6 +123,9 @@ export function Projects(props: { team: Me['teams'][number]; onOpen: (projectId:
             </>
           )}
         </>
+      )}
+      {showTeam && (
+        <TeamDialog teamId={team.id} teamName={team.name} userId={props.userId} isAdmin={team.role === 'admin'} onClose={() => setShowTeam(false)} />
       )}
       {showPresets && <PresetsDialog teamId={team.id} isAdmin={team.role === 'admin'} onClose={() => setShowPresets(false)} />}
     </section>

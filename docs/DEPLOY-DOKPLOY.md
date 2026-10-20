@@ -112,18 +112,10 @@ Save. Dokploy's Traefik routes the domain to `web:80`, and nginx inside `web` fo
 
 1. On the sign-in page click **First run? Set up the workspace**.
 2. Enter your name, team name, email and password. This creates the **first admin** and the team. It only works while the database has no users.
-3. Invite people. Invites exist in the API (T1.3), but the web app has **no invite screen yet**. Until it does, use the browser console:
-   - **The admin**, signed in on the site, opens DevTools → Console and runs this (the team id is the `t/<id>` part of a board URL):
-     ```js
-     await (await fetch('/api/teams/<teamId>/invites', { method: 'POST', headers: { 'content-type': 'application/json' },
-       body: JSON.stringify({ role: 'editor', email: 'sam@example.com' }) })).json()
-     ```
-     The role can be `admin`, `editor` or `viewer`. Copy the `token` from the result and send it to the person.
-   - **The new person**, on the site's sign-in page (not signed in), runs this in the console, then reloads:
-     ```js
-     await fetch('/api/invites/<token>/accept', { method: 'POST', headers: { 'content-type': 'application/json' },
-       body: JSON.stringify({ name: 'Sam', email: 'sam@example.com', password: 'a-long-password' }) })
-     ```
+3. Invite people. On the projects screen click **Team**, choose a role (Admin, Editor or Viewer) and, optionally, an email. Then click **Create invite link** and send the link.
+   - The link works once and expires in 7 days.
+   - The person opens it, creates an account (or signs in) and joins the team.
+   - In the same dialog, admins change roles, remove members and revoke pending invites.
 
 Smoke check:
 1. Create a project, upload an image to *Subject* and type a headline.
