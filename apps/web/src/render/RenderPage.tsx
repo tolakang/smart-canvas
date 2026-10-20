@@ -125,7 +125,7 @@ export function RenderPage({ route }: { route: RenderRoute }) {
   // The frame is the export: whole pixels (same rounding as exportPixels), clipping the canvas' fraction.
   const frame = { width: Math.round(loaded.scene.width * loaded.scale), height: Math.round(loaded.scene.height * loaded.scale) };
   return (
-    <div ref={root} className="sc-render-frame" style={{ ...frame, overflow: 'hidden' }} data-export-width={frame.width} data-export-height={frame.height}>
+    <div ref={root} className="sc-render-frame" style={{ ...frame, overflow: 'hidden' }} data-export-width={frame.width} data-export-height={frame.height} data-exact-width={loaded.scene.width * loaded.scale} data-exact-height={loaded.scene.height * loaded.scale}>
       <OutputRenderer
         scene={loaded.scene}
         sources={loaded.sources}
