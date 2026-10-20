@@ -5,11 +5,11 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** T7.6 — `.af` importer, after spike S1 says go (T6.4 outline text, T7.6 and spikes S1–S3 open)
+**Next:** S3 — SVG text outlines (S1 needs the `.af` test file; T6.4 outline text and T7.6 wait on S3 / S1)
 
 ## P0 Spikes (time-box 1 session each)
 - [ ] S1 — Affinity 3 `.af` reader check
-- [ ] S2 — Khmer text parity
+- [x] S2 — Khmer text parity — pass — [#44](https://github.com/tolakang/smart-canvas/pull/44)
 - [ ] S3 — SVG text outlines
 
 ## P1 Foundation
