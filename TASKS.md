@@ -92,7 +92,7 @@ Legend: `[x]` done · `[ ]` to do
 - [~] T11.2 — folded into T11.1
 
 ## P12 — Node graph (D32)
-- [ ] T12.1 — Model schema 2 + migration + core graph helpers
+- [x] T12.1 — Model schema 2 + migration + core graph helpers — [#63](https://github.com/tolakang/smart-canvas/pull/63)
 - [ ] T12.2 — Board on the typed graph
 - [ ] T12.3 — Several compositions
 - [ ] T12.4 — Output-only layers
