@@ -33,7 +33,7 @@ export function toDesignFrame(n: NFrame, canvas: { width: number; height: number
     y: n.y * canvas.height,
     w: n.w * canvas.width,
     h: n.h * canvas.height,
-    ...(n.rotation ? { rotation: n.rotation } : {}), ...(n.shear ? { shear: n.shear } : {}),
+    ...(n.rotation ? { rotation: n.rotation } : {}), ...(n.shear ? { shear: n.shear } : {}), ...(n.fitted ? { fitted: true as const } : {}),
   };
 }
 

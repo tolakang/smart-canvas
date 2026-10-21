@@ -4,7 +4,8 @@
  */
 import { layerSources, type LayoutDeps, type ProjectDoc } from '@smart-canvas/core';
 import { useEffect, useMemo, useState } from 'react';
-import { api, type AssetMeta } from '../api';
+import { api, assetUrl, type AssetMeta } from '../api';
+import { measureTrim } from '../render/trim';
 import { prepareTextMeasure, type FontRequest } from '../fonts/loader';
 
 export type AssetSizes = LayoutDeps['assets'];
@@ -17,9 +18,20 @@ function fontRequestsJson(doc: ProjectDoc): string {
   return JSON.stringify(requests);
 }
 
-/** Sizes of the team's image and vector assets, plus any uploaded since (via `remember`). */
-export function useAssetSizes(teamId: string): { sizes: AssetSizes; remember: (a: AssetMeta) => void } {
+/** The picture assets a doc draws, as a stable string (effect key). */
+export function usedAssetsKey(doc: ProjectDoc): string {
+  const ids = new Set<string>();
+  for (const s of doc.sources) if ((s.content.kind === 'image' || s.content.kind === 'vector') && s.content.assetId) ids.add(s.content.assetId);
+  return [...ids].sort().join(',');
+}
+
+/**
+ * Sizes of the team's image and vector assets, plus any uploaded since (via `remember`), and — for the ones
+ * `used` (comma-separated ids) — where their visible pixels are (D37 trim, measured one at a time).
+ */
+export function useAssetSizes(teamId: string, used = ''): { sizes: AssetSizes; remember: (a: AssetMeta) => void } {
   const [sizes, setSizes] = useState<AssetSizes>({});
+  const [mimes, setMimes] = useState<Record<string, string>>({});
   useEffect(() => {
     let live = true;
     api<AssetMeta[]>('GET', `/teams/${teamId}/assets`).then(
@@ -28,6 +40,7 @@ export function useAssetSizes(teamId: string): { sizes: AssetSizes; remember: (a
         const loaded: AssetSizes = {};
         for (const a of list) if (a.width && a.height) loaded[a.id] = { width: a.width, height: a.height };
         setSizes((s) => ({ ...loaded, ...s }));
+        setMimes((m) => ({ ...Object.fromEntries(list.map((a) => [a.id, a.mime])), ...m }));
       },
       () => undefined,
     );
@@ -39,9 +52,31 @@ export function useAssetSizes(teamId: string): { sizes: AssetSizes; remember: (a
     () => (a: AssetMeta) => {
       const { width, height } = a;
       if (width && height) setSizes((s) => (s[a.id] ? s : { ...s, [a.id]: { width, height } }));
+      setMimes((m) => (m[a.id] ? m : { ...m, [a.id]: a.mime }));
     },
     [],
   );
+
+  // Trims of the used pictures whose size is known and trim isn't, one at a time (each decodes a picture).
+  const pending = used
+    .split(',')
+    .filter((id) => id && sizes[id] && !sizes[id]?.trim)
+    .join(',');
+  useEffect(() => {
+    if (!pending) return;
+    let live = true;
+    void (async () => {
+      for (const id of pending.split(',')) {
+        const trim = await measureTrim(assetUrl(teamId, id), mimes[id]);
+        if (!live) return;
+        // A picture that can't be measured counts as having no margins (it still draws, filling its frame).
+        setSizes((s) => (s[id] && !s[id]?.trim ? { ...s, [id]: { ...(s[id] as { width: number; height: number }), trim: trim ?? { x: 0, y: 0, w: 1, h: 1 } } } : s));
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [pending, teamId, mimes]);
   return { sizes, remember };
 }
 

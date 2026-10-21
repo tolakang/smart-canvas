@@ -14,7 +14,7 @@ const size = {
   required: ['width', 'height', 'unit'],
   properties: { width: { type: 'number', exclusiveMinimum: 0 }, height: { type: 'number', exclusiveMinimum: 0 }, unit: { enum: ['px', 'mm'] } },
 } as const;
-const frame = { type: 'object', required: ['x', 'y', 'w', 'h'], properties: { x: num, y: num, w: num, h: num, rotation: num, shear: num } } as const;
+const frame = { type: 'object', required: ['x', 'y', 'w', 'h'], properties: { x: num, y: num, w: num, h: num, rotation: num, shear: num, fitted: { type: 'boolean' } } } as const;
 
 const sourceProps = {
     id,

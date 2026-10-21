@@ -41,6 +41,8 @@ export function setOverrideFrame(doc: ProjectDoc, outputId: string, sourceId: st
     if (v === undefined || !Number.isFinite(v)) continue;
     clean[key] = key === 'w' || key === 'h' ? Math.max(round(v), 1) : key === 'rotation' ? round(((v % 360) + 360) % 360) : key === 'shear' ? cleanShear(v) : round(v);
   }
+  // D37: a frame edited from a fitted one stays fitted (the picture keeps filling it).
+  if (frame.fitted) clean.fitted = true;
   return withOverride(doc, outputId, sourceId, author, (cur) => ({
     ...(cur ?? { sourceId, updatedBy: author.by, updatedAt: author.at }),
     frame: { ...cur?.frame, ...clean },
