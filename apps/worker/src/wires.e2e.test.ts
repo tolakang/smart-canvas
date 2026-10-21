@@ -112,10 +112,11 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     expect((await doc()).outputs.find((o) => o.id === pt.id)?.frozen).toBeTruthy();
   }, 90_000);
 
-  it('T10.4: a wire dragged out of the main preview onto empty canvas adds a wired output there', async () => {
+  it('T10.4 / T12.7: a wire dragged out of the main preview onto empty canvas offers outputs; one is added there, wired', async () => {
     const before = (await doc()).outputs.map((o) => o.id);
     const spot = await emptySpot();
     await drag(main().locator('.react-flow__handle[data-handleid="out"]'), spot);
+    await page.getByRole('menu', { name: 'Add & connect' }).getByRole('menuitem', { name: 'Output 1080×1350 px' }).click();
     await expect.poll(async () => (await doc()).outputs.length).toBe(before.length + 1);
     const added = (await doc()).outputs.find((o) => !before.includes(o.id));
     expect(added).toMatchObject({ label: '1080×1350 px', size: { width: 1080, height: 1350, unit: 'px' } });

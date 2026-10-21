@@ -42,6 +42,12 @@ output port also offering `layer`.
   variant replaces the words (empty keeps the input's) and merges its style. Recolor makes a fill solid and sets
   a text's colour. A picture gets `tint`, which is drawn as a box of that colour masked by the picture's shape
   (CSS `mask-image`); SVG export inlines the mask file like an `<img>`. Text variants' fonts load like any text's.
+- **Node palette (T12.7).** Drop a wire from any port on empty canvas, or right-click a port, to get the nodes
+  that fit it (`board/palette.ts`). The chosen node is added at that point, already wired:
+  - from a layer out port: a process, or a new main preview with that layer as a row;
+  - from a main preview's out port: an output (the default size, then presets; this replaces T10.4's direct add);
+  - into a row or a process input: a new input;
+  - into a disconnected output's main-preview port: a new main preview.
 
 ## Model (schema 2)
 
