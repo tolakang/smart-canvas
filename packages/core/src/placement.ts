@@ -26,6 +26,9 @@ export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame, c
   if (!isLayerNode(doc, sourceId) || !doc.compositions.some((c) => c.id === compositionId)) return { ok: false, error: 'not_found' };
   const rotation = frame.rotation ? round(((frame.rotation % 360) + 360) % 360) : 0;
   const shear = cleanShear(frame.shear);
+  // D37: a frame fitted to its picture stays fitted when it's moved or resized (only replacing the picture
+  // clears it, see unfitPictures).
+  const fitted = frame.fitted ?? doc.compositions.find((c) => c.id === compositionId)?.placements[sourceId]?.fitted;
   const clean: NFrame = {
     x: round(frame.x),
     y: round(frame.y),
@@ -33,6 +36,7 @@ export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame, c
     h: round(Math.max(frame.h, 1e-4)),
     ...(rotation ? { rotation } : {}),
     ...(shear ? { shear } : {}),
+    ...(fitted ? { fitted: true as const } : {}),
   };
   return { ok: true, doc: withComposition(doc, compositionId, (c) => ({ ...c, placements: { ...c.placements, [sourceId]: clean } })) };
 }

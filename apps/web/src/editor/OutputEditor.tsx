@@ -23,7 +23,12 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
   const onCommit = useCallback(
     (id: string, frame: Frame) => {
       const cur = scene?.items.find((i) => i.sourceId === id)?.frame;
-      const zeroed = { ...(cur?.rotation && !frame.rotation ? { rotation: 0 } : {}), ...(cur?.shear && !frame.shear ? { shear: 0 } : {}) };
+      const zeroed = {
+        ...(cur?.rotation && !frame.rotation ? { rotation: 0 } : {}),
+        ...(cur?.shear && !frame.shear ? { shear: 0 } : {}),
+        // D37: editing a fitted frame keeps it fitted (else the fit pass would fit it a second time).
+        ...(cur?.fitted ? { fitted: true as const } : {}),
+      };
       run((d) => setOverrideFrame(d, outputId, id, { ...frame, ...zeroed }, author()));
     },
     [run, outputId, author, scene],

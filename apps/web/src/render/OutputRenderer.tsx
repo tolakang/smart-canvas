@@ -10,12 +10,15 @@ import {
   applyTransform,
   effectBoxes,
   effectFilter,
+  fillBoxes,
+  isFittable,
   fillToCss,
   frameTransform,
   fontStack,
   isKhmerText,
   lineHeightOf,
   withKhmerBreaks,
+  type AssetSize,
   type LayerSource,
   type RenderItem,
   type RenderScene,
@@ -27,7 +30,7 @@ export interface OutputRendererProps {
   /** Layers by id: inputs and processes (core `layerSources`). */
   sources: readonly LayerSource[];
   /** Intrinsic asset sizes (layout deps), needed to draw a crop. */
-  assetSizes?: Readonly<Record<string, { width: number; height: number }>>;
+  assetSizes?: Readonly<Record<string, AssetSize>>;
   assetUrl: (assetId: string) => string;
   /** Output pixels per design px. Export uses exportScaleOf(); previews fit a box. */
   scale: number;
@@ -128,6 +131,20 @@ function Layer({
       // Backgrounds cover their frame around the focal point; everything else fits inside it.
       const cover = source.behavesLike === 'background';
       const size = assetSizes?.[content.assetId];
+      // D37: a fitted frame is the picture's visible part, which fills it (stretched with it). Until the
+      // trim is measured, draw it the old way (contain) rather than stretch transparent margins in.
+      if (frame.fitted && size?.trim && isFittable(source)) {
+        const b = fillBoxes(frame, size, effect);
+        const turn = effect ? `rotate(${effect.rotate}deg)${effect.flipX ? ' scaleX(-1)' : ''}` : undefined;
+        const at = (r: { x: number; y: number; w: number; h: number }): CSSProperties => ({ position: 'absolute', left: r.x, top: r.y, width: r.w, height: r.h });
+        return (
+          <div {...data} style={{ ...box, overflow: 'hidden' }}>
+            <div style={{ ...at(b.pane), overflow: 'hidden', ...(turn ? { transform: turn, transformOrigin: '50% 50%' } : {}) }}>
+              <Picture url={assetUrl(content.assetId)} tint={effect?.tint} fit="fill" style={{ ...at(b.img), maxWidth: 'none' }} />
+            </div>
+          </div>
+        );
+      }
       if (effect && (effect.crop || effect.flipX || effect.rotate)) {
         const turn = `rotate(${effect.rotate}deg)${effect.flipX ? ' scaleX(-1)' : ''}`;
         if (!size) {

@@ -1,7 +1,7 @@
-import { fillToCss, fontStack, LIMITS, type Fill, type InputSource } from '@smart-canvas/core';
+import { fillToCss, fontStack, layersOfPicture, LIMITS, unfitPictures, type Fill, type InputSource } from '@smart-canvas/core';
 import { useState, type ChangeEvent, type DragEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
-import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, switchFillType } from './content';
+import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, switchFillType, withSource } from './content';
 import { useBoard } from './context';
 
 // Interactive elements inside a node must not start a node drag, pan or zoom.
@@ -34,7 +34,7 @@ export function fileKindOf(source: InputSource): 'image' | 'vector' | null {
  * size cap, upload (the API validates the bytes), kind check, then the input's content.
  */
 export function useAssetUpload(source: InputSource) {
-  const { teamId, readOnly, editSource, rememberAsset } = useBoard();
+  const { teamId, readOnly, run, rememberAsset } = useBoard();
   const kind = fileKindOf(source);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +52,11 @@ export function useAssetUpload(source: InputSource) {
       if (asset.kind !== kind) setError(kind === 'image' ? 'This input takes PNG, JPEG or WebP.' : 'This input takes SVG files.');
       else {
         rememberAsset(asset);
-        editSource(source.id, (s) => (s.content.kind === 'fill' ? photoBackground(s, asset.id) : setAsset(s, asset.id)));
+        // D37: the old picture's frames stop hugging it; once the new one is measured, it's fitted into them.
+        run((d) => ({
+          ok: true,
+          doc: withSource(unfitPictures(d, layersOfPicture(d, source.id)), source.id, (s) => (s.content.kind === 'fill' ? photoBackground(s, asset.id) : setAsset(s, asset.id))),
+        }));
       }
     } catch (err) {
       setError(uploadMessage(err, kind));

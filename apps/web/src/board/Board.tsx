@@ -1,4 +1,5 @@
 import {
+  fitFrames,
   addComposition,
   addSourceFromLibrary,
   addOutput,
@@ -54,7 +55,7 @@ import { confirmDelete, Icon } from './LayerRow';
 import { History } from './history';
 import { LibraryDialog } from './LibraryDialog';
 import { ReconnectDialog } from './ReconnectDialog';
-import { useAssetSizes, useLayoutDeps } from './layout-deps';
+import { usedAssetsKey, useAssetSizes, useLayoutDeps } from './layout-deps';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
 import { withSource } from './content';
@@ -424,8 +425,16 @@ function BoardCanvas(props: {
       live = false;
     };
   }, [teamId]);
-  const { sizes, remember } = useAssetSizes(teamId);
+  const { sizes, remember } = useAssetSizes(teamId, usedAssetsKey(doc));
   const { deps: layoutDeps, missingFonts } = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
+
+  // D37: once a picture's visible pixels are known, its unfitted frames hug them (in place: nothing moves on
+  // screen). Not an undo step — it's how the doc is shown; undoing to an unfitted doc just fits it again.
+  useEffect(() => {
+    if (readOnly) return;
+    const fitted = fitFrames(docRef.current, sizes);
+    if (fitted !== docRef.current) show(fitted);
+  }, [doc, sizes, readOnly, show]);
 
   const disconnect = useCallback(
     (outputId: string) => {

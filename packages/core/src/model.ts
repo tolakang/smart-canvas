@@ -42,10 +42,12 @@ export interface Size { width: number; height: number; unit: Unit }
  * Rect in design px. Origin = top-left of the owning canvas (outputs: top-left of the BLEED box).
  * About its centre the box is turned by `rotation` (deg, clockwise) and sheared by `shear` (deg, CSS skewX:
  * the left/right edges lean from perpendicular to the top edge), i.e. CSS `rotate(r) skewX(s)`.
+ * `fitted` (pictures, D37): the frame hugs the picture's visible (non-transparent) pixels and the picture fills
+ * it, stretching with it. Without it the whole picture is fitted inside the frame (contain), as before.
  */
-export interface Frame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
+export interface Frame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number; fitted?: true }
 /** Rect normalized 0..1 relative to the master canvas (rotation and shear in degrees, as Frame). */
-export interface NFrame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
+export interface NFrame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number; fitted?: true }
 /** Shear is kept within ±MAX_SHEAR_DEG so a box never collapses to a line. */
 export const MAX_SHEAR_DEG = 75;
 /** A stored shear: rounded, clamped to ±MAX_SHEAR_DEG; 0 (and junk) mean none. */
