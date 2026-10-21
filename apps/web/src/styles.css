@@ -247,9 +247,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .react-flow__edgeupdater { cursor: grab; }
 
 /* T8.6 editor: bigger handles, zoom */
-.sc-editor__canvas .moveable-control { width: 16px !important; height: 16px !important; margin-top: -8px !important; margin-left: -8px !important; border: 2px solid #fff !important; background: var(--accent) !important; }
-.sc-editor__canvas .moveable-line { background: var(--accent) !important; }
-.sc-editor__canvas .moveable-rotation .moveable-rotation-control { width: 18px !important; height: 18px !important; margin-top: -9px !important; margin-left: -9px !important; }
 .sc-editor__stage { min-width: 0; min-height: 0; }
 .sc-editor__hover { position: absolute; left: 0; top: 0; outline: 1.5px dashed var(--accent); outline-offset: -1px; pointer-events: none; }
 .sc-zoom { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; }
@@ -282,10 +279,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-editor__pan { position: absolute; inset: 0; z-index: 5; touch-action: none; }
 .sc-editor__pan:active { cursor: grabbing; }
 .sc-editor__size { position: absolute; transform: translateX(-50%); padding: 1px 4px; border-radius: 2px; background: var(--fig-blue); color: #fff; font-size: 10px; line-height: 14px; white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; z-index: 4; }
-.sc-fig .sc-editor__canvas .moveable-control { width: 14px !important; height: 14px !important; margin-top: -7px !important; margin-left: -7px !important; border: 1.5px solid var(--fig-blue) !important; background: var(--surface) !important; border-radius: 2px !important; }
-.sc-fig .sc-editor__canvas .moveable-line { background: var(--fig-blue) !important; }
-.sc-fig .sc-editor__canvas .moveable-rotation-line { display: none; }
-.sc-fig .sc-editor__canvas .moveable-rotation .moveable-rotation-control { border-radius: 50% !important; }
 .sc-fig .sc-editor__hover { outline: 1.5px solid var(--fig-blue); outline-offset: 0; }
 
 /* Layers (left), Figma style */
@@ -752,3 +745,49 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
   .sc-card .sc-btn, .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
   .sc-card :is(input, select) { font-size: 16px; } /* iOS zooms into smaller fields */
 }
+
+/* Transform box (D36): the editor's selection frame, 8 handles and the rotate handle, Affinity-style. The
+   overlay is drawn untransformed over the canvas, so handles keep their size at any zoom, skew or rotation. */
+.sc-editor__target.tb-target { cursor: move; touch-action: none; -webkit-touch-callout: none; user-select: none; }
+.tb-overlay {
+  --tb-accent: var(--fig-blue, var(--accent));
+  --tb-handle: 10px;
+  --tb-hit: 24px;
+  position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 3;
+}
+@media (pointer: coarse) { .tb-overlay { --tb-handle: 14px; --tb-hit: 44px; } }
+.tb-frame { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; }
+.tb-frame polygon { fill: none; stroke: var(--tb-accent); stroke-width: 1.5px; }
+.tb-frame > line { stroke: var(--tb-accent); stroke-width: 1.5px; }
+.tb-guides line { stroke: var(--danger); stroke-width: 1px; stroke-dasharray: 4 3; }
+.tb-handle {
+  position: absolute; left: 0; top: 0; width: var(--tb-hit); height: var(--tb-hit); display: grid; place-items: center;
+  pointer-events: auto; touch-action: none; -webkit-touch-callout: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.tb-handle::after {
+  content: ''; box-sizing: border-box; width: var(--tb-handle); height: var(--tb-handle);
+  background: var(--surface); border: 1.5px solid var(--tb-accent); box-shadow: var(--shadow-1); transition: transform var(--t-fast), background var(--t-fast);
+}
+.tb-handle--corner::after { border-radius: 2px; }
+.tb-handle[data-tb-handle='n']::after, .tb-handle[data-tb-handle='s']::after { width: calc(var(--tb-handle) * 1.8); border-radius: 99px; }
+.tb-handle[data-tb-handle='e']::after, .tb-handle[data-tb-handle='w']::after { height: calc(var(--tb-handle) * 1.8); border-radius: 99px; }
+.tb-handle--rotate { cursor: grab; color: var(--tb-accent); }
+.tb-handle--rotate::after { display: none; }
+.tb-handle--rotate svg {
+  width: calc(var(--tb-handle) + 12px); height: calc(var(--tb-handle) + 12px); padding: 4px; box-sizing: border-box;
+  background: var(--surface); border: 1.5px solid var(--tb-accent); border-radius: 50%; box-shadow: var(--shadow-1);
+}
+.tb-handle:hover::after { background: var(--tb-accent); }
+.tb-armed .tb-frame polygon { stroke-dasharray: 4 3; }
+.tb-overlay[data-armed] .tb-handle::after { opacity: 0.35; }
+.tb-overlay[data-armed='nw'] [data-tb-handle='nw']::after, .tb-overlay[data-armed='n'] [data-tb-handle='n']::after,
+.tb-overlay[data-armed='ne'] [data-tb-handle='ne']::after, .tb-overlay[data-armed='e'] [data-tb-handle='e']::after,
+.tb-overlay[data-armed='se'] [data-tb-handle='se']::after, .tb-overlay[data-armed='s'] [data-tb-handle='s']::after,
+.tb-overlay[data-armed='sw'] [data-tb-handle='sw']::after, .tb-overlay[data-armed='w'] [data-tb-handle='w']::after {
+  opacity: 1; background: var(--tb-accent); transform: scale(1.5);
+}
+.tb-overlay[data-armed='rotate'] .tb-handle--rotate svg { background: var(--tb-accent); color: var(--surface); }
+.tb-small-x [data-tb-handle='n'], .tb-small-x [data-tb-handle='s'], .tb-small-y [data-tb-handle='e'], .tb-small-y [data-tb-handle='w'] { display: none; }
+/* Hand tool / Space: the canvas pans; the handles let the press through. */
+.sc-editor__stage--hand .tb-handle, .sc-editor__stage--hand .tb-target { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .tb-handle::after { transition: none; } }

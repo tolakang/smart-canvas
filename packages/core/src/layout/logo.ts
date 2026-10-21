@@ -18,5 +18,5 @@ export function logoFrame(f: Frame, ctx: RuleContext): { frame: Frame; warnings:
   const S = m.safe;
   const x = ax < 0.5 ? S.x : S.x + S.w - w;
   const y = ay < 0.5 ? S.y : S.y + S.h - h;
-  return { frame: { x, y, w, h, ...(f.rotation ? { rotation: f.rotation } : {}) }, warnings };
+  return { frame: { x, y, w, h, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) }, warnings };
 }

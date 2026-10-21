@@ -3,7 +3,7 @@
  * Flow 3: an input is auto-placed by its behaviour the first time it is wired; the main editor then moves it.
  */
 import { MAIN, withComposition } from './graph';
-import type { Behavior, NFrame, ProjectDoc } from './model';
+import { cleanShear, type Behavior, type NFrame, type ProjectDoc } from './model';
 import { isLayerNode, layerSource } from './processes';
 import type { SourceResult } from './sources';
 
@@ -21,16 +21,18 @@ export function defaultPlacement(behavesLike: Behavior): NFrame {
 
 const round = (n: number) => Math.round(n * 1e6) / 1e6;
 
-/** Sets a source's placement on a composition (values rounded to 1e-6; zero rotation dropped). */
+/** Sets a source's placement on a composition (values rounded to 1e-6; zero rotation and shear dropped). */
 export function setPlacement(doc: ProjectDoc, sourceId: string, frame: NFrame, compositionId: string = MAIN): SourceResult {
   if (!isLayerNode(doc, sourceId) || !doc.compositions.some((c) => c.id === compositionId)) return { ok: false, error: 'not_found' };
   const rotation = frame.rotation ? round(((frame.rotation % 360) + 360) % 360) : 0;
+  const shear = cleanShear(frame.shear);
   const clean: NFrame = {
     x: round(frame.x),
     y: round(frame.y),
     w: round(Math.max(frame.w, 1e-4)),
     h: round(Math.max(frame.h, 1e-4)),
     ...(rotation ? { rotation } : {}),
+    ...(shear ? { shear } : {}),
   };
   return { ok: true, doc: withComposition(doc, compositionId, (c) => ({ ...c, placements: { ...c.placements, [sourceId]: clean } })) };
 }

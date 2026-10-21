@@ -18,7 +18,16 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
     () => (output && layoutDeps ? outputScene(computeLayout(doc, output.id, layoutDeps), output) : null),
     [doc, output, layoutDeps],
   );
-  const onCommit = useCallback((id: string, frame: Frame) => run((d) => setOverrideFrame(d, outputId, id, frame, author())), [run, outputId, author]);
+  // A frame without rotation / shear means 0: write that only when it replaces a non-zero value (else the
+  // layer keeps following the master's).
+  const onCommit = useCallback(
+    (id: string, frame: Frame) => {
+      const cur = scene?.items.find((i) => i.sourceId === id)?.frame;
+      const zeroed = { ...(cur?.rotation && !frame.rotation ? { rotation: 0 } : {}), ...(cur?.shear && !frame.shear ? { shear: 0 } : {}) };
+      run((d) => setOverrideFrame(d, outputId, id, { ...frame, ...zeroed }, author()));
+    },
+    [run, outputId, author, scene],
+  );
 
   if (!output) return null;
   if (!scene) return <div className="sc-editor-screen sc-muted">Loading fonts…</div>;

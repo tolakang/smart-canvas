@@ -3,7 +3,7 @@
  * stored layout state; the engine applies them last, and master edits never touch them (D20).
  */
 import { computeLayout, type LayoutDeps } from './layout';
-import type { Frame, Override, OutputNode, ProjectDoc, TextStyle } from './model';
+import { cleanShear, type Frame, type Override, type OutputNode, type ProjectDoc, type TextStyle } from './model';
 import type { SourceResult } from './sources';
 import { applyTextStylePatch, type TextStylePatch } from './text-style';
 import { isLayerNode, layerSource } from './processes';
@@ -33,13 +33,13 @@ function withOverride(
   return { ok: true, doc: { ...doc, outputs: doc.outputs.map((o) => (o.id === outputId ? { ...o, overrides } : o)) } };
 }
 
-/** Moves / resizes / rotates a layer on one output (design px of that output's canvas, rotation in degrees). */
+/** Moves / resizes / rotates / shears a layer on one output (design px of that output's canvas; rotation and shear in degrees). */
 export function setOverrideFrame(doc: ProjectDoc, outputId: string, sourceId: string, frame: Partial<Frame>, author: OverrideAuthor): SourceResult {
   const clean: Partial<Frame> = {};
-  for (const key of ['x', 'y', 'w', 'h', 'rotation'] as const) {
+  for (const key of ['x', 'y', 'w', 'h', 'rotation', 'shear'] as const) {
     const v = frame[key];
     if (v === undefined || !Number.isFinite(v)) continue;
-    clean[key] = key === 'w' || key === 'h' ? Math.max(round(v), 1) : key === 'rotation' ? round(((v % 360) + 360) % 360) : round(v);
+    clean[key] = key === 'w' || key === 'h' ? Math.max(round(v), 1) : key === 'rotation' ? round(((v % 360) + 360) % 360) : key === 'shear' ? cleanShear(v) : round(v);
   }
   return withOverride(doc, outputId, sourceId, author, (cur) => ({
     ...(cur ?? { sourceId, updatedBy: author.by, updatedAt: author.at }),
@@ -82,7 +82,7 @@ export function setOverrideHidden(doc: ProjectDoc, outputId: string, sourceId: s
 
 /** One overridden field and what the automatic layout would give (T5.2 inspector). */
 export interface OverrideField {
-  field: string; // 'x' | 'y' | 'w' | 'h' | 'rotation' | 'hidden' | a TextStyle key
+  field: string; // 'x' | 'y' | 'w' | 'h' | 'rotation' | 'shear' | 'hidden' | a TextStyle key
   auto: string | number | boolean | undefined;
   value: string | number | boolean | undefined;
 }
@@ -101,10 +101,10 @@ export function overrideDiff(doc: ProjectDoc, outputId: string, sourceId: string
   const auto = computeLayout(without, outputId, deps).items.find((i) => i.sourceId === sourceId);
   const fields: OverrideField[] = [];
   if (override.hidden) fields.push({ field: 'hidden', auto: false, value: true });
-  for (const key of ['x', 'y', 'w', 'h', 'rotation'] as const) {
+  for (const key of ['x', 'y', 'w', 'h', 'rotation', 'shear'] as const) {
     const value = override.frame?.[key];
     if (value === undefined) continue;
-    const a = key === 'rotation' ? (auto?.frame.rotation ?? 0) : auto?.frame[key];
+    const a = key === 'rotation' || key === 'shear' ? (auto?.frame[key] ?? 0) : auto?.frame[key];
     if (a === undefined || Math.abs(a - value) > 1e-3) fields.push({ field: key, auto: a === undefined ? undefined : round(a), value });
   }
   if (override.style && source.content.kind === 'text') {

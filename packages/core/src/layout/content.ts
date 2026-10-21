@@ -58,7 +58,7 @@ export function mappedFrame(F: Frame, g: GroupMap): Frame {
   const { cx, cy } = mappedCentre(F, g);
   const w = F.w * g.c;
   const h = F.h * g.c;
-  return { x: cx - w / 2, y: cy - h / 2, w, h, ...(F.rotation ? { rotation: F.rotation } : {}) };
+  return { x: cx - w / 2, y: cy - h / 2, w, h, ...(F.rotation ? { rotation: F.rotation } : {}), ...(F.shear ? { shear: F.shear } : {}) };
 }
 
 /** The output regions: stack → all content in S; side → visuals on the right half and text in a left column (each takes all of S when alone). */

@@ -11,6 +11,7 @@ import {
   effectBoxes,
   effectFilter,
   fillToCss,
+  frameTransform,
   fontStack,
   isKhmerText,
   lineHeightOf,
@@ -87,7 +88,7 @@ function Layer({
     top: frame.y,
     width: frame.w,
     height: frame.h,
-    ...(frame.rotation ? { transform: `rotate(${frame.rotation}deg)`, transformOrigin: '50% 50%' } : {}),
+    ...(frame.rotation || frame.shear ? { transform: frameTransform(frame), transformOrigin: '50% 50%' } : {}),
     ...(effect && effect.opacity !== 1 ? { opacity: effect.opacity } : {}),
     ...(effect && effectFilter(effect) ? { filter: effectFilter(effect) } : {}),
   };

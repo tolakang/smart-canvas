@@ -37,10 +37,14 @@ export const DEFAULTS = {
 
 // ---------- geometry ----------
 export interface Size { width: number; height: number; unit: Unit }
-/** Rect in design px. Origin = top-left of the owning canvas (outputs: top-left of the BLEED box). */
-export interface Frame { x: number; y: number; w: number; h: number; rotation?: number }
-/** Rect normalized 0..1 relative to the master canvas. */
-export interface NFrame { x: number; y: number; w: number; h: number; rotation?: number }
+/**
+ * Rect in design px. Origin = top-left of the owning canvas (outputs: top-left of the BLEED box).
+ * About its centre the box is turned by `rotation` (deg, clockwise) and sheared by `shear` (deg, CSS skewX:
+ * the left/right edges lean from perpendicular to the top edge), i.e. CSS `rotate(r) skewX(s)`.
+ */
+export interface Frame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
+/** Rect normalized 0..1 relative to the master canvas (rotation and shear in degrees, as Frame). */
+export interface NFrame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
 
 // ---------- content ----------
 export type Fill =
