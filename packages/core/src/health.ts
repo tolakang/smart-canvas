@@ -3,7 +3,7 @@
  * - error: something can't be drawn as designed (a text font that failed to load);
  * - warning: the engine had to compromise (text overflow, logo raised to its minimum, a layer clamped into
  *   the safe area) or a wired layer is still empty;
- * - frozen: a disconnected output (its layout no longer follows the main preview);
+ * - frozen: a disconnected output (its layout no longer follows the master preview);
  * - ok: nothing to report.
  * Export progress is not health; it stays in the export dialog.
  */
@@ -72,7 +72,7 @@ function fontIssues(doc: ProjectDoc, ids: Set<string>, missingFonts: readonly st
   return layerSources(doc).flatMap((s) => (ids.has(s.id) && s.content.kind === 'text' && missingFonts.includes(s.content.style.fontFamily) ? [issue(s, 'font-missing')] : []));
 }
 
-/** Health of a composition (default: the main preview): empty wired layers and missing fonts. */
+/** Health of a composition (default: the master preview): empty wired layers and missing fonts. */
 export function compositionHealth(doc: ProjectDoc, compositionId: string = MAIN, missingFonts: readonly string[] = []): Health {
   const issues = [...fontIssues(doc, wiredLayers(doc, compositionId), missingFonts), ...emptyIssues(doc, compositionId)];
   return { level: levelOf(issues), issues };

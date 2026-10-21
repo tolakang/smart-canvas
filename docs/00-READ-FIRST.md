@@ -1,6 +1,6 @@
 # Artwork Adaptation App — READ FIRST
 
-One master artwork → many sizes. A flow board wires **Input sources → Main preview → Output nodes**.
+One master artwork → many sizes. A flow board wires **Input sources → Master preview → Output nodes**.
 Rules-based auto-adapt (no AI in v1), manual overrides are kept, export PNG/JPG/WebP/SVG/PDF (single or ZIP).
 Team app (login), deployed on Dokploy. Khmer + Latin text.
 

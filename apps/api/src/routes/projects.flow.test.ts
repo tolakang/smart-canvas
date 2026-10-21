@@ -1,5 +1,5 @@
 import type { ProjectDoc } from '@smart-canvas/core';
-import { createProjectDoc } from '@smart-canvas/core';
+import { createProjectDoc, LIMITS } from '@smart-canvas/core';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
@@ -84,7 +84,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
 
   it('validates the document shape and caps', async () => {
     const p = await create();
-    const tooMany = Array.from({ length: 11 }, (_, i) => ({
+    const tooMany = Array.from({ length: LIMITS.maxSources + 1 }, (_, i) => ({
       id: `s${i}`,
       label: 'x',
       kind: 'fill',
@@ -103,7 +103,8 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     ]) {
       expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc })).statusCode).toBe(400);
     }
-    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: { ...p.doc, sources: tooMany.slice(0, 10) } })).statusCode).toBe(
+    // D39: past the old 10-input cap.
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: { ...p.doc, sources: tooMany.slice(0, 12) } })).statusCode).toBe(
       200,
     );
   });

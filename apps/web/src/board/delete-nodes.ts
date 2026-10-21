@@ -1,7 +1,7 @@
 /**
  * The Delete / Backspace key on the board: what the selected nodes are, in words for the confirm, and the
- * doc without them. Inputs, processes, extra main previews and outputs are deleted (as their own delete
- * buttons do); a group frame is ungrouped (its nodes stay); the first main preview can't be deleted.
+ * doc without them. Inputs, processes, extra master previews and outputs are deleted (as their own delete
+ * buttons do); a group frame is ungrouped (its nodes stay); the first master preview can't be deleted.
  */
 import { deleteComposition, deleteOutput, deleteProcess, deleteSource, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, sourceIdOfNode } from './flow';

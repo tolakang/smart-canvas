@@ -11,7 +11,7 @@ import { Icon, LayerActions, LayerThumb, useLayerReorder } from './LayerRow';
 const NO_CANVAS = 'nodrag nopan nowheel';
 
 /**
- * A composition ("main preview") node: a layer list, one row per port (port 0 = front = top, D11). Wire an input
+ * A composition ("master preview") node: a layer list, one row per port (port 0 = front = top, D11). Wire an input
  * onto a row to connect it there; drag a row to re-order (T8.1); the dot connects / disconnects; + duplicates.
  * T12.3: any number of them. Others than 'main' can be renamed (double-click) and deleted, list only the inputs
  * wired into them, and end with a drop row that takes a new input.
@@ -41,7 +41,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
         {renaming !== null ? (
           <input
             className={`sc-rename ${NO_CANVAS}`}
-            aria-label="Main preview name"
+            aria-label="Master preview name"
             value={renaming}
             autoFocus
             maxLength={200}
@@ -66,7 +66,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
             type="button"
             className={`sc-icon-btn ${NO_CANVAS}`}
             aria-label={`Delete ${data.label}`}
-            title="Delete this main preview (its outputs keep their current layout, disconnected)"
+            title="Delete this master preview (its outputs keep their current layout, disconnected)"
             onClick={() => window.confirm(`Delete “${data.label}”? Outputs wired to it are disconnected and keep their current layout.`) && run((d) => deleteComposition(d, compositionId, layoutDeps ?? undefined))}
           >
             <Icon name="trash" />
@@ -76,7 +76,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
       <div className="sc-node__meta">
         {data.size.width} × {data.size.height} {data.size.unit} · {data.ports.length} layers · {data.outputs} outputs
       </div>
-      <div className="sc-main-thumb" aria-label={isMain ? 'Main preview' : `${data.label} preview`}>
+      <div className="sc-main-thumb" aria-label={isMain ? 'Master preview' : `${data.label} preview`}>
         <RenderThumbnail
           scene={data.scene}
           sources={data.sources}
@@ -132,9 +132,9 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
       )}
       {data.ports.length === 0 && isMain && <p className="sc-node__meta">No inputs yet.</p>}
       <div className="sc-node__meta sc-ports__hint">Top = front · drag to re-order</div>
-      <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={!readOnly} className="sc-handle--composition" title="Main preview out: wire into outputs" />
-      {/* T12.8: this preview as a layer of another main preview (or an output's own layer). */}
-      <Handle type="source" position={Position.Right} id={LAYER_OUT_HANDLE} isConnectable={!readOnly} className="sc-handle--layer sc-handle--nest" title="Use as a layer: wire into a row of another main preview or an output" />
+      <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={!readOnly} className="sc-handle--composition" title="Master preview out: wire into outputs" />
+      {/* T12.8: this preview as a layer of another master preview (or an output's own layer). */}
+      <Handle type="source" position={Position.Right} id={LAYER_OUT_HANDLE} isConnectable={!readOnly} className="sc-handle--layer sc-handle--nest" title="Use as a layer: wire into a row of another master preview or an output" />
     </div>
   );
 }

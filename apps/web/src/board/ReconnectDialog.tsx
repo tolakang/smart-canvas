@@ -11,7 +11,7 @@ export function ReconnectDialog(props: { label: string; overrides: number; onCho
       <div className="sc-card">
         <h1 id="reconnect-title">Reconnect “{props.label}”</h1>
         <p>
-          This output has {props.overrides} manual {props.overrides === 1 ? 'change' : 'changes'}. Reconnecting re-flows it from the main preview.
+          This output has {props.overrides} manual {props.overrides === 1 ? 'change' : 'changes'}. Reconnecting re-flows it from the master preview.
         </p>
         <div className="sc-row">
           <button type="button" onClick={() => props.onChoose('keep')}>

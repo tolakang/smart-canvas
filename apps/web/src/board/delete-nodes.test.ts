@@ -18,7 +18,7 @@ function sample(): ProjectDoc {
 }
 
 describe('Delete key on the board', () => {
-  it('lists what can go (not the first main preview), with one question', () => {
+  it('lists what can go (not the first master preview), with one question', () => {
     const d = sample();
     const t = deletableNodes(d, [inputNodeId('logo'), MAIN_ID, 'comp:c2', outputNodeId('o1'), processNodeId('p1')]);
     expect(t.map((x) => x.kind)).toEqual(['input', 'composition', 'output', 'process']);

@@ -1,5 +1,5 @@
 /**
- * Placements on a composition (NFrame, 0..1 of its canvas; rotation in degrees). Default: the main preview.
+ * Placements on a composition (NFrame, 0..1 of its canvas; rotation in degrees). Default: the master preview.
  * Flow 3: an input is auto-placed by its behaviour the first time it is wired; the main editor then moves it.
  */
 import { MAIN, withComposition } from './graph';

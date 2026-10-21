@@ -1,6 +1,6 @@
 # Node graph (D32)
 
-The board becomes a typed node graph. It keeps what works today: inputs, a main preview with ordered layers,
+The board becomes a typed node graph. It keeps what works today: inputs, a master preview with ordered layers,
 outputs that adapt automatically, overrides, and freezing. It also allows chaining, several compositions, and
 layers that only one output gets.
 
@@ -10,7 +10,7 @@ layers that only one output gets.
 |---|---|---|---|
 | **Input** (image, SVG, text, fill) | none | `layer` | As today: content plus a behaviour (background, subject, text, logo, decoration) |
 | **Process** | `layer` | `layer` | Changes a layer without touching the input: Crop, Adjust (opacity, brightness, contrast, saturation, blur), Flip/Rotate, Text variant (replace text and/or style, e.g. a translation), Recolor (fill / SVG colour) |
-| **Composition** ("Main preview") | ordered `layer` ports (port 0 = front, D11) | `composition` | As today's main preview: master size, placements, editor. A project can have several (e.g. one per campaign variant). |
+| **Composition** ("Master preview") | ordered `layer` ports (port 0 = front, D11) | `composition` | As today's master preview: master size, placements, editor. A project can have several (e.g. one per campaign variant). |
 | **Output** | `composition` (one), plus ordered `layer` ports (output-only layers) | none | As today: size, preset, bleed, overrides, disconnect = freeze. Output-only layers are laid out by their behaviour, above the composition's layers. |
 
 Later (not in the first tickets): a composition used as a layer of another composition (nesting), with its
@@ -44,10 +44,10 @@ output port also offering `layer`.
   (CSS `mask-image`); SVG export inlines the mask file like an `<img>`. Text variants' fonts load like any text's.
 - **Node palette (T12.7).** Drop a wire from any port on empty canvas, or right-click a port, to get the nodes
   that fit it (`board/palette.ts`). The chosen node is added at that point, already wired:
-  - from a layer out port: a process, or a new main preview with that layer as a row;
-  - from a main preview's out port: an output (the default size, then presets; this replaces T10.4's direct add);
+  - from a layer out port: a process, or a new master preview with that layer as a row;
+  - from a master preview's out port: an output (the default size, then presets; this replaces T10.4's direct add);
   - into a row or a process input: a new input;
-  - into a disconnected output's main-preview port: a new main preview.
+  - into a disconnected output's main-preview port: a new master preview.
 - **Nested compositions (T12.8).** A composition node has a second out port, "Use as a layer" (`layer`). Wired
   into a row of another composition, or an output's own row, it is a layer: in `layerSources` it carries its own
   scene (`nested`), behaves like a subject, and has the composition's size as its picture size. The renderer
@@ -85,7 +85,7 @@ interface ProjectDoc {
   - overrides and frozen frames are kept.
 - **The API** migrates on read and accepts v1 or v2 on save (it stores v2). A stored v1 document upgrades on its next save.
 
-The limits are 10 inputs, 10 outputs, 5 compositions (`LIMITS.maxCompositions`) and 20 process nodes (`LIMITS.maxProcesses`).
+The limits are 10 outputs (inputs: no practical limit, D39), 5 compositions (`LIMITS.maxCompositions`) and 20 process nodes (`LIMITS.maxProcesses`).
 
 ## Tickets (P12)
 
@@ -94,7 +94,7 @@ The limits are 10 inputs, 10 outputs, 5 compositions (`LIMITS.maxCompositions`) 
    adapters, with no visible change.
 2. **T12.2** Board on the typed graph. Handles are coloured by type, and an invalid drop is refused with a hint.
    Generic connect / re-route / detach (generalising T8.5).
-3. **T12.3** Several compositions. Add a "Main preview" node, wire outputs to any composition, open an editor
+3. **T12.3** Several compositions. Add a "Master preview" node, wire outputs to any composition, open an editor
    per composition, and export follows the wire.
 4. **T12.4** Output-only layers. Layer ports on output nodes, with default placement by behaviour and overrides.
 5. **T12.5** Process nodes I: Crop, Adjust, Flip/Rotate. Includes the renderer and a parity test between

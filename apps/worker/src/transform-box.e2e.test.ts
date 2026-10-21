@@ -33,7 +33,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     await stack?.close();
   });
 
-  const editor = () => page.getByRole('dialog', { name: /Main preview editor/ });
+  const editor = () => page.getByRole('dialog', { name: /Master preview editor/ });
   const layer = () => editor().locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
   const placement = async () => mainComposition(await doc()).placements.subject as NFrame;
@@ -145,7 +145,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     const cdp = await ctx.newCDPSession(phone);
     await phone.goto(page.url().split('#')[0] + '#' + (page.url().split('#')[1] ?? ''));
     await phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first().tap();
-    const ed = phone.getByRole('dialog', { name: /Main preview editor/ });
+    const ed = phone.getByRole('dialog', { name: /Master preview editor/ });
     await ed.locator('.sc-editor__canvas [data-source-id="subject"]').tap();
     await ed.locator('[data-tb-handle="e"]').waitFor();
     const touch = (type: string, x = 0, y = 0) =>

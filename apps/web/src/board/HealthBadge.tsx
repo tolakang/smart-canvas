@@ -11,7 +11,7 @@ export function healthSummary(h: Health): string {
   const n = h.issues.length;
   if (h.level === 'error') return `${n} ${n === 1 ? 'problem' : 'problems'}`;
   if (h.level === 'warning') return `${n} ${n === 1 ? 'warning' : 'warnings'}`;
-  if (h.level === 'frozen') return 'Frozen: disconnected, layout no longer follows the main preview';
+  if (h.level === 'frozen') return 'Frozen: disconnected, layout no longer follows the master preview';
   return 'Layout OK';
 }
 

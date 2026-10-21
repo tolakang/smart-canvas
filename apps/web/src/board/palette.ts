@@ -1,10 +1,10 @@
 /**
  * Node palette (T12.7, generalising T10.4): the nodes that fit a port, each added and wired in one step.
  * Opened by dropping a wire on empty canvas, or by right-clicking a port.
- * - a `layer` out port (input, process): a process taking it, or a new main preview with it as a row;
- * - a main preview's out port: an output following it (default size, or a preset);
- * - a `layer` in port (a main preview or output row, a process's input): a new input wired into it;
- * - an output's main-preview port (while disconnected): a new main preview wired into it.
+ * - a `layer` out port (input, process): a process taking it, or a new master preview with it as a row;
+ * - a master preview's out port: an output following it (default size, or a preset);
+ * - a `layer` in port (a master preview or output row, a process's input): a new input wired into it;
+ * - an output's main-preview port (while disconnected): a new master preview wired into it.
  * Pure: the board turns items into menu entries and runs `add` on the doc.
  */
 import {
@@ -89,12 +89,12 @@ export function paletteItems(doc: ProjectDoc, port: PalettePort, presets: readon
         }),
       ),
       {
-        label: 'New main preview',
+        label: 'New master preview',
         separated: !nest,
         disabled: compsFull,
         add: (d, newId, at) => {
           const id = newId();
-          return chain(addComposition(d, { id, label: `Main preview ${d.compositions.length + 1}`, board: downstream(at) }), (n) => connectSource(n, layer, undefined, id));
+          return chain(addComposition(d, { id, label: `Master preview ${d.compositions.length + 1}`, board: downstream(at) }), (n) => connectSource(n, layer, undefined, id));
         },
       },
     ];
@@ -130,11 +130,11 @@ export function paletteItems(doc: ProjectDoc, port: PalettePort, presets: readon
   if (handleType === 'target' && output && !handleId && !isOutputConnected(doc, output)) {
     return [
       {
-        label: 'New main preview',
+        label: 'New master preview',
         disabled: compsFull,
         add: (d, newId, at) => {
           const id = newId();
-          return chain(addComposition(d, { id, label: `Main preview ${d.compositions.length + 1}`, board: upstream(at) }), (n) => reconnectOutput(n, output, 'keep', id));
+          return chain(addComposition(d, { id, label: `Master preview ${d.compositions.length + 1}`, board: upstream(at) }), (n) => reconnectOutput(n, output, 'keep', id));
         },
       },
     ];

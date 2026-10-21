@@ -1,5 +1,5 @@
 /**
- * T13.1 (D35) end to end: nodes show their layout health. A new project's main preview warns about wired
+ * T13.1 (D35) end to end: nodes show their layout health. A new project's master preview warns about wired
  * inputs that are still empty; an output warns when its text can't fit; a disconnected output is grey.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
@@ -43,7 +43,7 @@ describe.skipIf(!adminUrl)('layout health on nodes (T13.1)', () => {
   const main = () => page.locator('.react-flow__node-mainNode');
   const banner = () => page.locator('.react-flow__node-outputNode[data-id="out:banner"]');
 
-  it('the main preview warns about a wired input with no file yet, and lists it', async () => {
+  it('the master preview warns about a wired input with no file yet, and lists it', async () => {
     await expect.poll(() => badge(main()).getAttribute('data-health')).toBe('warning');
     const btn = main().getByRole('button', { name: /^Layout health: 1 warning$/ });
     await btn.click();

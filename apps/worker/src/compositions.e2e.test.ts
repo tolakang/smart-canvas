@@ -1,5 +1,5 @@
 /**
- * T12.3 (D32) end to end: several main previews. Add one from the canvas menu, wire an input into it, drag an
+ * T12.3 (D32) end to end: several master previews. Add one from the canvas menu, wire an input into it, drag an
  * output out of it, open its editor, rename it in the inspector, and delete it (its output freezes).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
@@ -8,7 +8,7 @@ import type { Locator, Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
 
-describe.skipIf(!adminUrl)('several main previews (T12.3)', () => {
+describe.skipIf(!adminUrl)('several master previews (T12.3)', () => {
   let stack: Stack;
   let page: Page;
   let url = '';
@@ -52,16 +52,16 @@ describe.skipIf(!adminUrl)('several main previews (T12.3)', () => {
       throw new Error('no empty spot');
     }, fromRight);
 
-  it('adds a main preview from the canvas menu', async () => {
+  it('adds a master preview from the canvas menu', async () => {
     const spot = await emptySpot();
     await page.mouse.click(spot.x, spot.y, { button: 'right' });
-    await page.getByRole('menu').getByRole('menuitem', { name: 'Main preview' }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Master preview' }).click();
     await saved();
     const d = await doc();
     expect(d.compositions).toHaveLength(2);
     compId = d.compositions[1]?.id ?? '';
     await comp().waitFor();
-    expect(await comp().locator('.sc-node__title').innerText()).toBe('Main preview 2');
+    expect(await comp().locator('.sc-node__title').innerText()).toBe('Master preview 2');
   }, 60_000);
 
   it('an input wired into it becomes its row; an output dragged out of it follows it', async () => {
@@ -77,15 +77,15 @@ describe.skipIf(!adminUrl)('several main previews (T12.3)', () => {
   }, 60_000);
 
   it('opens its own editor, and renames in the inspector', async () => {
-    await comp().getByRole('button', { name: 'Edit Main preview 2' }).click();
-    const editor = page.getByRole('dialog', { name: /Main preview editor/ });
-    await expect.poll(() => editor.locator('.sc-fig__title strong').innerText()).toBe('Main preview 2');
+    await comp().getByRole('button', { name: 'Edit Master preview 2' }).click();
+    const editor = page.getByRole('dialog', { name: /Master preview editor/ });
+    await expect.poll(() => editor.locator('.sc-fig__title strong').innerText()).toBe('Master preview 2');
     expect(await editor.locator('.sc-layers [data-layer]').count()).toBe(1); // only its own row
     await editor.getByRole('button', { name: 'Close' }).click();
     await comp().locator('.sc-node__meta').first().click();
     const panel = page.getByRole('complementary', { name: 'Inspector' });
-    await panel.getByLabel('Main preview name').fill('Variant B');
-    await panel.getByLabel('Main preview name').press('Enter');
+    await panel.getByLabel('Master preview name').fill('Variant B');
+    await panel.getByLabel('Master preview name').press('Enter');
     await expect.poll(async () => compositionById(await doc(), compId)?.label).toBe('Variant B');
   }, 60_000);
 

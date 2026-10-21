@@ -16,7 +16,7 @@ export type ExportFormat = 'png' | 'jpg' | 'webp' | 'svg' | 'pdf';
 export type PresetGroup = 'print' | 'social';
 
 export const LIMITS = {
-  maxSources: 10, // includes the 4 defaults
+  maxSources: 500, // D39: no practical layer limit; a safety ceiling for the API only
   maxOutputs: 10,
   maxCompositions: 5,
   maxProcesses: 20,
@@ -90,9 +90,9 @@ export interface InputSource {
   board: { x: number; y: number }; // node position on the board
 }
 
-// ---------- compositions (main previews) and outputs ----------
+// ---------- compositions (master previews) and outputs ----------
 /**
- * A composition ("Main preview", D32): an artboard whose rows are layers. `layers` lists the rows front
+ * A composition ("Master preview", D32): an artboard whose rows are layers. `layers` lists the rows front
  * first (row index = port, D11); a row is drawn only while a `layer` edge feeds it. The first composition
  * is always id 'main'.
  */

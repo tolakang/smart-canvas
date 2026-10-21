@@ -59,7 +59,7 @@ describe('output-only layers (example I)', () => {
     if (!off.ok) throw new Error();
     expect(item(off.doc, 'sticker')).toBeUndefined();
     expect(off.doc.outputs[0]?.layers).toBeUndefined();
-    const shared = connectOutputLayer(project(), 'o1', 'logo'); // logo is already a main preview layer
+    const shared = connectOutputLayer(project(), 'o1', 'logo'); // logo is already a master preview layer
     if (!shared.ok) throw new Error();
     expect(computeLayout(shared.doc, 'o1', deps).items.filter((i) => i.sourceId === 'logo')).toHaveLength(1);
   });

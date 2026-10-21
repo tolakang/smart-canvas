@@ -190,7 +190,7 @@ function BoardCanvas(props: {
   const { teamId, projectId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
   const [doc, setDoc] = useState(initial.doc);
-  /** The composition open in the main preview editor (T12.3: any composition). */
+  /** The composition open in the master preview editor (T12.3: any composition). */
   const [editingMain, setEditingMain] = useState<string | null>(null);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
@@ -754,7 +754,7 @@ function BoardCanvas(props: {
         run((d) => addProcess(d, { id: newId(), op: spec.op, board: at }));
         return;
       case 'composition':
-        run((d) => addComposition(d, { id: newId(), label: `Main preview ${d.compositions.length + 1}`, board: at }));
+        run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at }));
         return;
       case 'library':
         run((d) => addSourceFromLibrary(d, spec.item, newId(), at));
@@ -781,7 +781,7 @@ function BoardCanvas(props: {
       : [
           { label: 'Undo', disabled: !canStep.undo, onSelect: undo },
           { label: 'Redo', disabled: !canStep.redo, onSelect: redo },
-          { label: `Add input (${sourceCount}/${LIMITS.maxSources})`, disabled: sourceCount >= LIMITS.maxSources, separated: true, onSelect: () => (setPlaceAt(null), setAdding(true)) },
+          { label: 'Add input', disabled: sourceCount >= LIMITS.maxSources, separated: true, onSelect: () => (setPlaceAt(null), setAdding(true)) },
           { label: `Add output (${outputCount}/${LIMITS.maxOutputs})`, disabled: outputCount >= LIMITS.maxOutputs, onSelect: () => (setPlaceAt(null), setAddingOutput(true)) },
         ];
     setMenu({
@@ -824,11 +824,11 @@ function BoardCanvas(props: {
           },
         },
         {
-          // T12.3: another main preview (e.g. a campaign variant); wire inputs into it and outputs out of it.
-          label: canAddComposition(doc) ? 'Main preview' : `Main preview (${LIMITS.maxCompositions} max)`,
+          // T12.3: another master preview (e.g. a campaign variant); wire inputs into it and outputs out of it.
+          label: canAddComposition(doc) ? 'Master preview' : `Master preview (${LIMITS.maxCompositions} max)`,
           disabled: !canAddComposition(doc),
           separated: true,
-          onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Main preview ${d.compositions.length + 1}`, board: at })),
+          onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at })),
         },
         {
           label: outputsFull ? `Output… (${LIMITS.maxOutputs} max)` : 'Output…',
@@ -902,7 +902,7 @@ function BoardCanvas(props: {
               disabled={sourceCount >= LIMITS.maxSources}
               title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : 'Add an input (or right-click the canvas)'}
             >
-              <Icon name="plus" /> Input <span className="sc-count">{sourceCount}/{LIMITS.maxSources}</span>
+              <Icon name="plus" /> Input <span className="sc-count">{sourceCount}</span>
             </button>
             <button
               type="button"
@@ -912,7 +912,7 @@ function BoardCanvas(props: {
                 setAddingOutput(true);
               }}
               disabled={outputCount >= LIMITS.maxOutputs}
-              title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : 'Add an output size (or drag a wire out of the main preview)'}
+              title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : 'Add an output size (or drag a wire out of the master preview)'}
             >
               <Icon name="plus" /> Output <span className="sc-count">{outputCount}/{LIMITS.maxOutputs}</span>
             </button>

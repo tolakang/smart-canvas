@@ -9,7 +9,7 @@ export interface BoardActions {
   readOnly: boolean;
   /** The current project document (follows every edit). */
   doc: ProjectDoc;
-  /** Opens the main preview editor on a composition (default: the main preview). */
+  /** Opens the master preview editor on a composition (default: the master preview). */
   openMainEditor: (compositionId?: string) => void;
   openOutputEditor: (outputId: string) => void;
   /** Opens the export dialog with these outputs chosen (T13.7: export a group). */

@@ -1,6 +1,6 @@
 /**
  * The one renderer (CLAUDE.md: preview and export use the same OutputRenderer; no second path).
- * Draws a RenderScene on a W×H design-px canvas and scales the whole canvas, so the main preview,
+ * Draws a RenderScene on a W×H design-px canvas and scales the whole canvas, so the master preview,
  * output previews, thumbnails and the export page share every coordinate and differ only in `scale`.
  * Pure: no effects, no fetching. Waiting for fonts/images is the caller's job (see RenderPage).
  * Process nodes (T12.5) arrive as layers with an `effect`: crop / mirror / quarter turns are drawn by nesting

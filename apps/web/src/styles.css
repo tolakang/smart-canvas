@@ -605,7 +605,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-port__hint { flex: 1; color: var(--muted); font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sc-field--stack { flex-direction: column; align-items: stretch; }
 
-/* T12.8: a main preview's second out port, "use as a layer", sits near the bottom of the node */
+/* T12.8: a master preview's second out port, "use as a layer", sits near the bottom of the node */
 .react-flow__handle.sc-handle--nest { top: auto; bottom: 28px; }
 
 /* T13.7 board groups: a tinted frame behind its nodes, header to drag / rename / collapse / export */

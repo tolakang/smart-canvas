@@ -1,5 +1,5 @@
 /**
- * T8.6 end to end: the main preview editor moves and resizes assets directly on the canvas.
+ * T8.6 end to end: the master preview editor moves and resizes assets directly on the canvas.
  * Press-and-drag moves an unselected asset in one gesture; the selection box doesn't hide the layers under
  * it (a click selects the front-most one, Alt+click the next one behind); zoom; bigger handles.
  * T10.1: Figma-style workspace — Design panel X/Y/W/H, size badge, Hand tool / Space pan, wheel pan, zoom at
@@ -12,7 +12,7 @@ import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
 
-describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', () => {
+describe.skipIf(!adminUrl)('master preview editor: direct move / resize (T8.6)', () => {
   let stack: Stack;
   let page: Page;
   let url = '';
@@ -34,7 +34,7 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
     await stack?.close();
   });
 
-  const editor = () => page.getByRole('dialog', { name: /Main preview editor/ });
+  const editor = () => page.getByRole('dialog', { name: /Master preview editor/ });
   const layer = (id: string) => editor().locator(`.sc-editor__canvas .sc-render [data-source-id="${id}"]`);
   const selection = async () => ((await editor().getByTestId('selection').count()) ? (await editor().getByTestId('selection').innerText()).replace('Selected: ', '') : null);
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;

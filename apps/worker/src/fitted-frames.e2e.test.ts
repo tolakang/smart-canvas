@@ -57,7 +57,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
 
   it('the editor frame is the badge; stretching the right edge stretches the picture', async () => {
     await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit' }).click();
-    const editor = page.getByRole('dialog', { name: /Main preview editor/ });
+    const editor = page.getByRole('dialog', { name: /Master preview editor/ });
     const layer = editor.locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
     const lb = await layer.boundingBox();
     if (!lb) throw new Error('no layer');

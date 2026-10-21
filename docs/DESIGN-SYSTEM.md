@@ -111,7 +111,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - Hidden and library inputs show a small mark next to the name. Double-click the name to rename.
 - **Inspector:** name, behaviour, visibility, the content editor, and the actions (Duplicate, Save to library, Delete). The cards don't repeat any of it.
 - **Card sizing:** cards size their grid column `minmax(0, 1fr)`, so no thumbnail sticks out of a card. Side ports sit level with the title, which is where the node palette puts a new node's port: under the drop point.
-- **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the first main preview can't be deleted; selected wires alone are disconnected. In the main preview editor it removes the selected layer, as its row's trash button does. In an output editor it hides the layer on that output.
+- **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the first master preview can't be deleted; selected wires alone are disconnected. In the master preview editor it removes the selected layer, as its row's trash button does. In an output editor it hides the layer on that output.
 
 ## Picture frames (D37)
 - **Frame:** an image or SVG layer's frame (selection box, handles, size badge, snapping) is the picture's visible pixels, never its transparent margins.

@@ -1,7 +1,7 @@
 /**
  * Design panel (T10.1): the editor's right panel, Figma style. With nothing selected it shows the canvas and
  * the shortcuts; with a layer selected, its position, size, rotation and skew in design px (typed values go through
- * the editor's commit, so the main preview writes placements and an output writes an override), then the
+ * the editor's commit, so the master preview writes placements and an output writes an override), then the
  * caller's panels for that layer (text style, overrides).
  */
 import { MAX_SHEAR_DEG, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';

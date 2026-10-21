@@ -35,7 +35,7 @@ function bigProject(): ProjectDoc {
     ['d2', 'image', 'decoration'], ['l2', 'vector', 'logo'], ['s2', 'image', 'subject'],
   ] as const;
   for (const [id, kind, behavesLike] of extra) doc = ok(addSource(doc, { id, label: id, kind, behavesLike }));
-  expect(doc.sources).toHaveLength(LIMITS.maxSources);
+  expect(doc.sources).toHaveLength(10);
   for (const s of doc.sources) doc = ok(connectSource(doc, s.id));
   doc = {
     ...doc,

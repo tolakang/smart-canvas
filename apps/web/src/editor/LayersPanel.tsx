@@ -3,7 +3,7 @@
  * with the canvas. In the main editor rows re-order by drag & drop and have show/hide, duplicate (+) and
  * delete; inputs not wired into main are greyed with Connect. In an output editor (`outputId`, T5.1) the eye
  * hides the layer on that output only (an override); stacking order and wiring stay the master's. Its own
- * layers (T12.4) are listed first: they draw above the main preview's.
+ * layers (T12.4) are listed first: they draw above the master preview's.
  */
 import { connectSource, layerOrder, MAIN, outputComposition, outputLayers, setOverrideHidden, wiredLayers, wiredOutputLayers, type InputSource } from '@smart-canvas/core';
 import { useBoard } from '../board/context';

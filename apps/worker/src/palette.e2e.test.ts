@@ -1,7 +1,7 @@
 /**
  * T12.7 end to end: the node palette. A wire dragged out of an input and dropped on empty canvas offers the
- * nodes that fit (processes, a main preview); the one chosen is added at the drop point, already wired. A
- * right-click on a port opens the same palette for it (here: a new input wired into the main preview).
+ * nodes that fit (processes, a master preview); the one chosen is added at the drop point, already wired. A
+ * right-click on a port opens the same palette for it (here: a new input wired into the master preview).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -42,7 +42,7 @@ describe.skipIf(!adminUrl)('node palette (T12.7)', () => {
     await page.mouse.move(from.x + 8, from.y + 8, { steps: 4 });
     await page.mouse.move(to.x, to.y, { steps: 20 });
     await page.mouse.up();
-    expect(await palette().getByRole('menuitem').allInnerTexts()).toEqual(['Crop', 'Adjust', 'Flip / Rotate', 'Text variant', 'Recolor', 'New main preview']);
+    expect(await palette().getByRole('menuitem').allInnerTexts()).toEqual(['Crop', 'Adjust', 'Flip / Rotate', 'Text variant', 'Recolor', 'New master preview']);
     await palette().getByRole('menuitem', { name: 'Adjust' }).click();
     await expect.poll(async () => (await doc()).processes.length).toBe(1);
     const p = (await doc()).processes[0];
@@ -53,7 +53,7 @@ describe.skipIf(!adminUrl)('node palette (T12.7)', () => {
     expect(Math.abs(handle.y - to.y)).toBeLessThan(80);
   }, 60_000);
 
-  it('right-click a port: its palette (a new input wired into the main preview)', async () => {
+  it('right-click a port: its palette (a new input wired into the master preview)', async () => {
     const before = (await doc()).sources.length;
     await page.locator('.react-flow__node-mainNode .sc-port--add .react-flow__handle').click({ button: 'right' });
     expect(await palette().getByRole('menuitem').allInnerTexts()).toEqual(['Image', 'Logo / SVG', 'Text', 'Background colour']);

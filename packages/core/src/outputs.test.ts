@@ -12,7 +12,7 @@ const ok = (r: SourceResult): ProjectDoc => {
 const insta = { id: 'o1', label: 'Instagram', size: { width: 1080, height: 1350, unit: 'px' as const } };
 
 describe('addOutput', () => {
-  it('adds an automatic output wired to main, right of the main preview', () => {
+  it('adds an automatic output wired to main, right of the master preview', () => {
     const doc = ok(addOutput(createProjectDoc('P'), insta));
     expect(doc.outputs).toEqual([{ ...insta, family: 'auto', overrides: [], board: { x: 420, y: 0 } }]);
     expect(doc.edges).toEqual([{ id: outputWireId('o1'), from: 'main', to: 'o1', kind: 'composition' }]);

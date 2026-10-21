@@ -58,7 +58,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
       'Text',
       'Background colour / gradient',
       'Input…',
-      'Main preview', // T12.3
+      'Master preview', // T12.3
       'Output…',
     ]);
     await page.keyboard.press('Escape');

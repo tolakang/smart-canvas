@@ -91,7 +91,7 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     const node = page.locator(`.react-flow__node-inputNode[data-id="src:${source.id}"]`);
     const box = await node.boundingBox();
     if (!main || !box) throw new Error('no nodes');
-    // Grab the input by its header and drop it below the main preview, 3 px right of its left edge.
+    // Grab the input by its header and drop it below the master preview, 3 px right of its left edge.
     const grab = { x: box.x + 20, y: box.y + 10 };
     const to = { x: main.x + 3 + 20, y: main.y + main.height + 80 + 10 };
     await page.mouse.move(grab.x, grab.y);
