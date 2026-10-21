@@ -25,7 +25,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
       <NodePreview source={source} upload={upload} />
-      <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a main preview row" />
+      <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a master preview row" />
     </div>
   );
 }

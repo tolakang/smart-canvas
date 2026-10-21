@@ -2,7 +2,7 @@
 
 ## Concepts
 - **Input source**: one piece of content (background, subject, headline, logo, any added). Has kind, behaviour, content, port.
-- **Main preview**: the master artwork. Sources are placed on it (normalized frames). Single source of truth.
+- **Master preview**: the master artwork. Sources are placed on it (normalized frames). Single source of truth.
 - **Output node**: one target size with its own live preview/editor. Wired to main; can be disconnected.
 - **Override**: a manual change on an output; survives master changes.
 - **Preset / Library**: team-wide size presets (print, social) and reusable sources.
@@ -10,8 +10,8 @@
 ## Screens
 1. Login / accept invite
 2. Projects list (team)
-3. **Board** (main screen): input nodes left, main preview centre, output nodes right, wires between. Inspector side panel. Toolbar: Add input, Add output, Export, Library.
-4. Main preview editor (open from the main node): place/move/resize/rotate, snap and guides, layers panel, text panel.
+3. **Board** (main screen): input nodes left, master preview centre, output nodes right, wires between. Inspector side panel. Toolbar: Add input, Add output, Export, Library.
+4. Master preview editor (open from the main node): place/move/resize/rotate, snap and guides, layers panel, text panel.
 5. Output editor (open from an output node): same tools, shows lock icons on overridden layers, "Reset layer" and "Reset output".
 6. Library panel (team assets: logos, fills, text presets, fonts)
 7. Preset manager (admin)
@@ -19,7 +19,7 @@
 9. Team settings (members, roles, invite links)
 
 ## Flows
-1. **Start**: create project → 4 default inputs and an empty main preview (3000×3000 px) appear.
+1. **Start**: create project → 4 default inputs and an empty master preview (3000×3000 px) appear.
 2. **Fill inputs**: upload/type content per input; pick or change behaviour; add more inputs (max 10).
 3. **Compose master**: sources auto-placed by behaviour on first wire; user adjusts in main editor.
 4. **Add output**: pick preset or type size (px/mm); node appears wired to main with live preview.
@@ -32,7 +32,7 @@
 | ID | Feature | Done when |
 |---|---|---|
 | F1 | Input sources incl. 4 defaults, add up to 10, behaviours | Add/rename/hide/duplicate/delete work; cap enforced |
-| F2 | Main preview with port order = z-order | Re-wire or drag changes stacking everywhere |
+| F2 | Master preview with port order = z-order | Re-wire or drag changes stacking everywhere |
 | F3 | Outputs with presets, px/mm, bleed, resolution | Size change re-flows preview instantly |
 | F4 | Auto adaptation (rules) | Worked examples in ADAPTATION-RULES pass as unit tests |
 | F5 | Manual override + lock + reset | Edit persists across master edits; reset restores auto |

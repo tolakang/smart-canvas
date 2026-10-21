@@ -79,7 +79,7 @@ export function ProcessNodeView({ data }: NodeProps<ProcessFlowNode>) {
           <span className="sc-muted">Wire an input in</span>
         )}
       </div>
-      <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a main preview or output row, or another process" />
+      <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a master preview or output row, or another process" />
     </div>
   );
 }

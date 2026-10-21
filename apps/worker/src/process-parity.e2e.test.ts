@@ -2,7 +2,7 @@
  * T12.5 / T12.6 end to end: a process chain (Crop → Flip/Rotate → Adjust) on a photo, a Text variant of the
  * headline and a Recolor of the photo (an output-only layer) draw the same in the user's browser and in the
  * export worker: one OutputRenderer, so the PNGs match within anti-aliasing and the SVGs are the same file.
- * The board's main preview shows the processed layers, not the inputs.
+ * The board's master preview shows the processed layers, not the inputs.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addOutput, addProcess, connectOutputLayer, connectSource, disconnectSource, type ExportJob, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
@@ -63,14 +63,14 @@ describe.skipIf(!adminUrl)('process nodes: browser export matches the worker (T1
   });
 
   it('the board draws the processed layer: its chain folded into one crop, mirror, turn and filter', async () => {
-    const layer = page.getByLabel('Main preview', { exact: true }).locator('.sc-render [data-source-id="tone"]');
-    expect(await page.getByLabel('Main preview', { exact: true }).locator('.sc-render [data-source-id="subject"]').count()).toBe(0);
+    const layer = page.getByLabel('Master preview', { exact: true }).locator('.sc-render [data-source-id="tone"]');
+    expect(await page.getByLabel('Master preview', { exact: true }).locator('.sc-render [data-source-id="subject"]').count()).toBe(0);
     const style = (await layer.getAttribute('style')) ?? '';
     expect(style).toContain('opacity: 0.85');
     expect(style).toContain('filter: brightness(1.2) saturate(0.6) blur(1px)');
     expect(await layer.locator('img').locator('..').getAttribute('style')).toContain('rotate(90deg) scaleX(-1)'); // mirror, then a quarter turn clockwise
     // T12.6: the variant's words and colour; the recolor as a mask of the photo's shape in yellow.
-    const words = page.getByLabel('Main preview', { exact: true }).locator('.sc-render [data-source-id="words"]');
+    const words = page.getByLabel('Master preview', { exact: true }).locator('.sc-render [data-source-id="words"]');
     expect(await words.innerText()).toContain('Grand opening');
     expect(await words.getAttribute('style')).toContain('color: rgb(255, 255, 255)');
     const mono = page.getByLabel('Output Post', { exact: true }).locator('.sc-render [data-source-id="mono"]');

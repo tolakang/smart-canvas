@@ -35,7 +35,7 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
     <section className="sc-inspector" aria-label="Overrides">
       <div className="sc-layers__title">{override ? '🔒 Overridden on this output' : 'Automatic layout'}</div>
       {fields.length === 0 ? (
-        <p className="sc-muted sc-props__note">{override ? 'Same as auto.' : 'No overrides: this layer follows the main preview.'}</p>
+        <p className="sc-muted sc-props__note">{override ? 'Same as auto.' : 'No overrides: this layer follows the master preview.'}</p>
       ) : (
         <table className="sc-inspector__table">
           <thead>

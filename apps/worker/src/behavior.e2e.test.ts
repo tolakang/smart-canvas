@@ -73,7 +73,7 @@ describe.skipIf(!adminUrl)('input behaviours (T8.7)', () => {
     const label = (await doc()).sources.find((s) => s.id === id)?.label ?? '';
     await page.getByRole('button', { name: 'Fit to screen (Shift+1)' }).click(); // nodes added since the first fit
     await page.waitForTimeout(300);
-    // Added where the canvas menu opened, partly under the main preview: select it without a pointer.
+    // Added where the canvas menu opened, partly under the master preview: select it without a pointer.
     await page.locator(`.react-flow__node[data-id="src:${id}"] .sc-node__title`).dispatchEvent('click');
     const picker = page.getByRole('complementary', { name: 'Inspector' }).getByLabel(`${label} behaves like`);
     expect(await picker.locator('option').allInnerTexts()).toEqual(['Background', 'Decoration']);

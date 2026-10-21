@@ -1,7 +1,7 @@
 /**
  * T12.4 end to end: output-only layers. Wire an input onto an output's "Add a layer" row: only that output
- * draws it (above the main preview's layers), its editor lists it, and the × takes it off again. An input the
- * output's main preview already draws is refused with a hint.
+ * draws it (above the master preview's layers), its editor lists it, and the × takes it off again. An input the
+ * output's master preview already draws is refused with a hint.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -42,7 +42,7 @@ describe.skipIf(!adminUrl)('output-only layers (T12.4)', () => {
     await page.mouse.up();
   }
 
-  it('wire an input onto an output row: only that output draws it, above the main preview', async () => {
+  it('wire an input onto an output row: only that output draws it, above the master preview', async () => {
     // Each at its own spot in the free column left of the inputs, so nothing overlaps.
     const pane = page.locator('.react-flow__pane');
     const box = await pane.boundingBox();
@@ -73,7 +73,7 @@ describe.skipIf(!adminUrl)('output-only layers (T12.4)', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   }, 90_000);
 
-  it('an input the main preview already draws is refused; × removes the layer', async () => {
+  it('an input the master preview already draws is refused; × removes the layer', async () => {
     const d = await doc();
     const a = d.outputs[0];
     const own = a?.layers?.[0];
@@ -84,7 +84,7 @@ describe.skipIf(!adminUrl)('output-only layers (T12.4)', () => {
     await page.getByRole('button', { name: 'Fit to screen (Shift+1)' }).click(); // nodes added since the first fit
     await page.waitForTimeout(300);
     await drag(page.locator('.react-flow__node-inputNode[data-id="src:logo"] .react-flow__handle.source'), outNode.locator('.sc-port--add .react-flow__handle'));
-    await page.getByRole('alert').getByText('already a layer of the output’s main preview').waitFor();
+    await page.getByRole('alert').getByText('already a layer of the output’s master preview').waitFor();
     expect((await doc()).outputs[0]?.layers).toEqual([own]);
     const label = d.sources.find((s) => s.id === own)?.label ?? '';
     await outNode.getByRole('button', { name: `Remove ${label} from ${a.label}` }).click();

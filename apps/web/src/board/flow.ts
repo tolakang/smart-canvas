@@ -1,7 +1,7 @@
 /**
  * ProjectDoc ↔ React Flow. The doc is the source of truth: node positions live in `board`
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
- * Every composition is a "main preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
+ * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
 import { compositionById, connectRefusal, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
@@ -16,7 +16,7 @@ export const compositionIdOfNode = (nodeId: string | null | undefined): string |
 
 // Not 'input'/'output': React Flow has built-in node types (and CSS) under those names.
 export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
-/** One row per port on the main preview, front (port 0) first. */
+/** One row per port on the master preview, front (port 0) first. */
 export interface PortRow {
   port: number;
   sourceId: string;
@@ -111,7 +111,7 @@ function endpoint(doc: ProjectDoc, id: string): string | null {
   return null;
 }
 
-/** A composition's rows (default: the main preview), front (port 0) first. */
+/** A composition's rows (default: the master preview), front (port 0) first. */
 export function portRows(doc: ProjectDoc, compositionId: string = MAIN): PortRow[] {
   const wired = new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === compositionId).map((e) => e.from));
   const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
@@ -225,27 +225,27 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
 
 /**
  * Why a wire may not go there (null = it may): port types and loops (core), one composition per output, and on
- * an output the right port (T12.4: layer rows vs the main preview port). Without `targetHandle` the port isn't checked.
+ * an output the right port (T12.4: layer rows vs the master preview port). Without `targetHandle` the port isn't checked.
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
   if (refusal === 'wrong_type')
-    return e.kind === 'composition' ? 'A main preview wires into an output.' : compositionById(doc, e.from) ? 'A main preview goes into a row of another main preview or an output.' : 'An input wires into a row of a main preview.';
+    return e.kind === 'composition' ? 'A master preview wires into an output.' : compositionById(doc, e.from) ? 'A master preview goes into a row of another master preview or an output.' : 'An input wires into a row of a master preview.';
   if (refusal === 'cycle') return 'That would make a loop.';
   if (refusal) return 'Drop the wire on a port.';
   const toOutput = doc.outputs.some((o) => o.id === e.to);
   if (toOutput && 'targetHandle' in c) {
     const onRow = portFromHandle(c.targetHandle) !== undefined;
     if (e.kind === 'layer' && !onRow) return 'An input wires into a layer row of an output.';
-    if (e.kind === 'composition' && onRow) return 'A main preview wires into the output’s main preview port.';
+    if (e.kind === 'composition' && onRow) return 'A master preview wires into the output’s master preview port.';
   }
   if (e.kind === 'layer' && toOutput) {
     const comp = outputComposition(doc, e.to);
-    if (comp && wiredLayers(doc, comp).has(e.from)) return 'This input is already a layer of the output’s main preview.';
+    if (comp && wiredLayers(doc, comp).has(e.from)) return 'This input is already a layer of the output’s master preview.';
   }
-  if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This output already has a main preview: drag its wire off first.';
+  if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This output already has a master preview: drag its wire off first.';
   return null;
 }
 

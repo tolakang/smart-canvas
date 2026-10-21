@@ -38,7 +38,7 @@ export function toDesignFrame(n: NFrame, canvas: { width: number; height: number
 }
 
 /**
- * A composition (default: the main preview): its wired rows, visible, back→front. Each uses its placement;
+ * A composition (default: the master preview): its wired rows, visible, back→front. Each uses its placement;
  * a background with no placement yet covers the whole canvas; anything else unplaced is skipped.
  */
 export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): RenderScene {

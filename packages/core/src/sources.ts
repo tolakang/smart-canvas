@@ -2,7 +2,7 @@
  * Input-source operations on a ProjectDoc (pure; ids are passed in, never generated here).
  * Invariants kept by every operation:
  * - at most LIMITS.maxSources sources;
- * - every source is a row of the main preview (`layers`, front first: row = port, D11), exactly once;
+ * - every source is a row of the master preview (`layers`, front first: row = port, D11), exactly once;
  * - nothing in the doc points at a deleted source (rows, edges, placements, output overrides, frozen frames).
  */
 import { edgeId, MAIN, withComposition } from './graph';
@@ -38,7 +38,7 @@ export function defaultContent(kind: SourceKind): SourceContent {
   }
 }
 
-/** Board layout for input nodes: one column left of the main preview. */
+/** Board layout for input nodes: one column left of the master preview. */
 export const SOURCE_COLUMN_X = -460;
 export const SOURCE_ROW_GAP = 300;
 
@@ -75,7 +75,7 @@ function nextRowY(doc: ProjectDoc): number {
   return ys.length === 0 ? 0 : Math.max(...ys) + SOURCE_ROW_GAP;
 }
 
-/** Adds `source` and makes it row `port` of the main preview (that row and everything behind it move back). */
+/** Adds `source` and makes it row `port` of the master preview (that row and everything behind it move back). */
 function insertAt(doc: ProjectDoc, source: InputSource, port: number): ProjectDoc {
   const withRow = withComposition(doc, MAIN, (c) => {
     const layers = [...c.layers];

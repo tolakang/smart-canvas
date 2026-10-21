@@ -9,7 +9,7 @@
 - D6 Import formats: SVG, PNG, JPG, WebP. Not supported: PSD, AI, PDF, legacy Affinity. No `.af` (Affinity 3) import: dropped by the owner (2026-10-20), too hard to read reliably; export from Affinity to SVG/PNG instead. (S1, T7.6 dropped.)
 
 ## Board and inputs
-- D7 One main preview per project. Up to 10 input sources (the 4 defaults count) and up to 10 outputs.
+- D7 One main preview per project. ~~Up to 10 input sources (the 4 defaults count)~~ (superseded by D39: no layer limit) and up to 10 outputs.
 - D8 New project starts with 4 inputs: Background, Subject, Headline, Logo. "+ Add input" adds more: type = image | vector | text | fill; behavesLike = background | subject | text | logo | decoration (new source copies that behaviour's rules). Defaults can be renamed, hidden, duplicated, deleted.
 - D9 Background accepts a photo or a solid colour / gradient (fill).
 - D10 One text source = one text box, one style. Small print = another text source.
@@ -98,3 +98,4 @@
   - **Scale:** a layer that already fills the master on an axis (within 0.5% of both edges) fills that axis in the output; one that fills both covers it. Every other layer scales with the stretched grid, by `√(sx·sy)` (owner, 2026-10-21: it was `k = min(sx, sy)`, which left layers small in tall and wide outputs): it keeps the share of the canvas it has on the master. The scale is capped so a layer inside the master stays inside the output, and is never below `k`. One scale for both axes: pictures and text keep their proportions.
   - **Unchanged:** backgrounds cover; logos keep their minimum width (growing away from their pin); text is fitted inside its box starting at `fontSizePx · scale`; overrides, frozen frames and output-only layers as before.
   - **Dropped:** the side family's left text column and the safe-area clamp. `output.family` is still computed and reported, but no longer changes placement. Spec: `docs/ADAPTATION-RULES.md` v3.
+- D39 No limit on layers (owner, 2026-10-21; supersedes the 10-input cap of D7). A master preview takes as many inputs (layers) as the project needs. `LIMITS.maxSources` stays only as a safety ceiling for the API (500), far above real use; the board no longer shows an input count limit. The "Main preview" is renamed **Master preview** in the UI; stored default names ("Main preview", "Main preview N") read "Master preview" on load (`migrateProjectDoc`), names the user typed are kept.

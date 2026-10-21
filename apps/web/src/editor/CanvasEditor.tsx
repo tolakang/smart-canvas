@@ -1,5 +1,5 @@
 /**
- * The canvas editor shared by the main preview (T3.2) and the output editors (T5.1): select, move, resize,
+ * The canvas editor shared by the master preview (T3.2) and the output editors (T5.1): select, move, resize,
  * rotate and skew layers with the transform box (D36, Affinity-style: drag an edge along itself to skew;
  * touch: hold, then drag; double-click / double-tap a handle to undo what it changed), moves snapping to the
  * canvas edges, centre lines and other layers, arrow-key nudging (1 design px, Shift 10). Draws with the same OutputRenderer as export. What an edit
@@ -36,7 +36,7 @@ export interface CanvasEditorProps {
   scene: RenderScene;
   /** Writes a layer's new frame (design px of `scene`) where this editor stores it. */
   onCommit: (sourceId: string, frame: Frame) => void;
-  /** Delete / Backspace on the selected layer (main preview: as its row's trash button; output: hide it there). */
+  /** Delete / Backspace on the selected layer (master preview: as its row's trash button; output: hide it there). */
   onDelete?: (sourceId: string) => void;
   /** Left side panel (layers). */
   layers: (selected: string | null, select: (id: string | null) => void) => ReactNode;

@@ -1,7 +1,7 @@
 /**
  * Board cards and the Delete key. Input cards show only a name and a preview (settings live in the inspector),
  * fit their content (no thumbnail wider than the card), and Delete / Backspace deletes the selected nodes —
- * one confirm, one undo step. In the main preview editor Delete removes the selected layer like its row's
+ * one confirm, one undo step. In the master preview editor Delete removes the selected layer like its row's
  * trash button; in an output editor it hides the layer on that output.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
@@ -49,7 +49,7 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
     expect(await inspector.getByLabel('Subject behaves like').count()).toBe(1);
   }, 30_000);
 
-  it('Delete deletes the selected input (after a confirm); the first main preview stays', async () => {
+  it('Delete deletes the selected input (after a confirm); the first master preview stays', async () => {
     page.once('dialog', (d) => void d.accept());
     await inNode('Logo').locator('.sc-node__title').click();
     await page.keyboard.press('Delete');
@@ -60,7 +60,7 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
     await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
     await page.keyboard.press('Control+z');
     await inNode('Logo').waitFor();
-    // The main preview can't be deleted: nothing is asked, nothing changes.
+    // The master preview can't be deleted: nothing is asked, nothing changes.
     let asked = false;
     const ask = (d: { dismiss: () => Promise<void> }) => ((asked = true), void d.dismiss());
     page.once('dialog', ask);
@@ -80,9 +80,9 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
     expect(await inNode('Logo').count()).toBe(1);
   }, 30_000);
 
-  it('main preview editor: Delete removes the selected layer (as its row trash button)', async () => {
+  it('master preview editor: Delete removes the selected layer (as its row trash button)', async () => {
     await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit' }).click();
-    const editor = page.getByRole('dialog', { name: /Main preview editor/ });
+    const editor = page.getByRole('dialog', { name: /Master preview editor/ });
     await editor.getByRole('complementary', { name: 'Layers' }).getByText('Headline', { exact: true }).click();
     page.once('dialog', (d) => void d.accept());
     await page.keyboard.press('Delete');
