@@ -3,7 +3,7 @@
  * override on that output (move/resize/rotate → frame, text panel → style, eye → hidden); the master
  * and the other outputs are untouched.
  */
-import { computeLayout, isOutputConnected, outputScene, resetOutputOverrides, setOverrideFrame, type Frame } from '@smart-canvas/core';
+import { computeLayout, isOutputConnected, outputScene, resetOutputOverrides, setOverrideFrame, setOverrideHidden, type Frame } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
@@ -57,6 +57,8 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
       }
       scene={scene}
       onCommit={onCommit}
+      // Delete key: a layer can't be deleted from one output; it's hidden there (eye in the layers panel).
+      onDelete={readOnly ? undefined : (id) => run((d) => setOverrideHidden(d, output.id, id, true, author()))}
       layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} outputId={output.id} />}
       props={(s) => (
         <div className="sc-editor__side">

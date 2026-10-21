@@ -103,3 +103,12 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Touch:** hold a handle until it fills with the accent (350 ms), then drag. Moving earlier does nothing.
 - **Reset:** double-click or double-tap a handle to undo what it changed: rotate handle = rotation, a corner = scale, an edge = that side's stretch and skew.
 - **Snapping:** a move snaps to canvas and layer edges and centres within 6 screen px, shown by a dashed red guide line.
+
+## Board cards and the Delete key
+- **Input cards:** the name and a preview of the content, nothing else.
+  - The preview keeps the content's shape and never gets wider than the card.
+  - An empty picture input shows an upload button. Files can still be dropped on the card.
+  - Hidden and library inputs show a small mark next to the name. Double-click the name to rename.
+- **Inspector:** name, behaviour, visibility, the content editor, and the actions (Duplicate, Save to library, Delete). The cards don't repeat any of it.
+- **Card sizing:** cards size their grid column `minmax(0, 1fr)`, so no thumbnail sticks out of a card. Side ports sit level with the title, which is where the node palette puts a new node's port: under the drop point.
+- **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the first main preview can't be deleted; selected wires alone are disconnected. In the main preview editor it removes the selected layer, as its row's trash button does. In an output editor it hides the layer on that output.

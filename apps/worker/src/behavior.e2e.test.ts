@@ -68,10 +68,14 @@ describe.skipIf(!adminUrl)('input behaviours (T8.7)', () => {
     await expect.poll(() => coverage(added?.id ?? '')).toEqual({ w: 1, h: 1 });
   }, 90_000);
 
-  it('changing "behaves like" on the node re-flows the outputs', async () => {
+  it('changing "behaves like" (inspector) re-flows the outputs', async () => {
     const id = (await doc()).sources.find((s) => s.kind === 'fill' && s.id !== 'background')?.id ?? '';
     const label = (await doc()).sources.find((s) => s.id === id)?.label ?? '';
-    const picker = page.locator(`.react-flow__node[data-id="src:${id}"]`).getByLabel(`${label} behaves like`);
+    await page.getByRole('button', { name: 'Fit to screen (Shift+1)' }).click(); // nodes added since the first fit
+    await page.waitForTimeout(300);
+    // Added where the canvas menu opened, partly under the main preview: select it without a pointer.
+    await page.locator(`.react-flow__node[data-id="src:${id}"] .sc-node__title`).dispatchEvent('click');
+    const picker = page.getByRole('complementary', { name: 'Inspector' }).getByLabel(`${label} behaves like`);
     expect(await picker.locator('option').allInnerTexts()).toEqual(['Background', 'Decoration']);
     await picker.selectOption('decoration');
     await saved();

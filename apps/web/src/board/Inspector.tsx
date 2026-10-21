@@ -1,12 +1,16 @@
 /**
  * The right inspector (T13.2): settings of the selected node, so node cards stay small (thumbnail, name, size,
  * health). An output: name, layout health (D35), size / preset / scale / bleed, connection, hand edits. An
- * input: name, behaviour, visibility and its content editor. A composition (main preview, T12.3): name, canvas
+ * input: name, behaviour, visibility, its content editor and its actions (duplicate, save to library, delete). A composition (main preview, T12.3): name, canvas
  * size, rows and health.
  */
 import {
   compositionById,
   compositionHealth,
+  deleteSource,
+  duplicateSource,
+  libraryEntryOf,
+  LIMITS,
   renameComposition,
   setCompositionSize,
   computeLayout,
@@ -23,13 +27,15 @@ import {
   type OutputNode,
 } from '@smart-canvas/core';
 import { useMemo, useState, type ReactNode } from 'react';
+import { api } from '../api';
+import { newId } from './ids';
 import { useBoard } from './context';
 import { useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
 import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, processNodeId } from './flow';
 import { ProcessSettings } from './ProcessSettings';
 import { HealthIssues, healthSummary } from './HealthBadge';
-import { Icon } from './LayerRow';
+import { confirmDelete, Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
 import { OutputSettings } from './OutputSettings';
 
@@ -160,7 +166,41 @@ function InputInspector({ source }: { source: InputSource }) {
           <SourceEditor source={source} upload={upload} />
         </div>
       </Section>
+      {!readOnly && <InputActions source={source} />}
     </>
+  );
+}
+
+/** What used to be the icon row on the input node: duplicate, save to the team library, delete. */
+function InputActions({ source }: { source: InputSource }) {
+  const { run, sourceCount, teamId } = useBoard();
+  const [saved, setSaved] = useState<'idle' | 'saved' | 'failed'>('idle');
+  const full = sourceCount >= LIMITS.maxSources;
+  async function saveToLibrary() {
+    const name = window.prompt('Save to the team library as', source.label);
+    if (name === null) return;
+    try {
+      await api('POST', `/teams/${teamId}/library`, { ...libraryEntryOf(source, name), tags: [] });
+      setSaved('saved');
+    } catch {
+      setSaved('failed');
+    }
+  }
+  return (
+    <Section title="Actions">
+      <div className="sc-inspector-panel__actions">
+        <button type="button" className="sc-btn" disabled={full} title={full ? `${LIMITS.maxSources} inputs max` : undefined} aria-label={`Duplicate ${source.label}`} onClick={() => run((d) => duplicateSource(d, source.id, newId()))}>
+          <Icon name="plus" /> Duplicate
+        </button>
+        <button type="button" className="sc-btn" aria-label={`Save ${source.label} to library`} onClick={() => void saveToLibrary()}>
+          <Icon name={saved === 'saved' ? 'check' : 'library'} /> {saved === 'saved' ? 'Saved to library' : saved === 'failed' ? 'Try again' : 'Save to library'}
+        </button>
+        <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${source.label}`} onClick={() => confirmDelete(source.label) && run((d) => deleteSource(d, source.id))}>
+          <Icon name="trash" /> Delete
+        </button>
+      </div>
+      <p className="sc-muted sc-inspector-panel__hint">Or select nodes and press Delete.</p>
+    </Section>
   );
 }
 

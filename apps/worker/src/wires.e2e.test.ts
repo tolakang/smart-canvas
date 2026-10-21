@@ -98,6 +98,8 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     if (!sq || !pt) throw new Error('outputs missing');
     const outHandle = (id: string) => page.locator(`.react-flow__node-outputNode[data-id="out:${id}"] .sc-handle--composition`);
     // T13.2: an output's settings (Disconnect included) are in the inspector of the selected node.
+    await page.getByRole('button', { name: 'Fit to screen (Shift+1)' }).click(); // nodes added since the first fit
+    await page.waitForTimeout(300);
     await page.locator(`.react-flow__node-outputNode[data-id="out:${pt.id}"] .sc-node__title`).click();
     await page.getByRole('complementary', { name: 'Inspector' }).getByRole('button', { name: 'Disconnect' }).click();
     await saved();

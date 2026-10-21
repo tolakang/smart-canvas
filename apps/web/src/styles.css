@@ -430,7 +430,8 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 @media (max-width: 1100px) { .sc-topbar__ghost { font-size: 0 !important; gap: 0 !important; width: 32px; justify-content: center; padding: 0 !important; } .sc-topbar .sc-save { font-size: 0; } }
 
 /* T10.4: an output's input handle sits on its title row (where a dropped wire creates it), not mid-card */
-.sc-node--output > .react-flow__handle { top: 26px; }
+/* Side ports sit level with the title (where the node palette puts a new node's port: under the drop point). */
+.sc-node--output > .react-flow__handle, .sc-node--input > .react-flow__handle, .sc-node--process > .react-flow__handle { top: 26px; }
 
 /* T13.1 layout health (D35): status dot + count on nodes, issue list on click */
 .sc-health { position: relative; display: inline-flex; flex: none; }
@@ -791,3 +792,20 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 /* Hand tool / Space: the canvas pans; the handles let the press through. */
 .sc-editor__stage--hand .tb-handle, .sc-editor__stage--hand .tb-target { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .tb-handle::after { transition: none; } }
+
+/* Board cards fit their content (no thumbnail wider than the card) and show only a preview; settings live in
+   the inspector. `minmax(0, 1fr)`: a grid column sized `auto` grows to an image's natural width. */
+.sc-node { grid-template-columns: minmax(0, 1fr); }
+.sc-node > * { min-width: 0; }
+.sc-node__preview { display: grid; gap: var(--sp-1); justify-items: center; }
+.sc-node__preview .sc-thumb:not(.sc-thumb--empty) { display: block; width: auto; height: auto; max-width: 100%; max-height: 140px; }
+.sc-node__preview .sc-thumb--empty, .sc-node__preview .sc-swatch { width: 100%; }
+.sc-node__preview .sc-thumb--empty { height: 72px; text-align: center; padding: 0 var(--sp-2); }
+.sc-thumb--upload { cursor: pointer; border-style: dashed; }
+.sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
+.sc-node__busy { font-size: var(--fs-xs); color: var(--muted); }
+.sc-node__text { font-size: var(--fs-md); line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.sc-node__mark { display: inline-flex; color: var(--muted); flex: none; }
+.sc-node .sc-render--thumb, .sc-node .sc-main-thumb { max-width: 100%; }
+.sc-inspector-panel__actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }

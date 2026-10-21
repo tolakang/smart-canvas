@@ -43,7 +43,9 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     await inNode('Subject').locator('img.sc-thumb').waitFor();
     await inNode('Logo').locator('input[type=file]').setInputFiles({ name: 'logo.svg', mimeType: 'image/svg+xml', buffer: logoSvg });
     await inNode('Logo').locator('img.sc-thumb').waitFor();
-    await inNode('Headline').getByLabel('Headline text').fill('Grand opening សួស្តី');
+    // The card shows a preview; its text is edited in the inspector.
+    await inNode('Headline').locator('.sc-node__title').click();
+    await page.getByRole('complementary', { name: 'Inspector' }).getByLabel('Headline text').fill('Grand opening សួស្តី');
     for (const l of ['Background', 'Subject', 'Headline', 'Logo']) await page.getByRole('button', { name: `Connect ${l}` }).click();
     for (const preset of ['Instagram portrait 4:5 · 1080×1350 px', 'Instagram square · 1080×1080 px', 'A5 flyer · 148×210 mm']) {
       await page.getByRole('button', { name: '+ Add output' }).click();
