@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveTrim, fillBoxes, fitFrames, fittedFrame, layersOfPicture, unfitPictures, visibleRect } from './fit';
+import { effectiveTrim, fillBoxes, fitFrames, fittedFrame, layersOfPicture, pictureAspect, unfitPictures, visibleRect } from './fit';
 import { mainComposition } from './graph';
 import { computeLayout } from './layout';
 import { mockMeasure, output, place, project } from './layout/test-doc';
@@ -135,4 +135,16 @@ describe('editing fitted frames', () => {
     expect(d.outputs[0]?.overrides[0]?.frame).toMatchObject({ w: 300, h: 100, fitted: true });
     expect(fitFrames(d, { badge: BADGE }).outputs[0]?.overrides[0]).toBe(d.outputs[0]?.overrides[0]); // the master placement gets fitted; the override is left as is
   });
+});
+
+describe('pictureAspect: a fitted picture\'s own shape, whatever its frame was stretched to', () => {
+  const layer = (effect?: { crop?: { x: number; y: number; w: number; h: number }; rotate?: 0 | 90 | 180 | 270 }) =>
+    ({ id: 'p', label: 'p', kind: 'image', behavesLike: 'subject', visible: true, content: { kind: 'image', assetId: 'badge', focal: { x: 0.5, y: 0.5 } }, board: { x: 0, y: 0 }, ...(effect ? { effect: { flipX: false, rotate: 0, ...effect } } : {}) }) as Parameters<typeof pictureAspect>[0];
+  it('the visible part in pixels: 200×200 of the 400×300 badge', () => close(pictureAspect(layer(), { badge: BADGE }) ?? 0, 1));
+  it('after a crop and a quarter turn', () => {
+    // crop the left half: visible 100×200 → 1:2; turned → 2:1
+    close(pictureAspect(layer({ crop: { x: 0, y: 0, w: 0.5, h: 1 } }), { badge: BADGE }) ?? 0, 0.5);
+    close(pictureAspect(layer({ crop: { x: 0, y: 0, w: 0.5, h: 1 }, rotate: 90 }), { badge: BADGE }) ?? 0, 2);
+  });
+  it('unknown until the trim is measured', () => expect(pictureAspect(layer(), { badge: { width: 400, height: 300 } })).toBeUndefined());
 });

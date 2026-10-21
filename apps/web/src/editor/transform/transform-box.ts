@@ -26,7 +26,7 @@
  */
 import {
   applyOp, classifyEdgeDrag, corners, derive, docFromState, HANDLE_UV, handleFrame, isCorner, moveOp, pointAt,
-  pushOp, resetForHandle, rotateHandlePos, rotateOp, SCALE_HANDLES, scaleOp, skewOp, sub, len, toCssMatrix,
+  pushOp, resetForHandle, restoreAspect, rotateHandlePos, rotateOp, SCALE_HANDLES, scaleOp, skewOp, sub, len, toCssMatrix,
   type EdgeIntent, type HandleId, type ScaleHandle, type TransformDoc, type TransformOp, type TransformState, type Vec,
 } from './math';
 
@@ -58,6 +58,8 @@ export interface TransformBoxOptions {
   getScale?: () => number;
   /** Whether a corner drag keeps the proportions (given Shift). Default: unless Shift is held. */
   proportional?: (shift: boolean) => boolean;
+  /** The element's own proportions (width / height): a reset of a stretch or scale handle ends at them. */
+  aspect?: () => number | undefined;
   /** Dragging past the opposite edge mirrors the element (default true). */
   flip?: boolean;
   /**
@@ -125,7 +127,7 @@ const RESIZE_CURSORS = ['ew-resize', 'nwse-resize', 'ns-resize', 'nesw-resize'];
 export class TransformBox {
   private state: TransformState;
   private doc: TransformDoc;
-  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove'>;
+  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'aspect'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'aspect'>;
   private readonly guides: SVGGElement;
   private guideLines: { x: number[]; y: number[] } = { x: [], y: [] };
   private readonly overlay: HTMLDivElement;
@@ -224,7 +226,7 @@ export class TransformBox {
 
   /** Reset what a handle edits — the same as double-clicking it. */
   reset(handle: HandleId): void {
-    this.doc = resetForHandle(this.doc, handle);
+    this.doc = restoreAspect(resetForHandle(this.doc, handle), handle, this.opts.aspect?.());
     this.state = derive(this.doc);
     this.scheduleRender();
     this.opts.onChange?.(this.getState(), { phase: 'reset', handle, doc: this.doc });

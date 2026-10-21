@@ -57,5 +57,5 @@ Picture frames hug their visible pixels, and stretching distorts the picture.
 ## Known limits / ideas
 - `output.family` is still computed and reported but no longer changes placement (D38).
 - Resizes don't snap; only moves do.
-- Transform history isn't saved with the project (a reset after a reload only undoes edits since the editor opened).
+- Transform history isn't saved with the project (a reset after a reload only undoes edits since the editor opened). Pictures are the exception for stretches: their own proportions are known (`pictureAspect`), so a stretch / scale handle reset takes an old stretch out of the box the editor started from (`restoreAspect`).
 - Nodes added from the top bar can land off-screen; the board doesn't pan to show them.

@@ -125,6 +125,19 @@ function pictureOf(l: LayerSource, assets: Record<string, AssetSize>) {
 }
 
 /**
+ * A fitted picture's own proportions: width / height of its visible part (after crop and quarter turn), in
+ * pixels; undefined until its trim is measured or for a layer that isn't a picture. A stretch changes the
+ * frame, not this, so a reset can always bring the picture back to its shape.
+ */
+export function pictureAspect(l: LayerSource, assets: Record<string, AssetSize>): number | undefined {
+  const p = pictureOf(l, assets);
+  if (!p) return undefined;
+  const eff = effectiveSize(p.size, p.effect);
+  const t = effectiveTrim(p.size.trim, p.effect);
+  return (eff.width * t.w) / (eff.height * t.h);
+}
+
+/**
  * Every unfitted frame of a picture layer whose trim is known becomes fitted, in place (placements on every
  * composition, output overrides with a whole frame, frozen output frames). Returns `doc` itself when nothing
  * changes, so callers can compare.

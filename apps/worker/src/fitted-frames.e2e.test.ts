@@ -132,6 +132,56 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
     expect(red).toBeGreaterThan(1000); // the badge is drawn
   }, 120_000);
 
+  it('rotated, stretched, editor closed and reopened: a double-click on the edge brings back the picture’s shape', async () => {
+    const editor = page.getByRole('dialog', { name: /Master preview editor/ });
+    const layer = editor.locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
+    const handle = async (h: string) => {
+      const b = await editor.locator(`[data-tb-handle="${h}"]`).boundingBox();
+      if (!b) throw new Error(`no ${h} handle`);
+      return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+    };
+    const drag = async (h: string, dx: number, dy: number) => {
+      const c = await handle(h);
+      await page.mouse.move(c.x, c.y);
+      await page.mouse.down();
+      await page.mouse.move(c.x + dx / 3, c.y + dy / 3, { steps: 4 });
+      await page.mouse.move(c.x + dx, c.y + dy, { steps: 8 });
+      await page.mouse.up();
+      await saved();
+    };
+    const open = async () => {
+      await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit' }).click();
+      const lb = await layer.boundingBox();
+      if (!lb) throw new Error('no layer');
+      await page.mouse.click(lb.x + lb.width / 2, lb.y + lb.height / 2);
+      await editor.locator('[data-tb-handle="e"]').waitFor();
+    };
+    const shape = async () => {
+      const p = await placement();
+      const { width: W, height: H } = mainComposition(await doc()).size;
+      return { ratio: (p.w * W) / (p.h * H), rotation: p.rotation ?? 0, h: p.h };
+    };
+    await open();
+    await drag('rotate', 60, 30);
+    await drag('e', 60, 0);
+    const stretched = await shape();
+    expect(stretched.rotation).not.toBe(0);
+    expect(Math.abs(stretched.ratio - 100 / 150)).toBeGreaterThan(0.2); // still stretched from the earlier test, and more
+    await editor.getByRole('button', { name: 'Close' }).click();
+    // A new editor session: the history of those drags is gone; the picture's own shape is not.
+    await open();
+    const c = await handle('e');
+    await page.mouse.click(c.x, c.y);
+    await page.mouse.click(c.x, c.y);
+    await saved();
+    const back = await shape();
+    expect(back.ratio).toBeCloseTo(100 / 150, 3);
+    expect(back.rotation).toBeCloseTo(stretched.rotation, 3); // the turn stays
+    expect(back.h).toBeCloseTo(stretched.h, 6); // the left/right edge fixes the width, from the height
+    if (process.env.SC_SHOTS) await page.screenshot({ path: `${process.env.SC_SHOTS}/fitted-reset.png` });
+    await editor.getByRole('button', { name: 'Close' }).click();
+  }, 90_000);
+
   it('replacing the picture fits the new one into the old frame', async () => {
     const before = await placement();
     const wide = await sharp({ create: { width: 300, height: 100, channels: 4, background: { r: 30, g: 30, b: 220, alpha: 1 } } }).png().toBuffer();
