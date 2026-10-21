@@ -15,7 +15,6 @@ import {
   disconnectSource,
   duplicateSource,
   LIMITS,
-  outputDefaults,
   reconnectNeedsChoice,
   reconnectOutput,
   setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
@@ -65,7 +64,6 @@ import {
   inputToOutput,
   connectionRefusal,
   MAIN_ID,
-  OUTPUT_HANDLE,
   outputIdOfNode,
   portFromHandle,
   sourceIdOfNode,
@@ -80,11 +78,12 @@ import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
 import { CanvasToolbar, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
+import { paletteItems, type PalettePort } from './palette';
 import { COARSE_QUERY, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
 import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
 import { nodeTypes } from './nodes';
-import { presetSettings, sizeLabel } from './OutputNode';
+import { presetSettings } from './OutputNode';
 
 interface Loaded {
   rev: number;
@@ -98,10 +97,6 @@ const ERROR_NOTICE: Partial<Record<SourceError, string>> = {
   invalid: 'That value is out of range.',
 };
 
-/** T10.4: an output made by dropping a wire starts at this size (the Add output dialog's default). */
-const NEW_OUTPUT_SIZE = { width: 1080, height: 1350, unit: 'px' } as const;
-/** About where an output node's input handle sits below its top-left corner, so the new node lands on the pointer. */
-const NEW_OUTPUT_HANDLE_Y = 26;
 
 const STATE_LABEL: Record<SaveState, string> = {
   saved: 'All changes saved',
@@ -492,9 +487,33 @@ function BoardCanvas(props: {
   );
 
   /**
-   * T10.4: a wire dragged out of the main preview and released on empty canvas adds an output there, already
-   * wired (addOutput wires main → output, D12). It starts at the default size; its preset can be changed on the node.
+   * T12.7 node palette (generalising T10.4): a wire dragged out of any port and released on empty canvas — or a
+   * right-click on a port — lists the nodes that fit that port; the one chosen is added there, already wired.
    */
+  const openPalette = useCallback(
+    (port: PalettePort, client: { x: number; y: number }) => {
+      if (readOnly || !flow.current) return;
+      const items = paletteItems(docRef.current, port, presets);
+      if (items.length === 0) return;
+      const at = flow.current.screenToFlowPosition(client);
+      setMenu({
+        x: client.x,
+        y: client.y,
+        title: 'Add & connect',
+        items: items.map((item) => ({ label: item.label, disabled: item.disabled, separated: item.separated, onSelect: () => run((doc) => item.add(doc, newId, at)) })),
+      });
+    },
+    [readOnly, presets, run],
+  );
+  /** Right-click on a port: its palette (before the node's own menu). */
+  const onPortContextMenu = (e: React.MouseEvent) => {
+    const handle = (e.target as Element).closest?.('.react-flow__handle');
+    const nodeId = handle?.getAttribute('data-nodeid');
+    if (!handle || !nodeId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openPalette({ nodeId, handleId: handle.getAttribute('data-handleid') || null, handleType: handle.classList.contains('source') ? 'source' : 'target' }, { x: e.clientX, y: e.clientY });
+  };
   const onConnectEnd = useCallback(
     (e: MouseEvent | TouchEvent, state: FinalConnectionState) => {
       if (readOnly || state.isValid || !flow.current) return;
@@ -505,15 +524,12 @@ function BoardCanvas(props: {
       }
       const r = wireEndDrag.current;
       if (r.active || performance.now() - r.endedAt < 100) return;
-      const composition = compositionIdOfNode(state.fromNode?.id);
-      if (!composition || state.fromHandle?.id !== OUTPUT_HANDLE) return;
+      const from = state.fromHandle;
       const point = 'changedTouches' in e ? e.changedTouches[0] : e;
-      if (!point) return;
-      const at = flow.current.screenToFlowPosition({ x: point.clientX, y: point.clientY });
-      const size = { ...NEW_OUTPUT_SIZE };
-      run((doc) => addOutput(doc, { id: newId(), label: sizeLabel(size), size, ...outputDefaults('px'), composition, board: { x: at.x, y: at.y - NEW_OUTPUT_HANDLE_Y } }));
+      if (!from || !point) return;
+      openPalette({ nodeId: from.nodeId, handleId: from.id ?? null, handleType: from.type }, { x: point.clientX, y: point.clientY });
     },
-    [readOnly, run],
+    [readOnly, openPalette],
   );
 
   /** Duplicates inputs (each copy right next to its original), as one undo step. */
@@ -833,7 +849,7 @@ function BoardCanvas(props: {
               }}
             />
           )}
-          <div className="sc-board__flow" ref={flowEl}>
+          <div className="sc-board__flow" ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
             nodes={nodes}
             edges={edges}

@@ -70,6 +70,7 @@ describe.skipIf(!adminUrl)('several main previews (T12.3)', () => {
     await expect.poll(async () => layerOrder(await doc(), compId)).toEqual(['subject']);
     expect(layerOrder(await doc())).toContain('subject'); // still a row of main too
     await drag(comp().locator('.react-flow__handle[data-handleid="out"]'), await emptySpot(true));
+    await page.getByRole('menu', { name: 'Add & connect' }).getByRole('menuitem', { name: 'Output 1080×1350 px' }).click(); // T12.7 palette
     await expect.poll(async () => (await doc()).outputs.length).toBe(1);
     const d = await doc();
     expect(outputComposition(d, d.outputs[0]?.id ?? '')).toBe(compId);
