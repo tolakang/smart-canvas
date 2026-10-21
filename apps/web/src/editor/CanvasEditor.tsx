@@ -257,7 +257,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
       proportional: (shift) => latest.current.lockRatio || shift,
       snapMove: (moved) => snapMove(moved, latest.current.targets, SNAP_PX / latest.current.scale),
       onChange: (state, info) => {
-        const f = frameOfState(state);
+        // D37: the drawn frame stays fitted while it's dragged, so a stretch shows live (not only on release).
+        const f = { ...frameOfState(state), ...(latest.current.frame?.fitted ? { fitted: true as const } : {}) };
         if (info.phase === 'move') setLive(f);
         if (info.phase !== 'end' && info.phase !== 'reset') return;
         history.current.set(id, info.doc);

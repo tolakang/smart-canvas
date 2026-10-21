@@ -138,7 +138,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     expect(nudged.y).toBeCloseTo(before.y, 5);
   }, 90_000);
 
-  it('phone: a handle needs a hold; a quick drag does nothing, hold-then-drag along the edge skews', async () => {
+  it('phone: tap and drag a handle at once (no hold) to skew; a double-tap resets it', async () => {
     // The same signed-in session, as a phone.
     const ctx = await stack.env.browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, storageState: await page.context().storageState() });
     const phone = await ctx.newPage();
@@ -165,9 +165,18 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     };
     const before = await placement();
     await tdrag(0, 40);
-    near(await placement(), before);
-    await tdrag(450, 40);
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeGreaterThan(3);
+    // Double-tap the edge: back to where it was.
+    const hb = await ed.locator('[data-tb-handle="e"]').boundingBox();
+    if (!hb) throw new Error('no handle');
+    const hc = { x: hb.x + hb.width / 2, y: hb.y + hb.height / 2 };
+    await touch('touchStart', hc.x, hc.y);
+    await touch('touchEnd');
+    await phone.waitForTimeout(60);
+    await touch('touchStart', hc.x, hc.y);
+    await touch('touchEnd');
+    await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeLessThan(1e-6);
+    near(await placement(), before);
     await ctx.close();
   }, 90_000);
 });

@@ -11,8 +11,8 @@
  *   double-click a handle    undo what that handle changed (see removeForHandle)
  *
  * Touch
- *   press and hold (LONG_PRESS_MS) on a handle or the element, then drag. A finger that moves before the
- *   hold completes is a scroll: the gesture is dropped and the page scrolls as usual.
+ *   tap and drag a handle or the element (no hold; with longPressMs > 0 a hold arms it first, and a finger
+ *   that moves before then is a scroll).
  *   edge handles: the first DIRECTION_LOCK_PX of movement decide — along the handle's normal = stretch,
  *   along its edge = skew — and the choice holds until the finger lifts.
  *   double-tap a handle      reset, as above
@@ -31,7 +31,7 @@ import {
 } from './math';
 
 export interface TransformBoxOptions {
-  /** Hold time before a touch drag starts, ms. */
+  /** Hold time before a touch drag starts, ms (0 = tap and drag at once, the editor's default). */
   longPressMs?: number;
   /** Max time between the two taps / clicks of a double, ms. */
   doubleTapMs?: number;
@@ -100,13 +100,15 @@ interface Gesture {
   /** Where it went down, client px: slops and taps are measured on screen, whatever the zoom. */
   downClient: Vec;
   mods: { shift: boolean; alt: boolean; ctrl: boolean };
+  /** Armed by a touch hold (longPressMs > 0): letting go without moving is neither a drag nor a tap. */
+  armed?: boolean;
 }
 
 /** What converting client px to stage px needs. */
 interface StageBox { left: number; top: number; zoomX: number; zoomY: number; offX: number; offY: number }
 
 const DEFAULTS = {
-  longPressMs: 350, doubleTapMs: 300, touchSlopPx: 10, directionLockPx: 8, rotateGapPx: 28, directionalMouse: true,
+  longPressMs: 0, doubleTapMs: 300, touchSlopPx: 10, directionLockPx: 8, rotateGapPx: 28, directionalMouse: true,
   getScale: () => 1, proportional: (shift: boolean) => !shift, flip: true,
 };
 /** Two taps further apart than this are not a double tap. */
@@ -290,7 +292,8 @@ export class TransformBox {
     const client = { x: e.clientX, y: e.clientY };
     const box = this.measure();
     const at = this.toStage(client, box);
-    const touch = e.pointerType === 'touch';
+    // Touch waits for a hold only when asked (longPressMs > 0); the editor drags at once (owner, D36 update).
+    const touch = e.pointerType === 'touch' && this.opts.longPressMs > 0;
     this.gesture = {
       pointerId: e.pointerId, pointerType: e.pointerType, handle, phase: touch ? 'pending' : 'active',
       down: at, origin: at, last: at, start: this.getState(), op: null, moved: false, intent: null, timer: undefined, box, client, downClient: client,
@@ -314,6 +317,7 @@ export class TransformBox {
     const g = this.gesture;
     if (!g || g.phase !== 'pending') return;
     g.phase = 'active';
+    g.armed = true;
     g.timer = undefined;
     // Re-measure (the page may have scrolled or reflowed during the hold) and start from where the finger
     // is now — it may have crept within the slop — so nothing jumps.
@@ -342,7 +346,8 @@ export class TransformBox {
       return;
     }
     if (!g.moved) {
-      if (g.pointerType !== 'touch' && len(sub(g.client, g.downClient)) < CLICK_SLOP) return;
+      // A press that hasn't moved past its slop is still a click / tap (double-tap needs a still finger).
+      if (!g.armed && len(sub(g.client, g.downClient)) < (g.pointerType === 'touch' ? this.opts.touchSlopPx : CLICK_SLOP)) return;
       g.moved = true;
       this.opts.onChange?.(this.getState(), { phase: 'start', handle: g.handle, mode: this.modeOf(g) ?? undefined, doc: this.doc });
     }
@@ -359,7 +364,7 @@ export class TransformBox {
     if (!g || e.pointerId !== g.pointerId) return;
     const wasTap = (g.phase === 'pending' || !g.moved) && len(sub({ x: e.clientX, y: e.clientY }, g.downClient)) <= this.opts.touchSlopPx;
     // A touch that was held (armed) and let go without moving is neither a drag nor a tap.
-    const armedHold = g.pointerType === 'touch' && g.phase === 'active' && !g.moved;
+    const armedHold = !!g.armed && !g.moved;
     if (g.moved) {
       if (g.op) this.doc = pushOp(this.doc, g.op);
       // The state is the replayed history from here on (identical to what the drag showed).
