@@ -1,8 +1,9 @@
 /** Per-output values every rule needs (ADAPTATION-RULES "Definitions"). */
-import type { CanvasMetrics, Frame } from '../model';
+import type { CanvasMetrics } from '../model';
 
 export interface RuleContext {
   metrics: CanvasMetrics;
+  /** Reported in the result; v3 places every family the same way. */
   family: 'stack' | 'side';
   /** Master canvas in design px. */
   master: { w: number; h: number };
@@ -10,7 +11,3 @@ export interface RuleContext {
   k: number;
 }
 
-/** Centre of a master frame, normalized 0..1 of the master canvas. */
-export function anchorOf(f: Frame, master: { w: number; h: number }): { ax: number; ay: number } {
-  return { ax: (f.x + f.w / 2) / master.w, ay: (f.y + f.h / 2) / master.h };
-}
