@@ -88,3 +88,10 @@
   - **Reset:** a double-click or double-tap on a handle undoes what that handle changed in this editor session. The box keeps each layer's edits as a list of operations; a reset removes that handle's operations and replays the rest, so the layer lands exactly where it would be without them. A frame changed from outside (typed values, nudges, undo) is the truth: a pure move is recorded, anything else starts a new list.
   - **Snapping:** moves snap to the canvas edges and centre lines and to the other layers' edges and centres, with a guide line. Resizes don't snap.
   - **Model change note:** `Frame.shear?` and `NFrame.shear?` (degrees, CSS `skewX`, applied after `rotation` about the centre, clamped to ±75°). The field is optional, so no migration is needed. It is kept through layout like rotation, stored by placements and overrides (listed as "Skew"), and drawn by the renderer as `rotate(r) skewX(s)`.
+
+- D37 Saved transform history (owner, 2026-10-21). The editor's transform history (D36) is saved with the project so the reset controls work after a reload.
+  - **Where:** `Composition.transforms?` (main previews) and `OutputNode.transforms?` (outputs), each `{ scene: { width, height }, layers: Record<sourceId, TransformHistory> }`. `TransformHistory` is the editor's `{ origin, ops }` list.
+  - **Why the scene size:** history coordinates are the scene's design px. A composition or output size change invalidates them, so histories saved for another size are ignored (and dropped on the next save).
+  - **Undo:** a gesture and its history are one undo step; typed values, nudges and undo update the history without adding an extra step.
+  - **Model change note:** the fields are optional, so no migration is needed. Editor math now uses the core `TransformOrigin` / `TransformOp` / `TransformHistory` types, so there is one shape on both sides.
+  - **Not changed:** asset rendering and the Shift behaviour; no ratio locking or fill mode was added in this change.

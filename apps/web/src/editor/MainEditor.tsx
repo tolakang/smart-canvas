@@ -2,8 +2,8 @@
  * Main preview editor (T3.2): the shared canvas editor on the master; edits write master.placements
  * (normalized to the master canvas) through the board (autosave).
  */
-import { compositionById, deleteSource, MAIN, mainComposition, masterScene, removeRow, setPlacement } from '@smart-canvas/core';
-import type { Frame } from '@smart-canvas/core';
+import { compositionById, deleteSource, MAIN, mainComposition, masterScene, removeRow, setLayerTransform, setPlacement } from '@smart-canvas/core';
+import type { Frame, TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { confirmDelete } from '../board/LayerRow';
@@ -17,12 +17,22 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
   const main = compositionById(doc, compositionId) ?? mainComposition(doc);
   const { width, height } = scene;
   const onCommit = useCallback(
-    (id: string, f: Frame) =>
-      run((d) =>
-        setPlacement(d, id, { x: f.x / width, y: f.y / height, w: f.w / width, h: f.h / height, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) }, main.id),
-      ),
+    (id: string, f: Frame, history?: TransformHistory) =>
+      run((d) => {
+        const placed = setPlacement(d, id, { x: f.x / width, y: f.y / height, w: f.w / width, h: f.h / height, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) }, main.id);
+        // One undo step for the gesture and its reset history (D37).
+        return placed.ok && history ? setLayerTransform(placed.doc, id, history, { compositionId: main.id }, { width, height }) : placed;
+      }),
     [run, width, height, main.id],
   );
+  // Typed values / nudges update the history after the frame write; metadata, so no extra undo step.
+  const onHistory = useCallback(
+    (id: string, history: TransformHistory) => {
+      run((d) => setLayerTransform(d, id, history, { compositionId: main.id }, { width, height }), { silent: true });
+    },
+    [run, width, height, main.id],
+  );
+  const histories = layerHistories(main, { width, height });
   // Delete key: as the layer row's trash button — on the first main preview an input is deleted (with a
   // confirm); a process row, or any row of another main preview, is taken off this preview.
   const onDelete = useCallback(
@@ -47,6 +57,8 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
       }
       scene={scene}
       onCommit={onCommit}
+      onHistory={onHistory}
+      histories={histories}
       onDelete={onDelete}
       layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} compositionId={main.id} />}
       // A process row's text belongs to its Text variant (inspector), not to its input (T12.6).
@@ -54,4 +66,11 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
       onClose={onClose}
     />
   );
+}
+
+
+/** The composition's saved histories, only while they were saved for the scene's current size. */
+function layerHistories(comp: ReturnType<typeof compositionById>, scene: { width: number; height: number }): Record<string, TransformHistory> | undefined {
+  const saved = comp?.transforms;
+  return saved && saved.scene.width === scene.width && saved.scene.height === scene.height ? saved.layers : undefined;
 }

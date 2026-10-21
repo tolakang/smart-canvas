@@ -33,8 +33,8 @@ export interface BoardActions {
   disconnectOutput: (outputId: string) => void;
   /** Reconnects an output to a composition (default main): silently, or after asking when it has overrides (D21). */
   reconnectOutput: (outputId: string, compositionId?: string) => void;
-  /** Applies a core source operation; returns its error, if any. */
-  run: (op: (doc: ProjectDoc) => SourceResult) => SourceResult;
+  /** Applies a core source operation; returns its error, if any. `silent` skips the undo step (metadata saves). */
+  run: (op: (doc: ProjectDoc) => SourceResult, opts?: { silent?: boolean }) => SourceResult;
 }
 
 export const BoardContext = createContext<BoardActions | null>(null);

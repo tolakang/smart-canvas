@@ -26,6 +26,7 @@ export const SHORTCUTS: [string, string][] = [
   ['Ctrl/⌘ + drag an edge', 'Skew, whichever way you drag'],
   ['Alt + drag a handle', 'Resize or skew about the centre'],
   ['Double-click a handle', 'Undo what that handle changed'],
+  ['Reset buttons on the box', 'Clear rotation / all transform'],
   ['Alt+click', 'Select the layer behind'],
   ['Arrows (Shift)', 'Nudge 1 px (10 px)'],
   ['Esc', 'Deselect, then close'],

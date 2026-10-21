@@ -18,6 +18,7 @@ export * from './text';
 export * from './css';
 export * from './render';
 export * from './placement';
+export * from './transform-history';
 export * from './text-style';
 export * from './units';
 export * from './layout';

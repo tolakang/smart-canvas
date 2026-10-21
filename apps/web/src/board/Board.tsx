@@ -400,17 +400,18 @@ function BoardCanvas(props: {
   }, [undo, redo]);
 
   const run = useCallback(
-    (op: (doc: ProjectDoc) => SourceResult): SourceResult => {
+    (op: (doc: ProjectDoc) => SourceResult, opts?: { silent?: boolean }): SourceResult => {
       const result = op(docRef.current);
       if (result.ok) {
         setNotice(null);
-        apply(result.doc);
+        if (opts?.silent) show(result.doc);
+        else apply(result.doc);
       } else {
         setNotice(ERROR_NOTICE[result.error] ?? 'That change could not be made.');
       }
       return result;
     },
-    [apply],
+    [apply, show],
   );
 
   const [presets, setPresets] = useState<SizePreset[]>([]);

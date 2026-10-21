@@ -46,6 +46,36 @@ export interface Size { width: number; height: number; unit: Unit }
 export interface Frame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
 /** Rect normalized 0..1 relative to the master canvas (rotation and shear in degrees, as Frame). */
 export interface NFrame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
+/**
+ * An editor transform (D36) as saved with the project, so the box's reset history survives a reload.
+ * `origin` is the layer's untransformed box in the scene's design px; `ops` are the gestures, oldest first.
+ */
+export interface TransformOrigin {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+  shear: number;
+}
+export type TransformOp =
+  | { type: 'scale'; kx: number; ky: number; pivot: { x: number; y: number } }
+  | { type: 'shear'; axis: 'lr' | 'tb'; k: number; pivot: { x: number; y: number } }
+  | { type: 'rotate'; deg: number }
+  | { type: 'move'; dx: number; dy: number };
+export interface TransformHistory {
+  origin: TransformOrigin;
+  ops: TransformOp[];
+}
+/** Saved editor histories for one scene (a composition or an output), in that scene's design px. */
+export interface LayerTransforms {
+  /** The scene's design-px size when saved; a size change invalidates the histories. */
+  scene: { width: number; height: number };
+  layers: Record<string, TransformHistory>;
+}
+
 /** Shear is kept within ±MAX_SHEAR_DEG so a box never collapses to a line. */
 export const MAX_SHEAR_DEG = 75;
 /** A stored shear: rounded, clamped to ±MAX_SHEAR_DEG; 0 (and junk) mean none. */
@@ -100,6 +130,8 @@ export interface Composition {
   size: Size; // default DEFAULTS.masterSize
   placements: Record<string, NFrame>; // layer node id -> frame (text sources: this is the text box)
   layers: string[]; // node ids of its rows, front first
+  /** Editor transform histories (D37): so double-click resets keep working after a reload. Absent = none. */
+  transforms?: LayerTransforms;
   board: { x: number; y: number };
 }
 
@@ -144,6 +176,8 @@ export interface OutputNode {
   /** Only present while disconnected: frames captured at disconnect time. Deleted on reconnect.
    *  Frames only: text/asset content edits on sources still show; positions/sizes stay frozen. */
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };
+  /** Editor transform histories (D37): per output, so resets survive a reload. Absent = none. */
+  transforms?: LayerTransforms;
   board: { x: number; y: number };
 }
 

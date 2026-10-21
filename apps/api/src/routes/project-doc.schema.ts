@@ -16,6 +16,31 @@ const size = {
 } as const;
 const frame = { type: 'object', required: ['x', 'y', 'w', 'h'], properties: { x: num, y: num, w: num, h: num, rotation: num, shear: num } } as const;
 
+const transformOrigin = {
+  type: 'object',
+  required: ['x', 'y', 'width', 'height', 'scaleX', 'scaleY', 'rotation', 'shear'],
+  properties: { x: num, y: num, width: num, height: num, scaleX: num, scaleY: num, rotation: num, shear: num },
+} as const;
+const transformOp = {
+  type: 'object',
+  required: ['type'],
+  properties: { type: { enum: ['scale', 'shear', 'rotate', 'move'] }, kx: num, ky: num, k: num, axis: { enum: ['lr', 'tb'] }, deg: num, dx: num, dy: num, pivot: point },
+} as const;
+const transformHistory = {
+  type: 'object',
+  required: ['origin', 'ops'],
+  properties: { origin: transformOrigin, ops: { type: 'array', maxItems: 2000, items: transformOp } },
+} as const;
+/** D37: saved editor transform histories for one scene. */
+const layerTransforms = {
+  type: 'object',
+  required: ['scene', 'layers'],
+  properties: {
+    scene: { type: 'object', required: ['width', 'height'], properties: { width: { type: 'number', exclusiveMinimum: 0 }, height: { type: 'number', exclusiveMinimum: 0 } } },
+    layers: { type: 'object', additionalProperties: transformHistory },
+  },
+} as const;
+
 const sourceProps = {
     id,
     label: { type: 'string', maxLength: 200 },
@@ -49,6 +74,7 @@ const output = {
     overrides: { type: 'array', items: { type: 'object', required: ['sourceId'], properties: { sourceId: id } } },
     frozen: { type: 'object' },
     layers: { type: 'array', maxItems: LIMITS.maxSources, items: id },
+    transforms: layerTransforms,
     board: point,
   },
 } as const;
@@ -64,6 +90,7 @@ const composition = {
     size,
     placements: { type: 'object', additionalProperties: frame },
     layers: { type: 'array', maxItems: LIMITS.maxSources + LIMITS.maxProcesses, items: id },
+    transforms: layerTransforms,
     board: point,
   },
 } as const;
