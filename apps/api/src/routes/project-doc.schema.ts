@@ -79,7 +79,7 @@ const processNode = {
   },
 } as const;
 
-const edge = { type: 'object', required: ['id', 'from', 'to', 'kind'], properties: { id: { type: 'string', minLength: 1, maxLength: 210 }, from: id, to: id, kind: { enum: ['layer', 'composition'] } } } as const;
+const edge = { type: 'object', required: ['id', 'from', 'to', 'kind'], properties: { id: { type: 'string', minLength: 1, maxLength: 210 }, from: id, to: id, kind: { enum: ['layer', 'composition'] }, points: { type: 'array', maxItems: 10, items: point } } } as const;
 
 const maxNodes = LIMITS.maxSources + LIMITS.maxProcesses + LIMITS.maxCompositions + LIMITS.maxOutputs;
 

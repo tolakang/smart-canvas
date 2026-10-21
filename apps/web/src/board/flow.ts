@@ -193,6 +193,8 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
     return [
       {
         id: e.id,
+        type: 'routed',
+        data: { points: e.points ?? [] },
         source,
         target,
         ...(port >= 0 ? { targetHandle: portHandleId(port) } : {}),

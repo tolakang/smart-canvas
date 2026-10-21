@@ -141,7 +141,14 @@ export interface OutputNode {
  * Each in-port takes one edge; an out-port can feed many. No cycles.
  */
 export type EdgeKind = 'layer' | 'composition';
-export interface Edge { id: string; from: string; to: string; kind: EdgeKind }
+export interface Edge {
+  id: string;
+  from: string;
+  to: string;
+  kind: EdgeKind;
+  /** Reroute points on the board (T13.8), in order from `from` to `to`; board only. */
+  points?: { x: number; y: number }[];
+}
 
 /** A board group (T13.7): a frame drawn around its nodes (its box is computed from theirs, never stored). */
 export interface BoardGroup {

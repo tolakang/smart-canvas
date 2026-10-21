@@ -9,6 +9,7 @@ import {
   disconnectProcessInput,
   addProcess,
   boardGroups,
+  setEdgePoints,
   createGroup,
   connectSource,
   deleteSource,
@@ -85,6 +86,8 @@ import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
 import { CanvasToolbar, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
+import { RoutedEdge } from './RoutedEdge';
+import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
 import { paletteItems, type PalettePort } from './palette';
 import { COARSE_QUERY, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
@@ -149,6 +152,9 @@ export function Board(props: { teamId: string; projectId: string; userId: string
     />
   );
 }
+
+/** T13.8: every wire can carry reroute points. */
+const edgeTypes = { routed: RoutedEdge };
 
 /** A layer wire into a node (T12.4): a composition row or an output's own row; the node id from React Flow. */
 function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, port: number | undefined): SourceResult {
@@ -258,6 +264,29 @@ function BoardCanvas(props: {
   useEffect(() => {
     displayNodesRef.current = displayNodes;
   }, [displayNodes]);
+  // T13.8: wires dim unless they touch the selection; the wires a change flows along pulse once.
+  const [pulsing, setPulsing] = useState<ReadonlySet<string>>(new Set());
+  const prevDoc = useRef(doc);
+  useEffect(() => {
+    const changed = changedNodes(prevDoc.current, doc);
+    prevDoc.current = doc;
+    if (changed.size === 0) return;
+    setPulsing(downstreamEdges(doc, changed));
+    const t = setTimeout(() => setPulsing(new Set()), 700);
+    return () => clearTimeout(t);
+  }, [doc]);
+  const displayEdges = useMemo(() => {
+    const selectedNodes = new Set(displayNodes.filter((n) => n.selected).map((n) => n.id));
+    const selectedEdges = new Set(edges.filter((e) => e.selected).map((e) => e.id));
+    const focus = selectedNodes.size + selectedEdges.size > 0;
+    const related = focus ? relatedEdges(edges, selectedNodes, selectedEdges) : null;
+    if (!related && pulsing.size === 0) return edges;
+    return edges.map((e) => {
+      const extra = `${related && !related.has(e.id) ? ' sc-edge--dim' : ''}${pulsing.has(e.id) ? ' sc-edge--pulse' : ''}`;
+      return extra ? { ...e, className: `${e.className ?? ''}${extra}` } : e;
+    });
+  }, [edges, displayNodes, pulsing]);
+
   // T13.5: a dragged node snaps to other nodes' edges and centres; the guide lines show where.
   const [guides, setGuides] = useState<{ vertical?: number; horizontal?: number }>({});
   const onNodesChange = useCallback((all: NodeChange<FlowNode>[]) => {
@@ -463,6 +492,25 @@ function BoardCanvas(props: {
     const selection = changes.filter((c) => c.type === 'select');
     if (selection.length) setEdges((es) => applyEdgeChanges(selection, es));
   }, []);
+
+  /** T13.8: double-click a wire to add a reroute point there (in the spot that bends it least). */
+  const onEdgeDoubleClick = useCallback(
+    (e: React.MouseEvent, edge: Edge) => {
+      if (readOnly || !flow.current) return;
+      const at = flow.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
+      const end = (id: string, side: 'out' | 'in') => {
+        const n = flow.current?.getInternalNode(id);
+        const w = n?.measured.width ?? 0;
+        const h = n?.measured.height ?? 0;
+        const p = n?.internals.positionAbsolute ?? { x: 0, y: 0 };
+        return { x: side === 'out' ? p.x + w : p.x, y: p.y + h / 2 };
+      };
+      const points = docRef.current.edges.find((x) => x.id === edge.id)?.points ?? [];
+      const i = insertIndex(end(edge.source, 'out'), end(edge.target, 'in'), points, at);
+      run((doc) => setEdgePoints(doc, edge.id, [...points.slice(0, i), at, ...points.slice(i)]));
+    },
+    [readOnly, run],
+  );
 
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
@@ -927,7 +975,9 @@ function BoardCanvas(props: {
           <div className="sc-board__flow" ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
             nodes={displayNodes}
-            edges={edges}
+            edges={displayEdges}
+            edgeTypes={edgeTypes}
+            onEdgeDoubleClick={onEdgeDoubleClick}
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onNodeDragStop={onNodeDragStop}
