@@ -64,7 +64,7 @@ describe('Khmer layout with real metrics', () => {
     expect(item?.lines?.length).toBeLessThanOrEqual(3);
     expect(item?.warnings).toEqual([]);
     const size = item?.fontSizePx ?? 0;
-    expect(size).toBeLessThanOrEqual(160 * 0.36);
+    expect(size).toBeLessThanOrEqual(160 * (1080 / 2520)); // start size: the box scale, √(0.36·0.64) capped to the width (D38)
     expect(size % 0.5).toBe(0);
     const frame = item?.frame;
     expect((item?.lines?.length ?? 0) * size * 1.6).toBeLessThanOrEqual((frame?.h ?? 0) + 1e-6);
