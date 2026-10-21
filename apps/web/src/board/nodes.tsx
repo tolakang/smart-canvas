@@ -1,5 +1,6 @@
 import { Handle, Position, type NodeProps, type NodeTypes } from '@xyflow/react';
-import { ALLOWED_BEHAVIORS, portOf, setBehavior, type Behavior, type InputSource } from '@smart-canvas/core';
+import { ALLOWED_BEHAVIORS, fillToCss, fontStack, setBehavior, type Behavior, type InputSource } from '@smart-canvas/core';
+import { assetUrl } from '../api';
 import { AssetEditor, FillEditor, TextEditor, useAssetUpload, type AssetUpload } from './editors';
 import { useBoard } from './context';
 import { MainNodeView } from './MainNode';
@@ -9,23 +10,59 @@ import { OutputNodeView } from './OutputNode';
 import { GroupNodeView } from './GroupNode';
 import { ProcessNodeView } from './ProcessNode';
 
+/**
+ * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
+ * (name, behaviour, visibility, the content itself, duplicate / library / delete) is in the inspector, so the
+ * card doesn't repeat it. Files can still be dropped on the card (T8.3), and an empty picture input has an
+ * upload button.
+ */
 function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   const { source } = data;
-  const { doc, readOnly } = useBoard();
-  const port = portOf(doc, source.id);
+  const { readOnly } = useBoard();
   // T8.3: drop an image file anywhere on a picture input (or a photo on a fill background, D9).
   const upload = useAssetUpload(source);
   return (
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
-      <div className="sc-node__meta">
-        {source.kind} · <BehaviorPicker source={source} />{' '}
-        <span title={`Port ${port} on the main preview (0 = front)`}>· layer {port + 1}</span>
-        {!source.visible && ' · hidden'}
-        {source.libraryItemId && ' · from library'}
-      </div>
-      <SourceEditor source={source} upload={upload} />
+      <NodePreview source={source} upload={upload} />
       <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a main preview row" />
+    </div>
+  );
+}
+
+const NO_CANVAS = 'nodrag nopan nowheel';
+
+/** The card's view of an input's content (read-only; editing is in the inspector). */
+function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpload }) {
+  const { teamId, readOnly } = useBoard();
+  const { content } = source;
+  if (content.kind === 'text')
+    return (
+      <div className="sc-node__text" lang={content.style.language === 'km' ? 'km' : undefined} style={{ fontFamily: fontStack(content.style.fontFamily), fontWeight: content.style.fontWeight }}>
+        {content.text || <span className="sc-muted">No text yet</span>}
+      </div>
+    );
+  const picture = content.kind === 'fill' ? null : content.assetId;
+  return (
+    <div className="sc-node__preview">
+      {content.kind === 'fill' && !picture ? (
+        <div className="sc-swatch" style={{ background: fillToCss(content.fill) }} />
+      ) : picture ? (
+        <img className="sc-thumb" src={assetUrl(teamId, picture)} alt={`${source.label} preview`} draggable={false} />
+      ) : readOnly ? (
+        <div className="sc-thumb sc-thumb--empty">No {content.kind === 'vector' ? 'SVG' : 'image'} yet</div>
+      ) : (
+        <label className={`sc-thumb sc-thumb--empty sc-thumb--upload ${NO_CANVAS}`}>
+          {upload.busy ? 'Uploading…' : `Upload ${content.kind === 'vector' ? 'an SVG' : 'an image'}… or drop`}
+          <input type="file" accept={upload.accept} onChange={upload.onFile} disabled={upload.busy} hidden />
+        </label>
+      )}
+      {upload.busy && picture && <div className="sc-node__busy">Uploading…</div>}
+      {upload.error && (
+        <p className="sc-error" role="alert">
+          {upload.error}
+        </p>
+      )}
     </div>
   );
 }

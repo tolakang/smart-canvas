@@ -1,16 +1,17 @@
-import { deleteSource, duplicateSource, libraryEntryOf, LIMITS, renameSource, setSourceVisible, type InputSource } from '@smart-canvas/core';
-import { api } from '../api';
+import { renameSource, type InputSource } from '@smart-canvas/core';
 import { useState, type KeyboardEvent } from 'react';
 import { useBoard } from './context';
-import { newId } from './ids';
-import { confirmDelete, Icon } from './LayerRow';
+import { Icon } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
-/** Input node title with rename / hide / duplicate / delete (D8: defaults included). */
+/**
+ * Input node title. Double-click renames it in place; hidden and library inputs show a small mark. The
+ * actions (rename, show / hide, duplicate, save to library, delete) are in the inspector and the node's
+ * right-click menu, and Delete / Backspace deletes the selected nodes.
+ */
 export function SourceHeader({ source }: { source: InputSource }) {
-  const { readOnly, run, sourceCount, teamId } = useBoard();
-  const [saved, setSaved] = useState<'idle' | 'saved' | 'failed'>('idle');
+  const { readOnly, run } = useBoard();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(source.label);
 
@@ -21,22 +22,6 @@ export function SourceHeader({ source }: { source: InputSource }) {
   function onKey(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') commit();
     if (e.key === 'Escape') setEditing(false);
-  }
-  function remove() {
-    if (confirmDelete(source.label)) {
-      run((doc) => deleteSource(doc, source.id));
-    }
-  }
-
-  async function saveToLibrary() {
-    const name = window.prompt('Save to the team library as', source.label);
-    if (name === null) return;
-    try {
-      await api('POST', `/teams/${teamId}/library`, { ...libraryEntryOf(source, name), tags: [] });
-      setSaved('saved');
-    } catch {
-      setSaved('failed');
-    }
   }
 
   return (
@@ -53,53 +38,19 @@ export function SourceHeader({ source }: { source: InputSource }) {
           onKeyDown={onKey}
         />
       ) : (
-        <div className="sc-node__title" title={`${source.label} — double-click to rename`} onDoubleClick={() => !readOnly && (setDraft(source.label), setEditing(true))}>
+        <div className="sc-node__title" title={readOnly ? source.label : `${source.label} — double-click to rename`} onDoubleClick={() => !readOnly && (setDraft(source.label), setEditing(true))}>
           {source.label}
         </div>
       )}
-      {!readOnly && !editing && (
-        <div className={`sc-actions ${NO_CANVAS}`}>
-          <button
-            type="button"
-            title="Rename"
-            aria-label={`Rename ${source.label}`}
-            onClick={() => {
-              setDraft(source.label);
-              setEditing(true);
-            }}
-          >
-            <Icon name="pencil" />
-          </button>
-          <button
-            type="button"
-            title={source.visible ? 'Hide' : 'Show'}
-            aria-label={`${source.visible ? 'Hide' : 'Show'} ${source.label}`}
-            aria-pressed={!source.visible}
-            onClick={() => run((doc) => setSourceVisible(doc, source.id, !source.visible))}
-          >
-            <Icon name={source.visible ? 'eye' : 'eye-off'} />
-          </button>
-          <button
-            type="button"
-            title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : 'Duplicate'}
-            aria-label={`Duplicate ${source.label}`}
-            disabled={sourceCount >= LIMITS.maxSources}
-            onClick={() => run((doc) => duplicateSource(doc, source.id, newId()))}
-          >
-            <Icon name="plus" />
-          </button>
-          <button
-            type="button"
-            title={saved === 'saved' ? 'Saved to the team library' : saved === 'failed' ? 'Could not save — try again' : 'Save to team library'}
-            aria-label={`Save ${source.label} to library`}
-            onClick={() => void saveToLibrary()}
-          >
-            <Icon name={saved === 'saved' ? 'check' : 'library'} />
-          </button>
-          <button type="button" title="Delete" aria-label={`Delete ${source.label}`} onClick={remove}>
-            <Icon name="trash" />
-          </button>
-        </div>
+      {!source.visible && (
+        <span className="sc-node__mark" title="Hidden everywhere" aria-label="Hidden">
+          <Icon name="eye-off" />
+        </span>
+      )}
+      {source.libraryItemId && (
+        <span className="sc-node__mark" title="From the team library" aria-label="From library">
+          <Icon name="library" />
+        </span>
       )}
     </div>
   );

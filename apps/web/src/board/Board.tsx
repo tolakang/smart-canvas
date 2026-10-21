@@ -92,6 +92,7 @@ import { paletteItems, type PalettePort } from './palette';
 import { COARSE_QUERY, useCoarsePointer, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
 import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
+import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
 
@@ -515,6 +516,7 @@ function BoardCanvas(props: {
     [readOnly, run],
   );
 
+
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
       for (const e of deleted) {
@@ -526,6 +528,23 @@ function BoardCanvas(props: {
     },
     [run, disconnect],
   );
+
+  /**
+   * Delete / Backspace (BoardKeys): selected nodes are deleted from the doc (one confirm, one undo step;
+   * React Flow's own removal would only drop them from the screen); selected wires alone are disconnected.
+   */
+  const deleteSelection = useCallback(() => {
+    const f = flow.current;
+    if (!f) return;
+    const picked = f.getNodes().filter((n) => n.selected);
+    if (picked.length === 0) {
+      const wires = f.getEdges().filter((e) => e.selected);
+      if (wires.length) onEdgesDelete(wires);
+      return;
+    }
+    const targets = deletableNodes(docRef.current, picked.map((n) => n.id));
+    if (targets.length && window.confirm(deleteQuestion(targets))) run((d) => deleteNodes(d, targets, layoutDeps ?? undefined));
+  }, [run, layoutDeps, onEdgesDelete]);
 
   /**
    * T8.5: every wire can be picked up by either end. Drop it on another valid handle to re-route it;
@@ -1006,7 +1025,7 @@ function BoardCanvas(props: {
             nodesDraggable={!readOnly}
             nodesConnectable={!readOnly}
             edgesFocusable={!readOnly}
-            deleteKeyCode={readOnly ? null : ['Backspace', 'Delete']}
+            deleteKeyCode={null}
             fitView
             fitViewOptions={FIT_OPTIONS}
             // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
@@ -1038,7 +1057,7 @@ function BoardCanvas(props: {
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
               {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}
             </ViewportPortal>
-            <BoardKeys onTool={setTool} disabled={Boolean(editingMain || editingOutput)} />
+            <BoardKeys onTool={setTool} onDelete={readOnly ? undefined : deleteSelection} disabled={Boolean(editingMain || editingOutput)} />
           </ReactFlow>
           </div>
           {(!floating || panel === 'inspector') && <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} />}

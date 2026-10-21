@@ -46,7 +46,7 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
   }
 
   it('a PNG dropped on the Subject becomes its image', async () => {
-    await dropFile(node('Subject').locator('.sc-node__meta'), { name: 'subject.png', type: 'image/png', base64: png });
+    await dropFile(node('Subject').locator('.sc-node__head'), { name: 'subject.png', type: 'image/png', base64: png });
     await node('Subject').locator('img.sc-thumb').waitFor();
     await saved();
     const subject = (await doc()).sources.find((s) => s.id === 'subject');
@@ -54,22 +54,25 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
   }, 60_000);
 
   it('an SVG dropped on the Logo works; a PNG there is refused with a message', async () => {
-    await dropFile(node('Logo').locator('.sc-node__meta'), { name: 'logo.png', type: 'image/png', base64: png });
+    await dropFile(node('Logo').locator('.sc-node__head'), { name: 'logo.png', type: 'image/png', base64: png });
     await node('Logo').getByRole('alert').getByText('This input takes SVG files.').waitFor();
-    await dropFile(node('Logo').locator('.sc-node__meta'), { name: 'logo.svg', type: 'image/svg+xml', text: SVG });
+    await dropFile(node('Logo').locator('.sc-node__head'), { name: 'logo.svg', type: 'image/svg+xml', text: SVG });
     await node('Logo').locator('img.sc-thumb').waitFor();
     await expect.poll(() => node('Logo').getByRole('alert').count()).toBe(0);
   }, 60_000);
 
   it('a photo dropped on the fill Background makes it an image background (D9); undo restores the fill', async () => {
     expect((await doc()).sources.find((s) => s.id === 'background')?.kind).toBe('fill');
-    await dropFile(node('Background').locator('.sc-node__meta'), { name: 'bg.png', type: 'image/png', base64: png });
+    await dropFile(node('Background').locator('.sc-node__head'), { name: 'bg.png', type: 'image/png', base64: png });
     await node('Background').locator('img.sc-thumb').waitFor();
     await saved();
     const bg = (await doc()).sources.find((s) => s.id === 'background');
     expect(bg).toMatchObject({ kind: 'image', behavesLike: 'background', content: { kind: 'image', focal: { x: 0.5, y: 0.5 } } });
-    expect(await node('Background').locator('.sc-node__meta').innerText()).toMatch(/^image ·/);
-    expect(await node('Background').getByLabel('Background behaves like').inputValue()).toBe('background');
+    // Kind and behaviour are in the inspector (the card only previews).
+    await node('Background').locator('.sc-node__title').click();
+    const inspector = page.getByRole('complementary', { name: 'Inspector' });
+    await inspector.getByText('Image', { exact: true }).waitFor();
+    expect(await inspector.getByLabel('Background behaves like').inputValue()).toBe('background');
 
     await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
     await page.keyboard.press('Control+z');
@@ -80,14 +83,15 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
     // And back from a photo to a colour with the button.
     await page.keyboard.press('Control+Shift+z');
     await node('Background').locator('img.sc-thumb').waitFor();
-    await node('Background').getByRole('button', { name: 'Use a colour instead' }).click();
+    await node('Background').locator('.sc-node__title').click();
+    await page.getByRole('complementary', { name: 'Inspector' }).getByRole('button', { name: 'Use a colour instead' }).click();
     await node('Background').locator('.sc-swatch').waitFor();
     await saved();
     expect((await doc()).sources.find((s) => s.id === 'background')).toMatchObject({ kind: 'fill', content: { kind: 'fill', fill: { type: 'solid' } } });
   }, 60_000);
 
   it('the text input ignores dropped files, and a file dropped on the canvas does not leave the board', async () => {
-    await dropFile(node('Headline').locator('.sc-node__meta'), { name: 'x.png', type: 'image/png', base64: png });
+    await dropFile(node('Headline').locator('.sc-node__head'), { name: 'x.png', type: 'image/png', base64: png });
     await dropFile(page.locator('.react-flow__pane'), { name: 'x.png', type: 'image/png', base64: png });
     await page.waitForTimeout(300);
     expect(page.url()).toContain('#/t/');

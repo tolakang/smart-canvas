@@ -26,8 +26,12 @@ export function useStoredFlag(key: string, initial: boolean): [boolean, (v: bool
 
 const typing = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
 
-/** V = select, H = hand, Shift+1 = fit. Off while typing or while an editor is open. Space-to-pan is React Flow's own. */
-export function BoardKeys({ onTool, disabled }: { onTool: (t: CanvasTool) => void; disabled: boolean }) {
+/**
+ * V = select, H = hand, Shift+1 = fit, Delete / Backspace = delete the selection. Off while typing or while an
+ * editor is open. Space-to-pan is React Flow's own. Delete is ours, not React Flow's `deleteKeyCode`: that one
+ * tracks the key as held-down state and misses a press shorter than a render.
+ */
+export function BoardKeys({ onTool, onDelete, disabled }: { onTool: (t: CanvasTool) => void; onDelete?: () => void; disabled: boolean }) {
   const { fitView } = useReactFlow();
   useEffect(() => {
     if (disabled) return;
@@ -36,11 +40,12 @@ export function BoardKeys({ onTool, disabled }: { onTool: (t: CanvasTool) => voi
       if (e.code === 'KeyV' && !e.shiftKey) onTool('select');
       else if (e.code === 'KeyH' && !e.shiftKey) onTool('hand');
       else if (e.code === 'Digit1' && e.shiftKey) void fitView({ ...FIT_OPTIONS, duration: 200 });
+      else if ((e.key === 'Delete' || e.key === 'Backspace') && onDelete) onDelete();
       else return;
       e.preventDefault();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [disabled, onTool, fitView]);
+  }, [disabled, onTool, onDelete, fitView]);
   return null;
 }

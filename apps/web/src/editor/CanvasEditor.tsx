@@ -36,6 +36,8 @@ export interface CanvasEditorProps {
   scene: RenderScene;
   /** Writes a layer's new frame (design px of `scene`) where this editor stores it. */
   onCommit: (sourceId: string, frame: Frame) => void;
+  /** Delete / Backspace on the selected layer (main preview: as its row's trash button; output: hide it there). */
+  onDelete?: (sourceId: string) => void;
   /** Left side panel (layers). */
   layers: (selected: string | null, select: (id: string | null) => void) => ReactNode;
   /** Extra panels for the selected input, under its position and size in the Design panel (text style, overrides). */
@@ -43,7 +45,7 @@ export interface CanvasEditorProps {
   onClose: () => void;
 }
 
-export function CanvasEditor({ label, title, scene, onCommit, layers, props: sidePanel, onClose }: CanvasEditorProps) {
+export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, props: sidePanel, onClose }: CanvasEditorProps) {
   const { doc, readOnly, teamId, layoutDeps } = useBoard();
   // T12.5: rows can be processes; they draw (and select) as their effective layer.
   const layerList = useMemo(() => layerSources(doc), [doc]);
@@ -143,6 +145,11 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
         else onClose();
         return;
       }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selected && onDelete && !readOnly) {
+        e.preventDefault();
+        onDelete(selected);
+        return;
+      }
       const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
       if (!dir || !selected || !selectedItem || readOnly) return;
       e.preventDefault();
@@ -164,7 +171,7 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
       window.removeEventListener('keyup', onUp);
       window.removeEventListener('blur', onBlur);
     };
-  }, [selected, selectedItem, readOnly, onCommit, onClose, zoomAt]);
+  }, [selected, selectedItem, readOnly, onCommit, onDelete, onClose, zoomAt]);
 
   /**
    * The layers under a point, front first (T8.6). Looks through the selection box and its handles,

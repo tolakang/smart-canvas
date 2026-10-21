@@ -81,6 +81,8 @@ describe.skipIf(!adminUrl)('output-only layers (T12.4)', () => {
     const outNode = page.locator(`.react-flow__node-outputNode[data-id="out:${a.id}"]`);
     await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Connect Logo' }).click();
     await saved();
+    await page.getByRole('button', { name: 'Fit to screen (Shift+1)' }).click(); // nodes added since the first fit
+    await page.waitForTimeout(300);
     await drag(page.locator('.react-flow__node-inputNode[data-id="src:logo"] .react-flow__handle.source'), outNode.locator('.sc-port--add .react-flow__handle'));
     await page.getByRole('alert').getByText('already a layer of the output’s main preview').waitFor();
     expect((await doc()).outputs[0]?.layers).toEqual([own]);
