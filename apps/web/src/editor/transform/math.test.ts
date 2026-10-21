@@ -288,6 +288,11 @@ describe('a picture resets to its own shape (restoreAspect)', () => {
     sameShape(derive(reset), derive(rotated));
     assert.equal(restoreAspect(reset, 'e', aspect), reset);
   });
+  it('a skew made in this session never triggers it (the box it started from has the picture\'s shape)', () => {
+    const skewed = pushOp(pushOp(docFromState({ ...base }), { type: 'shear', axis: 'lr', k: 0.4, pivot: { x: -1, y: 0 } }), { type: 'scale', kx: 1.3, ky: 1.3, pivot: { x: -1, y: -1 } });
+    const reset = resetForHandle(skewed, 'se');
+    assert.equal(restoreAspect(reset, 'se', aspect), reset);
+  });
   it('rotate, skew and move handles are left alone', () => {
     for (const h of ['rotate', 'body'] as const) assert.equal(restoreAspect(loaded, h, aspect), loaded);
     assert.equal(restoreAspect(loaded, 'e', undefined), loaded);
