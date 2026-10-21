@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** order — T13.8 wire polish (last ticket in BACKLOG P13)
+**Next:** BACKLOG P11–P13 are done; next work to be chosen by the owner.
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -109,4 +109,4 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T13.5 — Floating toolbar, minimap, grid snap, guides — [#71](https://github.com/tolakang/smart-canvas/pull/71)
 - [x] T13.6 — Responsive: tablet + phone, touch — [#72](https://github.com/tolakang/smart-canvas/pull/72)
 - [x] T13.7 — Groups — [#78](https://github.com/tolakang/smart-canvas/pull/78)
-- [ ] T13.8 — Wire polish
+- [x] T13.8 — Wire polish — [#79](https://github.com/tolakang/smart-canvas/pull/79)
