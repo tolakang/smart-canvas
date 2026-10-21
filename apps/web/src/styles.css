@@ -48,7 +48,7 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; }
-#root { min-height: 100vh; }
+#root { min-height: 100vh; min-height: 100dvh; }
 button { font: inherit; cursor: pointer; }
 input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
@@ -65,7 +65,11 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 .sc-error { color: var(--danger); margin: 0; }
 .sc-badge { padding: 2px 8px; border-radius: 99px; background: var(--line); font-size: 12px; }
 
-.sc-board { height: 100vh; display: flex; flex-direction: column; }
+/* The visible height (dvh), not 100vh: on phones 100vh is taller than the screen while the browser's address
+   bar and bottom bar show, which pushed the top bar or the canvas toolbar out of view. The page itself never
+   scrolls on the board. */
+.sc-board { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); box-sizing: border-box; }
+html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .sc-board__bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--line); }
 .sc-board__canvas { flex: 1; }
 .sc-save { margin-left: auto; color: var(--muted); display: flex; gap: 8px; align-items: center; }
@@ -144,7 +148,7 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }
 
 /* Main editor */
-.sc-editor-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: var(--bg); }
+.sc-editor-screen { position: fixed; inset: 0; height: 100vh; height: 100dvh; z-index: 50; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); box-sizing: border-box; background: var(--bg); }
 .sc-editor__stage { flex: 1; position: relative; overflow: hidden; background: var(--fig-canvas, var(--canvas)); }
 .sc-editor__canvas { position: absolute; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 2px 12px rgb(0 0 0 / 0.12); background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; }
 .sc-editor__target { position: absolute; left: 0; top: 0; cursor: move; touch-action: none; }
@@ -572,7 +576,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-floating--overlay { position: absolute; top: var(--sp-2); bottom: var(--sp-2); max-width: calc(100% - 16px); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: auto; }
 .sc-floating--overlay.sc-floating--start { left: var(--sp-2); }
 .sc-floating--overlay.sc-floating--end { right: var(--sp-2); }
-.sc-floating--sheet { position: fixed; left: 0; right: 0; bottom: 0; width: auto !important; max-height: 62vh; overflow: auto; border: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; padding-bottom: env(safe-area-inset-bottom); }
+.sc-floating--sheet { position: fixed; left: 0; right: 0; bottom: 0; width: auto !important; max-height: 62vh; max-height: 62dvh; overflow: auto; border: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; padding-bottom: env(safe-area-inset-bottom); }
 .sc-floating--sheet::before { content: ''; display: block; width: 36px; height: 4px; margin: 6px auto 0; border-radius: 2px; background: var(--line-strong); }
 .sc-floating__head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--line); background: var(--surface); font-weight: 600; }
 @media (max-width: 767px) {
@@ -589,7 +593,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   .sc-fig__bar button { padding: 0 8px; }
   .sc-editor__body { flex-direction: column; }
   .sc-editor__body > .sc-layers { display: none; }
-  .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side { width: auto; max-height: 45vh; border-left: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: var(--shadow-2); }
+  .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side { width: auto; max-height: 45vh; max-height: 45dvh; padding-bottom: env(safe-area-inset-bottom); border-left: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: var(--shadow-2); }
 }
 @media (pointer: coarse) {
   .sc-canvasbar__btn, .sc-topbar__icon, .sc-icon-btn { min-width: 44px; min-height: 44px; }

@@ -37,6 +37,23 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(await phone.getByRole('complementary', { name: 'Inspector' }).count()).toBe(0);
     expect(await bar(phone).getByRole('button', { name: /^Hand/ }).getAttribute('aria-pressed')).toBe('true');
     expect(await phone.locator('.react-flow__minimap').count()).toBe(0);
+    // The board fills exactly the visible height (dvh) and the page never scrolls, so the top bar and the
+    // canvas toolbar both stay on screen — also when the browser's own bars shrink the visible area.
+    for (const height of [844, 700]) {
+      await phone.setViewportSize({ width: 390, height });
+      await phone.waitForTimeout(200);
+      const m = await phone.evaluate(() => {
+        const board = document.querySelector('.sc-board')?.getBoundingClientRect();
+        const top = document.querySelector('.sc-topbar')?.getBoundingClientRect();
+        const tools = document.querySelector('.sc-canvasbar')?.getBoundingClientRect();
+        return { inner: window.innerHeight, scroll: document.scrollingElement?.scrollHeight ?? 0, board: board?.height ?? 0, top: top?.top ?? -1, toolsBottom: tools?.bottom ?? 9999 };
+      });
+      expect(m.board).toBe(m.inner);
+      expect(m.scroll).toBeLessThanOrEqual(m.inner);
+      expect(m.top).toBeGreaterThanOrEqual(0);
+      expect(m.toolsBottom).toBeLessThanOrEqual(m.inner);
+    }
+    await phone.setViewportSize({ width: 390, height: 844 });
     // UI audit: the top bar's end group (save, More, Export) sits at the right edge.
     const exportBox = await phone.getByRole('button', { name: 'Export' }).boundingBox();
     expect((exportBox?.x ?? 0) + (exportBox?.width ?? 0)).toBeGreaterThan(390 - 16);

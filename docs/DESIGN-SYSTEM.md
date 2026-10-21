@@ -83,3 +83,4 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Board top bar:** the end group (save state, More, Export) stays right-aligned when the middle group is hidden.
 - **Minimap:** desktop only.
 - **Fit:** leaves room for the floating toolbar.
+- **Phone browsers:** the board and the editors are sized to the visible height (`100dvh`, with `100vh` as the fallback), and the page never scrolls, so the top bar and the bottom toolbar or sheet stay on screen while the browser's address bar and bottom bar show. `viewport-fit=cover` with safe-area padding keeps them clear of notches and the gesture bar.
