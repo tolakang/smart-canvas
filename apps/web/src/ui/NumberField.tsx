@@ -23,6 +23,9 @@ export function NumberField(props: {
   }
   const commit = () => {
     const t = draft.trim();
+    // Untouched (tapped in, then away): nothing to commit. The value shown may be rounded; writing it back
+    // would nudge the stored value and add an undo step.
+    if (t === String(props.value)) return;
     if (t === '') props.onCommit(null);
     else if (Number.isFinite(Number(t))) props.onCommit(Number(t));
     else setDraft(String(props.value));

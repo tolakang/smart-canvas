@@ -4,7 +4,7 @@
  * target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import type { ProjectDoc } from '@smart-canvas/core';
+import { connectSource, type ProjectDoc } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
@@ -37,6 +37,9 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(await phone.getByRole('complementary', { name: 'Inspector' }).count()).toBe(0);
     expect(await bar(phone).getByRole('button', { name: /^Hand/ }).getAttribute('aria-pressed')).toBe('true');
     expect(await phone.locator('.react-flow__minimap').count()).toBe(0);
+    // UI audit: the top bar's end group (save, More, Export) sits at the right edge.
+    const exportBox = await phone.getByRole('button', { name: 'Export' }).boundingBox();
+    expect((exportBox?.x ?? 0) + (exportBox?.width ?? 0)).toBeGreaterThan(390 - 16);
     await phone.getByRole('button', { name: 'More' }).tap();
     const menu = phone.getByRole('menu', { name: 'More' });
     for (const item of [/^Undo/, /^Add input/, /^Add output/, 'Team fonts', 'Team library', /theme$/]) expect(await menu.getByRole('menuitem', { name: item }).count()).toBe(1);
@@ -91,6 +94,13 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
   }, 60_000);
 
   it('phone: editors show the canvas with the Design panel as a sheet', async () => {
+    // A wired layer to select in the editor.
+    const cur = (await (await phone.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
+    const wired = connectSource(cur.doc, 'background');
+    if (!wired.ok) throw new Error(wired.error);
+    expect((await phone.request.put(url, { data: { rev: cur.rev, doc: wired.doc } })).status()).toBe(200);
+    await phone.reload();
+    await bar(phone).waitFor();
     await phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first().tap();
     const design = phone.getByRole('complementary', { name: 'Design' });
     await design.waitFor();
@@ -98,6 +108,23 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     const box = await design.boundingBox();
     expect(Math.round(box?.width ?? 0)).toBe(390);
     expect((box?.height ?? 900) <= 844 * 0.45 + 1).toBe(true);
+    // UI audit: the editor bar is one line that never scrolls sideways; touch gets gestures, not shortcuts.
+    const figBar = await phone.locator('.sc-fig__bar').evaluate((el) => ({ sw: el.scrollWidth, cw: el.clientWidth, h: el.getBoundingClientRect().height }));
+    expect(figBar.sw).toBeLessThanOrEqual(figBar.cw);
+    const title = await phone.locator('.sc-fig__title strong').boundingBox();
+    expect(title?.height ?? 99).toBeLessThan(24);
+    expect(await design.getByText('Gestures').isVisible()).toBe(true);
+    expect(await design.getByText('Shortcuts').isVisible()).toBe(false);
+    // Select a layer: whole-px values; tapping a field and leaving it changes nothing (no write, no undo step).
+    await phone.locator('.sc-editor__canvas [data-source-id="background"]').tap();
+    const x = design.getByLabel('X', { exact: true });
+    await x.waitFor();
+    expect(await x.inputValue()).toMatch(/^-?\d+$/);
+    const before = await (await phone.request.get(url)).json();
+    await x.tap();
+    await design.getByText(/·/).first().tap();
+    await phone.waitForTimeout(1500);
+    expect((await (await phone.request.get(url)).json()).rev).toBe(before.rev);
     await phone.keyboard.press('Escape');
   }, 60_000);
 

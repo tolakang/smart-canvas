@@ -314,7 +314,7 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
         </span>
         <span className="sc-fig__title">{title}</span>
         {selectedSource && (
-          <span className="sc-fig__muted" data-testid="selection">
+          <span className="sc-fig__muted sc-fig__selection" data-testid="selection">
             Selected: {selectedSource.label}
           </span>
         )}
@@ -332,7 +332,7 @@ export function CanvasEditor({ label, title, scene, onCommit, layers, props: sid
           <button type="button" title="Zoom to fit (Shift+1)" onClick={() => setView({ zoom: 1, pan: { x: 0, y: 0 } })}>
             Fit
           </button>
-          <button type="button" title="Zoom to 100% (Shift+0)" onClick={() => zoomAt(() => 1)}>
+          <button type="button" className="sc-zoom__actual" title="Zoom to 100% (Shift+0)" onClick={() => zoomAt(() => 1)}>
             100%
           </button>
         </span>

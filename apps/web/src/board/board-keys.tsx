@@ -1,7 +1,7 @@
 /** Board keyboard shortcuts and remembered toggles (T13.5). */
 import { useReactFlow } from '@xyflow/react';
 import { useEffect, useState } from 'react';
-import type { CanvasTool } from './CanvasToolbar';
+import { FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
 
 /** A boolean remembered in localStorage (falls back to page memory in private mode). */
 export function useStoredFlag(key: string, initial: boolean): [boolean, (v: boolean) => void] {
@@ -35,7 +35,7 @@ export function BoardKeys({ onTool, disabled }: { onTool: (t: CanvasTool) => voi
       if (typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.code === 'KeyV' && !e.shiftKey) onTool('select');
       else if (e.code === 'KeyH' && !e.shiftKey) onTool('hand');
-      else if (e.code === 'Digit1' && e.shiftKey) void fitView({ maxZoom: 1, duration: 200 });
+      else if (e.code === 'Digit1' && e.shiftKey) void fitView({ ...FIT_OPTIONS, duration: 200 });
       else return;
       e.preventDefault();
     };

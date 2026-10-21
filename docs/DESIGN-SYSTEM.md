@@ -74,3 +74,12 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Selection:** with nodes or wires selected, wires that don't touch them dim to 18% opacity.
 - **Pulse:** an edit that changes a node (moving it doesn't count) runs a short dashed pulse along every wire downstream of it. There is no pulse with reduced motion.
 - **Reroute points:** double-click a wire to add one; drag a point to move it; double-click a point to remove it.
+
+## Editor bar and panels (UI audit)
+- **Editor bar:** one line, never scrolls sideways. The tools, zoom and Close keep their size; the title takes the rest and truncates. On a phone, the size, the selection's name (it is in the Design sheet), "100%" and the bar's extra actions are hidden.
+- **Numbers:** sizes and positions show as whole design px, matching the selection badge; rotation shows to 0.1°. A field that is tapped and left untouched writes nothing (no nudge, no undo step).
+- **Design panel:** touch screens show gestures; keyboard shortcuts are shown only with a mouse.
+- **Tablets and phones turned sideways:** layers panel 200 px, Design panel 220 px.
+- **Board top bar:** the end group (save state, More, Export) stays right-aligned when the middle group is hidden.
+- **Minimap:** desktop only.
+- **Fit:** leaves room for the floating toolbar.
