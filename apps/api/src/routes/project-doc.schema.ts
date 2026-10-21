@@ -97,6 +97,19 @@ const group = {
   },
 } as const;
 
+/** D40: an Assets card (its pictures by input id, card order). */
+const stack = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'label', 'board', 'items'],
+  properties: {
+    id,
+    label: { type: 'string', maxLength: 200 },
+    board: point,
+    items: { type: 'array', maxItems: LIMITS.maxSources, items: id },
+  },
+} as const;
+
 export const projectDocV2Schema = {
   type: 'object',
   additionalProperties: false,
@@ -111,6 +124,7 @@ export const projectDocV2Schema = {
     outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: output },
     edges: { type: 'array', maxItems: maxNodes * 4, items: edge },
     groups: { type: 'array', maxItems: LIMITS.maxGroups, items: group },
+    stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
   },
 } as const;
 

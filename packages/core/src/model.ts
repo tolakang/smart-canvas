@@ -186,6 +186,20 @@ export interface ProjectDoc {
   edges: Edge[];
   /** Board groups (T13.7): named, coloured frames around nodes; absent = none. Board only, no effect on layout. */
   groups?: BoardGroup[];
+  /** Assets cards (D40): one board node holding many pictures; absent = none. Board only, no effect on layout. */
+  stacks?: AssetStack[];
+}
+
+/**
+ * An Assets card (D40): one board node that holds many pictures. Each picture is still its own input (and layer:
+ * placement, behaviour, processes, overrides); the card only draws them together. `items` lists the input ids in
+ * card order; an input is in one card at most, and ids that no longer exist are ignored.
+ */
+export interface AssetStack {
+  id: string;
+  label: string;
+  board: { x: number; y: number };
+  items: string[];
 }
 
 // ---------- team-level records ----------

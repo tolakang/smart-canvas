@@ -167,7 +167,12 @@ export function duplicateSource(doc: ProjectDoc, id: string, newId: string): Sou
   const copiedEdges = doc.edges
     .filter((e) => e.kind === 'layer' && e.from === id && doc.compositions.some((c) => c.id === e.to))
     .map((e) => ({ ...e, id: edgeId(newId, e.to, 'layer'), from: newId }));
-  return { ok: true, doc: { ...doc, sources: [...doc.sources, copy], compositions, edges: [...doc.edges, ...copiedEdges] } };
+  // D40: a copy of a picture in an Assets card joins the card, right after the original.
+  const stacks = doc.stacks?.map((st) => {
+    const at = st.items.indexOf(id);
+    return at < 0 ? st : { ...st, items: [...st.items.slice(0, at + 1), newId, ...st.items.slice(at + 1)] };
+  });
+  return { ok: true, doc: { ...doc, sources: [...doc.sources, copy], compositions, edges: [...doc.edges, ...copiedEdges], ...(stacks ? { stacks } : {}) } };
 }
 
 /** Removes a source and everything that refers to it; the rows behind it move up. */
@@ -184,6 +189,7 @@ export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
         placements: Object.fromEntries(Object.entries(c.placements).filter(([sourceId]) => sourceId !== id)),
       })),
       edges: doc.edges.filter((e) => e.from !== id && e.to !== id),
+      ...(doc.stacks ? { stacks: doc.stacks.map((st) => (st.items.includes(id) ? { ...st, items: st.items.filter((i) => i !== id) } : st)) } : {}),
       outputs: doc.outputs.map((o) => ({
         ...o,
         overrides: o.overrides.filter((ov) => ov.sourceId !== id),

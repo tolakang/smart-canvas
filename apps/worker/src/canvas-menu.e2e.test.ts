@@ -53,6 +53,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
   it('offers the quick inputs, the input dialog and the output dialog', async () => {
     await rightClickEmpty();
     expect(await menu().getByRole('menuitem').allInnerTexts()).toEqual([
+      'Assets (many pictures)',
       'Image (subject)',
       'Logo / SVG',
       'Text',

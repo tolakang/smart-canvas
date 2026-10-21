@@ -5,7 +5,10 @@
  * size, rows and health.
  */
 import {
+  assetStacks,
   compositionById,
+  deleteStack,
+  renameStack,
   compositionHealth,
   deleteSource,
   duplicateSource,
@@ -27,12 +30,12 @@ import {
   type OutputNode,
 } from '@smart-canvas/core';
 import { useMemo, useState, type ReactNode } from 'react';
-import { api } from '../api';
+import { api, assetUrl } from '../api';
 import { newId } from './ids';
 import { useBoard } from './context';
 import { useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
-import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, processNodeId } from './flow';
+import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, processNodeId, stackNodeId } from './flow';
 import { ProcessSettings } from './ProcessSettings';
 import { HealthIssues, healthSummary } from './HealthBadge';
 import { confirmDelete, Icon } from './LayerRow';
@@ -48,6 +51,7 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
   const output = doc.outputs.find((o) => outputNodeId(o.id) === selected);
   const composition = compositionIdOfNode(selected);
   const process = doc.processes.find((p) => processNodeId(p.id) === selected);
+  const stack = assetStacks(doc).find((st) => stackNodeId(st.id) === selected);
   return (
     <aside className={`sc-inspector-panel${floating ? ` sc-floating sc-floating--${floating} sc-floating--end` : ''}`} aria-label="Inspector">
       {floating && (
@@ -58,7 +62,9 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
           </button>
         </div>
       )}
-      {source ? (
+      {stack ? (
+        <AssetsInspector key={stack.id} stackId={stack.id} />
+      ) : source ? (
         <InputInspector key={source.id} source={source} />
       ) : output ? (
         <OutputInspector key={output.id} output={output} />
@@ -201,6 +207,43 @@ function InputActions({ source }: { source: InputSource }) {
       </div>
       <p className="sc-muted sc-inspector-panel__hint">Or select nodes and press Delete.</p>
     </Section>
+  );
+}
+
+/** D40: an Assets card — its name and pictures; the picture picked on the card (or here) is set below. */
+function AssetsInspector({ stackId }: { stackId: string }) {
+  const { doc, run, readOnly, stackFocus, setStackFocus, teamId } = useBoard();
+  const stack = assetStacks(doc).find((st) => st.id === stackId);
+  if (!stack) return null;
+  const items = stack.items.flatMap((id) => doc.sources.find((s) => s.id === id) ?? []);
+  const focused = items.find((s) => s.id === stackFocus) ?? items[0];
+  return (
+    <>
+      <Section title="Assets">
+        <NameField label="Assets name" value={stack.label} onCommit={(label) => run((d) => renameStack(d, stack.id, label))} />
+        <p className="sc-inspector-panel__hint">
+          {items.length} {items.length === 1 ? 'picture' : 'pictures'}, each its own layer. Drop more files on the card.
+        </p>
+        {items.length > 0 && (
+          <div className="sc-assets sc-assets--inspector" role="list" aria-label="Pictures">
+            {items.map((s) => {
+              const asset = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null;
+              return (
+                <button key={s.id} type="button" role="listitem" className={`sc-assets__pick${s.id === focused?.id ? ' sc-assets__item--focus' : ''}`} title={s.label} aria-label={`Set ${s.label}`} onClick={() => setStackFocus(s.id)}>
+                  {asset ? <img src={assetUrl(teamId, asset)} alt="" draggable={false} /> : '?'}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {!readOnly && (
+          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${stack.label}`} onClick={() => window.confirm(`Delete “${stack.label}” and its ${items.length} pictures? Their wires and output overrides go with them.`) && run((d) => deleteStack(d, stack.id))}>
+            <Icon name="trash" /> Delete card
+          </button>
+        )}
+      </Section>
+      {focused && <InputInspector key={focused.id} source={focused} />}
+    </>
   );
 }
 

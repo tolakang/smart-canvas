@@ -3,19 +3,24 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { compositionById, connectRefusal, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { assetStacks, compositionById, connectRefusal, type AssetStack, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
 export const inputNodeId = (sourceId: string) => `src:${sourceId}`;
 export const outputNodeId = (outputId: string) => `out:${outputId}`;
 export const processNodeId = (processId: string) => `proc:${processId}`;
+/** D40: an Assets card. */
+export const stackNodeId = (stackId: string) => `stk:${stackId}`;
+export const stackIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('stk:') ? nodeId.slice(4) : undefined);
 export const compositionNodeId = (compositionId: string) => (compositionId === MAIN ? MAIN_ID : `comp:${compositionId}`);
 export const compositionIdOfNode = (nodeId: string | null | undefined): string | undefined =>
   nodeId === MAIN_ID ? MAIN : nodeId?.startsWith('comp:') ? nodeId.slice(5) : undefined;
 
 // Not 'input'/'output': React Flow has built-in node types (and CSS) under those names.
 export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
+/** D40: an Assets card and its pictures (inputs drawn inside it), in card order. */
+export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode'>;
 /** One row per port on the master preview, front (port 0) first. */
 export interface PortRow {
   port: number;
@@ -53,14 +58,14 @@ export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean; laye
 export type ProcessFlowNode = Node<{ process: ProcessNode; layer: LayerSource | undefined }, 'processNode'>;
 /** A board group's frame (T13.7): derived from its members every render, never stored. */
 export type GroupFlowNode = Node<{ group: BoardGroup; outputs: string[] }, 'groupNode'>;
-export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
+export type BoardNode = InputFlowNode | StackFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
 /** What React Flow draws: the nodes plus group frames. */
 export type FlowNode = BoardNode | GroupFlowNode;
 export const groupNodeId = (groupId: string) => `grp:${groupId}`;
 export const groupIdOfNode = (nodeId: string) => (nodeId.startsWith('grp:') ? nodeId.slice(4) : undefined);
 
 /** The doc id a board node stands for (input, process, composition, output). */
-export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
+export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
 
 const GROUP_PAD = 24;
 const GROUP_HEAD = 40;
@@ -105,7 +110,11 @@ export function withGroupFrames(nodes: BoardNode[], groups: readonly BoardGroup[
 /** An edge's `from`/`to` are source, composition or output ids; map them to node ids (null: not on this board). */
 function endpoint(doc: ProjectDoc, id: string): string | null {
   if (compositionById(doc, id)) return compositionNodeId(id);
-  if (doc.sources.some((s) => s.id === id)) return inputNodeId(id);
+  if (doc.sources.some((s) => s.id === id)) {
+    // D40: a picture in an Assets card is drawn by the card, so are its wires.
+    const st = assetStacks(doc).find((x) => x.items.includes(id));
+    return st ? stackNodeId(st.id) : inputNodeId(id);
+  }
   if (doc.outputs.some((o) => o.id === id)) return outputNodeId(id);
   if (doc.processes.some((p) => p.id === id)) return processNodeId(id);
   return null;
@@ -150,8 +159,20 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
     },
     deletable: false,
   });
+  const stacks = assetStacks(doc);
+  const inStack = new Set(stacks.flatMap((st) => st.items));
+  const byId = new Map(doc.sources.map((s) => [s.id, s]));
   return [
-    ...doc.sources.map(
+    ...stacks.map(
+      (stack): StackFlowNode => ({
+        id: stackNodeId(stack.id),
+        type: 'assetsNode',
+        position: stack.board,
+        data: { stack, items: stack.items.flatMap((id) => byId.get(id) ?? []) },
+        deletable: false,
+      }),
+    ),
+    ...doc.sources.filter((s) => !inStack.has(s.id)).map(
       (source): InputFlowNode => ({
         id: inputNodeId(source.id),
         type: 'inputNode',
@@ -228,6 +249,7 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
  * an output the right port (T12.4: layer rows vs the master preview port). Without `targetHandle` the port isn't checked.
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
+  if (stackIdOfNode(c.source)) return compositionIdOfNode(c.target) ? null : 'An Assets card wires into a master preview.';
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
@@ -283,6 +305,7 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     ...doc,
     compositions: doc.compositions.map((c) => place(c, compositionNodeId(c.id))),
     sources: doc.sources.map((s) => place(s, inputNodeId(s.id))),
+    ...(doc.stacks ? { stacks: doc.stacks.map((st) => place(st, stackNodeId(st.id))) } : {}),
     processes: doc.processes.map((p) => place(p, processNodeId(p.id))),
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };

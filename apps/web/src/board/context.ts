@@ -18,7 +18,7 @@ export interface BoardActions {
   author: () => OverrideAuthor;
   /** Uploaded team fonts (registered as @font-face rules), for font pickers. */
   teamFonts: TeamFont[];
-  /** Current number of inputs (for the 10-input cap). */
+  /** Current number of inputs. */
   sourceCount: number;
   editSource: (id: string, edit: (s: InputSource) => InputSource) => void;
   /** Engine deps for live output previews; null until text fonts are loaded. */
@@ -33,6 +33,9 @@ export interface BoardActions {
   disconnectOutput: (outputId: string) => void;
   /** Reconnects an output to a composition (default main): silently, or after asking when it has overrides (D21). */
   reconnectOutput: (outputId: string, compositionId?: string) => void;
+  /** D40: the picture of an Assets card shown in the inspector (while its card is selected). */
+  stackFocus: string | null;
+  setStackFocus: (sourceId: string | null) => void;
   /** Applies a core source operation; returns its error, if any. */
   run: (op: (doc: ProjectDoc) => SourceResult) => SourceResult;
 }
