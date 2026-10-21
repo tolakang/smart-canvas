@@ -74,6 +74,10 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
     await page.mouse.down();
     await page.mouse.move(c.x + 30, c.y, { steps: 4 });
     await page.mouse.move(c.x + 90, c.y, { steps: 8 });
+    // Live: while the edge is still held, the picture already stretches with the frame.
+    await expect
+      .poll(() => layer.locator('img').evaluate((el) => el.getBoundingClientRect().width / el.getBoundingClientRect().height))
+      .toBeGreaterThan((400 / 300) * 1.3);
     await page.mouse.up();
     await saved();
     const after = await placement();
