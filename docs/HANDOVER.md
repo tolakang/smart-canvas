@@ -1,6 +1,6 @@
 # Handover — 2026-10-21
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest D36) and `TASKS.md`. All backlog tickets (P1–P13) are done and merged. The work since then has been owner-requested UI fixes, one PR each.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest D38) and `TASKS.md`. All backlog tickets (P1–P13) are done and merged. The work since then has been owner-requested UI fixes, one PR each.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each new piece of work. A force-with-lease push is fine when the branch only holds merged history.
@@ -34,7 +34,17 @@ Picture frames hug their visible pixels, and stretching distorts the picture.
 - **Renderer:** the fill mode in `OutputRenderer.tsx`.
 - **Tests:** `fit.test.ts`, `trim.test.ts`, and `fitted-frames.e2e.test.ts` (hug, stretch, browser and worker parity with margins, replace).
 
+## Merged #89: live stretch + touch without hold — owner issues 4, 5
+- A fitted picture stretches live while its edge is dragged (`CanvasEditor.tsx` keeps `fitted` on the live frame).
+- Touch: tap and drag at once; `longPressMs` defaults to 0. A double-tap on a handle resets it.
+
+## Layout v3, the stretched grid (D38) — owner issues 1–3
+- **Code:** `packages/core/src/layout/grid.ts` (`pinOf`, `fillsAxis`, `gridScale`, `gridFrame`), used by `index.ts` for subjects, decorations, logos (`logo.ts`, with the minimum width) and text boxes (`text.ts` `fitInFrame`).
+- **Removed:** the v2 content groups (`content.ts`), the side text column and the safe-area clamp.
+- **Spec:** `docs/ADAPTATION-RULES.md` v3 (examples A, C, D, E, J, K, I, F); unit tests in `grid.test.ts`, `logo.test.ts`, `text.test.ts`.
+
 ## Known limits / ideas
+- `output.family` is still computed and reported but no longer changes placement (D38).
 - Resizes don't snap; only moves do.
 - Transform history isn't saved with the project (a reset after a reload only undoes edits since the editor opened).
 - Nodes added from the top bar can land off-screen; the board doesn't pan to show them.

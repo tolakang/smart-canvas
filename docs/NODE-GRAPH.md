@@ -24,7 +24,7 @@ output port also offering `layer`.
   input first, then each process.
 - **Effective layer.** What a composition or output port receives is the input's content and behaviour, with
   each process applied in chain order. The board's thumbnails show the effective layer.
-- **Layout (D30) per composition.** An output's layout is computed from its composition's master size and
+- **Layout (D38) per composition.** An output's layout is computed from its composition's master size and
   placements. The effective layers follow the existing rules. Output-only layers get a default placement from
   their behaviour (logo → corner, text → bottom, others → content group) and can be overridden like any layer.
 - **Freezing (D12, kept).** Removing an output's composition wire freezes its frames. Reconnecting to the same

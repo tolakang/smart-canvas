@@ -29,7 +29,7 @@ describe('setOverrideFrame', () => {
     const doc = ok(setOverrideFrame(base(), 'o1', 'subject', { x: 5, y: 6 }, ada));
     const item = computeLayout(doc, 'o1', deps).items.find((i) => i.sourceId === 'subject');
     expect(item).toMatchObject({ frame: { x: 5, y: 6 }, overridden: true });
-    expect(item?.frame.w).toBeCloseTo(462.857143); // example G: the auto width stays
+    expect(item?.frame.w).toBeCloseTo(432); // example A: the auto width stays
   });
 
   it('fails for unknown outputs or sources', () => {
@@ -73,8 +73,8 @@ describe('setOverrideHidden', () => {
 
 describe('overrideDiff (T5.2)', () => {
   it('lists overridden fields with their auto values', () => {
-    let doc = ok(setOverrideFrame(base(), 'o1', 'subject', { x: 5, w: 462.857 }, ada)); // w equals auto (example G) → not a difference
-    expect(overrideDiff(doc, 'o1', 'subject', deps)).toEqual([{ field: 'x', auto: 308.571, value: 5 }]);
+    let doc = ok(setOverrideFrame(base(), 'o1', 'subject', { x: 5, w: 432 }, ada)); // w equals auto (example A) → not a difference
+    expect(overrideDiff(doc, 'o1', 'subject', deps)).toEqual([{ field: 'x', auto: 324, value: 5 }]);
     doc = ok(setOverrideStyle(doc, 'o1', 'headline', { color: '#ff0000', fontSizePx: 40 }, ada));
     const headline = overrideDiff(doc, 'o1', 'headline', deps);
     expect(headline).toContainEqual({ field: 'color', auto: '#111111', value: '#ff0000' });
