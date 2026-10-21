@@ -1,4 +1,4 @@
-# Handover — 2026-10-21
+# Handover — 2026-10-21 (updated after #91)
 
 Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest D38) and `TASKS.md`. All backlog tickets (P1–P13) are done and merged. The work since then has been owner-requested UI fixes, one PR each.
 
@@ -43,6 +43,16 @@ Picture frames hug their visible pixels, and stretching distorts the picture.
 - **Code:** `packages/core/src/layout/grid.ts` (`pinOf`, `fillsAxis`, `gridScale`, `gridFrame`), used by `index.ts` for subjects, decorations, logos (`logo.ts`, with the minimum width) and text boxes (`text.ts` `fitInFrame`).
 - **Removed:** the v2 content groups (`content.ts`), the side text column and the safe-area clamp.
 - **Spec:** `docs/ADAPTATION-RULES.md` v3 (examples A, C, D, E, J, K, L, I, F); unit tests in `grid.test.ts`, `logo.test.ts`, `text.test.ts`.
+
+## Merged #91: grid scale
+- Layers that don't fill the master scale by `√(sx·sy)` (their stretched grid box's area share), capped by the room around their pin so they stay inside the output, never below `k`. Spec examples A, D, E, J, L.
+
+## Next — owner request (2026-10-21, with a board screenshot), NOT STARTED
+1. **One Assets input slot, drag & drop many pictures at once.** Owner chose: **one Assets node, many layers.** A single input card holds all dropped pictures as a list (add, remove, reorder inside it). Each picture stays its own layer in the master preview (own placement, behaviour, processes/effects), wired automatically. The board shows one card and one wire instead of one card per picture (the screenshot had 8 "Subject copy copy…" cards).
+   - Likely shape: keep one `InputSource` per picture (layout, processes, overrides, fit all work per source) and add a grouping, e.g. `InputSource.bundle?: string` plus `ProjectDoc.bundles?: { id, label, board }[]`. Sources in a bundle are drawn inside the Assets card, not as their own nodes; their source→composition edges are drawn as one wire from the card. Needs a model change note in DECISIONS (new D39), the API schema (`additionalProperties: false`), migration not needed if optional.
+   - Code to read first: `packages/core/src/model.ts` (InputSource, LIMITS), `sources.ts`, `ports.ts` (`connectSource`), `apps/web/src/board/Board.tsx` + `nodes.tsx` (flow nodes/edges, `src:${id}` ids), `palette.ts` / `NodeLibrary.tsx` / canvas menu (add inputs), `Inspector.tsx` (`InputActions`), `board/delete-nodes.ts`, upload/drop handling and `apps/worker/src/drop.e2e.test.ts`.
+2. **No limit on layers in the main preview.** `LIMITS.maxSources = 10` (`packages/core/src/model.ts:19`, enforced in `sources.ts` `canAddSource`, shown in UI and likely the API schema `maxItems`). Remove the cap (owner decision; note it in DECISIONS).
+3. **Rename "Main preview" → "Master preview"** in UI copy: `MainNode.tsx`, `MainEditor.tsx` ("Main preview editor" dialog label — e2e tests use `/Main preview editor/`), `Inspector.tsx`, `Board.tsx`, `palette.ts`, `NodeLibrary.tsx`, defaults in `core/project.ts`, `compositions.ts`, `graph.ts` (migration label). Update tests and docs that match the text.
 
 ## Known limits / ideas
 - `output.family` is still computed and reported but no longer changes placement (D38).
