@@ -10,6 +10,19 @@ interface ProjectRow {
   updatedAt: string;
 }
 
+/** "just now", "5 min ago", "3 h ago", "yesterday", "4 days ago", then the date: short enough for one line. */
+export function timeAgo(iso: string, now = Date.now()): string {
+  const min = Math.round((now - new Date(iso).getTime()) / 60_000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h} h ago`;
+  const d = Math.round(h / 24);
+  if (d === 1) return 'yesterday';
+  if (d < 7) return `${d} days ago`;
+  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: d > 300 ? 'numeric' : undefined });
+}
+
 export function Projects(props: { team: Me['teams'][number]; userId: string; onOpen: (projectId: string) => void }) {
   const { team } = props;
   const [rows, setRows] = useState<ProjectRow[] | null>(null);
@@ -49,76 +62,87 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
     props.onOpen(p.id);
   }
 
+  const projects = rows?.filter((p) => !p.isTemplate) ?? [];
+  const templates = rows?.filter((p) => p.isTemplate) ?? [];
+
   return (
-    <section className="sc-card sc-card--wide">
-      <div className="sc-row sc-row--between">
-        <h1>{team.name} · Projects</h1>
-        <span className="sc-row">
-          <button type="button" onClick={() => setShowTeam(true)}>
+    <section className="sc-card sc-card--wide sc-home">
+      <header className="sc-home__head">
+        <h1>
+          <span className="sc-home__team">
+            {team.name}
+            <span className="sc-home__sep"> · </span>
+          </span>
+          Projects
+        </h1>
+        <span className="sc-home__tools">
+          <button type="button" className="sc-btn" onClick={() => setShowTeam(true)}>
             Team
           </button>
-          <button type="button" onClick={() => setShowPresets(true)}>
+          <button type="button" className="sc-btn" onClick={() => setShowPresets(true)}>
             Size presets
           </button>
         </span>
-      </div>
+      </header>
       {canEdit && (
-        <form className="sc-row" onSubmit={create}>
-          <input name="name" placeholder="New project name" required maxLength={200} />
-          <button type="submit">Create</button>
+        <form className="sc-home__new" onSubmit={create}>
+          <input name="name" placeholder="New project name" aria-label="New project name" required maxLength={200} />
+          <button type="submit" className="sc-btn sc-btn--primary">
+            Create project
+          </button>
         </form>
       )}
       {rows === null ? (
         <p className="sc-muted">Loading…</p>
       ) : (
         <>
-          {rows.filter((p) => !p.isTemplate).length === 0 ? (
-            <p className="sc-muted">No projects yet.</p>
+          {projects.length === 0 ? (
+            <p className="sc-empty">{canEdit ? 'No projects yet. Name one above to start.' : 'No projects yet.'}</p>
           ) : (
-            <ul className="sc-list" aria-label="Projects">
-              {rows
-                .filter((p) => !p.isTemplate)
-                .map((p) => (
-                  <li key={p.id} data-project={p.name}>
-                    <button type="button" className="sc-link" onClick={() => props.onOpen(p.id)}>
-                      {p.name}
-                    </button>
-                    <span className="sc-muted">{new Date(p.updatedAt).toLocaleString()}</span>
+            <ul className="sc-list sc-rows" aria-label="Projects">
+              {projects.map((p) => (
+                <li key={p.id} data-project={p.name}>
+                  <button type="button" className="sc-rows__main" onClick={() => props.onOpen(p.id)} aria-label={p.name} aria-describedby={`edited-${p.id}`}>
+                    <span className="sc-rows__name">{p.name}</span>
+                    <time id={`edited-${p.id}`} className="sc-rows__meta" dateTime={p.updatedAt} title={new Date(p.updatedAt).toLocaleString()}>
+                      Edited {timeAgo(p.updatedAt)}
+                    </time>
+                  </button>
+                  {canEdit && (
+                    <span className="sc-rows__actions">
+                      <button type="button" className="sc-btn sc-btn--ghost" onClick={() => void duplicate(p, false)} aria-label={`Duplicate ${p.name}`}>
+                        Duplicate
+                      </button>
+                      <button type="button" className="sc-btn sc-btn--ghost" onClick={() => void duplicate(p, true)} aria-label={`Save ${p.name} as template`} title="Save a copy as a template">
+                        Make template
+                      </button>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {templates.length > 0 && (
+            <>
+              <h2>Templates</h2>
+              <ul className="sc-list sc-rows" aria-label="Templates">
+                {templates.map((p) => (
+                  <li key={p.id} data-template={p.name}>
+                    <span className="sc-rows__main">
+                      <span className="sc-rows__name">{p.name}</span>
+                    </span>
                     {canEdit && (
-                      <span className="sc-row">
-                        <button type="button" onClick={() => void duplicate(p, false)} aria-label={`Duplicate ${p.name}`}>
-                          Duplicate
+                      <span className="sc-rows__actions">
+                        <button type="button" className="sc-btn sc-btn--ghost" onClick={() => props.onOpen(p.id)} aria-label={`Edit template ${p.name}`}>
+                          Edit
                         </button>
-                        <button type="button" onClick={() => void duplicate(p, true)} aria-label={`Save ${p.name} as template`}>
-                          Save as template
+                        <button type="button" className="sc-btn" onClick={() => void fromTemplate(p)} aria-label={`New project from ${p.name}`}>
+                          Use template
                         </button>
                       </span>
                     )}
                   </li>
                 ))}
-            </ul>
-          )}
-          {rows.some((p) => p.isTemplate) && (
-            <>
-              <h2>Templates</h2>
-              <ul className="sc-list" aria-label="Templates">
-                {rows
-                  .filter((p) => p.isTemplate)
-                  .map((p) => (
-                    <li key={p.id} data-template={p.name}>
-                      <span>{p.name}</span>
-                      {canEdit && (
-                        <span className="sc-row">
-                          <button type="button" onClick={() => void fromTemplate(p)} aria-label={`New project from ${p.name}`}>
-                            Use template
-                          </button>
-                          <button type="button" onClick={() => props.onOpen(p.id)} aria-label={`Edit template ${p.name}`}>
-                            Edit
-                          </button>
-                        </span>
-                      )}
-                    </li>
-                  ))}
               </ul>
             </>
           )}

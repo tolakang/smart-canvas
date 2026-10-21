@@ -163,6 +163,41 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(await phone.getByRole('button', { name: 'Disconnect wire' }).count()).toBe(0);
   }, 60_000);
 
+  it('phone: projects home, Size presets and Team fit the screen (no sideways scroll)', async () => {
+    const shot = async (name: string) => process.env.SC_SHOTS && (await phone.screenshot({ path: `${process.env.SC_SHOTS}/${name}.png` }));
+    /** Nothing in the page or the open dialog reaches past the right edge. */
+    const fits = () =>
+      phone.evaluate(() => {
+        const box = document.querySelector('dialog[open] .sc-card') ?? document.documentElement;
+        const right = Math.min(window.innerWidth, box.getBoundingClientRect().right);
+        const over = [...box.querySelectorAll('input, select, button, h1, h2')].filter((el) => el.getBoundingClientRect().right > right + 0.5);
+        return { scroll: document.documentElement.scrollWidth - window.innerWidth, inner: box.scrollWidth - box.clientWidth, over: over.map((el) => el.outerHTML.slice(0, 60)) };
+      });
+    await phone.goto(stack.env.webUrl);
+    await phone.getByRole('heading', { name: 'Studio · Projects' }).waitFor();
+    // One-line rows: a short relative date, not a full timestamp.
+    expect(await phone.locator('[data-project="Phone"] .sc-rows__meta').innerText()).toMatch(/^Edited (just now|\d+ min ago)$/);
+    expect(await fits()).toEqual({ scroll: 0, inner: 0, over: [] });
+    await shot('home');
+
+    await phone.getByRole('button', { name: 'Size presets' }).click();
+    const presets = phone.getByRole('dialog');
+    await presets.getByRole('form', { name: 'New preset' }).waitFor();
+    await presets.getByRole('form', { name: 'New preset' }).scrollIntoViewIfNeeded();
+    expect(await fits()).toEqual({ scroll: 0, inner: 0, over: [] });
+    await shot('presets');
+    await presets.getByRole('button', { name: 'Close' }).click();
+
+    await phone.getByRole('button', { name: 'Team' }).click();
+    const team = phone.getByRole('dialog');
+    await team.getByRole('form', { name: 'Invite' }).getByRole('button', { name: 'Create invite link' }).click();
+    await team.getByLabel('Invite link', { exact: true }).waitFor();
+    expect(await fits()).toEqual({ scroll: 0, inner: 0, over: [] });
+    await shot('team');
+    await team.getByRole('button', { name: 'Close' }).click();
+    await phone.goto(boardUrl);
+  }, 60_000);
+
   it('tablet: library and inspector are overlays, one at a time', async () => {
     const tablet = await stack.env.browser.newPage({ viewport: { width: 1024, height: 768 } });
     await tablet.context().addCookies(await phone.context().cookies());

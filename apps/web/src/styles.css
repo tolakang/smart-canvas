@@ -107,7 +107,7 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 .sc-rename { flex: 1; min-width: 0; padding: 2px 6px; font-weight: 600; }
 .sc-dialog { border: 0; padding: 0; background: transparent; }
 .sc-dialog::backdrop { background: rgb(0 0 0 / 0.25); }
-.sc-dialog .sc-card { margin: 0; min-width: 320px; }
+.sc-dialog .sc-card { margin: 0; min-width: min(320px, 100%); }
 .sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
 .sc-node--main { min-width: 260px; }
@@ -675,3 +675,80 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-wire-cut { position: absolute; top: 0; left: 0; z-index: 10; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--danger); font-size: 18px; line-height: 1; box-shadow: var(--shadow-2); cursor: pointer; pointer-events: all; }
 .sc-wire-cut:hover { background: var(--danger-soft); }
 @media (pointer: coarse) { .sc-wire-cut { width: 40px; height: 40px; font-size: 22px; } }
+
+/* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
+   One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider
+   than a phone: fields wrap into a grid, rows stack their actions under the name. */
+.sc-btn--primary { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+.sc-btn--primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, #000); }
+.sc-btn--danger { color: var(--danger); }
+.sc-btn--danger:hover:not(:disabled) { background: var(--danger-soft); }
+.sc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.sc-card .sc-btn { height: 32px; font-size: var(--fs-md); }
+/* Plain card buttons (sign in, invite page, older dialogs) look like .sc-btn; a card's submit is its primary. */
+.sc-card button:not([class]) {
+  display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 var(--sp-3);
+  border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); transition: background var(--t-fast);
+}
+.sc-card button:not([class]):hover:not(:disabled) { background: var(--surface-2); }
+.sc-card button[type='submit']:not([class]) { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+.sc-card button:not([class]):disabled { opacity: 0.5; cursor: not-allowed; }
+.sc-card button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) {
+  min-width: 0; height: 32px; padding: 0 var(--sp-2); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font: inherit;
+}
+.sc-card :is(input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+.sc-card h2 { margin: var(--sp-2) 0 0; font-size: var(--fs-lg); }
+.sc-lede { margin: -4px 0 0; }
+.sc-hint { margin: 0; color: var(--muted); font-size: var(--fs-sm); }
+.sc-empty { margin: 0; padding: var(--sp-4); border: 1px dashed var(--line-strong); border-radius: var(--r-lg); color: var(--muted); text-align: center; }
+
+/* Projects home */
+.sc-home { margin: 6vh auto; }
+.sc-home__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-3); }
+.sc-home__head h1 { margin: 0; }
+.sc-home__team { color: var(--muted); font-weight: 500; }
+.sc-home__tools { display: flex; gap: var(--sp-2); }
+.sc-home__new { display: flex; gap: var(--sp-2); }
+.sc-home__new input { flex: 1; }
+
+/* Rows: name over a muted line, actions on the right (under it on phones). */
+.sc-rows { gap: 0; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.sc-rows > li { display: flex; align-items: center; gap: var(--sp-2); min-height: 52px; padding: var(--sp-2) var(--sp-3); border-top: 1px solid var(--line); }
+.sc-rows > li:first-child { border-top: 0; }
+.sc-rows__main { display: grid; gap: 2px; flex: 1; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+button.sc-rows__main { cursor: pointer; }
+button.sc-rows__main:hover .sc-rows__name { color: var(--accent); }
+button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm); }
+.sc-rows__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-rows__meta { color: var(--muted); font-size: var(--fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-rows__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sp-1); flex: none; }
+.sc-rows .sc-btn--ghost { color: var(--fg); }
+.sc-rows .sc-btn--ghost.sc-btn--danger { color: var(--danger); }
+
+/* Forms in dialogs: a grid that wraps instead of overflowing. */
+.sc-form { display: grid; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
+.sc-form h2 { margin: 0; }
+.sc-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--sp-3); }
+.sc-fields label { display: grid; gap: var(--sp-1); min-width: 0; font-size: var(--fs-sm); color: var(--muted); }
+.sc-fields__wide { grid-column: 1 / -1; }
+.sc-form__actions, .sc-dialog__foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sp-2); }
+.sc-dialog__foot { padding-top: var(--sp-3); border-top: 1px solid var(--line); }
+/* Long dialogs keep Close in view: the footer sticks to the card's bottom edge. */
+.sc-presets .sc-dialog__foot, .sc-team .sc-dialog__foot { position: sticky; bottom: calc(-1 * var(--card-pad)); margin: 0 calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad)); padding: var(--sp-3) var(--card-pad) var(--card-pad); background: var(--surface); }
+.sc-invite-link { display: flex; gap: var(--sp-2); }
+.sc-invite-link input { flex: 1; font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
+.sc-presets, .sc-team { --card-pad: 24px; width: min(640px, calc(100vw - 24px)); max-height: 85vh; max-height: 85dvh; }
+
+@media (max-width: 767px) {
+  .sc-home { margin: 0; min-height: 100dvh; padding: calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) var(--sp-4); border: 0; border-radius: 0; align-content: start; }
+  .sc-home__team { display: block; font-size: var(--fs-sm); }
+  .sc-rows > li { flex-wrap: wrap; }
+  .sc-rows__actions { margin-left: auto; }
+  .sc-dialog { max-width: calc(100vw - 16px); }
+  .sc-dialog .sc-card { --card-pad: var(--sp-4); padding: var(--card-pad); }
+  /* Visually hidden, still read: the heading stays "Studio · Projects". */
+  .sc-home__sep { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .sc-card .sc-btn, .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
+  .sc-card :is(input, select) { font-size: 16px; } /* iOS zooms into smaller fields */
+}
