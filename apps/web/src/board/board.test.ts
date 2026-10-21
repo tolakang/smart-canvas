@@ -1,4 +1,4 @@
-import { createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
+import { addPicturesToStack, addStack, createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
 import {
@@ -13,6 +13,7 @@ import {
   portFromHandle,
   portRows,
   sourceIdOfNode,
+  stackNodeId,
   syncNodes,
   withPositions,
 } from './flow';
@@ -260,5 +261,36 @@ describe('typed connections (T12.2, D32)', () => {
     expect(connectionRefusal(unwired, { source: 'src:bg', target: 'out:ig', targetHandle: null })).toBe('An input wires into a layer row of an output.');
     expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4', targetHandle: 'p0' })).toBe('A master preview wires into the output’s master preview port.');
     expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of a master preview.');
+  });
+});
+
+describe('Assets cards on the board (D40)', () => {
+  const withCard = (): ProjectDoc => {
+    const made = addStack(createProjectDoc('P'), { id: 'st', board: { x: -600, y: 40 } });
+    if (!made.ok) throw new Error(made.error);
+    const filled = addPicturesToStack(made.doc, 'st', [
+      { id: 'a', label: 'a', kind: 'image', assetId: 'x1' },
+      { id: 'b', label: 'b', kind: 'image', assetId: 'x2' },
+    ]);
+    if (!filled.ok) throw new Error(filled.error);
+    return filled.doc;
+  };
+
+  it('draws one card for its pictures (not a node each), and their wires from the card to their rows', () => {
+    const doc = withCard();
+    const nodes = docToNodes(doc);
+    const card = nodes.find((n) => n.id === stackNodeId('st'));
+    expect(card).toMatchObject({ type: 'assetsNode', position: { x: -600, y: 40 } });
+    expect((card?.data as { items: { id: string }[] }).items.map((s) => s.id)).toEqual(['a', 'b']);
+    expect(nodes.some((n) => n.id === 'src:a' || n.id === 'src:b')).toBe(false);
+    const edges = docToEdges(doc).filter((e) => e.source === stackNodeId('st'));
+    expect(edges.map((e) => e.targetHandle).sort()).toEqual(['p0', 'p1']); // a in front (p0), b behind it
+  });
+
+  it('a card wires into a master preview only; moving it writes its position', () => {
+    const doc = withCard();
+    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: MAIN_ID })).toBeNull();
+    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/master preview/);
+    expect(withPositions(doc, [{ id: stackNodeId('st'), position: { x: 10.4, y: 20.6 } }]).stacks?.[0]?.board).toEqual({ x: 10, y: 21 });
   });
 });

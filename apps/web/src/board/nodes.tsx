@@ -9,6 +9,7 @@ import type { InputFlowNode } from './flow';
 import { OutputNodeView } from './OutputNode';
 import { GroupNodeView } from './GroupNode';
 import { ProcessNodeView } from './ProcessNode';
+import { AssetsNodeView } from './AssetsNode';
 
 /**
  * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
@@ -104,4 +105,4 @@ export function SourceEditor({ source, upload }: { source: InputSource; upload: 
   }
 }
 
-export const nodeTypes: NodeTypes = { inputNode: InputNodeView, mainNode: MainNodeView, outputNode: OutputNodeView, processNode: ProcessNodeView, groupNode: GroupNodeView };
+export const nodeTypes: NodeTypes = { inputNode: InputNodeView, assetsNode: AssetsNodeView, mainNode: MainNodeView, outputNode: OutputNodeView, processNode: ProcessNodeView, groupNode: GroupNodeView };

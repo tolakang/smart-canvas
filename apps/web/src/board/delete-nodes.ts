@@ -1,12 +1,12 @@
 /**
  * The Delete / Backspace key on the board: what the selected nodes are, in words for the confirm, and the
- * doc without them. Inputs, processes, extra master previews and outputs are deleted (as their own delete
+ * doc without them. Inputs, Assets cards (with their pictures), processes, extra master previews and outputs are deleted (as their own delete
  * buttons do); a group frame is ungrouped (its nodes stay); the first master preview can't be deleted.
  */
-import { deleteComposition, deleteOutput, deleteProcess, deleteSource, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
-import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, sourceIdOfNode } from './flow';
+import { assetStacks, deleteComposition, deleteOutput, deleteProcess, deleteSource, deleteStack, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
 
-type Target = { kind: 'input' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
+type Target = { kind: 'input' | 'stack' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
 
 /** The deletable nodes among `nodeIds`, with their labels. */
 export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Target[] {
@@ -17,7 +17,11 @@ export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Tar
     const grp = groupIdOfNode(n);
     const outp = outputIdOfNode(n);
     const comp = compositionIdOfNode(n);
-    if (src) {
+    const stk = stackIdOfNode(n);
+    if (stk) {
+      const st = assetStacks(doc).find((x) => x.id === stk);
+      if (st) out.push({ kind: 'stack', id: stk, label: st.label });
+    } else if (src) {
       const s = doc.sources.find((x) => x.id === src);
       if (s) out.push({ kind: 'input', id: src, label: s.label });
     } else if (proc) {
@@ -52,6 +56,7 @@ export function deleteNodes(doc: ProjectDoc, targets: readonly Target[], deps?: 
   for (const t of targets) {
     const r =
       t.kind === 'input' ? deleteSource(next, t.id)
+      : t.kind === 'stack' ? deleteStack(next, t.id)
       : t.kind === 'process' ? deleteProcess(next, t.id)
       : t.kind === 'output' ? deleteOutput(next, t.id)
       : t.kind === 'group' ? ungroup(next, t.id)

@@ -26,5 +26,6 @@ export * from './overrides';
 export * from './exports';
 export * from './library';
 export * from './fit';
+export * from './stacks';
 
 export const CORE_VERSION = '0.0.0';
