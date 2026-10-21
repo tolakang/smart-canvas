@@ -431,6 +431,31 @@ export function removeForHandle(op: TransformOp, h: HandleId): TransformOp | nul
   return op;
 }
 
+/**
+ * A picture has its own shape: after a stretch or scale handle's reset, if the box still isn't the picture's
+ * proportions (`aspect` = width / height) — its history doesn't go back far enough, e.g. the layer was stretched
+ * before the editor opened — the handle's axis is brought back to them: left/right edge → the width from the
+ * height, top/bottom edge → the height from the width, a corner → both, keeping the area. Recorded as a scale
+ * about the centre, so rotation, skew and position stay.
+ */
+export function restoreAspect(doc: TransformDoc, h: HandleId, aspect: number | undefined): TransformDoc {
+  if (!aspect || !(aspect > 0) || h === 'rotate' || h === 'body') return doc;
+  const s = derive(doc);
+  const w = s.width * Math.abs(s.scaleX);
+  const hh = s.height * Math.abs(s.scaleY);
+  if (Math.abs(w / hh - aspect) <= 1e-9 * aspect) return doc;
+  let kx = 1;
+  let ky = 1;
+  if (h === 'e' || h === 'w') kx = (hh * aspect) / w;
+  else if (h === 'n' || h === 's') ky = w / aspect / hh;
+  else {
+    const w2 = Math.sqrt(w * hh * aspect);
+    kx = w2 / w;
+    ky = w2 / aspect / hh;
+  }
+  return pushOp(doc, { type: 'scale', kx, ky, pivot: { x: 0, y: 0 } });
+}
+
 export function resetForHandle(doc: TransformDoc, h: HandleId): TransformDoc {
   const ops = doc.ops.map((op) => removeForHandle(op, h)).filter((op): op is TransformOp => op !== null && !isIdentityOp(op));
   return { ...doc, ops };

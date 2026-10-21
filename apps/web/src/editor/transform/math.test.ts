@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
   classifyEdgeDrag, corners, decompose, det, dragRotate, dragScale, dragSkew, edgeLean, HANDLE_UV, linear, pointAt,
-  applyOp, derive, docFromState, keepPoint, pushOp, resetForHandle, rotateOp, scaleOp, skewOp, toCssMatrix,
+  applyOp, derive, docFromState, keepPoint, pushOp, resetForHandle, restoreAspect, rotateOp, scaleOp, skewOp, toCssMatrix,
   type TransformDoc, type TransformOp, type TransformState, type Vec,
 } from './math';
 
@@ -256,5 +256,40 @@ describe('resets: as if those drags never happened, in any combination', () => {
   it('keepPoint keeps the given point', () => {
     const next = { ...base, scaleX: 3 };
     closeV(pointAt(keepPoint(base, next, { x: -1, y: 1 }), { x: -1, y: 1 }), pointAt(base, { x: -1, y: 1 }));
+  });
+});
+
+describe('a picture resets to its own shape (restoreAspect)', () => {
+  const ratio = (s: TransformState) => (s.width * s.scaleX) / (s.height * s.scaleY);
+  // Rotated, then stretched before the editor opened: the history starts from the stretched frame.
+  const loaded = docFromState({ ...base, width: 180, height: 60, rotation: 30 }); // the picture is 100×60 (5:3)
+  const aspect = 100 / 60;
+
+  it('without it, an edge reset has nothing to undo: the stretch stays', () => close(ratio(derive(resetForHandle(loaded, 'e'))), 3));
+  it('left/right edge: the width comes back from the height; rotation and centre stay', () => {
+    const s = derive(restoreAspect(resetForHandle(loaded, 'e'), 'e', aspect));
+    close(ratio(s), aspect);
+    close(s.height * s.scaleY, 60);
+    close(s.rotation, 30);
+    closeV({ x: s.x, y: s.y }, { x: base.x, y: base.y });
+  });
+  it('top/bottom edge: the height from the width; a corner: both, keeping the area', () => {
+    const n = derive(restoreAspect(resetForHandle(loaded, 'n'), 'n', aspect));
+    close(ratio(n), aspect);
+    close(n.width * n.scaleX, 180);
+    const c = derive(restoreAspect(resetForHandle(loaded, 'se'), 'se', aspect));
+    close(ratio(c), aspect);
+    close(c.width * c.scaleX * c.height * c.scaleY, 180 * 60);
+  });
+  it('rotated in this session, then stretched: the edge reset is exact, with nothing left to fix', () => {
+    const rotated = pushOp(docFromState({ ...base }), { type: 'rotate', deg: 40 });
+    const stretched = pushOp(rotated, { type: 'scale', kx: 1.8, ky: 1, pivot: { x: -1, y: 0 } });
+    const reset = resetForHandle(stretched, 'e');
+    sameShape(derive(reset), derive(rotated));
+    assert.equal(restoreAspect(reset, 'e', aspect), reset);
+  });
+  it('rotate, skew and move handles are left alone', () => {
+    for (const h of ['rotate', 'body'] as const) assert.equal(restoreAspect(loaded, h, aspect), loaded);
+    assert.equal(restoreAspect(loaded, 'e', undefined), loaded);
   });
 });

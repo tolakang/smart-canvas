@@ -8,7 +8,7 @@
  * pointer (Ctrl/⌘ + wheel) and Figma's zoom keys, a size badge on the selection, and a Design panel with
  * X / Y / W / H / rotation.
  */
-import { frameTransform, layerSources, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
+import { frameTransform, layerSources, pictureAspect, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
@@ -238,9 +238,11 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
 
   // What the transform box's callbacks read: always this render's values, without re-creating the box.
   const selectedFrame = selectedItem?.frame ?? null;
-  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame });
+  // A fitted picture's own proportions: resets of its stretch / scale handles end at them.
+  const aspect = selectedFrame?.fitted && selectedSource ? pictureAspect(selectedSource, layoutDeps?.assets ?? {}) : undefined;
+  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect });
   useLayoutEffect(() => {
-    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame };
+    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect };
   });
 
   // One transform box per selected layer, picking up its history from this session.
@@ -255,6 +257,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
       getScale: () => latest.current.scale,
       flip: false,
       proportional: (shift) => latest.current.lockRatio || shift,
+      aspect: () => latest.current.aspect,
       snapMove: (moved) => snapMove(moved, latest.current.targets, SNAP_PX / latest.current.scale),
       onChange: (state, info) => {
         // D37: the drawn frame stays fitted while it's dragged, so a stretch shows live (not only on release).
