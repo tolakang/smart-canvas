@@ -3,6 +3,7 @@
  * (normalized to the master canvas) through the board (autosave).
  */
 import { compositionById, MAIN, mainComposition, masterScene, setPlacement } from '@smart-canvas/core';
+import type { Frame } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
@@ -15,8 +16,10 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
   const main = compositionById(doc, compositionId) ?? mainComposition(doc);
   const { width, height } = scene;
   const onCommit = useCallback(
-    (id: string, f: { x: number; y: number; w: number; h: number; rotation?: number }) =>
-      run((d) => setPlacement(d, id, { x: f.x / width, y: f.y / height, w: f.w / width, h: f.h / height, ...(f.rotation ? { rotation: f.rotation } : {}) }, main.id)),
+    (id: string, f: Frame) =>
+      run((d) =>
+        setPlacement(d, id, { x: f.x / width, y: f.y / height, w: f.w / width, h: f.h / height, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) }, main.id),
+      ),
     [run, width, height, main.id],
   );
   return (

@@ -24,9 +24,9 @@ export function project(out: OutputNode = output()): ProjectDoc {
 }
 
 /** Sets a master placement from a design-px frame on the master canvas. */
-export function place(doc: ProjectDoc, id: string, f: { x: number; y: number; w: number; h: number; rotation?: number }): ProjectDoc {
+export function place(doc: ProjectDoc, id: string, f: { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }): ProjectDoc {
   const { width: W, height: H } = mainComposition(doc).size;
-  const n: NFrame = { x: f.x / W, y: f.y / H, w: f.w / W, h: f.h / H, ...(f.rotation ? { rotation: f.rotation } : {}) };
+  const n: NFrame = { x: f.x / W, y: f.y / H, w: f.w / W, h: f.h / H, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) };
   return withComposition(doc, MAIN, (c) => ({ ...c, placements: { ...c.placements, [id]: n } }));
 }
 

@@ -3,7 +3,7 @@
 Master artwork → many sizes. Flow board: Input sources → Main preview → Output nodes. Spec lives in `docs/` (copy of the Project files). Read `docs/00-READ-FIRST.md` first.
 
 ## Stack
-pnpm monorepo · `apps/web` (React, TS, Vite, @xyflow/react v12, react-moveable) · `apps/api` (Fastify) · `apps/worker` (Playwright Chromium export, sharp) · `packages/core` (model, units, layout engine) · `packages/presets` · Postgres (Drizzle) · MinIO · pg-boss · Docker/Dokploy.
+pnpm monorepo · `apps/web` (React, TS, Vite, @xyflow/react v12, own transform box — D36) · `apps/api` (Fastify) · `apps/worker` (Playwright Chromium export, sharp) · `packages/core` (model, units, layout engine) · `packages/presets` · Postgres (Drizzle) · MinIO · pg-boss · Docker/Dokploy.
 
 ## Commands
 `pnpm i` · `pnpm dev` · `pnpm test` (vitest) · `pnpm typecheck` · `pnpm lint` · `pnpm build` · `docker compose up` (local stack)

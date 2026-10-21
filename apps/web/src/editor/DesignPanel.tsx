@@ -1,10 +1,10 @@
 /**
  * Design panel (T10.1): the editor's right panel, Figma style. With nothing selected it shows the canvas and
- * the shortcuts; with a layer selected, its position, size and rotation in design px (typed values go through
+ * the shortcuts; with a layer selected, its position, size, rotation and skew in design px (typed values go through
  * the editor's commit, so the main preview writes placements and an output writes an override), then the
  * caller's panels for that layer (text style, overrides).
  */
-import type { Frame, InputSource, RenderScene } from '@smart-canvas/core';
+import { MAX_SHEAR_DEG, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
 import type { ReactNode } from 'react';
 import { NumberField } from '../ui/NumberField';
 
@@ -22,6 +22,10 @@ export const SHORTCUTS: [string, string][] = [
   ['Shift+1', 'Zoom to fit'],
   ['Shift+0', 'Zoom to 100%'],
   ['Shift + drag a handle', 'Keep proportions · rotate in 15° steps'],
+  ['Drag an edge along itself', 'Skew (the opposite edge stays)'],
+  ['Ctrl/⌘ + drag an edge', 'Skew, whichever way you drag'],
+  ['Alt + drag a handle', 'Resize or skew about the centre'],
+  ['Double-click a handle', 'Undo what that handle changed'],
   ['Alt+click', 'Select the layer behind'],
   ['Arrows (Shift)', 'Nudge 1 px (10 px)'],
   ['Esc', 'Deselect, then close'],
@@ -50,7 +54,10 @@ export function DesignPanel(props: {
         {/* Touch screens get gestures instead of keyboard shortcuts. */}
         <section className="sc-design__section sc-design__touch">
           <div className="sc-design__title">Gestures</div>
-          <p className="sc-design__hint">Tap a layer to select it · drag to move · pinch to zoom · two fingers to pan</p>
+          <p className="sc-design__hint">
+            Tap a layer to select it · hold, then drag to move · hold a handle, then drag: outward to resize, along the edge to skew · double-tap a handle to
+            undo what it changed · pinch to zoom · two fingers to pan
+          </p>
         </section>
         <section className="sc-design__section sc-design__shortcuts">
           <div className="sc-design__title">Shortcuts</div>
@@ -100,6 +107,7 @@ export function DesignPanel(props: {
           {field('W', 'Width', frame.w, (n) => setSize('w', n), 1)}
           {field('H', 'Height', frame.h, (n) => setSize('h', n), 1)}
           {field('↻', 'Rotation', frame.rotation ?? 0, (n) => set({ rotation: ((((n ?? 0) % 360) + 540) % 360) - 180 }), -360, roundDeg)}
+          {field('⫽', 'Skew', frame.shear ?? 0, (n) => set({ shear: Math.max(-MAX_SHEAR_DEG, Math.min(MAX_SHEAR_DEG, n ?? 0)) }), -MAX_SHEAR_DEG, roundDeg)}
           <button
             type="button"
             className="sc-design__lock"

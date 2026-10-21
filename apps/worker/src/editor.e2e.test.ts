@@ -83,7 +83,7 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
 
   it('handles are big enough to grab and resize', async () => {
     await page.mouse.click(...Object.values(await centre(layer('subject'))) as [number, number]);
-    const handle = editor().locator('.moveable-control.moveable-se').first();
+    const handle = editor().locator('[data-tb-handle="se"]');
     const hb = await handle.boundingBox();
     expect(hb?.width ?? 0).toBeGreaterThanOrEqual(14);
     const before = mainComposition(await doc()).placements.subject;
@@ -128,10 +128,10 @@ describe.skipIf(!adminUrl)('main preview editor: direct move / resize (T8.6)', (
     await expect.poll(async () => (mainComposition(await doc()).placements.subject?.w ?? 0) * W, { timeout: 10_000 }).toBeCloseTo(300, 1);
     const after = mainComposition(await doc()).placements.subject;
     expect(((after?.w ?? 0) * W) / ((after?.h ?? 1) * H)).toBeCloseTo(ratio, 3);
-    // Moveable's frame follows the typed values.
+    // The transform box follows the typed values.
     await expect
       .poll(async () => {
-        const [line, box] = await Promise.all([editor().locator('.moveable-control.moveable-se').first().boundingBox(), editor().getByTestId('selection-box').boundingBox()]);
+        const [line, box] = await Promise.all([editor().locator('[data-tb-handle="se"]').boundingBox(), editor().getByTestId('selection-box').boundingBox()]);
         return Math.round((line?.x ?? 0) + (line?.width ?? 0) / 2 - ((box?.x ?? 0) + (box?.width ?? 0)));
       })
       .toBe(0);

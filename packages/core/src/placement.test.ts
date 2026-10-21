@@ -43,3 +43,14 @@ describe('placements', () => {
     expect(masterScene(wired).items.map((i) => i.sourceId)).toEqual(['background', 'subject', 'headline', 'logo']);
   });
 });
+
+describe('shear (editor transform box)', () => {
+  it('setPlacement keeps shear (rounded, clamped to ±75°) and drops zero; the master scene draws it', () => {
+    const doc = ok(setPlacement(createProjectDoc('P'), 'subject', { x: 0.1, y: 0.2, w: 0.3, h: 0.4, rotation: 10, shear: -20.12345678 }));
+    expect(mainComposition(doc).placements.subject).toEqual({ x: 0.1, y: 0.2, w: 0.3, h: 0.4, rotation: 10, shear: -20.123457 });
+    expect(mainComposition(ok(setPlacement(doc, 'subject', { x: 0, y: 0, w: 1, h: 1, shear: 200 }))).placements.subject?.shear).toBe(75);
+    expect(mainComposition(ok(setPlacement(doc, 'subject', { x: 0, y: 0, w: 1, h: 1, shear: 0 }))).placements.subject).toEqual({ x: 0, y: 0, w: 1, h: 1 });
+    const wired = ok(connectSource(doc, 'subject'));
+    expect(masterScene(wired).items.find((i) => i.sourceId === 'subject')?.frame).toMatchObject({ rotation: 10, shear: -20.123457 });
+  });
+});

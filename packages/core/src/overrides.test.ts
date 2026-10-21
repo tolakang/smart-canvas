@@ -111,3 +111,16 @@ describe('reset (T5.3)', () => {
     expect(resetOutputOverrides(doc, 'nope')).toEqual({ ok: false, error: 'not_found' });
   });
 });
+
+describe('shear overrides', () => {
+  it('stores a clamped shear, the engine draws it, and it shows as an override field', () => {
+    const doc = ok(setOverrideFrame(base(), 'o1', 'subject', { shear: -90 }, ada));
+    expect(ovOf(doc, 'subject')?.frame).toEqual({ shear: -75 });
+    expect(computeLayout(doc, 'o1', deps).items.find((i) => i.sourceId === 'subject')?.frame.shear).toBe(-75);
+    expect(overrideDiff(doc, 'o1', 'subject', deps)).toEqual([{ field: 'shear', auto: 0, value: -75 }]);
+  });
+  it('a master shear carries into every output (like rotation)', () => {
+    const doc = place(project(output()), 'subject', { x: 900, y: 750, w: 1200, h: 1800, rotation: 15, shear: 12 });
+    expect(computeLayout(doc, 'o1', deps).items.find((i) => i.sourceId === 'subject')?.frame).toMatchObject({ rotation: 15, shear: 12 });
+  });
+});

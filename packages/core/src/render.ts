@@ -33,7 +33,7 @@ export function toDesignFrame(n: NFrame, canvas: { width: number; height: number
     y: n.y * canvas.height,
     w: n.w * canvas.width,
     h: n.h * canvas.height,
-    ...(n.rotation ? { rotation: n.rotation } : {}),
+    ...(n.rotation ? { rotation: n.rotation } : {}), ...(n.shear ? { shear: n.shear } : {}),
   };
 }
 
@@ -59,4 +59,9 @@ export function compositionScene(doc: ProjectDoc, comp: Composition, layer: (id:
     else if (s.behavesLike === 'background') items.push({ sourceId: s.id, frame: { x: 0, y: 0, w: canvas.width, h: canvas.height } });
   }
   return { ...canvas, items };
+}
+
+/** A frame's turn and lean about its centre as CSS: `rotate(r) skewX(s)` (shear after rotation, as Frame says). */
+export function frameTransform(frame: { rotation?: number; shear?: number }): string {
+  return [frame.rotation ? `rotate(${frame.rotation}deg)` : '', frame.shear ? `skewX(${frame.shear}deg)` : ''].filter(Boolean).join(' ');
 }

@@ -113,3 +113,14 @@ describe('OutputRenderer: recolor (T12.6)', () => {
     expect(out).not.toContain('<img');
   });
 });
+
+describe('OutputRenderer: rotation and shear (transform box)', () => {
+  it('draws rotate then skewX about the centre; neither when both are 0', () => {
+    const fill = src('background', { content: { kind: 'fill', fill: { type: 'solid', color: '#ff0000' } } });
+    const draw = (frame: RenderScene['items'][number]['frame']) =>
+      renderToStaticMarkup(<OutputRenderer scene={{ width: 100, height: 100, items: [{ sourceId: 'background', frame }] }} sources={[fill]} assetUrl={assetUrl} scale={1} />);
+    expect(draw({ x: 0, y: 0, w: 50, h: 50, rotation: 30, shear: -12 })).toContain('transform:rotate(30deg) skewX(-12deg);transform-origin:50% 50%');
+    expect(draw({ x: 0, y: 0, w: 50, h: 50, shear: 20 })).toContain('transform:skewX(20deg)');
+    expect(draw({ x: 0, y: 0, w: 50, h: 50 })).not.toMatch(/height:50px;[^"]*transform:/);
+  });
+});

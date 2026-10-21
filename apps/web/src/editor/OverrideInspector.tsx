@@ -11,6 +11,7 @@ const LABEL: Record<string, string> = {
   w: 'Width',
   h: 'Height',
   rotation: 'Rotation',
+  shear: 'Skew',
   hidden: 'Hidden',
   fontSizePx: 'Font size (fixed, no auto-fit)',
   fontFamily: 'Font',

@@ -38,7 +38,7 @@
 
 ## Tech
 - D25 Monorepo (pnpm): `apps/web` React+TS+Vite, `apps/api` Fastify, `apps/worker` export worker, `packages/core` (types, units, layout engine), `packages/presets`.
-- D26 Board: `@xyflow/react` v12. **Renderer: DOM/SVG + react-moveable for editing, not react-konva** (changed from earlier chat: identical rendering for preview and export, vector PDF with live text).
+- D26 Board: `@xyflow/react` v12. **Renderer: DOM/SVG + react-moveable for editing, not react-konva** (editing part superseded by D36) (changed from earlier chat: identical rendering for preview and export, vector PDF with live text).
 - D27 Export: worker drives headless Chromium (Playwright) against a `/render/:outputId` route. PNG/JPG via screenshot, WebP via sharp, PDF via page.pdf. Amended by D31: the worker is now the fallback and the path for PDF / large files.
 - D28 Postgres (Drizzle ORM) + MinIO (S3 API) + pg-boss queue (no Redis). Project document stored as JSONB with a revision number (optimistic lock).
 - D30 Layout v2 — content fit (2026-10-20, owner's choice after board feedback): subjects, decorations and texts are fitted as a group into the output's safe area (size scale between v1's contain `k` and the master's cover `K`; positions spread per axis to use the space); wide outputs put visuals on the right half and text in a left column, each taking all of the safe area when alone. Backgrounds and logos keep their v1 rules; overrides still win (D18–D21 unchanged). Spec: `docs/ADAPTATION-RULES.md` v2.
@@ -79,3 +79,12 @@
   - **Output:** green = fine, amber = warnings (text overflow or below the minimum size, logo clamped, a layer clamped into the safe area), red = errors (missing font or file), grey = frozen (disconnected).
   - **Main preview:** amber for wired layers with no file or text yet.
   - The node shows a dot and a count; the inspector lists each issue and its layer.
+
+## Changes (2026-10-21, owner decisions)
+- D36 Editor transform box, Affinity-style (owner; supersedes the react-moveable part of D26). The editors move, resize, rotate and skew layers with our own transform box (`apps/web/src/editor/transform/`, no dependency) instead of react-moveable. Rendering is unchanged: DOM/SVG with one `OutputRenderer` for preview and export.
+  - **Handles:** 4 corners scale (proportional for images and logos, Shift toggles), 4 edges, and a rotate handle above the top edge.
+  - **Edge handles:** drag outward to stretch; drag along the edge to skew. The opposite edge stays put; Alt pivots on the centre instead; Ctrl/⌘ forces a skew.
+  - **Touch:** hold a handle (or the layer) for 350 ms before it drags. On edges, the first 8 px of movement decide stretch or skew.
+  - **Reset:** a double-click or double-tap on a handle undoes what that handle changed in this editor session. The box keeps each layer's edits as a list of operations; a reset removes that handle's operations and replays the rest, so the layer lands exactly where it would be without them. A frame changed from outside (typed values, nudges, undo) is the truth: a pure move is recorded, anything else starts a new list.
+  - **Snapping:** moves snap to the canvas edges and centre lines and to the other layers' edges and centres, with a guide line. Resizes don't snap.
+  - **Model change note:** `Frame.shear?` and `NFrame.shear?` (degrees, CSS `skewX`, applied after `rotation` about the centre, clamped to ±75°). The field is optional, so no migration is needed. It is kept through layout like rotation, stored by placements and overrides (listed as "Skew"), and drawn by the renderer as `rotate(r) skewX(s)`.

@@ -95,3 +95,11 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Long dialogs:** the Close footer sticks to the bottom edge. Dialogs never get wider than the screen less 16 px.
 - **Phone home:** full-bleed, no card frame; the team name sits above "Projects".
 - **Copy:** "Create project", "Make template" (a copy saved as a template), "Save changes", "Invite someone".
+
+## Editor transform box (D36)
+- **Frame:** a 1.5 px accent outline that follows the layer's real shape (a parallelogram when skewed). Handles keep their on-screen size at any zoom and turn with the layer.
+- **Handles:** white with an accent border. Corners are 10 px squares; edges are pills along their edge; rotate is a round arrow button 28 px above the top edge. Hit areas are 24 px with a mouse and 44 px on touch. Edge handles hide on a side shorter than 48 px.
+- **Skew:** drag an edge along itself. The opposite edge stays put; Alt pivots on the centre; Ctrl/⌘ skews whichever way. The Design panel shows Skew (⫽) next to Rotation.
+- **Touch:** hold a handle until it fills with the accent (350 ms), then drag. Moving earlier does nothing.
+- **Reset:** double-click or double-tap a handle to undo what it changed: rotate handle = rotation, a corner = scale, an edge = that side's stretch and skew.
+- **Snapping:** a move snaps to canvas and layer edges and centres within 6 screen px, shown by a dashed red guide line.

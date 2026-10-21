@@ -47,7 +47,7 @@ export function stackTextFrame(F: Frame, g: GroupMap, ctx: RuleContext): { frame
   const w = Math.min(F.w * g.px, g.R.w);
   const h = Math.min(F.h * g.c, g.R.h);
   const { cx, cy } = mappedCentre(F, g);
-  const box: Frame = { x: cx - w / 2, y: cy - h / 2, w, h, ...(F.rotation ? { rotation: F.rotation } : {}) };
+  const box: Frame = { x: cx - w / 2, y: cy - h / 2, w, h, ...(F.rotation ? { rotation: F.rotation } : {}), ...(F.shear ? { shear: F.shear } : {}) };
   return clampIntoSafe(box, m.safe);
 }
 

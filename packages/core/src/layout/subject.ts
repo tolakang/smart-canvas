@@ -15,7 +15,7 @@ export function anchoredFrame(f: Frame, ctx: RuleContext): Frame {
   const h = f.h * k;
   const cx = ctx.family === 'side' ? m.safe.x + (0.5 + 0.5 * ax) * m.safe.w : m.bleed + ax * m.trim.w;
   const cy = m.bleed + ay * m.trim.h;
-  return { x: cx - w / 2, y: cy - h / 2, w, h, ...(f.rotation ? { rotation: f.rotation } : {}) };
+  return { x: cx - w / 2, y: cy - h / 2, w, h, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) };
 }
 
 const EPS = 1e-9;
