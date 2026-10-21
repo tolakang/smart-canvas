@@ -8,12 +8,17 @@
  * gives all of them — the inputs as they are, plus one per process whose chain reaches an input.
  */
 import { edgeId } from './graph';
+import { compositionScene, type RenderScene } from './render';
 import { LIMITS, type Frame, type InputSource, type NFrame, type ProcessNode, type ProcessOp, type ProjectDoc, type SourceContent } from './model';
 import type { SourceResult } from './sources';
 
-/** An input, or a process standing for its effective layer. `effect`: the chain's ops folded into one. */
+/**
+ * An input, a process standing for its effective layer, or a composition used as a layer (T12.8, `nested`:
+ * its own scene, drawn inside the frame). `effect`: a process chain's ops folded into one.
+ */
 export interface LayerSource extends InputSource {
   effect?: LayerEffect;
+  nested?: { compositionId: string; scene: RenderScene };
 }
 
 /**
@@ -129,23 +134,59 @@ export function resolveProcess(doc: ProjectDoc, processId: string): LayerSource 
 
 /** Every layer a row can show: the inputs, plus each process whose chain reaches an input. */
 export function layerSources(doc: ProjectDoc): LayerSource[] {
-  return [...doc.sources, ...doc.processes.flatMap((p) => resolveProcess(doc, p.id) ?? [])];
+  const asLayer = new Set(doc.edges.filter((e) => e.kind === 'layer').map((e) => e.from));
+  return buildLayers(doc, (id) => asLayer.has(id));
+}
+
+/** Inputs, resolved processes, and the compositions `include` picks, each with its scene. */
+function buildLayers(doc: ProjectDoc, include: (compositionId: string) => boolean): LayerSource[] {
+  const base: LayerSource[] = [...doc.sources, ...doc.processes.flatMap((p) => resolveProcess(doc, p.id) ?? [])];
+  if (!doc.compositions.some((c) => include(c.id))) return base;
+  // T12.8: compositions wired as layers, each with its scene (nested ones resolved first; loops are refused when wiring).
+  const byId = new Map(base.map((s) => [s.id, s]));
+  const memo = new Map<string, LayerSource | null>();
+  const visiting = new Set<string>();
+  const nested = (id: string): LayerSource | undefined => {
+    if (memo.has(id)) return memo.get(id) ?? undefined;
+    const comp = doc.compositions.find((c) => c.id === id);
+    if (!comp || visiting.has(id)) return undefined;
+    visiting.add(id);
+    const scene = compositionScene(doc, comp, (rid) => byId.get(rid) ?? nested(rid));
+    visiting.delete(id);
+    const layer: LayerSource = {
+      id: comp.id,
+      label: comp.label,
+      kind: 'image',
+      behavesLike: 'subject',
+      visible: true,
+      content: { kind: 'image', assetId: null, focal: { x: 0.5, y: 0.5 } },
+      board: comp.board,
+      nested: { compositionId: comp.id, scene },
+    };
+    memo.set(id, layer);
+    return layer;
+  };
+  return [...base, ...doc.compositions.flatMap((c) => (include(c.id) ? (nested(c.id) ?? []) : []))];
 }
 
 export function layerSource(doc: ProjectDoc, id: string): LayerSource | undefined {
-  return doc.sources.find((s) => s.id === id) ?? (doc.processes.some((p) => p.id === id) ? resolveProcess(doc, id) : undefined);
+  return (
+    doc.sources.find((s) => s.id === id) ??
+    (doc.processes.some((p) => p.id === id) ? resolveProcess(doc, id) : doc.compositions.some((c) => c.id === id) ? buildLayers(doc, (c) => c === id).find((s) => s.id === id) : undefined)
+  );
 }
 
-/** Can `id` be a row (an input or a process)? */
+/** Can `id` be a row (an input, a process, or a composition used as a layer, T12.8)? */
 export function isLayerNode(doc: ProjectDoc, id: string): boolean {
-  return doc.sources.some((s) => s.id === id) || doc.processes.some((p) => p.id === id);
+  return doc.sources.some((s) => s.id === id) || doc.processes.some((p) => p.id === id) || doc.compositions.some((c) => c.id === id);
 }
 
 /**
  * Intrinsic size of a layer's picture after its effect (crop, then a quarter turn swaps the sides), from the
  * asset sizes the layout and renderer already have. Undefined when unknown (no file, or not loaded).
  */
-export function layerAssetSize(layer: InputSource & { effect?: LayerEffect }, assets: Record<string, { width: number; height: number }>): { width: number; height: number } | undefined {
+export function layerAssetSize(layer: InputSource & { effect?: LayerEffect; nested?: LayerSource['nested'] }, assets: Record<string, { width: number; height: number }>): { width: number; height: number } | undefined {
+  if (layer.nested) return { width: layer.nested.scene.width, height: layer.nested.scene.height };
   const c = layer.content;
   const size = (c.kind === 'image' || c.kind === 'vector') && c.assetId ? assets[c.assetId] : undefined;
   if (!size || !(size.width > 0 && size.height > 0)) return undefined;
@@ -239,7 +280,8 @@ export function updateProcess(doc: ProjectDoc, id: string, patch: { op?: Process
 
 /** Wires `from` (an input or another process) into a process's one in port, replacing what fed it. */
 export function connectProcessInput(doc: ProjectDoc, processId: string, from: string): SourceResult {
-  if (!doc.processes.some((p) => p.id === processId) || !isLayerNode(doc, from)) return { ok: false, error: 'not_found' };
+  // A process takes an input or another process (a composition as a layer is not processed).
+  if (!doc.processes.some((p) => p.id === processId) || !(doc.sources.some((s) => s.id === from) || doc.processes.some((p) => p.id === from))) return { ok: false, error: 'not_found' };
   const edges = doc.edges.filter((e) => !(e.kind === 'layer' && e.to === processId));
   // No loops: walk downstream from the process.
   const down = new Set<string>([processId]);

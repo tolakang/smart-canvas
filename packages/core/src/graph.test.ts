@@ -89,7 +89,10 @@ describe('graph helpers', () => {
     expect(connectRefusal(doc, 'logo', 'main', 'layer')).toBeNull();
     expect(connectRefusal(doc, 'headline', 'p1', 'layer')).toBeNull();
     expect(connectRefusal(doc, 'main', 'o', 'composition')).toBeNull();
-    expect(connectRefusal(doc, 'main', 'o', 'layer')).toBe('wrong_type'); // a composition is not a layer (until T12.8)
+    // T12.8: a composition is a layer of a composition or an output, never a process's input, never of itself.
+    expect(connectRefusal(doc, 'main', 'o', 'layer')).toBeNull();
+    expect(connectRefusal(doc, 'main', 'p1', 'layer')).toBe('wrong_type');
+    expect(connectRefusal(doc, 'main', 'main', 'layer')).toBe('cycle');
     expect(connectRefusal(doc, 'logo', 'o', 'composition')).toBe('wrong_type');
     expect(connectRefusal(doc, 'o', 'main', 'layer')).toBe('wrong_type'); // outputs have no out-port
     expect(connectRefusal(doc, 'nope', 'main', 'layer')).toBe('unknown_node');

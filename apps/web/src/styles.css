@@ -602,3 +602,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
 .sc-port__hint { flex: 1; color: var(--muted); font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sc-field--stack { flex-direction: column; align-items: stretch; }
+
+/* T12.8: a main preview's second out port, "use as a layer", sits near the bottom of the node */
+.react-flow__handle.sc-handle--nest { top: auto; bottom: 28px; }

@@ -41,6 +41,8 @@ export type MainFlowNode = Node<
 
 export const portHandleId = (port: number) => `p${port}`;
 export const OUTPUT_HANDLE = 'out';
+/** A composition's second out port (T12.8): itself as a layer of another composition or an output. */
+export const LAYER_OUT_HANDLE = 'layer';
 export function portFromHandle(handle: string | null | undefined): number | undefined {
   const m = handle ? /^p(\d+)$/.exec(handle) : null;
   return m?.[1] === undefined ? undefined : Number(m[1]);
@@ -145,7 +147,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
         source,
         target,
         ...(port >= 0 ? { targetHandle: portHandleId(port) } : {}),
-        ...(e.kind === 'composition' ? { sourceHandle: OUTPUT_HANDLE } : {}),
+        ...(e.kind === 'composition' ? { sourceHandle: OUTPUT_HANDLE } : compositionById(doc, e.from) ? { sourceHandle: LAYER_OUT_HANDLE } : {}),
         className: `sc-edge--${e.kind}`,
         deletable: true,
       },
@@ -153,25 +155,33 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
   });
 }
 
-/** A board connection as a typed graph edge (D32): node ids → doc ids; out of a composition = 'composition'. */
-export function edgeOfConnection(c: { source: string | null; target: string | null }): { from: string; to: string; kind: EdgeKind } | null {
+type Conn = { source: string | null; target: string | null; sourceHandle?: string | null };
+
+/** The layer a connection carries (an input, a process, or a composition out of its layer port, T12.8). */
+export function layerOfConnection(c: Conn): string | undefined {
+  if (!c.source) return undefined;
+  return c.sourceHandle === LAYER_OUT_HANDLE ? compositionIdOfNode(c.source) : layerIdOfNode(c.source);
+}
+
+/** A board connection as a typed graph edge (D32): node ids → doc ids; out of a composition's main port = 'composition'. */
+export function edgeOfConnection(c: Conn): { from: string; to: string; kind: EdgeKind } | null {
   const id = (n: string | null) => (n ? (compositionIdOfNode(n) ?? layerIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
   const from = id(c.source);
   const to = id(c.target);
   if (!from || !to) return null;
-  return { from, to, kind: compositionIdOfNode(c.source) ? 'composition' : 'layer' };
+  return { from, to, kind: compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? 'composition' : 'layer' };
 }
 
 /**
  * Why a wire may not go there (null = it may): port types and loops (core), one composition per output, and on
  * an output the right port (T12.4: layer rows vs the main preview port). Without `targetHandle` the port isn't checked.
  */
-export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; target: string | null; targetHandle?: string | null }): string | null {
+export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
   if (refusal === 'wrong_type')
-    return e.kind === 'composition' ? 'A main preview wires into an output.' : 'An input wires into a row of a main preview.';
+    return e.kind === 'composition' ? 'A main preview wires into an output.' : compositionById(doc, e.from) ? 'A main preview goes into a row of another main preview or an output.' : 'An input wires into a row of a main preview.';
   if (refusal === 'cycle') return 'That would make a loop.';
   if (refusal) return 'Drop the wire on a port.';
   const toOutput = doc.outputs.some((o) => o.id === e.to);
@@ -189,18 +199,18 @@ export function connectionRefusal(doc: ProjectDoc, c: { source: string | null; t
 }
 
 /** Input → composition connections (wire onto a row); the composition id, if so. */
-export function inputToComposition(c: { source: string | null; target: string | null }): string | undefined {
-  return c.source && layerIdOfNode(c.source) ? compositionIdOfNode(c.target) : undefined;
+export function inputToComposition(c: Conn): string | undefined {
+  return layerOfConnection(c) ? compositionIdOfNode(c.target) : undefined;
 }
 
 /** Input → output connections (an output-only layer, T12.4); the output id, if so. */
-export function inputToOutput(c: { source: string | null; target: string | null }): string | undefined {
-  return c.source && layerIdOfNode(c.source) && c.target?.startsWith('out:') ? c.target.slice(4) : undefined;
+export function inputToOutput(c: Conn): string | undefined {
+  return layerOfConnection(c) && c.target?.startsWith('out:') ? c.target.slice(4) : undefined;
 }
 
 /** Composition → output connections (reconnecting a disconnected output); the composition id, if so. */
-export function compositionToOutput(c: { source: string | null; target: string | null }): string | undefined {
-  return c.target?.startsWith('out:') ? compositionIdOfNode(c.source) : undefined;
+export function compositionToOutput(c: Conn): string | undefined {
+  return c.target?.startsWith('out:') && c.sourceHandle !== LAYER_OUT_HANDLE ? compositionIdOfNode(c.source) : undefined;
 }
 
 export const outputIdOfNode = (nodeId: string) => (nodeId.startsWith('out:') ? nodeId.slice(4) : undefined);

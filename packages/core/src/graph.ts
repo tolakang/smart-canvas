@@ -66,7 +66,7 @@ export function nodeType(doc: ProjectDoc, id: string): NodeType | undefined {
 
 /** Which edge kinds may go from a node type to a node type (D32 port types). */
 const ALLOWED: Record<EdgeKind, { from: readonly NodeType[]; to: readonly NodeType[] }> = {
-  layer: { from: ['source', 'process'], to: ['process', 'composition', 'output'] },
+  layer: { from: ['source', 'process', 'composition'], to: ['process', 'composition', 'output'] },
   composition: { from: ['composition'], to: ['output'] },
 };
 
@@ -92,6 +92,8 @@ export function connectRefusal(doc: ProjectDoc, from: string, to: string, kind: 
   const b = nodeType(doc, to);
   if (!a || !b) return 'unknown_node';
   if (!ALLOWED[kind].from.includes(a) || !ALLOWED[kind].to.includes(b)) return 'wrong_type';
+  // T12.8: a composition is a layer of another composition or an output, not a process's input.
+  if (kind === 'layer' && a === 'composition' && b === 'process') return 'wrong_type';
   if (from === to || createsCycle(doc, from, to)) return 'cycle';
   return null;
 }

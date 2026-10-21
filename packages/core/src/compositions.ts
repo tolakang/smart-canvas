@@ -54,7 +54,7 @@ export function removeRow(doc: ProjectDoc, compositionId: string, nodeId: string
 
 /**
  * Deletes a composition (never 'main'). Outputs wired to it are disconnected first: with `deps` they freeze
- * their current layout (D12), without they fall back to the main preview.
+ * their current layout (D12), without they fall back to the main preview. Rows that used it as a layer go.
  */
 export function deleteComposition(doc: ProjectDoc, id: string, deps?: LayoutDeps): SourceResult {
   if (id === MAIN) return { ok: false, error: 'invalid' };
@@ -65,8 +65,21 @@ export function deleteComposition(doc: ProjectDoc, id: string, deps?: LayoutDeps
     const r = disconnectOutput(next, e.to, deps);
     if (r.ok) next = r.doc;
   }
+  // T12.8: where it was a layer (a row of another composition, an output's own row), that row goes too.
   return {
     ok: true,
-    doc: { ...next, compositions: next.compositions.filter((c) => c.id !== id), edges: next.edges.filter((e) => e.from !== id && e.to !== id) },
+    doc: {
+      ...next,
+      compositions: next.compositions
+        .filter((c) => c.id !== id)
+        .map((c) => (c.layers.includes(id) ? { ...c, layers: c.layers.filter((l) => l !== id), placements: Object.fromEntries(Object.entries(c.placements).filter(([k]) => k !== id)) } : c)),
+      outputs: next.outputs.map((o) => ({
+        ...o,
+        overrides: o.overrides.filter((ov) => ov.sourceId !== id),
+        ...(o.layers ? { layers: o.layers.filter((l) => l !== id) } : {}),
+        ...(o.frozen ? { frozen: { items: o.frozen.items.filter((it) => it.sourceId !== id) } } : {}),
+      })),
+      edges: next.edges.filter((e) => e.from !== id && e.to !== id),
+    },
   };
 }

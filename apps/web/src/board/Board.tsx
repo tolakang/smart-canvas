@@ -67,7 +67,8 @@ import {
   outputIdOfNode,
   portFromHandle,
   sourceIdOfNode,
-  layerIdOfNode,
+  layerOfConnection,
+  LAYER_OUT_HANDLE,
   processIdOfNode,
   syncNodes,
   withPositions,
@@ -418,7 +419,7 @@ function BoardCanvas(props: {
         reconnect(outputId, fromComposition);
         return;
       }
-      const sourceId = layerIdOfNode(c.source);
+      const sourceId = layerOfConnection(c);
       if (sourceId) run((doc) => connectLayer(doc, sourceId, c.target, portFromHandle(c.targetHandle)));
     },
     [run, reconnect],
@@ -433,8 +434,8 @@ function BoardCanvas(props: {
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
       for (const e of deleted) {
-        const sourceId = layerIdOfNode(e.source);
-        const outputId = compositionIdOfNode(e.source) ? outputIdOfNode(e.target) : undefined;
+        const sourceId = layerOfConnection(e);
+        const outputId = compositionIdOfNode(e.source) && e.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(e.target) : undefined;
         if (sourceId) run((doc) => disconnectLayer(doc, sourceId, e.target));
         else if (outputId) disconnect(outputId);
       }
@@ -457,8 +458,8 @@ function BoardCanvas(props: {
   const onReconnect = useCallback(
     (old: Edge, c: Connection) => {
       reconnectDone.current = true;
-      const oldSource = layerIdOfNode(old.source);
-      const newSource = layerIdOfNode(c.source);
+      const oldSource = layerOfConnection(old);
+      const newSource = layerOfConnection(c);
       if (oldSource && newSource && (inputToComposition(c) || inputToOutput(c) || processIdOfNode(c.target ?? ''))) {
         // Same input to another row = move it to that row; another input onto this row = swap who feeds it.
         const port = portFromHandle(c.targetHandle);
@@ -468,7 +469,7 @@ function BoardCanvas(props: {
         });
         return;
       }
-      const oldOutput = compositionIdOfNode(old.source) ? outputIdOfNode(old.target) : undefined;
+      const oldOutput = compositionIdOfNode(old.source) && old.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(old.target) : undefined;
       const fromComposition = compositionToOutput(c);
       const newOutput = fromComposition ? outputIdOfNode(c.target) : undefined;
       if (oldOutput && newOutput && fromComposition && oldOutput !== newOutput) {
@@ -518,7 +519,7 @@ function BoardCanvas(props: {
     (e: MouseEvent | TouchEvent, state: FinalConnectionState) => {
       if (readOnly || state.isValid || !flow.current) return;
       if (state.toHandle) {
-        const why = connectionRefusal(docRef.current, { source: state.fromNode?.id ?? null, target: state.toNode?.id ?? null, targetHandle: state.toHandle?.id ?? null });
+        const why = connectionRefusal(docRef.current, { source: state.fromNode?.id ?? null, sourceHandle: state.fromHandle?.id ?? null, target: state.toNode?.id ?? null, targetHandle: state.toHandle?.id ?? null });
         if (why) setNotice(why);
         return;
       }

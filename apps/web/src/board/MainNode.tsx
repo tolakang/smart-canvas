@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { assetUrl } from '../api';
 import { RenderThumbnail } from '../render/OutputRenderer';
 import { useBoard } from './context';
-import { MAIN_ID, OUTPUT_HANDLE, portHandleId, type MainFlowNode } from './flow';
+import { LAYER_OUT_HANDLE, MAIN_ID, OUTPUT_HANDLE, portHandleId, type MainFlowNode } from './flow';
 import { HealthBadge } from './HealthBadge';
 import { Icon, LayerActions, LayerThumb, useLayerReorder } from './LayerRow';
 
@@ -133,6 +133,8 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
       {data.ports.length === 0 && isMain && <p className="sc-node__meta">No inputs yet.</p>}
       <div className="sc-node__meta sc-ports__hint">Top = front · drag to re-order</div>
       <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={!readOnly} className="sc-handle--composition" title="Main preview out: wire into outputs" />
+      {/* T12.8: this preview as a layer of another main preview (or an output's own layer). */}
+      <Handle type="source" position={Position.Right} id={LAYER_OUT_HANDLE} isConnectable={!readOnly} className="sc-handle--layer sc-handle--nest" title="Use as a layer: wire into a row of another main preview or an output" />
     </div>
   );
 }
