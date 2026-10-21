@@ -84,6 +84,28 @@ export function createsCycle(doc: ProjectDoc, from: string, to: string): boolean
   return false;
 }
 
+/** Max reroute points on one wire (T13.8). */
+export const MAX_EDGE_POINTS = 10;
+
+/** Sets a wire's reroute points (T13.8; rounded, at most MAX_EDGE_POINTS; none = a plain curve). */
+export function setEdgePoints(doc: ProjectDoc, edgeId: string, points: readonly { x: number; y: number }[]): { ok: true; doc: ProjectDoc } | { ok: false; error: 'not_found' | 'invalid' } {
+  if (!doc.edges.some((e) => e.id === edgeId)) return { ok: false, error: 'not_found' };
+  if (points.length > MAX_EDGE_POINTS || points.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y))) return { ok: false, error: 'invalid' };
+  const clean = points.map((p) => ({ x: Math.round(p.x), y: Math.round(p.y) }));
+  return {
+    ok: true,
+    doc: {
+      ...doc,
+      edges: doc.edges.map((e) => {
+        if (e.id !== edgeId) return e;
+        const { points: _old, ...rest } = e;
+        void _old;
+        return clean.length ? { ...rest, points: clean } : rest;
+      }),
+    },
+  };
+}
+
 export type ConnectRefusal = 'unknown_node' | 'wrong_type' | 'cycle';
 
 /** Why an edge may not be added (null = it may). Single-input rules are applied by the connect helpers. */

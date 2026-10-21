@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { connectRefusal, edgeId, layerOrder, mainComposition, migrateProjectDoc, outputComposition, portOf, wiredLayers } from './graph';
+import { connectRefusal, edgeId, layerOrder, mainComposition, migrateProjectDoc, outputComposition, portOf, setEdgePoints, wiredLayers } from './graph';
 import type { ProjectDoc } from './model';
 import { createProjectDoc } from './project';
 
@@ -99,5 +99,17 @@ describe('graph helpers', () => {
     expect(connectRefusal(doc, 'p1', 'p1', 'layer')).toBe('cycle');
     const chained: ProjectDoc = { ...doc, processes: [...doc.processes, { id: 'p2', label: 'Adjust', op: { type: 'adjust', opacity: 0.5 }, board: { x: 0, y: 0 } }], edges: [...doc.edges, { id: 'd', from: 'p1', to: 'p2', kind: 'layer' }] };
     expect(connectRefusal(chained, 'p2', 'p1', 'layer')).toBe('cycle');
+  });
+});
+
+describe('reroute points (T13.8)', () => {
+  it('set, rounded and capped; none = removed', () => {
+    const doc: ProjectDoc = { ...createProjectDoc('R'), edges: [{ id: 'e', from: 'logo', to: 'main', kind: 'layer' }] };
+    const r = setEdgePoints(doc, 'e', [{ x: 10.4, y: 20.6 }]);
+    expect(r.ok && r.doc.edges[0]).toEqual({ id: 'e', from: 'logo', to: 'main', kind: 'layer', points: [{ x: 10, y: 21 }] });
+    const cleared = r.ok ? setEdgePoints(r.doc, 'e', []) : r;
+    expect(cleared.ok && cleared.doc.edges[0]).toEqual({ id: 'e', from: 'logo', to: 'main', kind: 'layer' });
+    expect(setEdgePoints(doc, 'e', Array.from({ length: 11 }, () => ({ x: 0, y: 0 }))).ok).toBe(false);
+    expect(setEdgePoints(doc, 'nope', []).ok).toBe(false);
   });
 });

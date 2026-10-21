@@ -55,8 +55,9 @@ describe('docToNodes / docToEdges', () => {
 
   it('maps wires to edges: inputs land on their port handle; all wires are deletable', () => {
     expect(docToEdges(sampleDoc())).toEqual([
-      { id: 'w1', source: 'src:bg', target: 'main', targetHandle: 'p0', className: 'sc-edge--layer', deletable: true },
-      { id: 'w2', source: 'main', target: 'out:ig', sourceHandle: 'out', className: 'sc-edge--composition', deletable: true },
+      // T13.8: every wire is a 'routed' edge carrying its reroute points.
+      { id: 'w1', type: 'routed', data: { points: [] }, source: 'src:bg', target: 'main', targetHandle: 'p0', className: 'sc-edge--layer', deletable: true },
+      { id: 'w2', type: 'routed', data: { points: [] }, source: 'main', target: 'out:ig', sourceHandle: 'out', className: 'sc-edge--composition', deletable: true },
     ]);
   });
 

@@ -69,3 +69,8 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Header:** drag it to move the whole group. It holds the name (double-click to rename), a member count, and these buttons: colour (cycles), collapse/expand, export (the outputs in the group), ungroup.
 - **Create:** select nodes and press Ctrl/⌘+G, or right-click the selection.
 - **Collapsed:** the members hide and the frame shrinks to its header.
+
+## Wires (T13.8)
+- **Selection:** with nodes or wires selected, wires that don't touch them dim to 18% opacity.
+- **Pulse:** an edit that changes a node (moving it doesn't count) runs a short dashed pulse along every wire downstream of it. There is no pulse with reduced motion.
+- **Reroute points:** double-click a wire to add one; drag a point to move it; double-click a point to remove it.
