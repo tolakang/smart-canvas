@@ -8,6 +8,7 @@ export * from './sources';
 export * from './ports';
 export * from './output-layers';
 export * from './processes';
+export * from './groups';
 export * from './graph';
 export * from './compositions';
 export * from './health';

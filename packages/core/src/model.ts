@@ -20,6 +20,7 @@ export const LIMITS = {
   maxOutputs: 10,
   maxCompositions: 5,
   maxProcesses: 20,
+  maxGroups: 20,
   maxUploadMB: 50,
   maxExportEdgePx: 12000,
 } as const;
@@ -143,6 +144,17 @@ export interface OutputNode {
 export type EdgeKind = 'layer' | 'composition';
 export interface Edge { id: string; from: string; to: string; kind: EdgeKind }
 
+/** A board group (T13.7): a frame drawn around its nodes (its box is computed from theirs, never stored). */
+export interface BoardGroup {
+  id: string;
+  label: string;
+  color: GroupColor;
+  /** Node ids (inputs, processes, compositions, outputs). */
+  nodes: string[];
+  collapsed?: boolean;
+}
+export type GroupColor = 'grey' | 'blue' | 'purple' | 'green' | 'orange' | 'red';
+
 export interface ProjectDoc {
   schema: 2;
   rev: number; // increments on every save; reject stale writes
@@ -152,6 +164,8 @@ export interface ProjectDoc {
   processes: ProcessNode[]; // length <= LIMITS.maxProcesses
   outputs: OutputNode[]; // length <= LIMITS.maxOutputs
   edges: Edge[];
+  /** Board groups (T13.7): named, coloured frames around nodes; absent = none. Board only, no effect on layout. */
+  groups?: BoardGroup[];
 }
 
 // ---------- team-level records ----------

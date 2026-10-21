@@ -8,6 +8,8 @@ import {
   connectProcessInput,
   disconnectProcessInput,
   addProcess,
+  boardGroups,
+  createGroup,
   connectSource,
   deleteSource,
   disconnectOutput,
@@ -73,6 +75,10 @@ import {
   syncNodes,
   withPositions,
   type BoardNode,
+  type FlowNode,
+  docIdOfNode,
+  groupIdOfNode,
+  withGroupFrames,
 } from './flow';
 import { useTheme } from '../ui/theme';
 import { align } from './guides';
@@ -194,10 +200,11 @@ function BoardCanvas(props: {
   /** T13.2: the one selected node (React Flow id), shown in the inspector. */
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [placeAt, setPlaceAt] = useState<{ x: number; y: number } | null>(null);
-  const flow = useRef<ReactFlowInstance<BoardNode, Edge> | null>(null);
+  const flow = useRef<ReactFlowInstance<FlowNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [reconnecting, setReconnecting] = useState<{ outputId: string; compositionId: string } | null>(null);
-  const [exporting, setExporting] = useState(false);
+  /** The export dialog: closed, or open with all outputs (no list) or the given ones chosen (T13.7). */
+  const [exporting, setExporting] = useState<false | { outputs?: string[] }>(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showFonts, setShowFonts] = useState(false);
   const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
@@ -244,9 +251,34 @@ function BoardCanvas(props: {
     };
   }, [autosave]);
 
+  // T13.7: group frames around their members (derived each render), and which frames are selected.
+  const [selectedGroups, setSelectedGroups] = useState<ReadonlySet<string>>(new Set());
+  const displayNodes = useMemo((): FlowNode[] => withGroupFrames(nodes, boardGroups(doc), doc, selectedGroups), [nodes, doc, selectedGroups]);
+  const displayNodesRef = useRef(displayNodes);
+  useEffect(() => {
+    displayNodesRef.current = displayNodes;
+  }, [displayNodes]);
   // T13.5: a dragged node snaps to other nodes' edges and centres; the guide lines show where.
   const [guides, setGuides] = useState<{ vertical?: number; horizontal?: number }>({});
-  const onNodesChange = useCallback((changes: NodeChange<BoardNode>[]) => {
+  const onNodesChange = useCallback((all: NodeChange<FlowNode>[]) => {
+    // T13.7: group frames are derived; selecting one is tracked here, dragging one moves its members.
+    const changes: NodeChange<BoardNode>[] = [];
+    for (const c of all) {
+      const groupNode = 'id' in c && c.id.startsWith('grp:') ? c.id : null;
+      if (!groupNode) changes.push(c as NodeChange<BoardNode>);
+      else if (c.type === 'select') setSelectedGroups((sel) => (c.selected ? new Set(sel).add(groupNode) : new Set([...sel].filter((x) => x !== groupNode))));
+      else if (c.type === 'position' && c.position) {
+        const frame = displayNodesRef.current.find((n) => n.id === groupNode);
+        const g = groupIdOfNode(groupNode);
+        const members = boardGroups(docRef.current).find((x) => x.id === g)?.nodes ?? [];
+        if (!frame) continue;
+        const dx = c.position.x - frame.position.x;
+        const dy = c.position.y - frame.position.y;
+        for (const n of nodesRef.current)
+          if (members.includes(docIdOfNode(n.id) ?? '')) changes.push({ type: 'position', id: n.id, position: { x: n.position.x + dx, y: n.position.y + dy }, dragging: c.dragging });
+      }
+    }
+    if (changes.length === 0) return;
     const [moving] = changes;
     if (changes.length === 1 && moving?.type === 'position') {
       const ns = nodesRef.current;
@@ -391,6 +423,7 @@ function BoardCanvas(props: {
       doc,
       openMainEditor: (compositionId: string = MAIN_ID) => setEditingMain(compositionId),
       openOutputEditor: (id: string) => setEditingOutput(id),
+      exportOutputs: (ids: string[]) => void autosave.flush().then(() => setExporting({ outputs: ids })),
       author,
       teamFonts,
       sourceCount,
@@ -404,7 +437,7 @@ function BoardCanvas(props: {
       reconnectOutput: reconnect,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, remember, disconnect, reconnect, author, apply, run],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, remember, disconnect, reconnect, author, apply, run, autosave],
   );
 
   // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.
@@ -549,6 +582,35 @@ function BoardCanvas(props: {
     },
     [readOnly, run],
   );
+  /** T13.7: groups the selected nodes (Ctrl/⌘+G, or the menu on a selection). */
+  const groupSelection = useCallback(() => {
+    if (readOnly) return;
+    const ids = nodesRef.current.flatMap((n) => (n.selected ? [docIdOfNode(n.id)] : [])).filter((id): id is string => !!id);
+    if (ids.length === 0) return;
+    run((doc) => createGroup(doc, { id: newId(), label: `Group ${(doc.groups?.length ?? 0) + 1}`, nodes: ids }));
+  }, [readOnly, run]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== 'g') return;
+      e.preventDefault(); // the browser's "find next"
+      groupSelection();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [groupSelection]);
+  /** Right-click on a selection of two or more nodes: group them. */
+  const onSelectionContextMenu = useCallback(
+    (e: React.MouseEvent, picked: Node[]) => {
+      const count = picked.filter((n) => !n.id.startsWith('grp:')).length;
+      if (readOnly || count < 2) return;
+      e.preventDefault();
+      setMenu({ x: e.clientX, y: e.clientY, title: `${count} nodes`, items: [{ label: `Group ${count} nodes (Ctrl/⌘+G)`, onSelect: groupSelection }] });
+    },
+    [readOnly, groupSelection],
+  );
+
   // T8.2: Ctrl/⌘+D duplicates the selected inputs (not while typing in a field).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -567,6 +629,9 @@ function BoardCanvas(props: {
   // T8.2: right-click an input node → Duplicate / Show or hide / Delete.
   const onNodeContextMenu = useCallback(
     (e: React.MouseEvent, node: Node) => {
+      // A node in a multi-selection: the selection's menu (T13.7).
+      const picked = nodesRef.current.filter((n) => n.selected);
+      if (node.selected && picked.length >= 2) return onSelectionContextMenu(e, picked);
       const sourceId = sourceIdOfNode(node.id);
       const source = docRef.current.sources.find((s) => s.id === sourceId);
       if (!source || readOnly) return;
@@ -583,7 +648,7 @@ function BoardCanvas(props: {
         ],
       });
     },
-    [duplicateInputs, readOnly, run],
+    [duplicateInputs, readOnly, run, onSelectionContextMenu],
   );
 
   const addInput = (input: NewInput, at = placeAt) => {
@@ -702,7 +767,16 @@ function BoardCanvas(props: {
     (_e: unknown, _node: Node, dragged: Node[]) => {
       // The shown positions, not React Flow's drag positions: alignment guides may have snapped them (T13.5).
       const shown = new Map(nodesRef.current.map((n) => [n.id, n.position]));
-      const doc = withPositions(docRef.current, dragged.map((n) => ({ id: n.id, position: shown.get(n.id) ?? n.position })));
+      // T13.7: a dragged group frame stands for its members.
+      const groups = boardGroups(docRef.current);
+      const ids = new Set(
+        dragged.flatMap((n) => {
+          const g = groupIdOfNode(n.id);
+          const members = g ? (groups.find((x) => x.id === g)?.nodes ?? []) : null;
+          return members ? nodesRef.current.filter((m) => members.includes(docIdOfNode(m.id) ?? '')).map((m) => m.id) : [n.id];
+        }),
+      );
+      const doc = withPositions(docRef.current, [...ids].map((id) => ({ id, position: shown.get(id) ?? { x: 0, y: 0 } })).filter((m) => shown.has(m.id)));
       if (doc === docRef.current || readOnly) return;
       // Recorded for undo; React Flow already shows the new positions.
       history.current.record(docRef.current);
@@ -815,7 +889,7 @@ function BoardCanvas(props: {
               type="button"
               className="sc-topbar__primary"
               aria-label="Export"
-              onClick={() => void autosave.flush().then(() => setExporting(true))}
+              onClick={() => void autosave.flush().then(() => setExporting({}))}
               disabled={outputCount === 0}
               title={outputCount === 0 ? 'Add an output first' : 'Export outputs'}
             >
@@ -852,12 +926,13 @@ function BoardCanvas(props: {
           )}
           <div className="sc-board__flow" ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
-            nodes={nodes}
+            nodes={displayNodes}
             edges={edges}
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onNodeDragStop={onNodeDragStop}
             onNodeContextMenu={onNodeContextMenu}
+            onSelectionContextMenu={onSelectionContextMenu}
             onPaneContextMenu={onPaneContextMenu}
             colorMode={theme}
             onSelectionChange={({ nodes: picked }) => setSelectedNode(picked.length === 1 ? (picked[0]?.id ?? null) : null)}
@@ -930,7 +1005,7 @@ function BoardCanvas(props: {
         />
       )}
       {showLibrary && <LibraryDialog teamId={teamId} readOnly={readOnly} sourceCount={sourceCount} run={run} onClose={() => setShowLibrary(false)} />}
-      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} onClose={() => setExporting(false)} />}
+      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} initialOutputs={exporting.outputs} onClose={() => setExporting(false)} />}
       {addingOutput && <AddOutputDialog presets={presets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
         <FontsDialog

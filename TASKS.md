@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** order — T12.8 nested compositions → T13.7 groups → T13.8 wire polish
+**Next:** order — T13.7 groups → T13.8 wire polish
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -99,7 +99,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T12.5 — Process nodes I: Crop, Adjust, Flip/Rotate — [#74](https://github.com/tolakang/smart-canvas/pull/74)
 - [x] T12.6 — Process nodes II: Text variant, Recolor — [#75](https://github.com/tolakang/smart-canvas/pull/75)
 - [x] T12.7 — Node palette from any port — [#76](https://github.com/tolakang/smart-canvas/pull/76)
-- [ ] T12.8 — Nested compositions
+- [x] T12.8 — Nested compositions — [#77](https://github.com/tolakang/smart-canvas/pull/77)
 
 ## P13 — Workspace UX (D33–D35)
 - [x] T13.1 — Layout health status on nodes — [#65](https://github.com/tolakang/smart-canvas/pull/65)

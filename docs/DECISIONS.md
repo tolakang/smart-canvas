@@ -65,6 +65,7 @@
   - Layout is still computed and never stored (D30 rules per composition). Preview and export still use one `OutputRenderer`.
   - The model moves to `schema: 2`; v1 documents are migrated on load (pure function in core, tested). Model change note (T12.1): `master` + `wires` + `InputSource.port` became `compositions[]` (rows in `layers`) + typed `edges` + `processes[]`.
   - Model change note (T12.4): `OutputNode.layers?: string[]` holds an output's own rows (output-only layers), front first, like `Composition.layers`. It is optional, so no migration is needed. A row draws while a `layer` edge feeds it. A layer the output's composition already draws is refused on the board and skipped by the layout (the composition wins).
+  - Model change note (T13.7): `ProjectDoc.groups?: BoardGroup[]` (`{ id, label, color, nodes, collapsed? }`) holds board groups. It is optional, so no migration is needed. Groups only organise the board: a group's frame is computed from its members' positions and never stored, and it never affects a layout. Members that no longer exist are ignored, and a node is in one group at most.
 
 - D33 Responsive workspace, desktop to phone (owner, 2026-10-20). One app, three layouts:
   - **≥ 1280 px:** the left library and right inspector are docked, with a floating canvas toolbar and a minimap.

@@ -63,3 +63,9 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - Tap a port, then tap a target, to wire.
   - Buttons, menu rows and ports are at least 44 px to tap.
 - **Editors on a phone:** the canvas, with the Design panel as a bottom sheet (45 vh). The layers panel is hidden, so layers are picked on the canvas.
+
+## Groups (T13.7)
+- **Frame:** a tinted frame behind its nodes, in one of six colours: grey (`--faint`), blue (`--type-input`), purple (`--type-main`), green (`--type-output`), orange (`--type-process`), red (`--danger`).
+- **Header:** drag it to move the whole group. It holds the name (double-click to rename), a member count, and these buttons: colour (cycles), collapse/expand, export (the outputs in the group), ungroup.
+- **Create:** select nodes and press Ctrl/⌘+G, or right-click the selection.
+- **Collapsed:** the members hide and the frame shrinks to its header.

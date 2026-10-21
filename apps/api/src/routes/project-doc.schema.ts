@@ -83,6 +83,20 @@ const edge = { type: 'object', required: ['id', 'from', 'to', 'kind'], propertie
 
 const maxNodes = LIMITS.maxSources + LIMITS.maxProcesses + LIMITS.maxCompositions + LIMITS.maxOutputs;
 
+/** T13.7: a board group (members by id; its box is computed on the board). */
+const group = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'label', 'color', 'nodes'],
+  properties: {
+    id,
+    label: { type: 'string', maxLength: 200 },
+    color: { enum: ['grey', 'blue', 'purple', 'green', 'orange', 'red'] },
+    nodes: { type: 'array', maxItems: maxNodes, items: id },
+    collapsed: { type: 'boolean' },
+  },
+} as const;
+
 export const projectDocV2Schema = {
   type: 'object',
   additionalProperties: false,
@@ -96,6 +110,7 @@ export const projectDocV2Schema = {
     processes: { type: 'array', maxItems: LIMITS.maxProcesses, items: processNode },
     outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: output },
     edges: { type: 'array', maxItems: maxNodes * 4, items: edge },
+    groups: { type: 'array', maxItems: LIMITS.maxGroups, items: group },
   },
 } as const;
 

@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "main preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { compositionById, connectRefusal, layerSources, resolveProcess, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { compositionById, connectRefusal, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -51,7 +51,56 @@ export function portFromHandle(handle: string | null | undefined): number | unde
 export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean; layers: PortRow[] }, 'outputNode'>;
 /** A process node (T12.5): its op and the effective layer it outputs (undefined while its in port is empty). */
 export type ProcessFlowNode = Node<{ process: ProcessNode; layer: LayerSource | undefined }, 'processNode'>;
+/** A board group's frame (T13.7): derived from its members every render, never stored. */
+export type GroupFlowNode = Node<{ group: BoardGroup; outputs: string[] }, 'groupNode'>;
 export type BoardNode = InputFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
+/** What React Flow draws: the nodes plus group frames. */
+export type FlowNode = BoardNode | GroupFlowNode;
+export const groupNodeId = (groupId: string) => `grp:${groupId}`;
+export const groupIdOfNode = (nodeId: string) => (nodeId.startsWith('grp:') ? nodeId.slice(4) : undefined);
+
+/** The doc id a board node stands for (input, process, composition, output). */
+export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
+
+const GROUP_PAD = 24;
+const GROUP_HEAD = 40;
+const COLLAPSED = { w: 260, h: 48 };
+
+/**
+ * Group frames around their members (T13.7), drawn behind every node. The frame wraps the members' boxes
+ * (measured sizes; a guess until measured) plus a header; a collapsed group hides its members and shrinks to
+ * its header where the frame's corner was. `selected`: frames the user has selected.
+ */
+export function withGroupFrames(nodes: BoardNode[], groups: readonly BoardGroup[], doc: ProjectDoc, selected: ReadonlySet<string> = new Set()): (BoardNode | GroupFlowNode)[] {
+  if (groups.length === 0) return nodes;
+  const groupOf = new Map<string, BoardGroup>();
+  for (const g of groups) for (const id of g.nodes) groupOf.set(id, g);
+  const frames: GroupFlowNode[] = [];
+  for (const g of groups) {
+    const members = nodes.filter((n) => groupOf.get(docIdOfNode(n.id) ?? '') === g);
+    if (members.length === 0) continue;
+    const x0 = Math.min(...members.map((n) => n.position.x)) - GROUP_PAD;
+    const y0 = Math.min(...members.map((n) => n.position.y)) - GROUP_PAD - GROUP_HEAD;
+    const x1 = Math.max(...members.map((n) => n.position.x + (n.measured?.width ?? 240))) + GROUP_PAD;
+    const y1 = Math.max(...members.map((n) => n.position.y + (n.measured?.height ?? 200))) + GROUP_PAD;
+    const size = g.collapsed ? COLLAPSED : { w: x1 - x0, h: y1 - y0 };
+    frames.push({
+      id: groupNodeId(g.id),
+      type: 'groupNode',
+      position: { x: x0, y: y0 },
+      width: size.w,
+      height: size.h,
+      style: { width: size.w, height: size.h },
+      zIndex: -1,
+      selected: selected.has(groupNodeId(g.id)),
+      deletable: false,
+      dragHandle: '.sc-group__head',
+      data: { group: g, outputs: doc.outputs.filter((o) => g.nodes.includes(o.id)).map((o) => o.id) },
+    });
+  }
+  const collapsed = new Set(groups.filter((g) => g.collapsed).flatMap((g) => g.nodes));
+  return [...frames, ...nodes.map((n) => (collapsed.has(docIdOfNode(n.id) ?? '') ? ({ ...n, hidden: true } as BoardNode) : n))];
+}
 
 /** An edge's `from`/`to` are source, composition or output ids; map them to node ids (null: not on this board). */
 function endpoint(doc: ProjectDoc, id: string): string | null {
