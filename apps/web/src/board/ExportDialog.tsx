@@ -43,11 +43,11 @@ interface Row {
   fellBack?: boolean;
 }
 
-export function ExportDialog(props: { teamId: string; projectId: string; doc: ProjectDoc; layoutDeps: LayoutDeps | null; onClose: () => void }) {
+export function ExportDialog(props: { teamId: string; projectId: string; doc: ProjectDoc; layoutDeps: LayoutDeps | null; initialOutputs?: string[]; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const { doc } = props;
   const base = `/teams/${props.teamId}/projects/${props.projectId}/exports`;
-  const [selected, setSelected] = useState<string[]>(() => doc.outputs.map((o) => o.id));
+  const [selected, setSelected] = useState<string[]>(() => props.initialOutputs ?? doc.outputs.map((o) => o.id));
   const [format, setFormat] = useState<ExportFormat>('png');
   const [quality, setQuality] = useState(90);
   const [cropMarks, setCropMarks] = useState(true);
