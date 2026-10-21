@@ -120,15 +120,18 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
           {members === null ? (
             <p className="sc-muted">Loading…</p>
           ) : (
-            <ul className="sc-list">
+            <ul className="sc-list sc-rows">
               {members.map((m) => (
                 <li key={m.userId} data-member={m.email}>
-                  <span>
-                    {m.name || m.email} <span className="sc-muted">{m.email}</span>
-                    {m.userId === props.userId && <span className="sc-muted"> (you)</span>}
+                  <span className="sc-rows__main">
+                    <span className="sc-rows__name">
+                      {m.name || m.email}
+                      {m.userId === props.userId && <span className="sc-muted"> (you)</span>}
+                    </span>
+                    {m.name && <span className="sc-rows__meta">{m.email}</span>}
                   </span>
                   {props.isAdmin ? (
-                    <span className="sc-row">
+                    <span className="sc-rows__actions">
                       <select aria-label={`Role of ${m.email}`} value={m.role} onChange={(e) => void changeRole(m, e.target.value as TeamRole)}>
                         {ROLES.map((r) => (
                           <option key={r} value={r}>
@@ -136,7 +139,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                           </option>
                         ))}
                       </select>
-                      <button type="button" onClick={() => void remove(m)} aria-label={`Remove ${m.email}`}>
+                      <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void remove(m)} aria-label={`Remove ${m.email}`}>
                         Remove
                       </button>
                     </span>
@@ -151,9 +154,9 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
 
         {props.isAdmin && (
           <>
-            <form onSubmit={invite} aria-label="Invite">
-              <h2>Invite</h2>
-              <div className="sc-row">
+            <form className="sc-form" onSubmit={invite} aria-label="Invite">
+              <h2>Invite someone</h2>
+              <div className="sc-fields">
                 <label>
                   Role
                   <select value={role} onChange={(e) => setRole(e.target.value as TeamRole)}>
@@ -164,34 +167,42 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                     ))}
                   </select>
                 </label>
-                <label>
-                  Email (optional: only this person can use the link)
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={320} />
+                <label className="sc-fields__wide">
+                  Email
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={320} placeholder="Optional" aria-describedby="invite-email-hint" />
                 </label>
               </div>
-              <div className="sc-row">
-                <button type="submit">Create invite link</button>
+              <p id="invite-email-hint" className="sc-hint">
+                Leave it empty for a link anyone can use once, or add an email so only that person can join.
+              </p>
+              <div className="sc-form__actions">
+                <button type="submit" className="sc-btn sc-btn--primary">
+                  Create invite link
+                </button>
               </div>
             </form>
             {link && (
-              <div className="sc-row" role="group" aria-label="New invite link">
+              <div className="sc-invite-link" role="group" aria-label="New invite link">
                 <input readOnly value={link} aria-label="Invite link" onFocus={(e) => e.currentTarget.select()} />
-                <button type="button" onClick={() => void copy()}>
+                <button type="button" className="sc-btn sc-btn--primary" onClick={() => void copy()}>
                   {copied ? 'Copied ✓' : 'Copy'}
                 </button>
               </div>
             )}
-            {link && <p className="sc-muted">Send this link to the person. It works once and expires in 7 days; it is not shown again.</p>}
+            {link && <p className="sc-hint">Send this link to the person. It works once, expires in 7 days and won’t be shown again.</p>}
             {invites.length > 0 && (
               <section aria-label="Pending invites">
                 <h2>Pending invites</h2>
-                <ul className="sc-list">
+                <ul className="sc-list sc-rows">
                   {invites.map((i) => (
                     <li key={i.id}>
-                      <span>
-                        {ROLE_LABEL[i.role]} <span className="sc-muted">{i.email ?? 'anyone with the link'} · expires {new Date(i.expiresAt).toLocaleDateString()}</span>
+                      <span className="sc-rows__main">
+                        <span className="sc-rows__name">{i.email ?? 'Anyone with the link'}</span>
+                        <span className="sc-rows__meta">
+                          {ROLE_LABEL[i.role]} · expires {new Date(i.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                        </span>
                       </span>
-                      <button type="button" onClick={() => void revoke(i)} aria-label={`Revoke ${ROLE_LABEL[i.role]} invite for ${i.email ?? 'anyone'}`}>
+                      <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void revoke(i)} aria-label={`Revoke ${ROLE_LABEL[i.role]} invite for ${i.email ?? 'anyone'}`}>
                         Revoke
                       </button>
                     </li>
@@ -206,8 +217,8 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
             {error}
           </p>
         )}
-        <div className="sc-row">
-          <button type="button" onClick={() => ref.current?.close()}>
+        <div className="sc-dialog__foot">
+          <button type="button" className="sc-btn" onClick={() => ref.current?.close()}>
             Close
           </button>
         </div>

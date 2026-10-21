@@ -86,3 +86,12 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Phone browsers:** the board and the editors are sized to the visible height (`100dvh`, with `100vh` as the fallback), and the page never scrolls, so the top bar and the bottom toolbar or sheet stay on screen while the browser's address bar and bottom bar show. `viewport-fit=cover` with safe-area padding keeps them clear of notches and the gesture bar.
 - **Disconnect a wire:** select it (a tap or a click) and a round × appears just above its middle; it disconnects the wire, like Delete (an output's wire freezes the output). This is the way on touch screens, where wires also get a 36 px tap strip.
 - **Phone Export button:** a 36 px rounded icon with a 44 px tap area, clear of the screen edge.
+
+## Projects home, Size presets, Team
+- **Buttons:** one primary per form (`.sc-btn--primary`: Create project, Add preset, Create invite link, Copy). Other buttons are default; row actions are ghost buttons, and destructive ones (Delete, Remove, Revoke) are red. Unclassed buttons in a `.sc-card` get the same look, and a card's submit button is its primary.
+- **Fields:** 32 px high (40 px on phones, with 16 px text so iOS doesn't zoom), with a focus ring.
+- **Rows (`.sc-rows`):** a bordered list. Each row shows the name above one muted line (size, email, or "Edited 5 min ago" with the full date on hover) and puts its actions on the right; on phones the actions wrap under the name.
+- **Dialog forms (`.sc-fields`):** a grid of 120 px+ columns that wraps instead of overflowing; the name and email fields span the full width. Optional details go in a hint below the field, not in the label ("Email" plus "Leave it empty for a link anyone can use once…").
+- **Long dialogs:** the Close footer sticks to the bottom edge. Dialogs never get wider than the screen less 16 px.
+- **Phone home:** full-bleed, no card frame; the team name sits above "Projects".
+- **Copy:** "Create project", "Make template" (a copy saved as a template), "Save changes", "Invite someone".

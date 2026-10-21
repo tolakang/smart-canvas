@@ -90,29 +90,31 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
     <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="presets-title">
       <div className="sc-card sc-presets">
         <h1 id="presets-title">Size presets</h1>
+        <p className="sc-muted sc-lede">Sizes for new outputs. Built-in ones are fixed{props.isAdmin ? '; add your team’s own below.' : '; admins can add the team’s own.'}</p>
         {list === null ? (
           <p className="sc-muted">Loading…</p>
         ) : (
           (['social', 'print'] as const).map((group) => (
             <section key={group} aria-label={group === 'print' ? 'Print presets' : 'Social presets'}>
               <h2>{group === 'print' ? 'Print' : 'Social'}</h2>
-              <ul className="sc-list">
+              <ul className="sc-list sc-rows">
                 {list
                   .filter((p) => p.group === group)
                   .map((p) => (
                     <li key={p.id} data-preset={p.name}>
-                      <span>
-                        {p.name} <span className="sc-muted">{sizeText(p)}</span>
+                      <span className="sc-rows__main">
+                        <span className="sc-rows__name">{p.name}</span>
+                        <span className="sc-rows__meta">{sizeText(p)}</span>
                       </span>
                       {p.teamId === null ? (
                         <span className="sc-badge">Built-in</span>
                       ) : (
                         props.isAdmin && (
-                          <span className="sc-row">
-                            <button type="button" onClick={() => edit(p)} aria-label={`Edit ${p.name}`}>
+                          <span className="sc-rows__actions">
+                            <button type="button" className="sc-btn sc-btn--ghost" onClick={() => edit(p)} aria-label={`Edit ${p.name}`}>
                               Edit
                             </button>
-                            <button type="button" onClick={() => void remove(p)} aria-label={`Delete ${p.name}`}>
+                            <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void remove(p)} aria-label={`Delete ${p.name}`}>
                               Delete
                             </button>
                           </span>
@@ -125,9 +127,13 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           ))
         )}
         {props.isAdmin && (
-          <form onSubmit={save} aria-label={draft.id ? 'Edit preset' : 'New preset'}>
-            <h2>{draft.id ? 'Edit preset' : 'New team preset'}</h2>
-            <div className="sc-row">
+          <form className="sc-form" onSubmit={save} aria-label={draft.id ? 'Edit preset' : 'New preset'}>
+            <h2>{draft.id ? `Edit “${draft.name}”` : 'New team preset'}</h2>
+            <div className="sc-fields">
+              <label className="sc-fields__wide">
+                Name
+                <input value={draft.name} onChange={(e) => set({ name: e.target.value })} required maxLength={120} placeholder="e.g. Shop banner" />
+              </label>
               <label>
                 Group
                 <select value={draft.group} onChange={(e) => set({ group: e.target.value as PresetGroup })}>
@@ -136,44 +142,38 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
                 </select>
               </label>
               <label>
-                Name
-                <input value={draft.name} onChange={(e) => set({ name: e.target.value })} required maxLength={120} />
-              </label>
-            </div>
-            <div className="sc-row">
-              <label>
-                Width
-                <input type="number" required min={0.1} step="any" value={draft.width} onChange={(e) => set({ width: e.target.value })} />
-              </label>
-              <label>
-                Height
-                <input type="number" required min={0.1} step="any" value={draft.height} onChange={(e) => set({ height: e.target.value })} />
-              </label>
-              <label>
                 Unit
                 <select value={draft.unit} onChange={(e) => set({ unit: e.target.value as Unit })}>
                   <option value="px">px</option>
                   <option value="mm">mm</option>
                 </select>
               </label>
-            </div>
-            <div className="sc-row">
+              <label>
+                Width
+                <input type="number" inputMode="decimal" required min={0.1} step="any" value={draft.width} onChange={(e) => set({ width: e.target.value })} />
+              </label>
+              <label>
+                Height
+                <input type="number" inputMode="decimal" required min={0.1} step="any" value={draft.height} onChange={(e) => set({ height: e.target.value })} />
+              </label>
               <label>
                 DPI
-                <input type="number" min={72} max={1200} step={1} placeholder={draft.unit === 'mm' ? '300' : '—'} value={draft.dpi} onChange={(e) => set({ dpi: e.target.value })} />
+                <input type="number" inputMode="numeric" min={72} max={1200} step={1} placeholder={draft.unit === 'mm' ? '300' : 'Optional'} value={draft.dpi} onChange={(e) => set({ dpi: e.target.value })} />
               </label>
               <label>
-                Bleed mm
-                <input type="number" min={0} max={50} step="any" placeholder="0" value={draft.bleedMm} onChange={(e) => set({ bleedMm: e.target.value })} />
+                Bleed (mm)
+                <input type="number" inputMode="decimal" min={0} max={50} step="any" placeholder="0" value={draft.bleedMm} onChange={(e) => set({ bleedMm: e.target.value })} />
               </label>
             </div>
-            <div className="sc-row">
-              <button type="submit">{draft.id ? 'Save' : 'Add preset'}</button>
+            <div className="sc-form__actions">
               {draft.id && (
-                <button type="button" onClick={() => setDraft(EMPTY)}>
+                <button type="button" className="sc-btn" onClick={() => setDraft(EMPTY)}>
                   Cancel edit
                 </button>
               )}
+              <button type="submit" className="sc-btn sc-btn--primary">
+                {draft.id ? 'Save changes' : 'Add preset'}
+              </button>
             </div>
           </form>
         )}
@@ -182,8 +182,8 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
             {error}
           </p>
         )}
-        <div className="sc-row">
-          <button type="button" onClick={() => ref.current?.close()}>
+        <div className="sc-dialog__foot">
+          <button type="button" className="sc-btn" onClick={() => ref.current?.close()}>
             Close
           </button>
         </div>
