@@ -10,6 +10,9 @@ import { Icon } from './LayerRow';
 
 export type CanvasTool = 'select' | 'hand';
 
+/** Fit leaves room for this toolbar at the bottom, so no node ends up under it. */
+export const FIT_OPTIONS = { maxZoom: 1, padding: { top: '24px', left: '24px', right: '24px', bottom: '96px' } } as const;
+
 export function CanvasToolbar(props: {
   tool: CanvasTool;
   onTool: (t: CanvasTool) => void;
@@ -20,6 +23,8 @@ export function CanvasToolbar(props: {
   /** Tablet / phone: which floating panel is open, and how to switch. */
   panels?: { open: 'library' | 'inspector' | null; onOpen: (p: 'library' | 'inspector' | null) => void; library: boolean };
   compact?: boolean;
+  /** The minimap button (desktop only, where the minimap shows). */
+  minimapToggle?: boolean;
 }) {
   const { panels, compact } = props;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -42,12 +47,12 @@ export function CanvasToolbar(props: {
         {Math.round(zoom * 100)}%
       </span>
       {!compact && btn('Zoom in', undefined, () => void zoomIn({ duration: 150 }), <Icon name="plus" />)}
-      {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ duration: 200, maxZoom: 1 }), <Icon name="fit" />)}
+      {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ ...FIT_OPTIONS, duration: 200 }), <Icon name="fit" />)}
       {!compact && (
         <>
           <span className="sc-canvasbar__sep" aria-hidden="true" />
           {btn('Snap to grid', props.grid, () => props.onGrid(!props.grid), <Icon name="grid" />)}
-          {btn('Minimap', props.minimap, () => props.onMinimap(!props.minimap), <Icon name="map" />)}
+          {props.minimapToggle !== false && btn('Minimap', props.minimap, () => props.onMinimap(!props.minimap), <Icon name="map" />)}
         </>
       )}
     </Panel>

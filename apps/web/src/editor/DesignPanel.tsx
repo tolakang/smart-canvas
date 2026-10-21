@@ -9,7 +9,9 @@ import type { ReactNode } from 'react';
 import { NumberField } from '../ui/NumberField';
 
 const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
-const round = (n: number) => Math.round(n * 100) / 100;
+/** Shown values: whole design px (as the selection badge), rotation to 0.1°. Typed values are kept as typed. */
+const round = (n: number) => Math.round(n);
+const roundDeg = (n: number) => Math.round(n * 10) / 10;
 
 export const SHORTCUTS: [string, string][] = [
   ['V', 'Move tool'],
@@ -45,7 +47,12 @@ export function DesignPanel(props: {
             {round(props.scene.width)} × {round(props.scene.height)} <span className="sc-muted">design px</span>
           </div>
         </section>
-        <section className="sc-design__section">
+        {/* Touch screens get gestures instead of keyboard shortcuts. */}
+        <section className="sc-design__section sc-design__touch">
+          <div className="sc-design__title">Gestures</div>
+          <p className="sc-design__hint">Tap a layer to select it · drag to move · pinch to zoom · two fingers to pan</p>
+        </section>
+        <section className="sc-design__section sc-design__shortcuts">
           <div className="sc-design__title">Shortcuts</div>
           <dl className="sc-design__keys">
             {SHORTCUTS.map(([k, v]) => (
@@ -67,11 +74,11 @@ export function DesignPanel(props: {
     const k = key === 'w' ? n / frame.w : n / frame.h;
     set({ w: frame.w * k, h: frame.h * k });
   };
-  const field = (label: string, name: string, value: number, onCommit: (n: number | null) => void, min = -100000) => (
+  const field = (label: string, name: string, value: number, onCommit: (n: number | null) => void, min = -100000, show = round) => (
     <NumberField
       className="sc-design__num"
       label={label}
-      value={round(value)}
+      value={show(value)}
       min={min}
       max={100000}
       step={1}
@@ -92,7 +99,7 @@ export function DesignPanel(props: {
           {field('Y', 'Y', frame.y, (n) => n !== null && set({ y: n }))}
           {field('W', 'Width', frame.w, (n) => setSize('w', n), 1)}
           {field('H', 'Height', frame.h, (n) => setSize('h', n), 1)}
-          {field('↻', 'Rotation', frame.rotation ?? 0, (n) => set({ rotation: ((((n ?? 0) % 360) + 540) % 360) - 180 }), -360)}
+          {field('↻', 'Rotation', frame.rotation ?? 0, (n) => set({ rotation: ((((n ?? 0) % 360) + 540) % 360) - 180 }), -360, roundDeg)}
           <button
             type="button"
             className="sc-design__lock"

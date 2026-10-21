@@ -84,7 +84,7 @@ import {
 import { useTheme } from '../ui/theme';
 import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
-import { CanvasToolbar, type CanvasTool } from './CanvasToolbar';
+import { CanvasToolbar, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
@@ -1005,7 +1005,7 @@ function BoardCanvas(props: {
             edgesFocusable={!readOnly}
             deleteKeyCode={readOnly ? null : ['Backspace', 'Delete']}
             fitView
-            fitViewOptions={{ maxZoom: 1 }}
+            fitViewOptions={FIT_OPTIONS}
             // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
             panOnScroll
             zoomOnScroll={false}
@@ -1018,7 +1018,8 @@ function BoardCanvas(props: {
             proOptions={{ hideAttribution: false }}
           >
             <Background gap={16} />
-            {minimap && screen !== 'phone' && <MiniMap pannable zoomable position="bottom-right" />}
+            {/* The minimap needs a desktop-sized canvas; on tablets and phones it would cover the work. */}
+            {minimap && screen === 'desktop' && <MiniMap pannable zoomable position="bottom-right" />}
             <CanvasToolbar
               tool={tool}
               onTool={setTool}
@@ -1028,6 +1029,7 @@ function BoardCanvas(props: {
               onMinimap={setMinimap}
               panels={floating && { open: panel, onOpen: setPanel, library: !readOnly }}
               compact={screen === 'phone'}
+              minimapToggle={screen === 'desktop'}
             />
             <ViewportPortal>
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}

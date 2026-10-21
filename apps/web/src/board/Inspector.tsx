@@ -64,7 +64,7 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
         <CompositionInspector key={composition} compositionId={composition} />
       ) : (
         <Section title="Nothing selected">
-          <p className="sc-muted sc-inspector-panel__hint">Click a node to see its settings here. Drag a wire out of the main preview to add an output; right-click the canvas to add inputs.</p>
+          <p className="sc-muted sc-inspector-panel__hint">Click a node to see its settings here. Drag a wire out of any port, or right-click a port, to add a node that fits; right-click the canvas to add inputs.</p>
         </Section>
       )}
     </aside>
