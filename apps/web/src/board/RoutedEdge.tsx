@@ -1,10 +1,12 @@
 /**
  * A wire with reroute points (T13.8). Without points it is React Flow's usual curve; with points it curves
  * through each of them. Points can be dragged (one undo step when let go) and double-clicked away; a
- * double-click on the wire adds one (Board).
+ * double-click on the wire adds one (Board). A selected wire shows a "Disconnect" button at its middle — the
+ * way to take a wire off on a touch screen (no Delete key; its ends are small to grab). Removing it goes
+ * through the board's edge deletion, like Delete (an output's wire freezes it).
  */
 import { setEdgePoints } from '@smart-canvas/core';
-import { BaseEdge, getBezierPath, useReactFlow, type Edge, type EdgeProps } from '@xyflow/react';
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type Edge, type EdgeProps } from '@xyflow/react';
 import { useState, type PointerEvent } from 'react';
 import { useBoard } from './context';
 import { routePath } from './wires';
@@ -14,13 +16,16 @@ export type RoutedEdgeData = { points?: XY[] };
 export type RoutedFlowEdge = Edge<RoutedEdgeData, 'routed'>;
 
 export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
-  const { id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, style, data } = props;
+  const { id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, style, data, selected, interactionWidth } = props;
   const { readOnly, run } = useBoard();
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, deleteElements } = useReactFlow();
   /** While a point is dragged: the points shown (committed on release). */
   const [drag, setDrag] = useState<{ index: number; points: XY[] } | null>(null);
   const points = drag?.points ?? data?.points ?? [];
-  const path = points.length ? routePath({ x: sourceX, y: sourceY }, { x: targetX, y: targetY }, points) : getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })[0];
+  const [bezier, midX, midY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
+  const path = points.length ? routePath({ x: sourceX, y: sourceY }, { x: targetX, y: targetY }, points) : bezier;
+  // Where the Disconnect button sits: the curve's middle, or the middle reroute point.
+  const mid = points.length ? (points[Math.floor((points.length - 1) / 2)] as XY) : { x: midX, y: midY };
 
   const down = (index: number) => (e: PointerEvent<SVGCircleElement>) => {
     if (readOnly) return;
@@ -42,7 +47,25 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
 
   return (
     <>
-      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} />
+      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} interactionWidth={interactionWidth} />
+      {selected && !readOnly && (
+        <EdgeLabelRenderer>
+          <button
+            type="button"
+            className="sc-wire-cut nodrag nopan"
+            // Just above the wire, never on it: a double-click there (adding a reroute point) must not hit it.
+            style={{ transform: `translate(-50%, calc(-100% - 12px)) translate(${mid.x}px, ${mid.y}px)` }}
+            aria-label="Disconnect wire"
+            title="Disconnect (or press Delete)"
+            onClick={(e) => {
+              e.stopPropagation();
+              void deleteElements({ edges: [{ id }] });
+            }}
+          >
+            ×
+          </button>
+        </EdgeLabelRenderer>
+      )}
       {!readOnly &&
         points.map((p, i) => (
           <circle

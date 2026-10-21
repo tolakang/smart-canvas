@@ -661,3 +661,17 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   .sc-editor__body > .sc-layers { width: 200px; }
   .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side { width: 220px; }
 }
+
+/* Phone top bar: Export is a 36 px rounded icon button clear of the screen edge (it filled the bar's corner on
+   devices); a 44 px invisible area keeps it easy to tap. The bar respects the notch / rounded corners. */
+@media (max-width: 767px) {
+  .sc-topbar { padding-right: calc(var(--sp-2) + env(safe-area-inset-right)); }
+  .sc-topbar .sc-topbar__primary { position: relative; width: 36px; height: 36px; min-height: 36px !important; padding: 0 !important; justify-content: center; border-radius: var(--r-md); }
+  .sc-topbar .sc-topbar__primary::after { content: ''; position: absolute; inset: -4px; }
+  .sc-topbar .sc-topbar__icon { position: relative; }
+}
+
+/* A selected wire's Disconnect button (touch screens have no Delete key). */
+.sc-wire-cut { position: absolute; top: 0; left: 0; z-index: 10; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--danger); font-size: 18px; line-height: 1; box-shadow: var(--shadow-2); cursor: pointer; pointer-events: all; }
+.sc-wire-cut:hover { background: var(--danger-soft); }
+@media (pointer: coarse) { .sc-wire-cut { width: 40px; height: 40px; font-size: 22px; } }

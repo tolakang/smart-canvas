@@ -89,7 +89,7 @@ import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
 import { paletteItems, type PalettePort } from './palette';
-import { COARSE_QUERY, useScreen } from '../ui/responsive';
+import { COARSE_QUERY, useCoarsePointer, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
 import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
 import { nodeTypes } from './nodes';
@@ -264,6 +264,7 @@ function BoardCanvas(props: {
   useEffect(() => {
     displayNodesRef.current = displayNodes;
   }, [displayNodes]);
+  const coarse = useCoarsePointer();
   // T13.8: wires dim unless they touch the selection; the wires a change flows along pulse once.
   const [pulsing, setPulsing] = useState<ReadonlySet<string>>(new Set());
   const prevDoc = useRef(doc);
@@ -280,12 +281,14 @@ function BoardCanvas(props: {
     const selectedEdges = new Set(edges.filter((e) => e.selected).map((e) => e.id));
     const focus = selectedNodes.size + selectedEdges.size > 0;
     const related = focus ? relatedEdges(edges, selectedNodes, selectedEdges) : null;
-    if (!related && pulsing.size === 0) return edges;
+    // Touch: a wider invisible strip along each wire, so a finger can select it (then Disconnect).
+    const touchWidth = coarse ? { interactionWidth: 36 } : null;
+    if (!related && pulsing.size === 0 && !touchWidth) return edges;
     return edges.map((e) => {
       const extra = `${related && !related.has(e.id) ? ' sc-edge--dim' : ''}${pulsing.has(e.id) ? ' sc-edge--pulse' : ''}`;
-      return extra ? { ...e, className: `${e.className ?? ''}${extra}` } : e;
+      return extra || touchWidth ? { ...e, ...touchWidth, ...(extra ? { className: `${e.className ?? ''}${extra}` } : {}) } : e;
     });
-  }, [edges, displayNodes, pulsing]);
+  }, [edges, displayNodes, pulsing, coarse]);
 
   // T13.5: a dragged node snaps to other nodes' edges and centres; the guide lines show where.
   const [guides, setGuides] = useState<{ vertical?: number; horizontal?: number }>({});

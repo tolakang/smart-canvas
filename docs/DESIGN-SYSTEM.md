@@ -84,3 +84,5 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Minimap:** desktop only.
 - **Fit:** leaves room for the floating toolbar.
 - **Phone browsers:** the board and the editors are sized to the visible height (`100dvh`, with `100vh` as the fallback), and the page never scrolls, so the top bar and the bottom toolbar or sheet stay on screen while the browser's address bar and bottom bar show. `viewport-fit=cover` with safe-area padding keeps them clear of notches and the gesture bar.
+- **Disconnect a wire:** select it (a tap or a click) and a round × appears just above its middle; it disconnects the wire, like Delete (an output's wire freezes the output). This is the way on touch screens, where wires also get a 36 px tap strip.
+- **Phone Export button:** a 36 px rounded icon with a 44 px tap area, clear of the screen edge.

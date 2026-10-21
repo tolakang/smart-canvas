@@ -57,6 +57,10 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     // UI audit: the top bar's end group (save, More, Export) sits at the right edge.
     const exportBox = await phone.getByRole('button', { name: 'Export' }).boundingBox();
     expect((exportBox?.x ?? 0) + (exportBox?.width ?? 0)).toBeGreaterThan(390 - 16);
+    // ...as a 36 px icon button clear of the screen edge (it filled the bar's corner on a device).
+    expect(exportBox?.width ?? 99).toBeLessThanOrEqual(36);
+    expect(exportBox?.height ?? 99).toBeLessThanOrEqual(36);
+    expect(390 - ((exportBox?.x ?? 0) + (exportBox?.width ?? 0))).toBeGreaterThanOrEqual(6);
     await phone.getByRole('button', { name: 'More' }).tap();
     const menu = phone.getByRole('menu', { name: 'More' });
     for (const item of [/^Undo/, /^Add input/, /^Add output/, 'Team fonts', 'Team library', /theme$/]) expect(await menu.getByRole('menuitem', { name: item }).count()).toBe(1);
@@ -143,6 +147,20 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     await phone.waitForTimeout(1500);
     expect((await (await phone.request.get(url)).json()).rev).toBe(before.rev);
     await phone.keyboard.press('Escape');
+  }, 60_000);
+
+  it('phone: tap a wire, then Disconnect, to take it off (no Delete key on touch)', async () => {
+    await phone.reload();
+    await bar(phone).waitFor();
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(400);
+    const wire = phone.locator('.react-flow__edge[data-id="in:background"]');
+    const box = await wire.locator('path.react-flow__edge-path').boundingBox();
+    if (!box) throw new Error('no wire');
+    await phone.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    await phone.getByRole('button', { name: 'Disconnect wire' }).tap();
+    await expect.poll(async () => (await (await phone.request.get(url)).json()).doc.edges.some((e: { id: string }) => e.id === 'in:background')).toBe(false);
+    expect(await phone.getByRole('button', { name: 'Disconnect wire' }).count()).toBe(0);
   }, 60_000);
 
   it('tablet: library and inspector are overlays, one at a time', async () => {
