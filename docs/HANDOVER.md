@@ -39,9 +39,10 @@ Picture frames hug their visible pixels, and stretching distorts the picture.
 - Touch: tap and drag at once; `longPressMs` defaults to 0. A double-tap on a handle resets it.
 
 ## Layout v3, the stretched grid (D38) — owner issues 1–3
+- **Scale:** `√(sx·sy)` capped by the room around the pin (merged after #90 as a follow-up), fill rules unchanged.
 - **Code:** `packages/core/src/layout/grid.ts` (`pinOf`, `fillsAxis`, `gridScale`, `gridFrame`), used by `index.ts` for subjects, decorations, logos (`logo.ts`, with the minimum width) and text boxes (`text.ts` `fitInFrame`).
 - **Removed:** the v2 content groups (`content.ts`), the side text column and the safe-area clamp.
-- **Spec:** `docs/ADAPTATION-RULES.md` v3 (examples A, C, D, E, J, K, I, F); unit tests in `grid.test.ts`, `logo.test.ts`, `text.test.ts`.
+- **Spec:** `docs/ADAPTATION-RULES.md` v3 (examples A, C, D, E, J, K, L, I, F); unit tests in `grid.test.ts`, `logo.test.ts`, `text.test.ts`.
 
 ## Known limits / ideas
 - `output.family` is still computed and reported but no longer changes placement (D38).

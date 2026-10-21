@@ -30,7 +30,7 @@ describe('disconnect (D20, frozen)', () => {
     expect(isOutputConnected(doc, 'o1')).toBe(false);
     const frozen = doc.outputs[0]?.frozen?.items ?? [];
     expect(frozen.map((i) => i.sourceId).sort()).toEqual(['background', 'headline', 'logo', 'subject']);
-    expectFrame(frozen.find((i) => i.sourceId === 'subject')?.frame, { x: 324, y: 418.5, w: 432, h: 648 });
+    expectFrame(frozen.find((i) => i.sourceId === 'subject')?.frame, { x: 298.504658, y: 380.256988, w: 482.990683, h: 724.486025 });
     expect(frozen.find((i) => i.sourceId === 'headline')?.fontSizePx).toBeGreaterThan(0);
   });
 
@@ -39,18 +39,18 @@ describe('disconnect (D20, frozen)', () => {
     const before = at(doc, 'headline');
     doc = moveSubject(doc);
     doc = { ...doc, sources: doc.sources.map((s) => (s.id === 'headline' && s.content.kind === 'text' ? { ...s, content: { ...s.content, text: 'CCC' } } : s)) };
-    expectFrame(at(doc, 'subject')?.frame, { x: 324, y: 418.5, w: 432, h: 648 });
+    expectFrame(at(doc, 'subject')?.frame, { x: 298.504658, y: 380.256988, w: 482.990683, h: 724.486025 });
     expect(at(doc, 'headline')?.lines).toEqual(['CCC']);
     expect(at(doc, 'headline')?.fontSizePx).toBe(before?.fontSizePx);
     // A connected output re-flows (D20)
-    expect(at(moveSubject(wiredProject()), 'subject')?.frame.w).toBeCloseTo(216); // 600 · k (0.36)
+    expect(at(moveSubject(wiredProject()), 'subject')?.frame.w).toBeCloseTo(241.495342); // 600 · √(0.36·0.45)
   });
 
   it('snapshots frames before overrides; overrides keep applying on top', () => {
     const doc = ok(disconnectOutput(wiredProject([ov({ frame: { x: 5 } })]), 'o1', deps));
-    expect(doc.outputs[0]?.frozen?.items.find((i) => i.sourceId === 'subject')?.frame.x).toBeCloseTo(324);
+    expect(doc.outputs[0]?.frozen?.items.find((i) => i.sourceId === 'subject')?.frame.x).toBeCloseTo(298.504658);
     expect(at(moveSubject(doc), 'subject')?.frame.x).toBe(5);
-    expect(at(moveSubject(doc), 'subject')?.frame.w).toBeCloseTo(432);
+    expect(at(moveSubject(doc), 'subject')?.frame.w).toBeCloseTo(482.990683);
     expect(at(doc, 'subject')?.overridden).toBe(true);
   });
 
@@ -68,7 +68,7 @@ describe('reconnect (D21)', () => {
     const doc = ok(reconnectOutput(frozen, 'o1', 'keep'));
     expect(isOutputConnected(doc, 'o1')).toBe(true);
     expect(doc.outputs[0]?.frozen).toBeUndefined();
-    expect(at(doc, 'subject')?.frame.w).toBeCloseTo(216);
+    expect(at(doc, 'subject')?.frame.w).toBeCloseTo(241.495342);
     expect(doc.edges.filter((e) => e.to === 'o1')).toHaveLength(1);
   });
 
