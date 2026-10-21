@@ -57,14 +57,28 @@ export const OutputRenderer = memo(function OutputRenderer({ scene, sources, ass
       >
         {scene.items.map((item) => {
           const source = byId.get(item.sourceId);
-          return source ? <Layer key={item.sourceId} item={item} source={source} assetSizes={assetSizes} assetUrl={assetUrl} mode={mode} /> : null;
+          return source ? <Layer key={item.sourceId} item={item} source={source} lookup={byId} assetSizes={assetSizes} assetUrl={assetUrl} mode={mode} /> : null;
         })}
       </div>
     </div>
   );
 });
 
-function Layer({ item, source, assetSizes, assetUrl, mode }: { item: RenderItem; source: LayerSource; assetSizes?: OutputRendererProps['assetSizes']; assetUrl: (id: string) => string; mode: 'preview' | 'export' }) {
+function Layer({
+  item,
+  source,
+  lookup,
+  assetSizes,
+  assetUrl,
+  mode,
+}: {
+  item: RenderItem;
+  source: LayerSource;
+  lookup: ReadonlyMap<string, LayerSource>;
+  assetSizes?: OutputRendererProps['assetSizes'];
+  assetUrl: (id: string) => string;
+  mode: 'preview' | 'export';
+}) {
   const { frame } = item;
   const { effect } = source;
   const box: CSSProperties = {
@@ -79,6 +93,23 @@ function Layer({ item, source, assetSizes, assetUrl, mode }: { item: RenderItem;
   };
   const data = { 'data-source-id': source.id, 'data-kind': source.kind };
   const { content } = source;
+
+  // T12.8: a composition used as a layer draws its own scene, contain-fitted (cover as a background) and centred.
+  if (source.nested) {
+    const inner = source.nested.scene;
+    const fit = source.behavesLike === 'background' ? Math.max : Math.min;
+    const s = fit(frame.w / inner.width, frame.h / inner.height);
+    return (
+      <div {...data} data-kind="nested" style={{ ...box, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', left: (frame.w - inner.width * s) / 2, top: (frame.h - inner.height * s) / 2, width: inner.width, height: inner.height, transform: `scale(${s})`, transformOrigin: '0 0' }}>
+          {inner.items.map((it) => {
+            const src = lookup.get(it.sourceId);
+            return src ? <Layer key={it.sourceId} item={it} source={src} lookup={lookup} assetSizes={assetSizes} assetUrl={assetUrl} mode={mode} /> : null;
+          })}
+        </div>
+      </div>
+    );
+  }
 
   switch (content.kind) {
     case 'fill':

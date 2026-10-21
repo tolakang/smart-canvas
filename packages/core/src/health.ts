@@ -37,8 +37,12 @@ const MESSAGE: Record<HealthCode, string> = {
   'font-missing': 'Font could not be loaded',
 };
 
-const isEmpty = (s: InputSource) =>
-  s.content.kind === 'image' || s.content.kind === 'vector' ? !s.content.assetId : s.content.kind === 'text' ? !s.content.text.trim() : false;
+/** No file or text yet (a composition used as a layer, T12.8, is never empty itself). */
+function isEmpty(s: InputSource & { nested?: unknown }): boolean {
+  if (s.nested) return false;
+  const c = s.content;
+  return c.kind === 'image' || c.kind === 'vector' ? !c.assetId : c.kind === 'text' ? !c.text.trim() : false;
+}
 
 /** Wired, visible layers of a composition that have nothing to draw yet. */
 function emptyIssues(doc: ProjectDoc, compositionId: string): HealthIssue[] {

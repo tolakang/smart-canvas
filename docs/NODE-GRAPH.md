@@ -48,6 +48,12 @@ output port also offering `layer`.
   - from a main preview's out port: an output (the default size, then presets; this replaces T10.4's direct add);
   - into a row or a process input: a new input;
   - into a disconnected output's main-preview port: a new main preview.
+- **Nested compositions (T12.8).** A composition node has a second out port, "Use as a layer" (`layer`). Wired
+  into a row of another composition, or an output's own row, it is a layer: in `layerSources` it carries its own
+  scene (`nested`), behaves like a subject, and has the composition's size as its picture size. The renderer
+  draws that scene fitted into the frame, with the same `Layer` code, so export recurses for fonts and images.
+  Loops are refused (`connectSource` checks too); a composition is never a process's input; deleting one removes
+  the rows it filled.
 
 ## Model (schema 2)
 

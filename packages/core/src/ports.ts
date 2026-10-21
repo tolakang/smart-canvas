@@ -3,7 +3,7 @@
  * (row index = port). A `layer` edge into the composition means the row is connected. Re-ordering is
  * "move this node to row k": the others shift and keep their order.
  */
-import { edgeId, isLayerWired, MAIN, withComposition } from './graph';
+import { createsCycle, edgeId, isLayerWired, MAIN, withComposition } from './graph';
 import type { Edge, ProjectDoc } from './model';
 import { ensurePlacement } from './placement';
 import { isLayerNode } from './processes';
@@ -33,6 +33,8 @@ export function moveSourceToPort(doc: ProjectDoc, sourceId: string, port: number
 export function connectSource(doc: ProjectDoc, sourceId: string, port?: number, compositionId: string = MAIN): SourceResult {
   const comp = doc.compositions.find((c) => c.id === compositionId);
   if (!comp || !isLayerNode(doc, sourceId)) return { ok: false, error: 'not_found' };
+  // T12.8: a composition as a layer must not end up inside itself.
+  if (!isLayerWired(doc, sourceId, compositionId) && (sourceId === compositionId || createsCycle(doc, sourceId, compositionId))) return { ok: false, error: 'invalid' };
   let next = comp.layers.includes(sourceId) ? doc : withComposition(doc, compositionId, (c) => ({ ...c, layers: [sourceId, ...c.layers] }));
   if (port !== undefined) {
     const moved = moveSourceToPort(next, sourceId, port, compositionId);

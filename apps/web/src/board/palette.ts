@@ -28,7 +28,7 @@ import {
 } from '@smart-canvas/core';
 import type { NewInput } from './AddInputDialog';
 import { presetSettings } from './OutputNode';
-import { compositionIdOfNode, layerIdOfNode, OUTPUT_HANDLE, outputIdOfNode, portFromHandle, processIdOfNode } from './flow';
+import { compositionIdOfNode, LAYER_OUT_HANDLE, layerIdOfNode, OUTPUT_HANDLE, outputIdOfNode, portFromHandle, processIdOfNode } from './flow';
 
 /** The port a palette is for (React Flow ids). */
 export interface PalettePort {
@@ -67,7 +67,9 @@ const label = (s: { width: number; height: number; unit: string }) => `${s.width
 export function paletteItems(doc: ProjectDoc, port: PalettePort, presets: readonly SizePreset[] = []): PaletteItem[] {
   const { nodeId, handleId, handleType } = port;
   const composition = compositionIdOfNode(nodeId);
-  const layer = layerIdOfNode(nodeId);
+  // T12.8: a composition's layer port carries the composition itself.
+  const nest = handleType === 'source' && handleId === LAYER_OUT_HANDLE ? composition : undefined;
+  const layer = nest ?? layerIdOfNode(nodeId);
   const output = outputIdOfNode(nodeId);
   const process = processIdOfNode(nodeId);
   const processesFull = doc.processes.length >= LIMITS.maxProcesses;
@@ -79,7 +81,7 @@ export function paletteItems(doc: ProjectDoc, port: PalettePort, presets: readon
 
   if (handleType === 'source' && layer) {
     return [
-      ...PROCESS_KINDS.map(
+      ...(nest ? [] : PROCESS_KINDS).map(
         (kind): PaletteItem => ({
           label: PROCESS_LABEL[kind],
           disabled: processesFull,
@@ -88,7 +90,7 @@ export function paletteItems(doc: ProjectDoc, port: PalettePort, presets: readon
       ),
       {
         label: 'New main preview',
-        separated: true,
+        separated: !nest,
         disabled: compsFull,
         add: (d, newId, at) => {
           const id = newId();

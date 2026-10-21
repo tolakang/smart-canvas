@@ -13,7 +13,6 @@ import {
   masterScene,
   outputScene,
   layerSources,
-  type InputSource,
   type LayerSource,
   type LayoutResult,
   type ProjectDoc,
@@ -67,16 +66,18 @@ export function exportScene(layout: LayoutResult, output: Parameters<typeof outp
 }
 
 /** The text a scene draws, for loading its fonts. */
-export function sceneTexts(scene: RenderScene, sources: readonly InputSource[]): FontRequest[] {
+export function sceneTexts(scene: RenderScene, sources: readonly LayerSource[]): FontRequest[] {
   const byId = new Map(sources.map((s) => [s.id, s]));
   return scene.items.flatMap((item) => {
-    const c = byId.get(item.sourceId)?.content;
+    const source = byId.get(item.sourceId);
+    if (source?.nested) return sceneTexts(source.nested.scene, sources); // T12.8: its texts too
+    const c = source?.content;
     return c?.kind === 'text' ? [{ style: { ...c.style, ...item.style }, text: item.lines?.join('\n') ?? c.text }] : [];
   });
 }
 
 /** Resolves once every text font of the scene is loaded and every image in the frame has decoded. */
-export async function frameReady(frame: HTMLElement, scene: RenderScene, sources: readonly InputSource[]): Promise<void> {
+export async function frameReady(frame: HTMLElement, scene: RenderScene, sources: readonly LayerSource[]): Promise<void> {
   const masks = [...frame.querySelectorAll<HTMLElement>('[data-mask-src]')].map((el) => {
     const img = new Image();
     img.src = el.dataset.maskSrc ?? '';

@@ -4,7 +4,7 @@
  */
 import { compositionById, MAIN, mainComposition, wiredLayers } from './graph';
 import { layerSources } from './processes';
-import { toDesignPx, type Frame, type NFrame, type ProjectDoc, type Size, type TextStyle } from './model';
+import { toDesignPx, type Composition, type Frame, type InputSource, type NFrame, type ProjectDoc, type Size, type TextStyle } from './model';
 
 /** One drawn layer. Same shape as the engine's LayoutItem minus bookkeeping. Frame in design px; rotation in degrees. */
 export interface RenderItem {
@@ -43,11 +43,16 @@ export function toDesignFrame(n: NFrame, canvas: { width: number; height: number
  */
 export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): RenderScene {
   const comp = compositionById(doc, compositionId) ?? mainComposition(doc);
+  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
+  return compositionScene(doc, comp, (id) => byId.get(id));
+}
+
+/** A composition's scene with its rows looked up by `layer` (also how a nested composition is drawn, T12.8). */
+export function compositionScene(doc: ProjectDoc, comp: Composition, layer: (id: string) => InputSource | undefined): RenderScene {
   const canvas = sizeInDesignPx(comp.size);
   const wired = wiredLayers(doc, comp.id);
-  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   const items: RenderItem[] = [];
-  for (const s of [...comp.layers].reverse().flatMap((id) => byId.get(id) ?? [])) {
+  for (const s of [...comp.layers].reverse().flatMap((id) => layer(id) ?? [])) {
     if (!s.visible || !wired.has(s.id)) continue;
     const placement = comp.placements[s.id];
     if (placement) items.push({ sourceId: s.id, frame: toDesignFrame(placement, canvas) });
