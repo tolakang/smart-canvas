@@ -2,7 +2,7 @@
  * D36 end to end: the editor's transform box (Affinity-style). Drag an edge along itself to skew (the opposite
  * edge stays), outward to stretch; the shear is stored and drawn by the one renderer; a double-click on a
  * handle undoes what it changed — after any mix of stretch, skew, scale and rotate the layer lands back on
- * its original placement; moves snap to the canvas edges; on a phone a handle needs a hold first.
+ * its original placement; moves snap to the canvas edges; on a phone a long press arms a handle or the layer first.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { mainComposition, type NFrame, type ProjectDoc } from '@smart-canvas/core';
@@ -138,7 +138,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     expect(nudged.y).toBeCloseTo(before.y, 5);
   }, 90_000);
 
-  it('phone: tap and drag a handle at once (no hold) to skew; a double-tap resets it', async () => {
+  it('phone: a quick drag edits nothing; long-press then drag skews (a handle) and moves (the layer); a double-tap resets', async () => {
     // The same signed-in session, as a phone.
     const ctx = await stack.env.browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, storageState: await page.context().storageState() });
     const phone = await ctx.newPage();
@@ -164,7 +164,12 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
       await phone.waitForTimeout(300);
     };
     const before = await placement();
+    // No hold: nothing changes (a swipe is not an edit).
     await tdrag(0, 40);
+    await phone.waitForTimeout(500);
+    near(await placement(), before);
+    // Hold, then drag: the edge skews.
+    await tdrag(450, 40);
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeGreaterThan(3);
     // Double-tap the edge: back to where it was.
     const hb = await ed.locator('[data-tb-handle="e"]').boundingBox();
@@ -177,6 +182,19 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     await touch('touchEnd');
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeLessThan(1e-6);
     near(await placement(), before);
+    // Long-press the layer itself, then drag: it moves.
+    const lb = await ed.locator('.sc-editor__canvas [data-source-id="subject"]').boundingBox();
+    if (!lb) throw new Error('no layer');
+    const at = { x: lb.x + lb.width / 2, y: lb.y + lb.height / 2 };
+    await touch('touchStart', at.x, at.y);
+    await phone.waitForTimeout(450);
+    for (let i = 1; i <= 10; i++) {
+      await touch('touchMove', at.x + i * 3, at.y + i * 2);
+      await phone.waitForTimeout(16);
+    }
+    await touch('touchEnd');
+    await expect.poll(async () => (await placement()).x, { timeout: 10_000 }).toBeGreaterThan(before.x + 1e-4);
+    expect((await placement()).w).toBeCloseTo(before.w, 6); // moved, not resized
     await ctx.close();
   }, 90_000);
 });

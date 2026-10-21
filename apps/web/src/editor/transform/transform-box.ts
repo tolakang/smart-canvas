@@ -11,8 +11,8 @@
  *   double-click a handle    undo what that handle changed (see removeForHandle)
  *
  * Touch
- *   tap and drag a handle or the element (no hold; with longPressMs > 0 a hold arms it first, and a finger
- *   that moves before then is a scroll).
+ *   long-press a handle or the element, then drag: the hold (longPressMs) arms it, so a quick swipe or tap
+ *   never moves anything by accident; a finger that moves before then is not an edit.
  *   edge handles: the first DIRECTION_LOCK_PX of movement decide — along the handle's normal = stretch,
  *   along its edge = skew — and the choice holds until the finger lifts.
  *   double-tap a handle      reset, as above
@@ -31,7 +31,7 @@ import {
 } from './math';
 
 export interface TransformBoxOptions {
-  /** Hold time before a touch drag starts, ms (0 = tap and drag at once, the editor's default). */
+  /** Hold time before a touch drag starts, ms (0 = tap and drag at once). */
   longPressMs?: number;
   /** Max time between the two taps / clicks of a double, ms. */
   doubleTapMs?: number;
@@ -110,7 +110,7 @@ interface Gesture {
 interface StageBox { left: number; top: number; zoomX: number; zoomY: number; offX: number; offY: number }
 
 const DEFAULTS = {
-  longPressMs: 0, doubleTapMs: 300, touchSlopPx: 10, directionLockPx: 8, rotateGapPx: 28, directionalMouse: true,
+  longPressMs: 350, doubleTapMs: 300, touchSlopPx: 10, directionLockPx: 8, rotateGapPx: 28, directionalMouse: true,
   getScale: () => 1, proportional: (shift: boolean) => !shift, flip: true,
 };
 /** Two taps further apart than this are not a double tap. */
@@ -294,7 +294,7 @@ export class TransformBox {
     const client = { x: e.clientX, y: e.clientY };
     const box = this.measure();
     const at = this.toStage(client, box);
-    // Touch waits for a hold only when asked (longPressMs > 0); the editor drags at once (owner, D36 update).
+    // Touch waits for the hold (owner, 2026-10-21: long press to edit, moves included); 0 drags at once.
     const touch = e.pointerType === 'touch' && this.opts.longPressMs > 0;
     this.gesture = {
       pointerId: e.pointerId, pointerType: e.pointerType, handle, phase: touch ? 'pending' : 'active',
