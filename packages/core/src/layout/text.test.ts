@@ -41,7 +41,7 @@ describe('text (example E, v3: its box on the stretched grid)', () => {
 describe('text', () => {
   it('a box spanning the master fills the output width', () => {
     const doc = headline(place(project(), 'headline', { x: 0, y: 1000, w: 3000, h: 500 }), 'A');
-    expectFrame(item(doc)?.frame, { x: 0, y: (1250 / 3000) * 1350 - 90, w: 1080, h: 180 }); // fills x (scale 0.36); centre y on the grid
+    expectFrame(item(doc)?.frame, { x: 0, y: 450, w: 1080, h: 225 }); // edge to edge across: the box stretches with the grid (sx 0.36, sy 0.45)
   });
 
   it('a text in the top-left keeps its top-left corner on the grid', () => {

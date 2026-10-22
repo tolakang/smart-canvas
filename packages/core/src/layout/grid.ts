@@ -3,10 +3,11 @@
  * every layer keeps its place on it:
  * - each axis has a pin — the layer's start edge, centre or end edge, by where its centre sits on the master
  *   (first third, middle third, last third) — and the pin lands on the same grid coordinate in the output;
- * - size: a layer that already fills the master on an axis (touches both edges) fills that axis in the output;
- *   one that fills both covers it; any other layer scales with the grid: by `g = √(sx·sy)`, so it keeps the share
- *   of the canvas it has on the master (its stretched grid box's area), but never past the output's edges.
- * Pictures and text keep their proportions (one scale for both axes).
+ * - size: a layer that fills the master on both axes (touches all four edges, e.g. a background picture) covers
+ *   the output, scaled proportionally; one that spans the master edge to edge on one axis only (a floor strip, a
+ *   band) stretches with the grid — `sx` across, `sy` down — so it still spans edge to edge (owner, 2026-10-22);
+ *   any other layer keeps its proportions and scales with the grid by `g = √(sx·sy)`, so it keeps the share of
+ *   the canvas it has on the master (its stretched grid box's area), but never past the output's edges.
  */
 import type { Frame } from '../model';
 import type { RuleContext } from './context';
@@ -44,7 +45,8 @@ function roomOn(lo: number, size: number, M: number, T: number): number {
 }
 
 /**
- * The layer's scale: the filled axis' ratio (the larger when it fills both); else the grid scale `√(sx·sy)`,
+ * The layer's proportional scale (its text size scale too): the filled axis' ratio (the larger when it fills
+ * both; a layer filling one axis is stretched by `gridFrame`, this is its text scale); else the grid scale `√(sx·sy)`,
  * capped so a layer inside the master stays inside the output. Never below `k` (at `k` it always fits).
  */
 export function gridScale(F: Frame, ctx: RuleContext): number {
@@ -67,10 +69,13 @@ function place(lo: number, size: number, M: number, T: number, offset: number, o
 }
 
 /** Master frame `F` in the output (design px, full-canvas coordinates); rotation, skew and `fitted` kept. */
-export function gridFrame(F: Frame, ctx: RuleContext, c: number = gridScale(F, ctx)): Frame {
+export function gridFrame(F: Frame, ctx: RuleContext, c?: number): Frame {
   const { metrics: m, master } = ctx;
-  const w = F.w * c;
-  const h = F.h * c;
+  // Edge to edge on one axis only: the stretched grid itself, both axes (an explicit scale keeps proportions).
+  const stretch = c === undefined && fillsAxis(F.x, F.w, master.w) !== fillsAxis(F.y, F.h, master.h);
+  const scale = c ?? gridScale(F, ctx);
+  const w = F.w * (stretch ? m.trim.w / master.w : scale);
+  const h = F.h * (stretch ? m.trim.h / master.h : scale);
   return {
     x: place(F.x, F.w, master.w, m.trim.w, m.bleed, w),
     y: place(F.y, F.h, master.h, m.trim.h, m.bleed, h),
