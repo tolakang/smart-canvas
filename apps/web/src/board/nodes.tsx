@@ -12,6 +12,7 @@ import { ProcessNodeView } from './ProcessNode';
 import { AssetsNodeView } from './AssetsNode';
 import { HeadlineNodeView } from './HeadlineNode';
 import { PresetNodeView } from './PresetNode';
+import { RuleNodeView } from './RuleNode';
 
 /**
  * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
@@ -107,4 +108,4 @@ export function SourceEditor({ source, upload }: { source: InputSource; upload: 
   }
 }
 
-export const nodeTypes: NodeTypes = { inputNode: InputNodeView, assetsNode: AssetsNodeView, headlineNode: HeadlineNodeView, presetNode: PresetNodeView, mainNode: MainNodeView, outputNode: OutputNodeView, processNode: ProcessNodeView, groupNode: GroupNodeView };
+export const nodeTypes: NodeTypes = { inputNode: InputNodeView, assetsNode: AssetsNodeView, headlineNode: HeadlineNodeView, presetNode: PresetNodeView, ruleNode: RuleNodeView, mainNode: MainNodeView, outputNode: OutputNodeView, processNode: ProcessNodeView, groupNode: GroupNodeView };

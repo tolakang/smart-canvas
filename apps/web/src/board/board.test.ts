@@ -1,4 +1,4 @@
-import { addPresetSet, addPicturesToStack, addStack, createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
+import { addCoreRule, addPresetSet, addPicturesToStack, addStack, createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
 import {
@@ -15,6 +15,7 @@ import {
   sourceIdOfNode,
   stackNodeId,
   setNodeId,
+  ruleNodeId,
   setInEdgeId,
   setRowHandle,
   syncNodes,
@@ -341,5 +342,15 @@ describe('Preset nodes on the board (D46)', () => {
   it('moving the node writes its board position', () => {
     const doc = withPositions(withSet(), [{ id: setNodeId('gdn'), position: { x: 10.4, y: 20.6 } }]);
     expect(doc.presetSets?.[0]?.board).toEqual({ x: 10, y: 21 });
+  });
+});
+
+describe('Core Rule nodes on the board (D47)', () => {
+  it('one node per Core Rule, at its position; moving it writes the position back', () => {
+    const r = addCoreRule(sampleDoc(), { id: 'r1', board: { x: -400, y: 300 } });
+    if (!r.ok) throw new Error(r.error);
+    const node = docToNodes(r.doc).find((n) => n.id === ruleNodeId('r1'));
+    expect([node?.type, node?.position]).toEqual(['ruleNode', { x: -400, y: 300 }]);
+    expect(withPositions(r.doc, [{ id: ruleNodeId('r1'), position: { x: 1.2, y: 2.7 } }]).coreRules?.[0]?.board).toEqual({ x: 1, y: 3 });
   });
 });

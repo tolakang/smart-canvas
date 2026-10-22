@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { assetStacks, compositionById, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { assetStacks, compositionById, coreRules, type CoreRuleNode, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -20,6 +20,9 @@ export const setRowHandle = (outputId: string) => `row:${outputId}`;
 export const outputOfSetRow = (handle: string | null | undefined) => (handle?.startsWith('row:') ? handle.slice(4) : undefined);
 /** The edge drawn from a master preview into a Preset node (stands for its sizes' wires). */
 export const setInEdgeId = (setId: string) => `setin:${setId}`;
+/** D47: a Core Rule node. */
+export const ruleNodeId = (ruleId: string) => `rule:${ruleId}`;
+export const ruleIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('rule:') ? nodeId.slice(5) : undefined);
 /** D44: a Headline card (Khmer / English). */
 export const pairNodeId = (pairId: string) => `hl:${pairId}`;
 export const pairIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('hl:') ? nodeId.slice(3) : undefined);
@@ -35,6 +38,8 @@ export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
 export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode'>;
 /** D46: a Preset node and its rows (sizes, in order), each with whether it is wired. */
 export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
+/** D47: a Core Rule node (what it shows is derived from the doc). */
+export type RuleFlowNode = Node<{ rule: CoreRuleNode }, 'ruleNode'>;
 /** D44: a Headline card and its two inputs. */
 export type PairFlowNode = Node<{ pair: LanguagePair; km: InputSource | undefined; en: InputSource | undefined }, 'headlineNode'>;
 /** One row per port on the master preview, front (port 0) first. */
@@ -74,14 +79,14 @@ export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean; laye
 export type ProcessFlowNode = Node<{ process: ProcessNode; layer: LayerSource | undefined }, 'processNode'>;
 /** A board group's frame (T13.7): derived from its members every render, never stored. */
 export type GroupFlowNode = Node<{ group: BoardGroup; outputs: string[] }, 'groupNode'>;
-export type BoardNode = InputFlowNode | StackFlowNode | PairFlowNode | SetFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
+export type BoardNode = InputFlowNode | StackFlowNode | PairFlowNode | SetFlowNode | RuleFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
 /** What React Flow draws: the nodes plus group frames. */
 export type FlowNode = BoardNode | GroupFlowNode;
 export const groupNodeId = (groupId: string) => `grp:${groupId}`;
 export const groupIdOfNode = (nodeId: string) => (nodeId.startsWith('grp:') ? nodeId.slice(4) : undefined);
 
 /** The doc id a board node stands for (input, process, composition, output). */
-export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? pairIdOfNode(nodeId) ?? setIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
+export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? pairIdOfNode(nodeId) ?? setIdOfNode(nodeId) ?? ruleIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
 
 const GROUP_PAD = 24;
 const GROUP_HEAD = 40;
@@ -228,6 +233,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         deletable: false,
       }),
     ),
+    ...coreRules(doc).map((rule): RuleFlowNode => ({ id: ruleNodeId(rule.id), type: 'ruleNode', position: rule.board, data: { rule }, deletable: false })),
     ...doc.outputs.map(
       (output): OutputFlowNode => ({
         id: outputNodeId(output.id),
@@ -361,6 +367,7 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     ...(doc.stacks ? { stacks: doc.stacks.map((st) => place(st, stackNodeId(st.id))) } : {}),
     ...(doc.headlines ? { headlines: doc.headlines.map((p) => place(p, pairNodeId(p.id))) } : {}),
     ...(doc.presetSets ? { presetSets: doc.presetSets.map((s) => place(s, setNodeId(s.id))) } : {}),
+    ...(doc.coreRules ? { coreRules: doc.coreRules.map((r) => place(r, ruleNodeId(r.id))) } : {}),
     processes: doc.processes.map((p) => place(p, processNodeId(p.id))),
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };

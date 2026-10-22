@@ -864,3 +864,17 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-port--frozen { color: var(--muted); }
 .sc-preset__remove { margin-left: auto; }
 .sc-preset__add { margin-top: 8px; width: 100%; }
+
+/* D47: Core Rule node — layer comp, preset guides and auto layout of a master preview. */
+.sc-node--rule { width: 300px; }
+.sc-node--rule > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 8px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; background: color-mix(in srgb, #3f7fdc 18%, var(--surface)); }
+.sc-rule__for select { max-width: 200px; }
+.sc-rule__section { display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
+.sc-rule__title { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.sc-rule__groups, .sc-rule__guides, .sc-rule__layers { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 12px; }
+.sc-rule__groups li, .sc-rule__layers li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 6px; }
+.sc-rule__groups .sc-muted, .sc-rule__layers .sc-muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-rule__group, .sc-rule__layer { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-rule__guides li { display: flex; align-items: center; gap: 6px; }
+.sc-rule__guides li > :first-child { min-width: 84px; font-weight: 600; }
+.sc-rule__guides .sc-open-editor { margin-left: auto; }
