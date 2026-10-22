@@ -208,7 +208,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-inspector__table { width: calc(100% - 24px); margin: 4px 12px; border-collapse: collapse; font-size: 12px; }
 .sc-inspector__table th { text-align: left; font-weight: 600; color: var(--muted); }
 .sc-inspector__table td, .sc-inspector__table th { padding: 2px 4px; border-bottom: 1px solid var(--line); }
-.sc-lock { font-size: 11px; }
+.sc-edited { margin-left: 6px; padding: 0 5px; border-radius: 4px; font-size: 10px; font-weight: 600; vertical-align: 1px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .sc-inspector__actions { padding: 4px 12px; }
 
 /* Export dialog (T6.5) */
