@@ -73,17 +73,19 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     expect(await page.locator('.react-flow__edge[data-id="in:logo"]').count()).toBe(0);
   }, 60_000);
 
-  it('dropping the main end on another row moves the input to that port', async () => {
+  it('dropping the main end on another row moves the input there, but never out of its layer comp group (D45)', async () => {
+    // The headline dropped on the background's row stays in the headline group, under the logo.
     await drag(end('in:headline', 'target'), rowHandle(3));
-    await expect.poll(async () => (await wiredPorts()).headline).toBe(3);
-    const d = await doc();
-    expect(portOf(d, 'headline')).toBe(3);
+    await page.waitForTimeout(400);
+    await saved();
+    expect((await wiredPorts()).headline).toBe(1);
+    expect(portOf(await doc(), 'headline')).toBe(1);
   }, 60_000);
 
   it('dropping the input end on another input swaps who feeds that row', async () => {
-    const before = (await wiredPorts()).subject;
     await drag(end('in:subject', 'source'), inputHandle('Logo'));
-    await expect.poll(async () => (await wiredPorts()).logo).toBe(before);
+    // The logo now feeds the master (its row stays on top: D45) and the subject is unwired.
+    await expect.poll(async () => (await wiredPorts()).logo).toBe(0);
     expect((await wiredPorts()).subject).toBeUndefined();
   }, 60_000);
 

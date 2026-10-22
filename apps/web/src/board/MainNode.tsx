@@ -1,4 +1,4 @@
-import { canvasMetrics, compositionHealth, connectSource, deleteComposition, disconnectSource, guideFor, outputComposition, renameComposition } from '@smart-canvas/core';
+import { canvasMetrics, compositionHealth, LAYER_GROUP_LABEL, languagePairs, layerGroup, connectSource, deleteComposition, disconnectSource, guideFor, outputComposition, renameComposition } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useMemo, useState } from 'react';
 import { assetUrl } from '../api';
@@ -38,6 +38,7 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
   };
   const handleKey = `${data.ports.map((p) => p.port).join(',')}|${data.ports.length}`;
   const sourceOf = new Map(data.sources.map((s) => [s.id, s]));
+  const headlinePictures = useMemo(() => new Set(languagePairs(doc).flatMap((p) => [p.km, p.en])), [doc]);
 
   // Handles are added/removed with the port list; React Flow must re-measure them.
   useEffect(() => updateInternals(id), [id, handleKey, updateInternals]);
@@ -102,12 +103,18 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
         />
       </div>
       <ol className="sc-ports" aria-label="Layers (front first)">
-        {data.ports.map((p) => {
+        {data.ports.map((p, i) => {
           const source = sourceOf.get(p.sourceId);
+          // D45: a small label where each layer comp group (logo, headline, elements, background) starts.
+          const group = source ? layerGroup(source, headlinePictures) : 'elements';
+          const prev = i > 0 ? sourceOf.get(data.ports[i - 1]?.sourceId ?? '') : undefined;
+          const starts = i === 0 || !prev || layerGroup(prev, headlinePictures) !== group;
           return (
             <li
               key={p.sourceId}
-              className={`sc-port${p.connected ? ' sc-port--wired' : ''}${p.visible ? '' : ' sc-port--hidden'}${dropAt === p.port ? ' sc-port--drop' : ''} ${readOnly ? '' : NO_CANVAS}`}
+              data-group={group}
+              {...(starts ? { 'data-group-label': LAYER_GROUP_LABEL[group] } : {})}
+              className={`sc-port${starts ? ' sc-port--group-start' : ''}${p.connected ? ' sc-port--wired' : ''}${p.visible ? '' : ' sc-port--hidden'}${dropAt === p.port ? ' sc-port--drop' : ''} ${readOnly ? '' : NO_CANVAS}`}
               data-port={p.port}
               {...rowProps({ id: p.sourceId, port: p.port })}
             >
