@@ -831,3 +831,11 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-assets__add:hover { color: var(--fg); border-color: var(--accent); }
 .sc-assets__hint { margin: 6px 0 0; font-size: 12px; }
 .sc-node--assets > .react-flow__handle { top: 26px; }
+
+/* D43: a background's vertical / horizontal slots. */
+.sc-bg-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sc-bg-slots > .sc-error { grid-column: 1 / -1; }
+.sc-bg-slot { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sc-bg-slot__title { font-size: 11px; color: var(--muted); }
+.sc-bg-slot .sc-thumb { height: 72px; }
+.sc-bg-slot__actions { display: flex; gap: 8px; align-items: center; }

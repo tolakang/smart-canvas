@@ -32,6 +32,19 @@ export function photoBackground(s: InputSource, assetId: string): InputSource {
   return { ...s, kind: 'image', content: { kind: 'image', assetId, focal: { x: 0.5, y: 0.5 } } };
 }
 
+/**
+ * D43: a background's vertical or horizontal picture (null clears it). A fill background takes it as its photo
+ * too (D9), so it has a picture for square outputs as well.
+ */
+export function setVariant(s: InputSource, family: 'vertical' | 'horizontal', assetId: string | null): InputSource {
+  const base = assetId && s.content.kind === 'fill' ? photoBackground(s, assetId) : s;
+  if (base.content.kind !== 'image' && base.content.kind !== 'vector') return s;
+  const variants = Object.fromEntries(Object.entries({ ...base.content.variants, [family]: assetId }).filter(([, v]) => v)) as { vertical?: string; horizontal?: string };
+  const { variants: _old, ...rest } = base.content;
+  void _old;
+  return { ...base, content: Object.keys(variants).length ? { ...rest, variants } : rest };
+}
+
 /** D9 the other way: an image background goes back to a solid colour. */
 export function colourBackground(s: InputSource): InputSource {
   if (s.content.kind !== 'image' || s.behavesLike !== 'background') return s;

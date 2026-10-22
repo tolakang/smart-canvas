@@ -11,6 +11,8 @@ export interface LayoutItem {
   lines?: string[];
   overridden: boolean;
   warnings: LayoutWarning[];
+  /** D43: the picture drawn for this output when it isn't the input's main one (its vertical / horizontal slot). */
+  assetId?: string;
 }
 
 export interface LayoutResult {

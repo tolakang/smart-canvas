@@ -15,6 +15,8 @@ export interface RenderItem {
   lines?: string[];
   /** An output's text-style override, drawn on top of the source's own style. */
   style?: Partial<TextStyle>;
+  /** D43: the picture to draw instead of the source's main one (its vertical / horizontal slot). */
+  assetId?: string;
 }
 
 export interface RenderScene {

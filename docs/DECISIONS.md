@@ -113,3 +113,7 @@
   - **Layers:** the master decides which layers exist and their order; a guide only gives positions. A layer the guide hasn't placed (added after the guide) uses the master's position.
   - **Board:** guide nodes are marked "Guide" with the number of outputs using them; each output's card names the guide it follows.
   - **Model change note:** `Composition.guide?: { of: string; family: 'square' | 'vertical' | 'horizontal' }`. Optional, so no migration is needed; accepted by the API schema.
+- D43 Background asset: vertical and horizontal pictures (owner, 2026-10-22, PDF page 3 "Background asset Node"). A background input has, next to its main picture, two optional slots: a picture for vertical outputs and one for horizontal outputs. Each output uses the slot of its shape (the same shape rule as the guides, D42); square outputs, and any output whose slot is empty, use the main picture. A fill background that gets a slot picture takes it as its main photo too (D9).
+  - **Engine:** `computeLayout` swaps the picture per output (the cover is computed on that picture) and reports it as `LayoutItem.assetId` → `RenderItem.assetId`; the one renderer draws it. Board thumbnails, browser export and the worker measure and load the slot pictures with the others.
+  - **UI:** the background input's inspector, "For vertical and horizontal outputs": two slots (pick or drop a file, replace, clear).
+  - **Model change note:** `variants?: { vertical?: string; horizontal?: string }` on image / vector content (asset ids). Optional, so no migration is needed.

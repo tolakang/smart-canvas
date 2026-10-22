@@ -1,7 +1,7 @@
 import { fillToCss, fontStack, layersOfPicture, LIMITS, unfitPictures, type Fill, type InputSource } from '@smart-canvas/core';
 import { useState, type ChangeEvent, type DragEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
-import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, switchFillType, withSource } from './content';
+import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, setVariant, switchFillType, withSource } from './content';
 import { useBoard } from './context';
 
 // Interactive elements inside a node must not start a node drag, pan or zoom.
@@ -227,6 +227,84 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
       {upload.error && (
         <p className="sc-error" role="alert">
           {upload.error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * D43: a background's two extra slots — a picture for vertical outputs and one for horizontal outputs (each
+ * output uses the slot of its shape, the main picture otherwise). Pick or drop a file on a slot; × clears it.
+ */
+export function BackgroundSlots({ source }: { source: InputSource }) {
+  const { teamId, readOnly, run, rememberAsset } = useBoard();
+  const [busy, setBusy] = useState<'vertical' | 'horizontal' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const variants = source.content.kind === 'image' || source.content.kind === 'vector' ? (source.content.variants ?? {}) : {};
+
+  async function upload(family: 'vertical' | 'horizontal', file: File) {
+    if (readOnly) return;
+    setError(null);
+    if (file.size > LIMITS.maxUploadMB * 1024 * 1024) return setError(`File is larger than ${LIMITS.maxUploadMB} MB.`);
+    setBusy(family);
+    try {
+      const asset = await uploadAsset(teamId, file);
+      if (asset.kind !== 'image') setError('Use a PNG, JPEG or WebP image.');
+      else {
+        rememberAsset(asset);
+        run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, asset.id)) }));
+      }
+    } catch (err) {
+      setError(uploadMessage(err, 'image'));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="sc-bg-slots" aria-label="Background for vertical and horizontal outputs">
+      {(['vertical', 'horizontal'] as const).map((family) => {
+        const id = variants[family];
+        const label = family === 'vertical' ? 'Vertical' : 'Horizontal';
+        return (
+          <div
+            key={family}
+            className={`sc-bg-slot sc-bg-slot--${family}`}
+            onDragOver={(e) => !readOnly && e.dataTransfer.types.includes('Files') && (e.preventDefault(), e.stopPropagation())}
+            onDrop={(e) => {
+              const file = e.dataTransfer.files[0];
+              if (readOnly || !file) return;
+              e.preventDefault();
+              e.stopPropagation();
+              void upload(family, file);
+            }}
+          >
+            <span className="sc-bg-slot__title">{label}</span>
+            {id ? <img className="sc-thumb" src={assetUrl(teamId, id)} alt={`${label} background`} draggable={false} /> : <div className="sc-thumb sc-thumb--empty">{busy === family ? 'Uploading…' : 'Same as main'}</div>}
+            {!readOnly && (
+              <div className="sc-bg-slot__actions">
+                <label className={`sc-upload ${NO_CANVAS}`}>
+                  {id ? 'Replace…' : 'Add…'}
+                  <input type="file" accept={ACCEPT.image} aria-label={`${label} background picture`} disabled={busy !== null} hidden onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (file) void upload(family, file);
+                  }} />
+                </label>
+                {id && (
+                  <button type="button" className={`sc-link ${NO_CANVAS}`} aria-label={`Clear ${label.toLowerCase()} background`} onClick={() => run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, null)) }))}>
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {error && (
+        <p className="sc-error" role="alert">
+          {error}
         </p>
       )}
     </div>
