@@ -33,7 +33,7 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
   const override = doc.outputs.find((o) => o.id === outputId)?.overrides.find((o) => o.sourceId === sourceId);
   return (
     <section className="sc-inspector" aria-label="Overrides">
-      <div className="sc-layers__title">{override ? '🔒 Overridden on this output' : 'Automatic layout'}</div>
+      <div className="sc-layers__title">{override ? 'Edited by hand on this output' : 'Automatic layout'}</div>
       {fields.length === 0 ? (
         <p className="sc-muted sc-props__note">{override ? 'Same as auto.' : 'No overrides: this layer follows the master preview.'}</p>
       ) : (

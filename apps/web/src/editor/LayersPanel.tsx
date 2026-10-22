@@ -56,8 +56,8 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                 <span>
                   {s.label}
                   {overrides.has(s.id) && (
-                    <span className="sc-lock" role="img" aria-label="Overridden on this output" title="Overridden on this output">
-                      {' '}🔒
+                    <span className="sc-edited" title="Edited by hand on this output: it no longer follows the automatic layout. Reset it in the properties panel.">
+                      edited
                     </span>
                   )}
                 </span>

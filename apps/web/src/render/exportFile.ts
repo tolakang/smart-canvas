@@ -105,10 +105,31 @@ export async function svgToRaster(file: SvgFile, size: { width: number; height: 
       ctx.fillRect(0, 0, size.width, size.height);
     }
     ctx.drawImage(img, 0, 0, file.width, file.height);
+    if (type === 'jpg') return await jpegOf(ctx, size, quality);
     const q = Math.min(100, Math.max(1, Math.round(quality))) / 100;
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, MIME[type], type === 'png' ? undefined : q));
     if (!blob || blob.type !== MIME[type]) throw new Error(`browser cannot encode ${type}`);
     return blob;
+  }
+}
+
+/**
+ * JPEG with full-resolution colour (4:4:4), like the worker's sharp encoder. The browser's own encoder
+ * (canvas.toBlob) halves the colour resolution below quality 100, which smears red text and coloured edges.
+ */
+async function jpegOf(ctx: CanvasRenderingContext2D, size: { width: number; height: number }, quality: number): Promise<Blob> {
+  const { encode } = await import('jpeg-js'); // loaded on the first JPG export only
+  const { data } = ctx.getImageData(0, 0, size.width, size.height);
+  const q = Math.min(100, Math.max(1, Math.round(quality)));
+  // jpeg-js hands back its bytes through Node's Buffer.from once bundled; lend it a Uint8Array one for the call.
+  const g = globalThis as { Buffer?: { from: (bytes: ArrayLike<number>) => Uint8Array } };
+  const lent = !g.Buffer;
+  if (lent) g.Buffer = { from: (bytes) => Uint8Array.from(bytes) };
+  try {
+    const bytes = new Uint8Array(encode({ data, width: size.width, height: size.height }, q).data);
+    return new Blob([bytes], { type: 'image/jpeg' });
+  } finally {
+    if (lent) delete g.Buffer;
   }
 }
 
