@@ -16,7 +16,7 @@ export type ExportFormat = 'png' | 'jpg' | 'webp' | 'svg' | 'pdf';
 export type PresetGroup = 'print' | 'social';
 
 export const LIMITS = {
-  maxSources: 10, // includes the 4 defaults
+  maxSources: 500, // D39: no practical layer limit; a safety ceiling for the API only
   maxOutputs: 10,
   maxCompositions: 5,
   maxProcesses: 20,
@@ -42,10 +42,12 @@ export interface Size { width: number; height: number; unit: Unit }
  * Rect in design px. Origin = top-left of the owning canvas (outputs: top-left of the BLEED box).
  * About its centre the box is turned by `rotation` (deg, clockwise) and sheared by `shear` (deg, CSS skewX:
  * the left/right edges lean from perpendicular to the top edge), i.e. CSS `rotate(r) skewX(s)`.
+ * `fitted` (pictures, D37): the frame hugs the picture's visible (non-transparent) pixels and the picture fills
+ * it, stretching with it. Without it the whole picture is fitted inside the frame (contain), as before.
  */
-export interface Frame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
+export interface Frame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number; fitted?: true }
 /** Rect normalized 0..1 relative to the master canvas (rotation and shear in degrees, as Frame). */
-export interface NFrame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number }
+export interface NFrame { x: number; y: number; w: number; h: number; rotation?: number; shear?: number; fitted?: true }
 /**
  * An editor transform (D36) as saved with the project, so the box's reset history survives a reload.
  * `origin` is the layer's untransformed box in the scene's design px; `ops` are the gestures, oldest first.
@@ -118,9 +120,9 @@ export interface InputSource {
   board: { x: number; y: number }; // node position on the board
 }
 
-// ---------- compositions (main previews) and outputs ----------
+// ---------- compositions (master previews) and outputs ----------
 /**
- * A composition ("Main preview", D32): an artboard whose rows are layers. `layers` lists the rows front
+ * A composition ("Master preview", D32): an artboard whose rows are layers. `layers` lists the rows front
  * first (row index = port, D11); a row is drawn only while a `layer` edge feeds it. The first composition
  * is always id 'main'.
  */
@@ -130,7 +132,7 @@ export interface Composition {
   size: Size; // default DEFAULTS.masterSize
   placements: Record<string, NFrame>; // layer node id -> frame (text sources: this is the text box)
   layers: string[]; // node ids of its rows, front first
-  /** Editor transform histories (D37): so double-click resets keep working after a reload. Absent = none. */
+  /** Editor transform histories (D41): so double-click resets keep working after a reload. Absent = none. */
   transforms?: LayerTransforms;
   board: { x: number; y: number };
 }
@@ -176,7 +178,7 @@ export interface OutputNode {
   /** Only present while disconnected: frames captured at disconnect time. Deleted on reconnect.
    *  Frames only: text/asset content edits on sources still show; positions/sizes stay frozen. */
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };
-  /** Editor transform histories (D37): per output, so resets survive a reload. Absent = none. */
+  /** Editor transform histories (D41): per output, so resets survive a reload. Absent = none. */
   transforms?: LayerTransforms;
   board: { x: number; y: number };
 }
@@ -218,6 +220,20 @@ export interface ProjectDoc {
   edges: Edge[];
   /** Board groups (T13.7): named, coloured frames around nodes; absent = none. Board only, no effect on layout. */
   groups?: BoardGroup[];
+  /** Assets cards (D40): one board node holding many pictures; absent = none. Board only, no effect on layout. */
+  stacks?: AssetStack[];
+}
+
+/**
+ * An Assets card (D40): one board node that holds many pictures. Each picture is still its own input (and layer:
+ * placement, behaviour, processes, overrides); the card only draws them together. `items` lists the input ids in
+ * card order; an input is in one card at most, and ids that no longer exist are ignored.
+ */
+export interface AssetStack {
+  id: string;
+  label: string;
+  board: { x: number; y: number };
+  items: string[];
 }
 
 // ---------- team-level records ----------

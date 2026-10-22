@@ -1,7 +1,7 @@
 /**
  * Design panel (T10.1): the editor's right panel, Figma style. With nothing selected it shows the canvas and
  * the shortcuts; with a layer selected, its position, size, rotation and skew in design px (typed values go through
- * the editor's commit, so the main preview writes placements and an output writes an override), then the
+ * the editor's commit, so the master preview writes placements and an output writes an override), then the
  * caller's panels for that layer (text style, overrides).
  */
 import { MAX_SHEAR_DEG, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
@@ -56,8 +56,8 @@ export function DesignPanel(props: {
         <section className="sc-design__section sc-design__touch">
           <div className="sc-design__title">Gestures</div>
           <p className="sc-design__hint">
-            Tap a layer to select it · hold, then drag to move · hold a handle, then drag: outward to resize, along the edge to skew · double-tap a handle to
-            undo what it changed · pinch to zoom · two fingers to pan
+            Tap a layer to select it · long-press, then drag to move · long-press a handle, then drag: outward to resize, along the edge to skew · double-tap a handle to undo what it changed ·
+            pinch to zoom · two fingers to pan
           </p>
         </section>
         <section className="sc-design__section sc-design__shortcuts">

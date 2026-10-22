@@ -1,5 +1,5 @@
 /**
- * Several compositions (D32, T12.3): more "main previews", e.g. one per campaign variant. Each has its own size,
+ * Several compositions (D32, T12.3): more "master previews", e.g. one per campaign variant. Each has its own size,
  * placements and rows; outputs wire to the one they follow. The first ('main') always exists and always lists
  * every input as a row; other compositions list only the inputs wired into them.
  */
@@ -22,7 +22,7 @@ export function addComposition(doc: ProjectDoc, spec: { id: string; label: strin
   const lowest = Math.max(...doc.compositions.map((c) => c.board.y));
   const x = doc.compositions[0]?.board.x ?? 0;
   const board = spec.board ? { x: Math.round(spec.board.x), y: Math.round(spec.board.y) } : { x, y: lowest + COMPOSITION_ROW_GAP };
-  return { ok: true, doc: { ...doc, compositions: [...doc.compositions, newComposition(spec.id, spec.label.trim() || 'Main preview', board, spec.size)] } };
+  return { ok: true, doc: { ...doc, compositions: [...doc.compositions, newComposition(spec.id, spec.label.trim() || 'Master preview', board, spec.size)] } };
 }
 
 export function renameComposition(doc: ProjectDoc, id: string, label: string): SourceResult {
@@ -54,7 +54,7 @@ export function removeRow(doc: ProjectDoc, compositionId: string, nodeId: string
 
 /**
  * Deletes a composition (never 'main'). Outputs wired to it are disconnected first: with `deps` they freeze
- * their current layout (D12), without they fall back to the main preview. Rows that used it as a layer go.
+ * their current layout (D12), without they fall back to the master preview. Rows that used it as a layer go.
  */
 export function deleteComposition(doc: ProjectDoc, id: string, deps?: LayoutDeps): SourceResult {
   if (id === MAIN) return { ok: false, error: 'invalid' };

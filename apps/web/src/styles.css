@@ -208,7 +208,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-inspector__table { width: calc(100% - 24px); margin: 4px 12px; border-collapse: collapse; font-size: 12px; }
 .sc-inspector__table th { text-align: left; font-weight: 600; color: var(--muted); }
 .sc-inspector__table td, .sc-inspector__table th { padding: 2px 4px; border-bottom: 1px solid var(--line); }
-.sc-lock { font-size: 11px; }
+.sc-edited { margin-left: 6px; padding: 0 5px; border-radius: 4px; font-size: 10px; font-weight: 600; vertical-align: 1px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .sc-inspector__actions { padding: 4px 12px; }
 
 /* Export dialog (T6.5) */
@@ -610,7 +610,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-port__hint { flex: 1; color: var(--muted); font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sc-field--stack { flex-direction: column; align-items: stretch; }
 
-/* T12.8: a main preview's second out port, "use as a layer", sits near the bottom of the node */
+/* T12.8: a master preview's second out port, "use as a layer", sits near the bottom of the node */
 .react-flow__handle.sc-handle--nest { top: auto; bottom: 28px; }
 
 /* T13.7 board groups: a tinted frame behind its nodes, header to drag / rename / collapse / export */
@@ -814,3 +814,20 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-node .sc-render--thumb, .sc-node .sc-main-thumb { max-width: 100%; }
 .sc-inspector-panel__actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 .sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }
+
+/* D40: Assets card — many pictures in one input card. */
+.sc-node--assets { width: 260px; }
+.sc-assets { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.sc-assets--inspector { margin: 8px 0; }
+.sc-assets__item { position: relative; aspect-ratio: 1; min-width: 0; }
+.sc-assets__item--hidden { opacity: 0.45; }
+.sc-assets__pick { width: 100%; height: 100%; aspect-ratio: 1; padding: 2px; display: grid; place-items: center; cursor: pointer; border: 1px solid var(--line); border-radius: var(--r-md, 6px); background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 12px 12px; }
+.sc-assets__pick img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.sc-assets__item--focus, .sc-assets__item--focus > .sc-assets__pick { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: var(--r-md, 6px); }
+.sc-assets__remove { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; padding: 0; display: none; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.sc-assets__item:hover .sc-assets__remove, .sc-assets__item:focus-within .sc-assets__remove { display: grid; }
+@media (pointer: coarse) { .sc-assets__remove { display: grid; } }
+.sc-assets__add { width: 100%; height: 100%; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: var(--r-md, 6px); color: var(--muted); cursor: pointer; }
+.sc-assets__add:hover { color: var(--fg); border-color: var(--accent); }
+.sc-assets__hint { margin: 6px 0 0; font-size: 12px; }
+.sc-node--assets > .react-flow__handle { top: 26px; }

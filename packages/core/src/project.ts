@@ -3,7 +3,7 @@ import type { ProjectDoc } from './model';
 import { defaultSources } from './sources';
 
 /**
- * A new project document: the main preview at the default size with the 4 default inputs (D8) as its rows
+ * A new project document: the master preview at the default size with the 4 default inputs (D8) as its rows
  * (front to back: Logo, Headline, Subject, Background), nothing wired yet.
  */
 export function createProjectDoc(name: string): ProjectDoc {
@@ -12,7 +12,7 @@ export function createProjectDoc(name: string): ProjectDoc {
     schema: 2,
     rev: 0,
     name,
-    compositions: [{ ...newComposition(MAIN, 'Main preview', { x: 0, y: 0 }), layers: ['logo', 'headline', 'subject', 'background'] }],
+    compositions: [{ ...newComposition(MAIN, 'Master preview', { x: 0, y: 0 }), layers: ['logo', 'headline', 'subject', 'background'] }],
     sources,
     processes: [],
     outputs: [],

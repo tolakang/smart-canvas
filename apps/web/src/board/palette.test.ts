@@ -15,9 +15,9 @@ const doc = () => ok(addOutput(createProjectDoc('P'), { id: 'o1', label: 'Out', 
 const labels = (d: ProjectDoc, port: Parameters<typeof paletteItems>[1]) => paletteItems(d, port).map((i) => i.label);
 
 describe('node palette (T12.7)', () => {
-  it('out of an input: a process taking it, or a new main preview with it as a row', () => {
+  it('out of an input: a process taking it, or a new master preview with it as a row', () => {
     const port = { nodeId: 'src:subject', handleId: null, handleType: 'source' as const };
-    expect(labels(doc(), port)).toEqual(['Crop', 'Adjust', 'Flip / Rotate', 'Text variant', 'Recolor', 'New main preview']);
+    expect(labels(doc(), port)).toEqual(['Crop', 'Adjust', 'Flip / Rotate', 'Text variant', 'Recolor', 'New master preview']);
     const [crop] = paletteItems(doc(), port);
     const d = ok(crop?.add(doc(), ids(), at) ?? { ok: false, error: 'invalid' });
     expect(d.processes[0]).toMatchObject({ id: 'n1', op: { type: 'crop' }, board: { x: 500, y: 274 } });
@@ -33,7 +33,7 @@ describe('node palette (T12.7)', () => {
     expect(next.edges.some((e) => e.from === 'p1' && e.to === 'n1')).toBe(true);
   });
 
-  it('out of a main preview: an output following it (default size first, as T10.4)', () => {
+  it('out of a master preview: an output following it (default size first, as T10.4)', () => {
     const items = paletteItems(doc(), { nodeId: 'main', handleId: 'out', handleType: 'source' }, [
       { id: 'ig', teamId: null, group: 'social', name: 'Instagram square', size: { width: 1080, height: 1080, unit: 'px' } },
     ]);
@@ -59,7 +59,7 @@ describe('node palette (T12.7)', () => {
     expect(own.outputs[0]?.layers).toEqual(['n1']);
   });
 
-  it("into an output's main preview port: a new main preview, only while disconnected", () => {
+  it("into an output's master preview port: a new master preview, only while disconnected", () => {
     const port = { nodeId: 'out:o1', handleId: null, handleType: 'target' as const };
     expect(paletteItems(doc(), port)).toEqual([]);
     const off = ok(disconnectOutput(doc(), 'o1', { measure: () => 0, assets: {} }));

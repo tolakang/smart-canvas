@@ -2,7 +2,7 @@
  * Input-source operations on a ProjectDoc (pure; ids are passed in, never generated here).
  * Invariants kept by every operation:
  * - at most LIMITS.maxSources sources;
- * - every source is a row of the main preview (`layers`, front first: row = port, D11), exactly once;
+ * - every source is a row of the master preview (`layers`, front first: row = port, D11), exactly once;
  * - nothing in the doc points at a deleted source (rows, edges, placements, output overrides, frozen frames).
  */
 import { edgeId, MAIN, withComposition } from './graph';
@@ -38,7 +38,7 @@ export function defaultContent(kind: SourceKind): SourceContent {
   }
 }
 
-/** Board layout for input nodes: one column left of the main preview. */
+/** Board layout for input nodes: one column left of the master preview. */
 export const SOURCE_COLUMN_X = -460;
 export const SOURCE_ROW_GAP = 300;
 
@@ -75,7 +75,7 @@ function nextRowY(doc: ProjectDoc): number {
   return ys.length === 0 ? 0 : Math.max(...ys) + SOURCE_ROW_GAP;
 }
 
-/** Adds `source` and makes it row `port` of the main preview (that row and everything behind it move back). */
+/** Adds `source` and makes it row `port` of the master preview (that row and everything behind it move back). */
 function insertAt(doc: ProjectDoc, source: InputSource, port: number): ProjectDoc {
   const withRow = withComposition(doc, MAIN, (c) => {
     const layers = [...c.layers];
@@ -167,7 +167,12 @@ export function duplicateSource(doc: ProjectDoc, id: string, newId: string): Sou
   const copiedEdges = doc.edges
     .filter((e) => e.kind === 'layer' && e.from === id && doc.compositions.some((c) => c.id === e.to))
     .map((e) => ({ ...e, id: edgeId(newId, e.to, 'layer'), from: newId }));
-  return { ok: true, doc: { ...doc, sources: [...doc.sources, copy], compositions, edges: [...doc.edges, ...copiedEdges] } };
+  // D40: a copy of a picture in an Assets card joins the card, right after the original.
+  const stacks = doc.stacks?.map((st) => {
+    const at = st.items.indexOf(id);
+    return at < 0 ? st : { ...st, items: [...st.items.slice(0, at + 1), newId, ...st.items.slice(at + 1)] };
+  });
+  return { ok: true, doc: { ...doc, sources: [...doc.sources, copy], compositions, edges: [...doc.edges, ...copiedEdges], ...(stacks ? { stacks } : {}) } };
 }
 
 /** Removes a source and everything that refers to it; the rows behind it move up. */
@@ -184,6 +189,7 @@ export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
         placements: Object.fromEntries(Object.entries(c.placements).filter(([sourceId]) => sourceId !== id)),
       })),
       edges: doc.edges.filter((e) => e.from !== id && e.to !== id),
+      ...(doc.stacks ? { stacks: doc.stacks.map((st) => (st.items.includes(id) ? { ...st, items: st.items.filter((i) => i !== id) } : st)) } : {}),
       outputs: doc.outputs.map((o) => ({
         ...o,
         overrides: o.overrides.filter((ov) => ov.sourceId !== id),

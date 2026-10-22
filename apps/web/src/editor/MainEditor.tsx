@@ -1,5 +1,5 @@
 /**
- * Main preview editor (T3.2): the shared canvas editor on the master; edits write master.placements
+ * Master preview editor (T3.2): the shared canvas editor on the master; edits write master.placements
  * (normalized to the master canvas) through the board (autosave).
  */
 import { compositionById, deleteSource, MAIN, mainComposition, masterScene, removeRow, setLayerTransform, setPlacement } from '@smart-canvas/core';
@@ -20,7 +20,7 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
     (id: string, f: Frame, history?: TransformHistory) =>
       run((d) => {
         const placed = setPlacement(d, id, { x: f.x / width, y: f.y / height, w: f.w / width, h: f.h / height, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) }, main.id);
-        // One undo step for the gesture and its reset history (D37).
+        // One undo step for the gesture and its reset history (D41).
         return placed.ok && history ? setLayerTransform(placed.doc, id, history, { compositionId: main.id }, { width, height }) : placed;
       }),
     [run, width, height, main.id],
@@ -33,8 +33,8 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
     [run, width, height, main.id],
   );
   const histories = layerHistories(main, { width, height });
-  // Delete key: as the layer row's trash button — on the first main preview an input is deleted (with a
-  // confirm); a process row, or any row of another main preview, is taken off this preview.
+  // Delete key: as the layer row's trash button — on the first master preview an input is deleted (with a
+  // confirm); a process row, or any row of another master preview, is taken off this preview.
   const onDelete = useCallback(
     (id: string) => {
       const input = doc.sources.find((s) => s.id === id);
@@ -46,7 +46,7 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
   );
   return (
     <CanvasEditor
-      label="Main preview editor"
+      label="Master preview editor"
       title={
         <>
           <strong>{main.label}</strong>

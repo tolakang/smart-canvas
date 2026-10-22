@@ -24,10 +24,15 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
   const onCommit = useCallback(
     (id: string, frame: Frame, history?: TransformHistory) => {
       const cur = scene?.items.find((i) => i.sourceId === id)?.frame;
-      const zeroed = { ...(cur?.rotation && !frame.rotation ? { rotation: 0 } : {}), ...(cur?.shear && !frame.shear ? { shear: 0 } : {}) };
+      const zeroed = {
+        ...(cur?.rotation && !frame.rotation ? { rotation: 0 } : {}),
+        ...(cur?.shear && !frame.shear ? { shear: 0 } : {}),
+        // D37: editing a fitted frame keeps it fitted (else the fit pass would fit it a second time).
+        ...(cur?.fitted ? { fitted: true as const } : {}),
+      };
       run((d) => {
         const overridden = setOverrideFrame(d, outputId, id, { ...frame, ...zeroed }, author());
-        // One undo step for the gesture and its reset history (D37).
+        // One undo step for the gesture and its reset history (D41).
         return overridden.ok && history && size ? setLayerTransform(overridden.doc, id, history, { outputId }, size) : overridden;
       });
     },

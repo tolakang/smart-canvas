@@ -1,6 +1,6 @@
 /**
  * T12.5 end to end on the board: add a Crop from the node library, wire an input into it and its result onto
- * the main preview's "Wire a process here" row, change the crop in the inspector, then delete it.
+ * the master preview's "Wire a process here" row, change the crop in the inspector, then delete it.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -41,7 +41,7 @@ describe.skipIf(!adminUrl)('process nodes on the board (T12.5)', () => {
     await page.mouse.up();
   }
 
-  it('add a Crop, wire input → crop → main preview row, change it, delete it', async () => {
+  it('add a Crop, wire input → crop → master preview row, change it, delete it', async () => {
     const pane = page.locator('.react-flow__pane');
     const box = await pane.boundingBox();
     if (!box) throw new Error('no pane');

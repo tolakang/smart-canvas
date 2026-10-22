@@ -89,7 +89,7 @@ describe('process nodes on the graph', () => {
     expect(resolveProcess(ok(addProcess(doc, { id: 'p3', op: { type: 'flip', x: true, y: false }, board: { x: 0, y: 0 } })), 'p3')).toBeUndefined();
   });
 
-  it('wired into a row it gets its behaviour’s default placement; the layout and the main preview draw it', () => {
+  it('wired into a row it gets its behaviour’s default placement; the layout and the master preview draw it', () => {
     const doc = withCrop();
     expect(doc.compositions[0]?.layers[0]).toBe('p1');
     expect(doc.compositions[0]?.placements['p1']).toEqual({ x: 0.2, y: 0.12, w: 0.6, h: 0.6 });

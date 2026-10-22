@@ -246,7 +246,7 @@ export function dragScale(start: TransformState, h: ScaleHandle, p0: Vec, p: Vec
  * handle's operations and replays the rest, so the element ends up exactly where it would be had those drags
  * never happened, whatever was done before or after them.
  */
-/** Same shape as the saved history (D37), so the editor and the project share one type. */
+/** Same shape as the saved history (D41), so the editor and the project share one type. */
 export type TransformOp = StoredTransformOp;
 /** What to store (and undo/redo): the untransformed placement plus the operations. */
 export type TransformDoc = TransformHistory;
@@ -408,6 +408,28 @@ export function removeForHandle(op: TransformOp, h: HandleId): TransformOp | nul
   if (op.type === 'shear') return op.axis === (lr ? 'lr' : 'tb') ? null : op;
   if (op.type === 'scale') return lr ? { ...op, kx: 1 } : { ...op, ky: 1 };
   return op;
+}
+
+/**
+ * A picture has its own shape (`aspect` = width / height). The history replays drags onto `origin`, the box
+ * the editor started from — which is itself stretched when the picture was stretched before the editor
+ * opened. A reset of a stretch or scale handle then also takes that old stretch out of the origin, on the
+ * handle's axis: left/right edge → the width from the height, top/bottom edge → the height from the width, a
+ * corner → both, keeping the area. The centre stays, and the drags of this session replay on top as before.
+ */
+export function restoreAspect(doc: TransformDoc, h: HandleId, aspect: number | undefined): TransformDoc {
+  if (!aspect || !(aspect > 0) || h === 'rotate' || h === 'body') return doc;
+  const { width: w, height: hh } = doc.origin;
+  if (Math.abs(w / hh - aspect) <= 1e-9 * aspect) return doc;
+  let width = w;
+  let height = hh;
+  if (h === 'e' || h === 'w') width = hh * aspect;
+  else if (h === 'n' || h === 's') height = w / aspect;
+  else {
+    width = Math.sqrt(w * hh * aspect);
+    height = width / aspect;
+  }
+  return { ...doc, origin: { ...doc.origin, width, height } };
 }
 
 export function resetForHandle(doc: TransformDoc, h: HandleId): TransformDoc {

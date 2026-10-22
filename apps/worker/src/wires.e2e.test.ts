@@ -114,7 +114,7 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     expect((await doc()).outputs.find((o) => o.id === pt.id)?.frozen).toBeTruthy();
   }, 90_000);
 
-  it('T10.4 / T12.7: a wire dragged out of the main preview onto empty canvas offers outputs; one is added there, wired', async () => {
+  it('T10.4 / T12.7: a wire dragged out of the master preview onto empty canvas offers outputs; one is added there, wired', async () => {
     const before = (await doc()).outputs.map((o) => o.id);
     const spot = await emptySpot();
     await drag(main().locator('.react-flow__handle[data-handleid="out"]'), spot);
@@ -134,7 +134,7 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     const out = (await doc()).outputs[0];
     if (!out) throw new Error('no output');
     await drag(inputHandle('Logo'), page.locator(`.react-flow__node-outputNode[data-id="out:${out.id}"] .sc-handle--composition`));
-    // T12.4: inputs go onto an output's layer rows, not its main preview port.
+    // T12.4: inputs go onto an output's layer rows, not its master preview port.
     await expect.poll(() => page.getByRole('alert').innerText()).toBe('An input wires into a layer row of an output.');
     expect((await doc()).edges.length).toBe(before);
     // Ports are typed by class (layer / composition) for their colours.

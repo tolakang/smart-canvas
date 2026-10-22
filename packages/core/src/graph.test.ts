@@ -33,7 +33,7 @@ describe('migrateProjectDoc (v1 → v2, D32)', () => {
     expect(doc.rev).toBe(7);
     expect(mainComposition(doc)).toEqual({
       id: 'main',
-      label: 'Main preview',
+      label: 'Master preview',
       size: { width: 2000, height: 1000, unit: 'px' },
       placements: { subject: { x: 0.1, y: 0.2, w: 0.3, h: 0.4 } },
       layers: ['logo', 'subject', 'headline', 'background'],
@@ -55,6 +55,14 @@ describe('migrateProjectDoc (v1 → v2, D32)', () => {
   it('leaves v2 documents as they are', () => {
     const doc = createProjectDoc('New');
     expect(migrateProjectDoc(doc)).toBe(doc);
+  });
+
+  it('renames the old default names to "Master preview" (D39); a name the user chose is kept', () => {
+    const doc = createProjectDoc('Old');
+    const [c0] = doc.compositions;
+    if (!c0) throw new Error('no composition');
+    const old = { ...doc, compositions: [{ ...c0, label: 'Main preview' }, { ...c0, id: 'b', label: 'Main preview 2' }, { ...c0, id: 'c', label: 'Main preview for TV' }] };
+    expect(migrateProjectDoc(old).compositions.map((c) => c.label)).toEqual(['Master preview', 'Master preview 2', 'Main preview for TV']);
   });
 });
 

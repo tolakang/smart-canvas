@@ -1,6 +1,6 @@
 /**
- * T12.8 end to end: a main preview used as a layer of another. On the board its "Use as a layer" port wires
- * onto a row of the main preview, which then draws it (its own scene, fitted into its frame). Exported, the
+ * T12.8 end to end: a master preview used as a layer of another. On the board its "Use as a layer" port wires
+ * onto a row of the master preview, which then draws it (its own scene, fitted into its frame). Exported, the
  * nested scene (a photo and Khmer + Latin text) draws the same in the browser and in the worker.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
@@ -60,7 +60,7 @@ describe.skipIf(!adminUrl)('nested compositions (T12.8)', () => {
     return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   };
 
-  it('wire the badge’s "Use as a layer" port onto the front row of the main preview: main draws it', async () => {
+  it('wire the badge’s "Use as a layer" port onto the front row of the master preview: main draws it', async () => {
     await page.getByRole('button', { name: /^Fit to screen/ }).click();
     await page.waitForTimeout(300);
     const a = await centre(page.locator('.react-flow__node-mainNode[data-id="comp:badge"] .react-flow__handle[data-handleid="layer"]'));
@@ -73,7 +73,7 @@ describe.skipIf(!adminUrl)('nested compositions (T12.8)', () => {
     await page.mouse.up();
     await expect.poll(async () => (await doc()).edges.some((e) => e.from === 'badge' && e.to === 'main' && e.kind === 'layer')).toBe(true);
     expect((await doc()).compositions[0]?.layers[0]).toBe('badge');
-    const nested = page.getByLabel('Main preview', { exact: true }).locator('.sc-render [data-source-id="badge"][data-kind="nested"]');
+    const nested = page.getByLabel('Master preview', { exact: true }).locator('.sc-render [data-source-id="badge"][data-kind="nested"]');
     await nested.locator('[data-source-id="subject"]').waitFor();
     expect(await nested.locator('[data-source-id="headline"]').innerText()).toContain('Hello');
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });

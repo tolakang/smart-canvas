@@ -100,7 +100,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Frame:** a 1.5 px accent outline that follows the layer's real shape (a parallelogram when skewed). Handles keep their on-screen size at any zoom and turn with the layer.
 - **Handles:** white with an accent border. Corners are 10 px squares; edges are pills along their edge; rotate is a round arrow button 28 px above the top edge. Hit areas are 24 px with a mouse and 44 px on touch. Edge handles hide on a side shorter than 48 px.
 - **Skew:** drag an edge along itself. The opposite edge stays put; Alt pivots on the centre; Ctrl/⌘ skews whichever way. The Design panel shows Skew (⫽) next to Rotation.
-- **Touch:** hold a handle until it fills with the accent (350 ms), then drag. Moving earlier does nothing.
+- **Touch:** long-press a handle or the layer (350 ms) to edit it, then drag: move, resize, rotate or skew. A quick swipe or tap never edits. A double-tap on a handle resets it.
 - **Reset:** double-click or double-tap a handle to undo what it changed: rotate handle = rotation, a corner = scale, an edge = that side's stretch and skew.
 - **Snapping:** a move snaps to canvas and layer edges and centres within 6 screen px, shown by a dashed red guide line.
 
@@ -111,4 +111,10 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - Hidden and library inputs show a small mark next to the name. Double-click the name to rename.
 - **Inspector:** name, behaviour, visibility, the content editor, and the actions (Duplicate, Save to library, Delete). The cards don't repeat any of it.
 - **Card sizing:** cards size their grid column `minmax(0, 1fr)`, so no thumbnail sticks out of a card. Side ports sit level with the title, which is where the node palette puts a new node's port: under the drop point.
-- **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the first main preview can't be deleted; selected wires alone are disconnected. In the main preview editor it removes the selected layer, as its row's trash button does. In an output editor it hides the layer on that output.
+- **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the first master preview can't be deleted; selected wires alone are disconnected. In the master preview editor it removes the selected layer, as its row's trash button does. In an output editor it hides the layer on that output.
+
+## Picture frames (D37)
+- **Frame:** an image or SVG layer's frame (selection box, handles, size badge, snapping) is the picture's visible pixels, never its transparent margins.
+- **Stretch:** dragging an edge stretches the picture with the frame, live while you drag (Shift or the ratio lock on corners keeps proportions).
+- **Replace:** a new picture lands inside the old frame, centred, with its own proportions.
+

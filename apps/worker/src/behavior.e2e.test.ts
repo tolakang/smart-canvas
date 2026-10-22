@@ -73,15 +73,16 @@ describe.skipIf(!adminUrl)('input behaviours (T8.7)', () => {
     const label = (await doc()).sources.find((s) => s.id === id)?.label ?? '';
     await page.getByRole('button', { name: 'Fit to screen (Shift+1)' }).click(); // nodes added since the first fit
     await page.waitForTimeout(300);
-    // Added where the canvas menu opened, partly under the main preview: select it without a pointer.
+    // Added where the canvas menu opened, partly under the master preview: select it without a pointer.
     await page.locator(`.react-flow__node[data-id="src:${id}"] .sc-node__title`).dispatchEvent('click');
     const picker = page.getByRole('complementary', { name: 'Inspector' }).getByLabel(`${label} behaves like`);
     expect(await picker.locator('option').allInnerTexts()).toEqual(['Background', 'Decoration']);
     await picker.selectOption('decoration');
     await saved();
     expect((await doc()).sources.find((s) => s.id === id)?.behavesLike).toBe('decoration');
-    // As a decoration it keeps its master size: no longer the full story.
-    await expect.poll(async () => (await coverage(id))?.h ?? 1).toBeLessThan(0.9);
+    // As a decoration filling the (square) master it covers the story but keeps its shape (D38): 1920×1920, wider than the story.
+    await expect.poll(async () => (await coverage(id))?.w ?? 1).toBeGreaterThan(1.7);
+    expect((await coverage(id))?.h).toBeCloseTo(1, 2);
     await picker.selectOption('background');
     await expect.poll(() => coverage(id)).toEqual({ w: 1, h: 1 });
   }, 60_000);

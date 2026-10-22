@@ -5,6 +5,7 @@ import { expectFrame, mockMeasure, output, place, project } from './test-doc';
 
 const deps: LayoutDeps = { measure: mockMeasure, assets: {} };
 const E = 'AAAAA BBBBB CCCCC DDDDD EEEEE';
+const G = Math.sqrt(0.36 * 0.45); // grid scale on 1080×1350
 const headlineFrame = { x: 300, y: 300, w: 2400, h: 500 };
 
 function headline(doc: ProjectDoc, text: string, patch: Partial<TextStyle> = {}): ProjectDoc {
@@ -20,33 +21,32 @@ const exampleE = (maxLines: number, overrides: Override[] = []) =>
   headline(place(project(output({ overrides })), 'headline', headlineFrame), E, { maxLines });
 const ov = (patch: Partial<Override>): Override => ({ sourceId: 'headline', updatedBy: 'u', updatedAt: '2026-01-01T00:00:00Z', ...patch });
 
-describe('text (example E, v2: in a group with the default subject)', () => {
-  // U = {300,300,2400,1860}; c = px = 972/2400 = 0.405; py = 1242/1860; f0 = 200·c = 81
-  it('maxLines 2 → 81 px on 2 lines in a 972×202.5 box at the spread centre', () => {
+describe('text (example E, v3: its box on the stretched grid)', () => {
+  // box: 2400×500 · G = 965.98×201.25, centred across (centre x 0.5), top edge at 300/3000 · 1350; f0 = 200·G = 80.5
+  it('maxLines 2 → 80 px on 2 lines in a 965.98×201.25 box', () => {
     const r = item(exampleE(2));
-    expect(r?.fontSizePx).toBe(81);
+    expect(r?.fontSizePx).toBe(80);
     expect(r?.lines).toEqual(['AAAAA BBBBB CCCCC DDDDD', 'EEEEE']);
     expect(r?.warnings).toEqual([]);
-    expectFrame(r?.frame, { x: 54, y: 119.685484, w: 972, h: 202.5 });
+    expectFrame(r?.frame, { x: 540 - 1200 * G, y: 135, w: 2400 * G, h: 500 * G });
   });
 
-  it('maxLines 1 → 67 px on 1 line', () => {
+  it('maxLines 1 → 66.5 px on 1 line', () => {
     const r = item(exampleE(1));
-    expect(r?.fontSizePx).toBe(67); // 29·0.5·f ≤ 972
+    expect(r?.fontSizePx).toBe(66.5); // 29·0.5·f ≤ 965.98
     expect(r?.lines).toEqual([E]);
   });
 });
 
 describe('text', () => {
-  it('caps the box width at the safe rect', () => {
+  it('a box spanning the master fills the output width', () => {
     const doc = headline(place(project(), 'headline', { x: 0, y: 1000, w: 3000, h: 500 }), 'A');
-    expect(item(doc)?.frame.w).toBeCloseTo(972);
-    expect(item(doc)?.frame.x).toBeCloseTo(54);
+    expectFrame(item(doc)?.frame, { x: 0, y: 450, w: 1080, h: 225 }); // edge to edge across: the box stretches with the grid (sx 0.36, sy 0.45)
   });
 
-  it('the group spread lands an edge text on the edge of S, without clamping', () => {
+  it('a text in the top-left keeps its top-left corner on the grid', () => {
     const r = item(headline(place(project(), 'headline', { x: 0, y: 0, w: 1500, h: 300 }), 'A'));
-    expectFrame(r?.frame, { x: 54, y: 79.5, w: 607.5, h: 121.5 });
+    expectFrame(r?.frame, { x: 0, y: 0, w: 1500 * G, h: 300 * G });
     expect(r?.warnings).toEqual([]);
   });
 
@@ -59,7 +59,7 @@ describe('text', () => {
   it('override fontSizePx is used as-is (no fit)', () => {
     const r = item(exampleE(1, [ov({ style: { fontSizePx: 80 } })]));
     expect(r?.fontSizePx).toBe(80);
-    expect(r?.lines).toEqual(['AAAAA BBBBB CCCCC DDDDD', 'EEEEE']); // 2 lines > maxLines 1 in the 972 box
+    expect(r?.lines).toEqual(['AAAAA BBBBB CCCCC DDDDD', 'EEEEE']); // 2 lines > maxLines 1 in the 965.98 box
     expect(r?.warnings).toEqual(['text-overflow']);
     expect(r?.overridden).toBe(true);
   });
@@ -72,7 +72,7 @@ describe('text', () => {
   });
 
   it('override style fields restyle the fit', () => {
-    expect(item(exampleE(2, [ov({ style: { maxLines: 1 } })]))?.fontSizePx).toBe(67);
+    expect(item(exampleE(2, [ov({ style: { maxLines: 1 } })]))?.fontSizePx).toBe(66.5);
   });
 
   it('empty text has no lines and no warnings', () => {

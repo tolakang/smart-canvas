@@ -1,5 +1,5 @@
 /**
- * The canvas editor shared by the main preview (T3.2) and the output editors (T5.1): select, move, resize,
+ * The canvas editor shared by the master preview (T3.2) and the output editors (T5.1): select, move, resize,
  * rotate and skew layers with the transform box (D36, Affinity-style: drag an edge along itself to skew;
  * touch: hold, then drag; double-click / double-tap a handle to undo what it changed), moves snapping to the
  * canvas edges, centre lines and other layers, arrow-key nudging (1 design px, Shift 10). Draws with the same OutputRenderer as export. What an edit
@@ -8,7 +8,7 @@
  * pointer (Ctrl/⌘ + wheel) and Figma's zoom keys, a size badge on the selection, and a Design panel with
  * X / Y / W / H / rotation.
  */
-import { frameTransform, layerSources, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
+import { frameTransform, layerSources, pictureAspect, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
@@ -36,9 +36,9 @@ export interface CanvasEditorProps {
   scene: RenderScene;
   /** Writes a layer's new frame (design px of `scene`) where this editor stores it, with its history when known. */
   onCommit: (sourceId: string, frame: Frame, history?: TransformDoc) => void;
-  /** Delete / Backspace on the selected layer (main preview: as its row's trash button; output: hide it there). */
+  /** Delete / Backspace on the selected layer (master preview: as its row's trash button; output: hide it there). */
   onDelete?: (sourceId: string) => void;
-  /** Saved transform histories for this scene (D37), so resets work after a reload. Absent = none. */
+  /** Saved transform histories for this scene (D41), so resets work after a reload. Absent = none. */
   histories?: Record<string, TransformDoc>;
   /** Called when a layer's transform history changes (a gesture end, a reset, or an external frame edit). */
   onHistory?: (sourceId: string, history: TransformDoc) => void;
@@ -249,9 +249,11 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
 
   // What the transform box's callbacks read: always this render's values, without re-creating the box.
   const selectedFrame = selectedItem?.frame ?? null;
-  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame });
+  // A fitted picture's own proportions: resets of its stretch / scale handles end at them.
+  const aspect = selectedFrame?.fitted && selectedSource ? pictureAspect(selectedSource, layoutDeps?.assets ?? {}) : undefined;
+  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect });
   useLayoutEffect(() => {
-    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame };
+    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect };
   });
 
   // One transform box per selected layer, picking up its history from this session.
@@ -260,16 +262,18 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     const frame = latest.current.frame;
     if (!selected || !editable || !frame || !canvasEl.current || !control.current) return;
     const id = selected;
-    // A saved history from the project (D37) starts the session; otherwise the frame's own.
+    // A saved history from the project (D41) starts the session; otherwise the frame's own.
     const start = syncDoc(history.current.get(id) ?? historiesRef.current?.[id], frame);
     history.current.set(id, start);
     const b = new TransformBox(canvasEl.current, control.current, start, {
       getScale: () => latest.current.scale,
       flip: false,
       proportional: (shift) => latest.current.lockRatio || shift,
+      aspect: () => latest.current.aspect,
       snapMove: (moved) => snapMove(moved, latest.current.targets, SNAP_PX / latest.current.scale),
       onChange: (state, info) => {
-        const f = frameOfState(state);
+        // D37: the drawn frame stays fitted while it's dragged, so a stretch shows live (not only on release).
+        const f = { ...frameOfState(state), ...(latest.current.frame?.fitted ? { fitted: true as const } : {}) };
         if (info.phase === 'move') setLive(f);
         if (info.phase !== 'end' && info.phase !== 'reset') return;
         history.current.set(id, info.doc);

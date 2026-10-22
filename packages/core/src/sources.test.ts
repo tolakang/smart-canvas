@@ -69,7 +69,7 @@ describe('addSource', () => {
     expect(doc.sources.find((s) => s.id === 'n')?.board.y).toBeGreaterThan(lowest);
   });
 
-  it(`stops at ${LIMITS.maxSources} inputs, the 4 defaults included (D7)`, () => {
+  it(`stops at the ${LIMITS.maxSources}-input safety ceiling, the 4 defaults included (D39)`, () => {
     let doc = createProjectDoc('P');
     for (let i = 0; i < LIMITS.maxSources - 4; i++) doc = ok(addSource(doc, { id: `x${i}`, kind: 'image', label: 'x', behavesLike: 'decoration' }));
     expect(doc.sources).toHaveLength(LIMITS.maxSources);

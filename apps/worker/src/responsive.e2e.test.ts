@@ -88,7 +88,7 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
 
   it('phone: tap a port, then tap a target, to wire', async () => {
     await bar(phone).getByRole('button', { name: 'Add nodes' }).tap();
-    await phone.getByRole('complementary', { name: 'Node library' }).getByRole('button', { name: /^Main preview/ }).tap();
+    await phone.getByRole('complementary', { name: 'Node library' }).getByRole('button', { name: /^Master preview/ }).tap();
     await saved(phone);
     const comp = (await doc()).compositions[1];
     const source = (await doc()).sources[0];

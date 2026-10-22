@@ -1,7 +1,7 @@
 /**
- * T9.1 end to end (layout v2, D30): a gradient background and a badge on the master. In a wide banner and a 9:16
- * story the background covers everything and the badge grows to fill the space (v1 shrank it to the master's
- * contain scale: 210 px in the banner).
+ * T9.1 end to end, layout v3 (D38, the stretched grid): a gradient background and a badge on the master. In a
+ * wide banner and a 9:16 story the background covers everything; the badge scales with the grid (√(sx·sy)) and its
+ * top-left corner stays on the same grid coordinate.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addOutput, setPlacement, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
@@ -64,14 +64,18 @@ describe.skipIf(!adminUrl)('content fit in outputs (T9.1)', () => {
     }
   });
 
-  it('the badge fills the free space: centred, as large as the cover scale allows', async () => {
-    // Banner 1200×630: c = clamp(min(1137/990, 567/990), 0.21, 0.4) = 0.4 → 396 px tall (63% of 630), centred.
+  it('the badge stays on its grid coordinate (top-left at 10%, 10%), square, scaled by √(sx·sy)', async () => {
+    // Banner 1200×630: √(0.4·0.21) ≈ 0.2898 → 286.9 px square at (120, 63).
     const banner = await share('Banner', 'subject');
-    expect(banner?.h).toBeCloseTo(396 / 630, 2);
-    expect((banner?.x ?? 0) + (banner?.w ?? 0) / 2).toBeCloseTo(0.5, 2);
-    // Story 1080×1920: c = 0.64 → 633.6 px wide (59% of 1080), centred.
+    expect(banner?.x).toBeCloseTo(0.1, 2);
+    expect(banner?.y).toBeCloseTo(0.1, 2);
+    expect(banner?.h).toBeCloseTo((990 * Math.sqrt(0.4 * 0.21)) / 630, 2);
+    expect(banner?.w).toBeCloseTo((990 * Math.sqrt(0.4 * 0.21)) / 1200, 2);
+    // Story 1080×1920: √(0.36·0.64) = 0.48 → 475.2 px square at (108, 192).
     const story = await share('Story', 'subject');
-    expect(story?.w).toBeCloseTo(633.6 / 1080, 2);
-    expect((story?.y ?? 0) + (story?.h ?? 0) / 2).toBeCloseTo(0.5, 2);
+    expect(story?.x).toBeCloseTo(0.1, 2);
+    expect(story?.y).toBeCloseTo(0.1, 2);
+    expect(story?.w).toBeCloseTo(475.2 / 1080, 2);
+    expect(story?.h).toBeCloseTo(475.2 / 1920, 2);
   });
 });

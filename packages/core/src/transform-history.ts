@@ -1,5 +1,5 @@
 /**
- * Saved editor transform histories (D37). The editor box records each gesture as operations (D36); these
+ * Saved editor transform histories (D41). The editor box records each gesture as operations (D36); these
  * helpers keep that history in the project document so a double-click reset still works after a reload.
  * History is stored per scene (composition or output) in design px; a scene size change invalidates it.
  */

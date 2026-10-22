@@ -8,6 +8,7 @@
  * image has decoded, so a screenshot is never taken half-drawn; "error" (with data-render-error) otherwise.
  */
 import {
+  type AssetSize,
   computeLayout,
   exportScaleOf,
   masterScene,
@@ -23,6 +24,7 @@ import { api, ApiError, assetUrl, type AssetMeta } from '../api';
 import { ensureFonts, prepareTextMeasure, registerTeamFonts, type FontRequest, type TeamFont } from '../fonts/loader';
 import { frameToSvg } from './exportFile';
 import { OutputRenderer } from './OutputRenderer';
+import { measureTrim } from './trim';
 
 export interface RenderRoute {
   teamId: string;
@@ -87,7 +89,7 @@ export async function frameReady(frame: HTMLElement, scene: RenderScene, sources
 }
 
 /** The export frame: whole pixels (same rounding as exportPixels), clipping the canvas' fraction. */
-export const RenderFrame = forwardRef<HTMLDivElement, { scene: RenderScene; sources: readonly LayerSource[]; assetSizes?: Record<string, { width: number; height: number }>; assetUrl: (id: string) => string; scale: number }>(
+export const RenderFrame = forwardRef<HTMLDivElement, { scene: RenderScene; sources: readonly LayerSource[]; assetSizes?: Record<string, AssetSize>; assetUrl: (id: string) => string; scale: number }>(
   function RenderFrame({ scene, sources, assetSizes, assetUrl: urlOf, scale }, ref) {
     const frame = { width: Math.round(scene.width * scale), height: Math.round(scene.height * scale) };
     return (
@@ -98,7 +100,7 @@ export const RenderFrame = forwardRef<HTMLDivElement, { scene: RenderScene; sour
   },
 );
 
-type Loaded = { scene: RenderScene; sources: LayerSource[]; sizes: Record<string, { width: number; height: number }>; scale: number } | { error: string };
+type Loaded = { scene: RenderScene; sources: LayerSource[]; sizes: Record<string, AssetSize>; scale: number } | { error: string };
 
 function setStatus(status: 'true' | 'error', error?: string) {
   document.documentElement.dataset.renderReady = status;
@@ -123,7 +125,14 @@ export function RenderPage({ route }: { route: RenderRoute }) {
       const { doc } = project;
       // Same deps as the board: fonts loaded before measuring, intrinsic asset sizes (layout, and crops: T12.5).
       const assets = await api<AssetMeta[]>('GET', `/teams/${route.teamId}/assets`);
-      const sizes = Object.fromEntries(assets.flatMap((a) => (a.width && a.height ? [[a.id, { width: a.width, height: a.height }]] : [])));
+      const sizes: Record<string, AssetSize> = Object.fromEntries(assets.flatMap((a) => (a.width && a.height ? [[a.id, { width: a.width, height: a.height }]] : [])));
+      // D37: fitted frames draw a picture's visible part — measured here exactly as on the board.
+      const used = new Set(doc.sources.flatMap((s) => ((s.content.kind === 'image' || s.content.kind === 'vector') && s.content.assetId ? [s.content.assetId] : [])));
+      for (const a of assets) {
+        const size = sizes[a.id];
+        if (!size || !used.has(a.id)) continue;
+        size.trim = (await measureTrim(assetUrl(route.teamId, a.id), a.mime)) ?? { x: 0, y: 0, w: 1, h: 1 };
+      }
       const sources = layerSources(doc);
       if (route.target === 'main') return { scene: masterScene(doc), sources, sizes, scale: route.scale ?? 1 };
       const output = doc.outputs.find((o) => o.id === route.target);

@@ -1,4 +1,7 @@
 import {
+  addStack,
+  connectStack,
+  fitFrames,
   addComposition,
   addSourceFromLibrary,
   addOutput,
@@ -54,7 +57,7 @@ import { confirmDelete, Icon } from './LayerRow';
 import { History } from './history';
 import { LibraryDialog } from './LibraryDialog';
 import { ReconnectDialog } from './ReconnectDialog';
-import { useAssetSizes, useLayoutDeps } from './layout-deps';
+import { usedAssetsKey, useAssetSizes, useLayoutDeps } from './layout-deps';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
 import { withSource } from './content';
@@ -80,6 +83,7 @@ import {
   docIdOfNode,
   groupIdOfNode,
   withGroupFrames,
+  stackIdOfNode,
 } from './flow';
 import { useTheme } from '../ui/theme';
 import { align } from './guides';
@@ -95,6 +99,7 @@ import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
+import { addPictures, uploadPictures } from './stack-upload';
 
 interface Loaded {
   rev: number;
@@ -189,7 +194,7 @@ function BoardCanvas(props: {
   const { teamId, projectId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
   const [doc, setDoc] = useState(initial.doc);
-  /** The composition open in the main preview editor (T12.3: any composition). */
+  /** The composition open in the master preview editor (T12.3: any composition). */
   const [editingMain, setEditingMain] = useState<string | null>(null);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
@@ -206,6 +211,8 @@ function BoardCanvas(props: {
   const [theme, toggleTheme] = useTheme();
   /** T13.2: the one selected node (React Flow id), shown in the inspector. */
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  /** D40: the picture of the selected Assets card shown in the inspector. */
+  const [stackFocus, setStackFocus] = useState<string | null>(null);
   const [placeAt, setPlaceAt] = useState<{ x: number; y: number } | null>(null);
   const flow = useRef<ReactFlowInstance<FlowNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
@@ -425,8 +432,16 @@ function BoardCanvas(props: {
       live = false;
     };
   }, [teamId]);
-  const { sizes, remember } = useAssetSizes(teamId);
+  const { sizes, remember } = useAssetSizes(teamId, usedAssetsKey(doc));
   const { deps: layoutDeps, missingFonts } = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
+
+  // D37: once a picture's visible pixels are known, its unfitted frames hug them (in place: nothing moves on
+  // screen). Not an undo step — it's how the doc is shown; undoing to an unfitted doc just fits it again.
+  useEffect(() => {
+    if (readOnly) return;
+    const fitted = fitFrames(docRef.current, sizes);
+    if (fitted !== docRef.current) show(fitted);
+  }, [doc, sizes, readOnly, show]);
 
   const disconnect = useCallback(
     (outputId: string) => {
@@ -469,9 +484,11 @@ function BoardCanvas(props: {
       rememberAsset: remember,
       disconnectOutput: disconnect,
       reconnectOutput: reconnect,
+      stackFocus,
+      setStackFocus,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, remember, disconnect, reconnect, author, apply, run, autosave],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );
 
   // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.
@@ -484,6 +501,13 @@ function BoardCanvas(props: {
       const outputId = fromComposition ? outputIdOfNode(c.target) : undefined;
       if (fromComposition && outputId) {
         reconnect(outputId, fromComposition);
+        return;
+      }
+      // D40: a wire from an Assets card wires every picture in it.
+      const stackId = stackIdOfNode(c.source);
+      const toComposition = compositionIdOfNode(c.target);
+      if (stackId && toComposition) {
+        run((doc) => connectStack(doc, stackId, toComposition));
         return;
       }
       const sourceId = layerOfConnection(c);
@@ -521,7 +545,8 @@ function BoardCanvas(props: {
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
       for (const e of deleted) {
-        const sourceId = layerOfConnection(e);
+        // D40: a wire drawn from an Assets card is one picture's wire.
+        const sourceId = layerOfConnection(e) ?? (stackIdOfNode(e.source) ? docRef.current.edges.find((x) => x.id === e.id)?.from : undefined);
         const outputId = compositionIdOfNode(e.source) && e.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(e.target) : undefined;
         if (sourceId) run((doc) => disconnectLayer(doc, sourceId, e.target));
         else if (outputId) disconnect(outputId);
@@ -746,7 +771,10 @@ function BoardCanvas(props: {
         run((d) => addProcess(d, { id: newId(), op: spec.op, board: at }));
         return;
       case 'composition':
-        run((d) => addComposition(d, { id: newId(), label: `Main preview ${d.compositions.length + 1}`, board: at }));
+        run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at }));
+        return;
+      case 'assets':
+        run((d) => addStack(d, { id: newId(), board: at }));
         return;
       case 'library':
         run((d) => addSourceFromLibrary(d, spec.item, newId(), at));
@@ -773,7 +801,7 @@ function BoardCanvas(props: {
       : [
           { label: 'Undo', disabled: !canStep.undo, onSelect: undo },
           { label: 'Redo', disabled: !canStep.redo, onSelect: redo },
-          { label: `Add input (${sourceCount}/${LIMITS.maxSources})`, disabled: sourceCount >= LIMITS.maxSources, separated: true, onSelect: () => (setPlaceAt(null), setAdding(true)) },
+          { label: 'Add input', disabled: sourceCount >= LIMITS.maxSources, separated: true, onSelect: () => (setPlaceAt(null), setAdding(true)) },
           { label: `Add output (${outputCount}/${LIMITS.maxOutputs})`, disabled: outputCount >= LIMITS.maxOutputs, onSelect: () => (setPlaceAt(null), setAddingOutput(true)) },
         ];
     setMenu({
@@ -803,6 +831,8 @@ function BoardCanvas(props: {
       title: inputsFull ? `Add (${LIMITS.maxSources} inputs max)` : 'Add here',
       items: [
         // T8.7: each with the behaviour that adapts the way people expect (changeable on the node).
+        // D40: one card for many pictures.
+        { label: 'Assets (many pictures)', onSelect: () => run((d) => addStack(d, { id: newId(), board: at })) },
         quick('Image (subject)', { kind: 'image', label: 'Image', behavesLike: 'subject' }),
         quick('Logo / SVG', { kind: 'vector', label: 'Logo', behavesLike: 'logo' }),
         quick('Text', { kind: 'text', label: 'Text', behavesLike: 'text' }),
@@ -816,11 +846,11 @@ function BoardCanvas(props: {
           },
         },
         {
-          // T12.3: another main preview (e.g. a campaign variant); wire inputs into it and outputs out of it.
-          label: canAddComposition(doc) ? 'Main preview' : `Main preview (${LIMITS.maxCompositions} max)`,
+          // T12.3: another master preview (e.g. a campaign variant); wire inputs into it and outputs out of it.
+          label: canAddComposition(doc) ? 'Master preview' : `Master preview (${LIMITS.maxCompositions} max)`,
           disabled: !canAddComposition(doc),
           separated: true,
-          onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Main preview ${d.compositions.length + 1}`, board: at })),
+          onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at })),
         },
         {
           label: outputsFull ? `Output… (${LIMITS.maxOutputs} max)` : 'Output…',
@@ -894,7 +924,7 @@ function BoardCanvas(props: {
               disabled={sourceCount >= LIMITS.maxSources}
               title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : 'Add an input (or right-click the canvas)'}
             >
-              <Icon name="plus" /> Input <span className="sc-count">{sourceCount}/{LIMITS.maxSources}</span>
+              <Icon name="plus" /> Input <span className="sc-count">{sourceCount}</span>
             </button>
             <button
               type="button"
@@ -904,7 +934,7 @@ function BoardCanvas(props: {
                 setAddingOutput(true);
               }}
               disabled={outputCount >= LIMITS.maxOutputs}
-              title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : 'Add an output size (or drag a wire out of the main preview)'}
+              title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : 'Add an output size (or drag a wire out of the master preview)'}
             >
               <Icon name="plus" /> Output <span className="sc-count">{outputCount}/{LIMITS.maxOutputs}</span>
             </button>
@@ -981,7 +1011,19 @@ function BoardCanvas(props: {
             } catch {
               // not ours
             }
-          } else if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+          } else if (e.dataTransfer.types.includes('Files')) {
+            e.preventDefault();
+            // D40: pictures dropped on the empty canvas make an Assets card there.
+            if (!readOnly && flow.current && (e.target as HTMLElement).closest('.react-flow__pane')) {
+              const at = flow.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
+              const files = Array.from(e.dataTransfer.files);
+              setNotice(`Uploading ${files.length} ${files.length === 1 ? 'file' : 'files'}…`);
+              void uploadPictures(teamId, files, remember).then(({ pictures, problems }) => {
+                if (pictures.length) run((d) => addPictures(d, pictures, { at }));
+                setNotice(problems.length ? problems.join(' ') : null);
+              });
+            }
+          }
         }}
       >
         <BoardContext.Provider value={actions}>

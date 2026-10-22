@@ -59,7 +59,7 @@ describe.skipIf(!adminUrl)('browser export matches the worker (T11.1)', () => {
     await stack?.close();
   });
 
-  async function inBrowser(format: 'png' | 'svg'): Promise<Buffer> {
+  async function inBrowser(format: 'png' | 'svg' | 'jpg'): Promise<Buffer> {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Format').selectOption(format);
@@ -69,13 +69,13 @@ describe.skipIf(!adminUrl)('browser export matches the worker (T11.1)', () => {
     await expect.poll(() => row.getAttribute('data-status'), { timeout: 60_000 }).toBe('done');
     expect(await row.getAttribute('data-where')).toBe('browser');
     const [file] = await Promise.all([page.waitForEvent('download'), row.getByRole('link', { name: 'Download' }).click()]);
-    expect(file.suggestedFilename()).toBe(`Parity_Post_${format === 'png' ? '1080x1350' : '1080x1350px'}.${format}`);
+    expect(file.suggestedFilename()).toBe(`Parity_Post_${format === 'svg' ? '1080x1350px' : '1080x1350'}.${format}`);
     const bytes = readFileSync((await file.path()) as string);
     await dialog.getByRole('button', { name: 'Close' }).click();
     return bytes;
   }
 
-  async function onServer(format: 'png' | 'svg'): Promise<Buffer> {
+  async function onServer(format: 'png' | 'svg' | 'jpg'): Promise<Buffer> {
     const [job] = (await (await page.request.post(`${url}/exports`, { data: { outputIds: ['post'], format, options: {} } })).json()) as ExportJob[];
     if (!job) throw new Error('no job');
     await expect
@@ -104,4 +104,23 @@ describe.skipIf(!adminUrl)('browser export matches the worker (T11.1)', () => {
     const [a, b] = [await inBrowser('svg'), await onServer('svg')];
     expect(a.toString('utf8')).toBe(b.toString('utf8'));
   }, 120_000);
+
+  it('JPG: full-resolution colour (4:4:4) in the browser and on the worker, close to the lossless PNG', async () => {
+    const png = await inBrowser('png');
+    const ref = await sharp(png).flatten({ background: '#ffffff' }).raw().toBuffer();
+    const psnr = async (jpg: Buffer) => {
+      const d = await sharp(jpg).removeAlpha().raw().toBuffer();
+      let se = 0;
+      for (let i = 0; i < ref.length; i++) se += ((ref[i] ?? 0) - (d[i] ?? 0)) ** 2;
+      return 10 * Math.log10((255 * 255) / (se / ref.length));
+    };
+    for (const jpg of [await inBrowser('jpg'), await onServer('jpg')]) {
+      const meta = await sharp(jpg).metadata();
+      expect(meta.format).toBe('jpeg');
+      expect([meta.width, meta.height]).toEqual([1080, 1350]);
+      // The browser's own encoder (canvas.toBlob) is 4:2:0: half the colour resolution, smeared red text.
+      expect(meta.chromaSubsampling).toBe('4:4:4');
+      expect(await psnr(jpg)).toBeGreaterThan(38);
+    }
+  }, 180_000);
 });

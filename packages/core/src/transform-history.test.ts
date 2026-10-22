@@ -9,7 +9,7 @@ const history = (dx = 0): TransformHistory => ({
 });
 const scene = { width: 3000, height: 3000 };
 
-describe('saved editor transform histories (D37)', () => {
+describe('saved editor transform histories (D41)', () => {
   it('saves and reads a composition layer history', () => {
     const doc = project();
     const result = setLayerTransform(doc, 'subject', history(10), { compositionId: 'main' }, scene);

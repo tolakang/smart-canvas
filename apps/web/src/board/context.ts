@@ -9,7 +9,7 @@ export interface BoardActions {
   readOnly: boolean;
   /** The current project document (follows every edit). */
   doc: ProjectDoc;
-  /** Opens the main preview editor on a composition (default: the main preview). */
+  /** Opens the master preview editor on a composition (default: the master preview). */
   openMainEditor: (compositionId?: string) => void;
   openOutputEditor: (outputId: string) => void;
   /** Opens the export dialog with these outputs chosen (T13.7: export a group). */
@@ -18,7 +18,7 @@ export interface BoardActions {
   author: () => OverrideAuthor;
   /** Uploaded team fonts (registered as @font-face rules), for font pickers. */
   teamFonts: TeamFont[];
-  /** Current number of inputs (for the 10-input cap). */
+  /** Current number of inputs. */
   sourceCount: number;
   editSource: (id: string, edit: (s: InputSource) => InputSource) => void;
   /** Engine deps for live output previews; null until text fonts are loaded. */
@@ -33,6 +33,9 @@ export interface BoardActions {
   disconnectOutput: (outputId: string) => void;
   /** Reconnects an output to a composition (default main): silently, or after asking when it has overrides (D21). */
   reconnectOutput: (outputId: string, compositionId?: string) => void;
+  /** D40: the picture of an Assets card shown in the inspector (while its card is selected). */
+  stackFocus: string | null;
+  setStackFocus: (sourceId: string | null) => void;
   /** Applies a core source operation; returns its error, if any. `silent` skips the undo step (metadata saves). */
   run: (op: (doc: ProjectDoc) => SourceResult, opts?: { silent?: boolean }) => SourceResult;
 }

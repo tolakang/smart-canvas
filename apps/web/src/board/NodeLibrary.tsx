@@ -1,5 +1,5 @@
 /**
- * Left node library (T13.4, D33): everything that can go on the board — inputs, a main preview, output
+ * Left node library (T13.4, D33): everything that can go on the board — inputs, a master preview, output
  * presets and the team library's saved items — with a search. Drag an item onto the canvas to place it there,
  * or click it to add it in the middle of the view (touch, keyboard). Collapses to a slim rail (remembered).
  * On tablets and phones (T13.6, D33) it floats instead — an overlay or a bottom sheet — and closes with `onClose`.
@@ -17,7 +17,8 @@ export type AddSpec =
   | { type: 'composition' }
   | { type: 'process'; op: ProcessOp }
   | { type: 'output'; preset: SizePreset | null }
-  | { type: 'library'; item: LibraryItem };
+  | { type: 'library'; item: LibraryItem }
+  | { type: 'assets' };
 
 /** Drag payload type: dropping it on the canvas adds the spec there (Board). */
 export const ADD_DRAG_TYPE = 'application/x-sc-add';
@@ -110,8 +111,11 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
         )}
       </div>
       <div className="sc-library__body">
-        {inputs.length > 0 && (
+        {(inputs.length > 0 || match('Assets', 'pictures', 'images', 'files', 'multiple')) && (
           <Group title="Inputs" note={inputsFull ? `${LIMITS.maxSources} max` : undefined}>
+            {match('Assets', 'pictures', 'images', 'files', 'multiple') && (
+              <Item spec={{ type: 'assets' }} label="Assets" hint="Many pictures in one card: drop them all at once" icon={<span className="sc-library__glyph"><Icon name="image" /></span>} disabled={false} onAdd={onAdd} />
+            )}
             {inputs.map((i) => (
               <Item key={i.label} spec={{ type: 'input', input: i.input }} label={i.label} hint={i.hint} icon={<span className="sc-library__glyph"><Icon name={i.icon} /></span>} disabled={inputsFull} onAdd={onAdd} />
             ))}
@@ -124,9 +128,9 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
             ))}
           </Group>
         )}
-        {match('Main preview', 'composition', 'variant') && (
-          <Group title="Main previews" note={compsFull ? `${LIMITS.maxCompositions} max` : undefined}>
-            <Item spec={{ type: 'composition' }} label="Main preview" hint="Another artboard, e.g. a campaign variant" icon={<span className="sc-library__glyph sc-library__glyph--main"><Icon name="preview" /></span>} disabled={compsFull} onAdd={onAdd} />
+        {match('Master preview', 'composition', 'variant') && (
+          <Group title="Master previews" note={compsFull ? `${LIMITS.maxCompositions} max` : undefined}>
+            <Item spec={{ type: 'composition' }} label="Master preview" hint="Another artboard, e.g. a campaign variant" icon={<span className="sc-library__glyph sc-library__glyph--main"><Icon name="preview" /></span>} disabled={compsFull} onAdd={onAdd} />
           </Group>
         )}
         {(shownPresets.length > 0 || match('Custom size', 'output')) && (
@@ -154,7 +158,7 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
             ))}
           </Group>
         )}
-        {q && inputs.length + processes.length + shownPresets.length + libraryItems.length === 0 && !match('Main preview', 'composition', 'variant', 'Custom size', 'output') && (
+        {q && inputs.length + processes.length + shownPresets.length + libraryItems.length === 0 && !match('Master preview', 'composition', 'variant', 'Custom size', 'output', 'Assets', 'pictures', 'images', 'files', 'multiple') && (
           <p className="sc-muted sc-library__empty">Nothing matches “{query}”.</p>
         )}
       </div>

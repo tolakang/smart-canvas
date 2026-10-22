@@ -11,8 +11,8 @@
  *   double-click a handle    undo what that handle changed (see removeForHandle)
  *
  * Touch
- *   press and hold (LONG_PRESS_MS) on a handle or the element, then drag. A finger that moves before the
- *   hold completes is a scroll: the gesture is dropped and the page scrolls as usual.
+ *   long-press a handle or the element, then drag: the hold (longPressMs) arms it, so a quick swipe or tap
+ *   never moves anything by accident; a finger that moves before then is not an edit.
  *   edge handles: the first DIRECTION_LOCK_PX of movement decide — along the handle's normal = stretch,
  *   along its edge = skew — and the choice holds until the finger lifts.
  *   double-tap a handle      reset, as above
@@ -26,12 +26,12 @@
  */
 import {
   applyOp, classifyEdgeDrag, corners, derive, docFromState, HANDLE_UV, handleFrame, isCorner, moveOp, pointAt,
-  pushOp, resetForHandle, rotateHandlePos, rotateOp, SCALE_HANDLES, scaleOp, skewOp, sub, len, toCssMatrix,
+  pushOp, resetForHandle, restoreAspect, rotateHandlePos, rotateOp, SCALE_HANDLES, scaleOp, skewOp, sub, len, toCssMatrix,
   type EdgeIntent, type HandleId, type ScaleHandle, type TransformDoc, type TransformOp, type TransformState, type Vec,
 } from './math';
 
 export interface TransformBoxOptions {
-  /** Hold time before a touch drag starts, ms. */
+  /** Hold time before a touch drag starts, ms (0 = tap and drag at once). */
   longPressMs?: number;
   /** Max time between the two taps / clicks of a double, ms. */
   doubleTapMs?: number;
@@ -58,6 +58,8 @@ export interface TransformBoxOptions {
   getScale?: () => number;
   /** Whether a corner drag keeps the proportions (given Shift). Default: unless Shift is held. */
   proportional?: (shift: boolean) => boolean;
+  /** The element's own proportions (width / height): a reset of a stretch or scale handle ends at them. */
+  aspect?: () => number | undefined;
   /** Dragging past the opposite edge mirrors the element (default true). */
   flip?: boolean;
   /**
@@ -100,6 +102,8 @@ interface Gesture {
   /** Where it went down, client px: slops and taps are measured on screen, whatever the zoom. */
   downClient: Vec;
   mods: { shift: boolean; alt: boolean; ctrl: boolean };
+  /** Armed by a touch hold (longPressMs > 0): letting go without moving is neither a drag nor a tap. */
+  armed?: boolean;
 }
 
 /** What converting client px to stage px needs. */
@@ -123,7 +127,7 @@ const RESIZE_CURSORS = ['ew-resize', 'nwse-resize', 'ns-resize', 'nesw-resize'];
 export class TransformBox {
   private state: TransformState;
   private doc: TransformDoc;
-  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove'>;
+  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'aspect'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'aspect'>;
   private readonly guides: SVGGElement;
   private guideLines: { x: number[]; y: number[] } = { x: [], y: [] };
   private readonly overlay: HTMLDivElement;
@@ -222,7 +226,7 @@ export class TransformBox {
 
   /** Reset what a handle edits — the same as double-clicking it. */
   reset(handle: HandleId): void {
-    this.doc = resetForHandle(this.doc, handle);
+    this.doc = restoreAspect(resetForHandle(this.doc, handle), handle, this.opts.aspect?.());
     this.state = derive(this.doc);
     this.scheduleRender();
     this.opts.onChange?.(this.getState(), { phase: 'reset', handle, doc: this.doc });
@@ -290,7 +294,8 @@ export class TransformBox {
     const client = { x: e.clientX, y: e.clientY };
     const box = this.measure();
     const at = this.toStage(client, box);
-    const touch = e.pointerType === 'touch';
+    // Touch waits for the hold (owner, 2026-10-21: long press to edit, moves included); 0 drags at once.
+    const touch = e.pointerType === 'touch' && this.opts.longPressMs > 0;
     this.gesture = {
       pointerId: e.pointerId, pointerType: e.pointerType, handle, phase: touch ? 'pending' : 'active',
       down: at, origin: at, last: at, start: this.getState(), op: null, moved: false, intent: null, timer: undefined, box, client, downClient: client,
@@ -314,6 +319,7 @@ export class TransformBox {
     const g = this.gesture;
     if (!g || g.phase !== 'pending') return;
     g.phase = 'active';
+    g.armed = true;
     g.timer = undefined;
     // Re-measure (the page may have scrolled or reflowed during the hold) and start from where the finger
     // is now — it may have crept within the slop — so nothing jumps.
@@ -342,7 +348,8 @@ export class TransformBox {
       return;
     }
     if (!g.moved) {
-      if (g.pointerType !== 'touch' && len(sub(g.client, g.downClient)) < CLICK_SLOP) return;
+      // A press that hasn't moved past its slop is still a click / tap (double-tap needs a still finger).
+      if (!g.armed && len(sub(g.client, g.downClient)) < (g.pointerType === 'touch' ? this.opts.touchSlopPx : CLICK_SLOP)) return;
       g.moved = true;
       this.opts.onChange?.(this.getState(), { phase: 'start', handle: g.handle, mode: this.modeOf(g) ?? undefined, doc: this.doc });
     }
@@ -359,7 +366,7 @@ export class TransformBox {
     if (!g || e.pointerId !== g.pointerId) return;
     const wasTap = (g.phase === 'pending' || !g.moved) && len(sub({ x: e.clientX, y: e.clientY }, g.downClient)) <= this.opts.touchSlopPx;
     // A touch that was held (armed) and let go without moving is neither a drag nor a tap.
-    const armedHold = g.pointerType === 'touch' && g.phase === 'active' && !g.moved;
+    const armedHold = !!g.armed && !g.moved;
     if (g.moved) {
       if (g.op) this.doc = pushOp(this.doc, g.op);
       // The state is the replayed history from here on (identical to what the drag showed).

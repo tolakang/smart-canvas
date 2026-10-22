@@ -9,7 +9,7 @@ import { DEFAULTS, type Composition, type Edge, type EdgeKind, type NFrame, type
 
 export const MAIN = 'main';
 
-/** Edge ids keep the v1 wire ids for the main preview and outputs (stable for the board and its tests). */
+/** Edge ids keep the v1 wire ids for the master preview and outputs (stable for the board and its tests). */
 export function edgeId(from: string, to: string, kind: EdgeKind): string {
   if (kind === 'composition') return `out:${to}`;
   return to === MAIN ? `in:${from}` : `in:${from}>${to}`;
@@ -143,13 +143,21 @@ interface DocV1 {
   wires: WireV1[];
 }
 
+/** D39: the default names "Main preview" / "Main preview N" read "Master preview" (a renamed one is kept). */
+function renameDefaultLabels(doc: ProjectDoc): ProjectDoc {
+  const old = /^Main preview( \d+)?$/;
+  if (!doc.compositions.some((c) => old.test(c.label))) return doc;
+  return { ...doc, compositions: doc.compositions.map((c) => (old.test(c.label) ? { ...c, label: c.label.replace('Main preview', 'Master preview') } : c)) };
+}
+
 /**
- * A stored document in the current schema. v1 (one main preview, `wires`, a `port` on each source) becomes
- * v2: the main preview is composition 'main' with rows in port order; wires become typed edges with the
- * same ids; overrides and frozen frames are kept. v2 documents are returned as they are.
+ * A stored document in the current schema. v1 (one master preview, `wires`, a `port` on each source) becomes
+ * v2: the master preview is composition 'main' with rows in port order; wires become typed edges with the
+ * same ids; overrides and frozen frames are kept. v2 documents are returned as they are, apart from the
+ * default composition names (D39).
  */
 export function migrateProjectDoc(raw: ProjectDoc | DocV1): ProjectDoc {
-  if (raw.schema === 2) return raw;
+  if (raw.schema === 2) return renameDefaultLabels(raw);
   const order = [...raw.sources].sort((a, b) => (a.port ?? 0) - (b.port ?? 0)).map((s) => s.id);
   const sources = raw.sources.map(({ port: _port, ...s }) => {
     void _port;
@@ -165,7 +173,7 @@ export function migrateProjectDoc(raw: ProjectDoc | DocV1): ProjectDoc {
     schema: 2,
     rev: raw.rev,
     name: raw.name,
-    compositions: [{ id: MAIN, label: 'Main preview', size: { ...raw.master.size }, placements: { ...raw.master.placements }, layers: order, board: { ...raw.master.board } }],
+    compositions: [{ id: MAIN, label: 'Master preview', size: { ...raw.master.size }, placements: { ...raw.master.placements }, layers: order, board: { ...raw.master.board } }],
     sources,
     processes: [],
     outputs: raw.outputs,

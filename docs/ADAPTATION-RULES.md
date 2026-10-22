@@ -1,4 +1,4 @@
-# ADAPTATION-RULES (layout engine v2 — content fit, D30)
+# ADAPTATION-RULES (layout engine v3 — the stretched grid, D38)
 
 Package: `packages/core/src/layout`. Pure and deterministic. Signature:
 
@@ -12,43 +12,40 @@ Overrides are applied last (frame fields replace computed ones). Hidden sources 
 
 ## Definitions
 - Master canvas `Wm×Hm` (design px). Output trim `Wt×Ht`, bleed `b`, full canvas `W=Wt+2b, H=Ht+2b`, safe rect `S` (see `canvasMetrics`).
-- `k = min(Wt/Wm, Ht/Hm)` — uniform contain-scale of master onto trim (v1's only scale; still the lower bound and the logo scale).
-- `K = max(Wt/Wm, Ht/Hm)` — cover-scale of master onto trim (upper bound of the content scale).
-- Source master frame `F` (from `NFrame`×master). Anchor `(ax, ay)` = centre of `F` normalized 0..1.
-- Ratio `r = Wt/Ht`. Family: `output.family` if not 'auto'; else `side` when `r ≥ 1.3`, otherwise `stack`.
+- Axis ratios `sx = Wt/Wm`, `sy = Ht/Hm`; `k = min(sx, sy)` — the uniform contain-scale of master onto trim; `g = √(sx·sy)` — the grid scale: a cell of the stretched grid keeps its area share at `g²`.
+- Source master frame `F` (from `NFrame`×master).
+- Ratio `r = Wt/Ht`. Family: `output.family` if not 'auto'; else `side` when `r ≥ 1.3`, otherwise `stack`. v3 reports the family but places every family the same way.
 - Layer order = ports (0 front). Rendering order = back→front.
 
-## Content groups (v2)
-The layers that carry the design are fitted **as a group** into the output's free space, instead of shrinking the whole master canvas into it (v1). A group is the master frames of the visible, wired, placed sources of some behaviours; overrides don't change a group (they apply last).
-- **Regions.** stack → one group of subjects, decorations and texts in `R = S`. side → visuals (subjects + decorations) in the right half of `S`, texts in a column in the left half; a side output with only visuals or only texts gives that group all of `S`.
-- **Union** `U` = bounding box of the group's master frames.
-- **Size scale** `c = clamp(min(R.w/U.w, R.h/U.h), k, max(k, K))` — the group fills `R`, never smaller than v1 and never larger than the master's cover.
-- **Spread** `px = max(c, R.w/U.w)`, `py = max(c, R.h/U.h)`. A master frame `F` maps to size `F.w·c × F.h·c` centred at `(R.cx + (F.cx − U.cx)·px, R.cy + (F.cy − U.cy)·py)`. Distances grow at least as much as sizes, so layers that don't overlap on the master don't overlap in the output; an output much taller or wider than the master is used edge to edge.
+## The stretched grid (v3)
+Think of the master canvas as a grid of coordinates `(u, v)`, 0..1 across and down. In an output the grid stretches to the trim: `(u, v)` lands at `(b + u·Wt, b + v·Ht)`. Each layer is pinned to the grid and stays on its coordinate; layers are placed one by one, never as a group.
+- **Pin, per axis.** By where the centre of `F` sits on the master: first third → the layer's start edge (left / top), middle third → its centre, last third → its end edge (right / bottom). So a layer near an edge keeps its distance to that edge in grid units; a layer in the middle keeps its centre.
+- **Fill, per axis.** A layer *fills* an axis when it reaches within 0.5% of both master edges (or past them). A filled axis pins the centre.
+- **Scale `c`.** Fills both axes → `max(sx, sy)` (it covers the output, proportionally — like a background). Fills one axis only (edge to edge across or down: a floor strip, a band) → it **stretches with the grid**: `F.x·sx, F.y·sy, F.w·sx, F.h·sy` (owner, 2026-10-22), so it still spans edge to edge; its text scale is that axis' ratio. Otherwise the layer scales with the grid: `c = min(g, room)`, never below `k`. At `g` the layer covers the same share of the canvas as its stretched grid box (`F.w·sx × F.h·sy`), so it keeps its visual weight in tall and wide outputs. One scale for both axes, so pictures and text keep their proportions.
+- **Room.** On each axis where the layer lies inside the master, the scale is capped so the layer, hung from its pin, stays inside the trim: pinned start at `X` → `(Wt − X)/F.w`; end → `X/F.w`; centre → `2·min(X, Wt − X)/F.w` (same for y). A layer hanging off a master edge has no cap on that axis. At `k` a layer inside the master always fits, so `room ≥ k`.
+- **Frame.** Size `F.w·c × F.h·c`; on each axis the pin point (master coordinate `a = F.lo + p·F.size`, `p` = 0, ½ or 1) lands at `b + (a/Wm)·Wt` and the frame hangs from it: `x = b + (a/Wm)·Wt − p·w` (same for y). Rotation, skew and `fitted` are kept.
+- A layer inside the master stays inside the trim (the room cap). There is no safe-area clamp.
 
 ## Rules by behaviour
 **background (image)** — cover on the full canvas (incl. bleed).
 `s = max(W/iw, H/ih)`; size `iw·s × ih·s`; `left = clamp(W/2 − fx·iw·s, W − iw·s, 0)`; `top = clamp(H/2 − fy·ih·s, H − ih·s, 0)` where `(fx,fy)` = focal point.
 **background (fill)** — rect `0,0,W,H`.
 
-**subject** — mapped by its group (size `F·c`, spread centre).
-- Then fit into `S`: if larger, scale down by `min(S.w/w, S.h/h)`; translate to stay inside `S` (add warning `clamped` if moved/scaled).
+**subject / decoration** — on the stretched grid (above). A decoration hanging off a master edge hangs off the output edge too.
 
-**decoration** — same as subject but no clamp (may bleed off edges).
-
-**logo** — not in a content group (unchanged from v1). Size `F.w·k × F.h·k`; enforce min width `minLogoWidthPct% · min(Wt,Ht)` keeping aspect (warning `min-logo` if enforced). Corner = nearest to master centre of `F` (`ax<0.5` left else right; `ay<0.5` top else bottom). Placed flush to that corner of `S`.
+**logo** — on the stretched grid, then a minimum width `minLogoWidthPct% · min(Wt,Ht)`: if `F.w·c` is smaller, `c = minW/F.w` (aspect kept, warning `min-logo`); the logo grows away from its pin, so a corner logo stays in its corner.
 
 **text** — fit-to-box.
-1. Start size `f0 = style.fontSizePx · c` (its group's size scale).
-2. Box (stack): width `bw = min(F.w·px, R.w)` (it widens with the layout), height `bh = min(F.h·c, R.h)`, centred at the text's spread centre. Side family: the column (left half of `S`, or all of `S` without visuals), `bh = min(F.h·c, S.h)`.
+1. Start size `f0 = style.fontSizePx · c` (the box's grid scale).
+2. Box: the master text box on the stretched grid (above), `bw × bh`.
 3. Break lines with greedy word wrap. Khmer (language km, or auto-detected when text contains U+1780–17FF): break only at `Intl.Segmenter('km',{granularity:'word'})` boundaries; never inside a word unless a single word is wider than `bw` (then fall back to grapheme breaks). Latin: break at spaces.
 4. Result font = largest size on a 0.5 px grid, `≤ f0` and `≥ minFontPx`, such that `lines ≤ maxLines` and `lines·size·lineHeight ≤ bh`. If even `minFontPx` fails → use `minFontPx`, set warning `text-overflow`.
 5. Line height default: 1.2 latin, 1.6 khmer (tunable constants in `rules.config.ts`).
-6. Position: stack → the box above; then clamp into `S`. Text alignment from style.
-7. **side family**: all text sources form one column (`x = column.x`, `w = column.w`), stacked in master top→bottom order with gap `2%·Ht`; block is vertically centred in `S`. If the block is taller than `S.h`, scale all font sizes by `S.h/blockHeight` (not below `minFontPx`).
-8. Override rule: if `override.style.fontSizePx` exists, use it as-is (no fit). If only `override.frame` exists, fit still runs inside that frame.
+6. Position: the box above. Text alignment from style.
+7. Override rule: if `override.style.fontSizePx` exists, use it as-is (no fit). If only `override.frame` exists, fit still runs inside that frame.
 
 ## Output-only layers (T12.4, D32)
-An output's own `layer` ports (`output.layers`, front first) are drawn **above** the composition's layers, back→front, while a `layer` edge feeds them. They are not in a content group and don't move the composition's layers. A source the composition already draws is skipped here (the composition wins). Overrides, `hidden` and frozen frames apply as for any layer. Default frames, in the output's canvas:
+An output's own `layer` ports (`output.layers`, front first) are drawn **above** the composition's layers, back→front, while a `layer` edge feeds them. They are not on the master's grid and don't move the composition's layers. A source the composition already draws is skipped here (the composition wins). Overrides, `hidden` and frozen frames apply as for any layer. Default frames, in the output's canvas:
 - **background** — as above (cover / full rect).
 - **logo** — top-right corner of `S`; width `max(0.15·min(S.w,S.h), minLogoWidthPct%·min(Wt,Ht))`, height by the asset's aspect (square if unknown).
 - **text** — a full-width band over the bottom quarter of `S`: `{S.x, S.y + 0.75·S.h, S.w, 0.25·S.h}`; fit-to-box starting at `fontSizePx·k`.
@@ -57,28 +54,27 @@ An output's own `layer` ports (`output.layers`, front first) are drawn **above**
 ## Worked examples (must be unit tests)
 Mock measure for tests: `width = text.length · 0.5 · fontPx`.
 
-**A. Subject alone, stack.** Master 3000×3000; only the subject is wired, frame `{x:900,y:750,w:1200,h:1800}`. Output 1080×1350 px, no bleed: `S={54,54,972,1242}`, `k=0.36`, `K=0.45`.
-`U=F`; `c = clamp(min(0.81, 0.69), 0.36, 0.45) = 0.45` → 540×810, centred in `S` at (540, 675) → frame `{x:270, y:270, w:540, h:810}`. (v1: `{324, 418.5, 432, 648}`.)
+**A. Subject.** Master 3000×3000; subject frame `{x:900,y:750,w:1200,h:1800}` (centre (0.5, 0.55): centre pins). Other layers don't change it.
+- 1080×1350 px, no bleed: `sx=0.36, sy=0.45, g=√0.162≈0.402492` → 482.99×724.49 centred at (540, 742.5) → `{x:298.504658, y:380.256988, w:482.990683, h:724.486025}`.
+- Story 1080×1920: `g = √(0.36·0.64) = 0.48` → 576×864 centred at (540, 0.55·1920 = 1056) → `{x:252, y:624, w:576, h:864}`.
+- Banner 3000×1000: `g = √(1/3) ≈ 0.577` would be 1039 tall; centred at y 550 the room is `2·450/1800 = 0.5` → 600×900 → `{x:1200, y:100, w:600, h:900}`.
+- With 1 in (96 px) bleed on 1080×1350: the 1080×1350 frame moved by (96, 96).
 
-**G. Subject + headline, stack.** As A, plus the headline wired at its default `{x:240,y:2280,w:2520,h:480}`.
-`U = {240,750,2520,2010}`; `c = px = 972/2520 = 0.385714`; `py = 1242/2010 = 0.617910`; `U` centre (1500, 1755).
-- subject: centre (540, 675 + (1650 − 1755)·py) → `{x:308.571429, y:262.976546, w:462.857143, h:694.285714}`.
-- headline box: `w = min(2520·px, 972) = 972`, `h = 480·c = 185.142857`, centre y `675 + 765·py` → `{x:54, y:1055.130064, w:972, h:185.142857}`; `f0 = 160·c`.
+**J. Near an edge.** Subject `{x:2400,y:1200,w:500,h:600}`: centre x at 0.883 → end pin, its right edge at `u = 2900/3000`; centre y 0.5 → centre. Story 1080×1920 (`g = 0.48`): 240×288, right edge at `u·1080 = 1044`, centre y 960 → `{x:804, y:816, w:240, h:288}`.
 
-**B. Subject, side (wide).** Same master/subject, headline wired. Output 3000×1000 px, family auto (r=3 → side); `S={x:50,y:50,w:2900,h:900}`, `k=1/3`, `K=1`.
-Visuals get the right half `R = {1500,50,1450,900}`: `c = min(1450/1200, 900/1800) = 0.5` → 600×900 centred in `R` → `{x:1925, y:50, w:600, h:900}`. Without the headline the subject gets all of `S` → `{x:1200, y:50, w:600, h:900}`. (v1: `{2025, 250, 400, 600}`.)
+**L. Room.** Story 1080×1920, subject `{x:240,y:1000,w:2520,h:300}` (centre pins): `g = 0.48` would be 1209.6 wide; centred at x 540 the room is `1080/2520 ≈ 0.428571` → `{x:0, w:1080, h:128.571429}`, centre y at `(1150/3000)·1920 = 736`.
 
-**H. Small artwork in extreme formats.** Only a subject `{300,300,1000,1000}` (a badge). Story 1080×1920: `c = clamp(min(972/1000, 1812/1000), 0.36, 0.64) = 0.64` → `{x:220, y:640, w:640, h:640}`. Banner 1200×630: `c = clamp(min(1137/1000, 567/1000), 0.21, 0.4) = 0.4` → `{x:400, y:115, w:400, h:400}`. (v1 kept it at `k`: 360 and 210 px.)
+**K. Filling layers.** A subject `{0,0,3000,3000}` fills both axes: 1080×1350 → `c = 0.45` → `{x:−135, y:0, w:1350, h:1350}`; 3000×1000 → `c = 1` → `{x:0, y:−1000, w:3000, h:3000}`. A strip `{x:0,y:2400,w:3000,h:600}` spans x only, so it stretches with the grid: story 1080×1920 → `{x:0, y:1536, w:1080, h:384}`; 3000×1000 → `{x:0, y:800, w:3000, h:200}`.
 
 **C. Background cover with focal.** Image 4000×3000, focal (0.7, 0.4). Output 1080×1350, no bleed.
 `s = max(0.27, 0.45) = 0.45` → 1800×1350; `left = clamp(540 − 0.7·1800, −720, 0) = −720`; `top = clamp(675 − 0.4·1350, 0, 0) = 0` → frame `{x:−720, y:0, w:1800, h:1350}`.
 
-**D. Logo.** Master logo frame `{x:150,y:150,w:400,h:200}` (top-left). Output 1080×1350: `k=0.36` → 144×72; min width `8%·1080 = 86.4` ok; placed at S corner `S.x=S.y=54` → `{x:54,y:54,w:144,h:72}`. Output 3000×1000: `k=1/3` → 133.33×66.67 at `{x:50,y:50}`.
+**D. Logo.** Master logo frame `{x:150,y:150,w:400,h:200}` (top-left: start pins). Output 1080×1350: `c = g ≈ 0.402492` → 160.997×80.498 at `(150·0.36, 150·0.45)` → `{x:54, y:67.5}`; min width `8%·1080 = 86.4` ok. Output 3000×1000: `c = √(1/3)` → 230.94×115.47 at `{x:150, y:50}`. Top-right `{x:2450,…}` → right edge at `2850·0.36 = 1026` → `x = 1026 − 160.997`. A 100×50 logo at (150,150) on 1080×1350: 40.25 < 86.4 → `{x:54, y:67.5, w:86.4, h:43.2}`, warning `min-logo`.
 
-**E. Text fit.** Master 3000², headline frame `{x:300,y:300,w:2400,h:500}`, font 200, text `"AAAAA BBBBB CCCCC DDDDD EEEEE"` (29 chars), default subject `{600,360,1800,1800}` also wired. Output 1080×1350, stack.
-`U = {300,300,2400,1860}`; `c = px = 972/2400 = 0.405`, `py = 1242/1860`; `f0 = 81`, `bw = 972`, `bh = 202.5`; box `{x:54, y:119.685484, w:972, h:202.5}`.
-- maxLines 2 → **81 px**, 2 lines (4 words + 1), height 194.4 ≤ 202.5.
-- maxLines 1 → largest 0.5-step with `29·0.5·f ≤ 972` → **67 px**, 1 line.
+**E. Text fit.** Master 3000², headline frame `{x:300,y:300,w:2400,h:500}` (centre x 0.5 → centre; centre y 0.18 → top edge), font 200, text `"AAAAA BBBBB CCCCC DDDDD EEEEE"` (29 chars). Output 1080×1350.
+Box: `c = g ≈ 0.402492` → 965.98×201.25 at `x = 540 − 482.99`, `y = 300·0.45 = 135`; `f0 ≈ 80.5`.
+- maxLines 2 → **80 px**, 2 lines (4 words + 1), height 192 ≤ 201.25.
+- maxLines 1 → largest 0.5-step with `29·0.5·f ≤ 965.98` → **66.5 px**, 1 line.
 
 **I. Output-only layers.** Output 1080×1350 px, no bleed: `S={54,54,972,1242}`, `k=0.36`.
 - Logo, asset 400×200: `w = max(145.8, 86.4) = 145.8`, `h = 72.9` → `{x:880.2, y:54, w:145.8, h:72.9}`.

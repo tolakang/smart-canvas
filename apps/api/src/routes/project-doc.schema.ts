@@ -14,7 +14,7 @@ const size = {
   required: ['width', 'height', 'unit'],
   properties: { width: { type: 'number', exclusiveMinimum: 0 }, height: { type: 'number', exclusiveMinimum: 0 }, unit: { enum: ['px', 'mm'] } },
 } as const;
-const frame = { type: 'object', required: ['x', 'y', 'w', 'h'], properties: { x: num, y: num, w: num, h: num, rotation: num, shear: num } } as const;
+const frame = { type: 'object', required: ['x', 'y', 'w', 'h'], properties: { x: num, y: num, w: num, h: num, rotation: num, shear: num, fitted: { type: 'boolean' } } } as const;
 
 const transformOrigin = {
   type: 'object',
@@ -31,7 +31,7 @@ const transformHistory = {
   required: ['origin', 'ops'],
   properties: { origin: transformOrigin, ops: { type: 'array', maxItems: 2000, items: transformOp } },
 } as const;
-/** D37: saved editor transform histories for one scene. */
+/** D41: saved editor transform histories for one scene. */
 const layerTransforms = {
   type: 'object',
   required: ['scene', 'layers'],
@@ -124,6 +124,19 @@ const group = {
   },
 } as const;
 
+/** D40: an Assets card (its pictures by input id, card order). */
+const stack = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'label', 'board', 'items'],
+  properties: {
+    id,
+    label: { type: 'string', maxLength: 200 },
+    board: point,
+    items: { type: 'array', maxItems: LIMITS.maxSources, items: id },
+  },
+} as const;
+
 export const projectDocV2Schema = {
   type: 'object',
   additionalProperties: false,
@@ -138,6 +151,7 @@ export const projectDocV2Schema = {
     outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: output },
     edges: { type: 'array', maxItems: maxNodes * 4, items: edge },
     groups: { type: 'array', maxItems: LIMITS.maxGroups, items: group },
+    stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
   },
 } as const;
 
