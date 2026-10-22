@@ -66,7 +66,7 @@ describe.skipIf(!adminUrl)('Assets card: many pictures in one input (D40)', () =
     expect(items).toHaveLength(3);
     expect(items.map((id) => d.sources.find((s) => s.id === id)?.label)).toEqual(['pic-1', 'pic-2', 'pic-3']);
     for (const id of items) expect(wiredLayers(d, 'main').has(id)).toBe(true);
-    expect(mainComposition(d).layers.slice(0, 3)).toEqual(items); // first file in front
+    expect(mainComposition(d).layers.slice(2, 5)).toEqual(items); // first file in front of the elements, under logo and headline (D45)
     // The master preview lists each picture as its own row; the board shows one card, not three nodes.
     expect(await page.locator('.react-flow__node-mainNode').getByText('pic-2', { exact: true }).count()).toBe(1);
     expect(await page.locator('.react-flow__node-inputNode').filter({ hasText: 'pic-2' }).count()).toBe(0);

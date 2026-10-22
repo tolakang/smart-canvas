@@ -849,3 +849,8 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-hl-slot .sc-assets__pick { height: 72px; aspect-ratio: auto; }
 .sc-hl-use { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
 .sc-node--headline > .react-flow__handle { top: 26px; }
+
+/* D45: where each layer comp group starts in a master preview's rows. */
+.sc-port--group-start { position: relative; margin-top: 14px; }
+.sc-port--group-start::before { content: attr(data-group-label); position: absolute; left: 22px; top: -14px; font-size: 10px; line-height: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
+.sc-port--group-start:first-child { margin-top: 12px; }

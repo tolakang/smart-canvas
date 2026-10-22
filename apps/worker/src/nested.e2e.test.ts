@@ -72,7 +72,8 @@ describe.skipIf(!adminUrl)('nested compositions (T12.8)', () => {
     await page.mouse.move(b.x, b.y, { steps: 20 });
     await page.mouse.up();
     await expect.poll(async () => (await doc()).edges.some((e) => e.from === 'badge' && e.to === 'main' && e.kind === 'layer')).toBe(true);
-    expect((await doc()).compositions[0]?.layers[0]).toBe('badge');
+    // An element: in front of the other elements, under the logo and the headline (D45).
+    await expect.poll(async () => (await doc()).compositions[0]?.layers.indexOf('badge')).toBe(2);
     const nested = page.getByLabel('Master preview', { exact: true }).locator('.sc-render [data-source-id="badge"][data-kind="nested"]');
     await nested.locator('[data-source-id="subject"]').waitFor();
     expect(await nested.locator('[data-source-id="headline"]').innerText()).toContain('Hello');

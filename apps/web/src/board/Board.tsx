@@ -4,6 +4,7 @@ import {
   languagePairs,
   connectStack,
   fitFrames,
+  orderLayers,
   addComposition,
   addSourceFromLibrary,
   addOutput,
@@ -369,7 +370,9 @@ function BoardCanvas(props: {
 
   /** The single way the doc changes from the UI: recorded for undo, board state follows, autosave picks it up. */
   const apply = useCallback(
-    (doc: ProjectDoc, key: string | null = null) => {
+    (next: ProjectDoc, key: string | null = null) => {
+      // D45: rows stay in the layer comp's groups (logo, headline, elements, background) whatever the edit.
+      const doc = orderLayers(next);
       if (readOnly || doc === docRef.current) return;
       history.current.record(docRef.current, key);
       syncHistory();
@@ -443,7 +446,8 @@ function BoardCanvas(props: {
   // screen). Not an undo step — it's how the doc is shown; undoing to an unfitted doc just fits it again.
   useEffect(() => {
     if (readOnly) return;
-    const fitted = fitFrames(docRef.current, sizes);
+    // D45 too: a project saved before the fixed order gets it here, also without an undo step.
+    const fitted = orderLayers(fitFrames(docRef.current, sizes));
     if (fitted !== docRef.current) show(fitted);
   }, [doc, sizes, readOnly, show]);
 
