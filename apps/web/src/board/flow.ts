@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { assetStacks, compositionById, coreRules, type CoreRuleNode, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { stackKind, assetStacks, compositionById, type CoreRuleNode, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -35,7 +35,7 @@ export const compositionIdOfNode = (nodeId: string | null | undefined): string |
 // Not 'input'/'output': React Flow has built-in node types (and CSS) under those names.
 export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
 /** D40: an Assets card and its pictures (inputs drawn inside it), in card order. */
-export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode'>;
+export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode' | 'textNode'>;
 /** D46: a Preset node and its rows (sizes, in order), each with whether it is wired. */
 export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
 /** D47: a Core Rule node (what it shows is derived from the doc). */
@@ -190,7 +190,8 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
     ...stacks.map(
       (stack): StackFlowNode => ({
         id: stackNodeId(stack.id),
-        type: 'assetsNode',
+        // D49: a Text node's slots are typed into on the card; Image and Logo nodes hold pictures.
+        type: stackKind(stack) === 'text' ? 'textNode' : 'assetsNode',
         position: stack.board,
         data: { stack, items: stack.items.flatMap((id) => byId.get(id) ?? []) },
         deletable: false,

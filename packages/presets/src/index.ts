@@ -13,6 +13,7 @@ export const presets: readonly SizePreset[] = [
   // Campaign set (owner, 2026-10-22): Facebook, Instagram, Google Display Network, app banners, website, gift, PR.
   { id: '9d19df09-3cae-57f0-a4d9-d7bcd03fa75e', teamId: null, group: 'social', name: 'FB 2400×2400', size: { width: 2400, height: 2400, unit: 'px' } },
   { id: '59a45433-2fac-5006-a86c-a161af6312d6', teamId: null, group: 'social', name: 'IG 2400×3000', size: { width: 2400, height: 3000, unit: 'px' } },
+  { id: '84b2b24f-d8bf-5dae-bede-4b0516c90706', teamId: null, group: 'social', name: 'Story 1080×1920', size: { width: 1080, height: 1920, unit: 'px' } },
   { id: '1f1ac5ca-59c7-52f2-9892-6e913cbeeb58', teamId: null, group: 'social', name: 'GDN 1200×628', size: { width: 1200, height: 628, unit: 'px' } },
   { id: '296e9ae8-dff0-51d6-95f9-dbf1016b3e8a', teamId: null, group: 'social', name: 'GDN 1200×200', size: { width: 1200, height: 200, unit: 'px' } },
   { id: 'f477f6ef-8757-5840-b4be-0e3ea0858799', teamId: null, group: 'social', name: 'GDN 900×1600', size: { width: 900, height: 1600, unit: 'px' } },
@@ -20,8 +21,8 @@ export const presets: readonly SizePreset[] = [
   { id: 'df7bf35d-bee9-57cb-8946-373740cb6cd0', teamId: null, group: 'social', name: 'GDN 320×100', size: { width: 320, height: 100, unit: 'px' } },
   { id: '20f6cedb-9508-5113-ad2e-25c3c30b9371', teamId: null, group: 'social', name: 'GDN 440×140', size: { width: 440, height: 140, unit: 'px' } },
   { id: '7c20c2c7-892f-584c-b920-c5db28fdb1b5', teamId: null, group: 'social', name: 'GDN 728×90', size: { width: 728, height: 90, unit: 'px' } },
-  { id: '82574b03-e289-53e2-a9cc-354d4c1fa614', teamId: null, group: 'social', name: 'App banner thumbnail 1020×396', size: { width: 1020, height: 396, unit: 'px' } },
-  { id: '92810c45-5027-523b-9200-ffe9b8a764e8', teamId: null, group: 'social', name: 'App banner full 1080×2340', size: { width: 1080, height: 2340, unit: 'px' } },
+  { id: '82574b03-e289-53e2-a9cc-354d4c1fa614', teamId: null, group: 'social', name: 'App banner 1020×396', size: { width: 1020, height: 396, unit: 'px' } },
+  { id: '92810c45-5027-523b-9200-ffe9b8a764e8', teamId: null, group: 'social', name: 'App banner 1080×2340', size: { width: 1080, height: 2340, unit: 'px' } },
   { id: 'ddb5b286-93b5-5df3-9600-5be08323f5a4', teamId: null, group: 'social', name: 'Website 1600×385', size: { width: 1600, height: 385, unit: 'px' } },
   { id: '187d74c2-8bee-552a-9077-4a51822e942b', teamId: null, group: 'social', name: 'Website 639×220', size: { width: 639, height: 220, unit: 'px' } },
   { id: 'd16b6bb3-732a-59ec-9613-64febe14a701', teamId: null, group: 'social', name: 'Website 450×307', size: { width: 450, height: 307, unit: 'px' } },

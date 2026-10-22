@@ -286,6 +286,8 @@ export interface AssetStack {
   label: string;
   board: { x: number; y: number };
   items: string[];
+  /** D49: what the card holds — pictures (default, the Image node), logos (the Logo node) or text slots (the Text node). */
+  kind?: 'image' | 'logo' | 'text';
 }
 
 // ---------- team-level records ----------

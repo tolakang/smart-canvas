@@ -31,9 +31,19 @@ const editStack = (doc: ProjectDoc, id: string, edit: (st: AssetStack) => AssetS
   return { ok: true, doc: withStacks(doc, stacks.map((st) => (st.id === id ? edit(st) : st))) };
 };
 
-export function addStack(doc: ProjectDoc, spec: { id: string; label?: string; board: { x: number; y: number } }): SourceResult {
+/** D49: a card's default name by what it holds. */
+export const STACK_LABEL = { image: 'Image', logo: 'Logo', text: 'Text' } as const;
+export const stackKind = (st: Pick<AssetStack, 'kind'>): 'image' | 'logo' | 'text' => st.kind ?? 'image';
+
+export function addStack(doc: ProjectDoc, spec: { id: string; label?: string; board: { x: number; y: number }; kind?: AssetStack['kind'] }): SourceResult {
   if ((doc.stacks ?? []).some((st) => st.id === spec.id) || doc.sources.some((s) => s.id === spec.id)) return { ok: false, error: 'invalid' };
-  const stack: AssetStack = { id: spec.id, label: spec.label?.trim() || 'Assets', board: { x: Math.round(spec.board.x), y: Math.round(spec.board.y) }, items: [] };
+  const stack: AssetStack = {
+    id: spec.id,
+    label: spec.label?.trim() || (spec.kind ? STACK_LABEL[spec.kind] : 'Assets'),
+    board: { x: Math.round(spec.board.x), y: Math.round(spec.board.y) },
+    items: [],
+    ...(spec.kind && spec.kind !== 'image' ? { kind: spec.kind } : {}),
+  };
   return { ok: true, doc: withStacks(doc, [...assetStacks(doc), stack]) };
 }
 
@@ -81,7 +91,8 @@ export function addPicturesToStack(doc: ProjectDoc, stackId: string, pictures: r
   let next = doc;
   // Added back to front, so the first file ends up in front.
   for (const p of [...pictures].reverse()) {
-    const added = addSource(next, { id: p.id, kind: p.kind, label: p.label, behavesLike: 'subject', board: stack.board });
+    // D49: a Logo node's pictures behave as logos (minimum size, the logo group).
+    const added = addSource(next, { id: p.id, kind: p.kind, label: p.label, behavesLike: stackKind(stack) === 'logo' ? 'logo' : 'subject', board: stack.board });
     if (!added.ok) return added;
     next = { ...added.doc, sources: added.doc.sources.map((s) => (s.id === p.id && (s.content.kind === 'image' || s.content.kind === 'vector') ? { ...s, content: { ...s.content, assetId: p.assetId } } : s)) };
     for (const comp of comps) {
@@ -93,6 +104,28 @@ export function addPicturesToStack(doc: ProjectDoc, stackId: string, pictures: r
   const cells = dropGrid(pictures.length);
   for (const comp of comps) next = withComposition(next, comp, (c) => ({ ...c, placements: { ...c.placements, ...Object.fromEntries(pictures.map((p, i) => [p.id, cells[i] as NFrame])) } }));
   return editStack(next, stackId, (st) => ({ ...st, items: [...st.items, ...pictures.map((p) => p.id)] }));
+}
+
+/**
+ * D49: a new text slot in a Text node — its own text layer (its own box in each layout, its own overrides),
+ * wired where the card's other slots are; the box sits under the last slot's on the master.
+ */
+export function addTextToStack(doc: ProjectDoc, stackId: string, spec: { id: string; label?: string; text?: string }): SourceResult {
+  const stack = assetStacks(doc).find((st) => st.id === stackId);
+  if (!stack) return { ok: false, error: 'not_found' };
+  const comps = stackCompositions(doc, stackId);
+  const added = addSource(doc, { id: spec.id, kind: 'text', label: spec.label?.trim() || `Text ${stack.items.length + 1}`, behavesLike: 'text', board: stack.board });
+  if (!added.ok) return added;
+  let next = spec.text === undefined ? added.doc : { ...added.doc, sources: added.doc.sources.map((s) => (s.id === spec.id && s.content.kind === 'text' ? { ...s, content: { ...s.content, text: spec.text ?? '' } } : s)) };
+  for (const comp of comps) {
+    const wired = connectSource(next, spec.id, undefined, comp);
+    if (!wired.ok) return wired;
+    next = wired.doc;
+  }
+  const n = stack.items.length;
+  const box: NFrame = { x: 0.1, y: Math.min(0.85, 0.1 + n * 0.12), w: 0.8, h: 0.1 };
+  for (const comp of comps) next = withComposition(next, comp, (c) => ({ ...c, placements: { ...c.placements, [spec.id]: box } }));
+  return editStack(next, stackId, (st) => ({ ...st, items: [...st.items, spec.id] }));
 }
 
 /** Moves an item within its card (card order only; layer order is set on the master preview). */

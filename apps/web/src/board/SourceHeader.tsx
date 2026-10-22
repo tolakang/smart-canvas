@@ -1,7 +1,7 @@
-import { renameSource, type InputSource } from '@smart-canvas/core';
+import { deleteSource, renameSource, type InputSource } from '@smart-canvas/core';
 import { useState, type KeyboardEvent } from 'react';
 import { useBoard } from './context';
-import { Icon } from './LayerRow';
+import { confirmDelete, Icon } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
@@ -51,6 +51,11 @@ export function SourceHeader({ source }: { source: InputSource }) {
         <span className="sc-node__mark" title="From the team library" aria-label="From library">
           <Icon name="library" />
         </span>
+      )}
+      {!readOnly && (
+        <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Delete ${source.label}`} title="Delete this node" onClick={() => confirmDelete(source.label) && run((doc) => deleteSource(doc, source.id))}>
+          <Icon name="trash" />
+        </button>
       )}
     </div>
   );

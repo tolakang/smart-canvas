@@ -1,13 +1,13 @@
 /**
  * The page-3 board (D49, owner 2026-10-22: "Use new structure core and UI UX from pdf"): asset nodes — Logo,
- * Headline (Khmer / English), Image (an Assets card), Background (vertical / horizontal) — wired into one Layer
+ * Headline (Khmer / English), Text (text slots), Image, Background (vertical / horizontal) — wired into one Layer
  * Comp (the master, with its square / vertical / horizontal layouts, D42) beside its Core Rule, which feeds Preset
  * nodes, each size wired to its Preview. Nothing else is on the board.
  *
- * `boardStructure` brings any document into that shape, keeping what fits: text inputs, process nodes, other
- * master previews and Core Rule nodes are removed (their wires and rows with them); loose pictures move into the
- * Image node; an output outside a Preset node joins a "Sizes" preset node; a missing Logo / Headline / Image /
- * Background node is added, wired; the master gets its vertical and horizontal layouts. It returns `doc` itself
+ * `boardStructure` brings any document into that shape, keeping what fits: process nodes, other master previews
+ * and Core Rule nodes are removed (owner: "delete process nodes and extra master previews"), their wires and rows
+ * with them; inputs outside a node join the node of their kind (logo, text, picture); an output outside a Preset
+ * node joins a "Sizes" preset node; a missing Logo / Headline / Text / Image / Background node is added; the master gets its vertical and horizontal layouts. It returns `doc` itself
  * when the document is already in shape. Pure; ids of what it adds are derived from the doc, so it is repeatable.
  */
 import { edgeId, MAIN } from './graph';
@@ -20,17 +20,18 @@ import { deleteProcess } from './processes';
 import { createProjectDoc } from './project';
 import { sizeInDesignPx } from './render';
 import { connectSource } from './ports';
-import { addSource, deleteSource } from './sources';
-import { addStack, assetStacks } from './stacks';
+import { addSource } from './sources';
+import { addStack, assetStacks, stackKind } from './stacks';
 
 /** Where the page-3 nodes go on a new board (board px). */
 export const BOARD_LAYOUT = {
   logo: { x: 0, y: 0 },
   headline: { x: 320, y: 0 },
-  image: { x: 640, y: 0 },
-  background: { x: 960, y: 0 },
-  comp: { x: 300, y: 520 },
-  preset: { x: 300, y: 1100 },
+  text: { x: 640, y: 0 },
+  image: { x: 960, y: 0 },
+  background: { x: 1280, y: 0 },
+  comp: { x: 420, y: 560 },
+  preset: { x: 420, y: 1160 },
 } as const;
 
 const uniqueId = (doc: ProjectDoc, base: string): string => {
@@ -44,7 +45,7 @@ const step = (doc: ProjectDoc, r: { ok: true; doc: ProjectDoc } | { ok: false })
 /** The document in the page-3 shape (see above); `doc` itself when nothing changes. */
 export function boardStructure(doc: ProjectDoc): ProjectDoc {
   let next = doc;
-  // 1. Off the board: process nodes, other master previews (not the master's own layouts), text inputs, Core Rule nodes.
+  // 1. Off the board: process nodes, other master previews (not the master's own layouts), Core Rule nodes.
   for (const p of next.processes) next = step(next, deleteProcess(next, p.id));
   for (const c of next.compositions) {
     if (c.id === MAIN || c.guide?.of === MAIN) continue;
@@ -53,31 +54,27 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
     next = step(next, deleteComposition(next, c.id));
     next = { ...next, edges: [...next.edges, ...outs.filter((o) => !next.edges.some((e) => e.kind === 'composition' && e.to === o)).map((o) => ({ id: edgeId(MAIN, o, 'composition'), from: MAIN, to: o, kind: 'composition' as const }))] };
   }
-  for (const s of next.sources.filter((x) => x.kind === 'text' || x.behavesLike === 'text')) next = step(next, deleteSource(next, s.id));
   if (next.coreRules) {
     next = { ...next };
     delete next.coreRules;
   }
 
-  // 2. The asset nodes: loose pictures join the Image node; each kind of node exists at least once.
+  // 2. The asset nodes. Inputs outside a node join the first node of their kind: logos the Logo node, text the
+  // Text node, other pictures the Image node (backgrounds are each their own Background node). Each kind of
+  // node exists at least once.
   const inCards = new Set([...assetStacks(next).flatMap((s) => s.items), ...languagePairs(next).flatMap((p) => [p.km, p.en])]);
-  const loose = next.sources.filter((s) => !inCards.has(s.id) && s.behavesLike !== 'logo' && s.behavesLike !== 'background');
-  if (assetStacks(next).length === 0 || loose.length) {
-    let stack = assetStacks(next)[0];
-    if (!stack) {
-      const id = uniqueId(next, 'images');
-      next = step(next, addStack(next, { id, label: 'Image', board: BOARD_LAYOUT.image }));
-      stack = assetStacks(next)[0];
+  const kindOf = (b: string, k: string): 'logo' | 'text' | 'image' | null => (b === 'background' ? null : b === 'logo' ? 'logo' : b === 'text' || k === 'text' ? 'text' : 'image');
+  for (const kind of ['logo', 'text', 'image'] as const) {
+    const loose = next.sources.filter((x) => !inCards.has(x.id) && kindOf(x.behavesLike, x.kind) === kind).map((x) => x.id);
+    let card = assetStacks(next).find((st) => stackKind(st) === kind);
+    if (!card) {
+      next = step(next, addStack(next, { id: uniqueId(next, kind === 'image' ? 'images' : `${kind}s`), board: BOARD_LAYOUT[kind], ...(kind === 'image' ? { label: 'Image' } : { kind }) }));
+      card = assetStacks(next).find((st) => stackKind(st) === kind);
     }
-    if (stack && loose.length) {
-      const sid = stack.id;
-      next = { ...next, stacks: assetStacks(next).map((s) => (s.id === sid ? { ...s, items: [...s.items, ...loose.map((l) => l.id)] } : s)) };
+    if (card && loose.length) {
+      const id = card.id;
+      next = { ...next, stacks: assetStacks(next).map((st) => (st.id === id ? { ...st, items: [...st.items, ...loose] } : st)) };
     }
-  }
-  if (!next.sources.some((s) => s.behavesLike === 'logo')) {
-    const id = uniqueId(next, 'logo');
-    next = step(next, addSource(next, { id, kind: 'vector', label: 'Logo', behavesLike: 'logo', board: BOARD_LAYOUT.logo }));
-    next = step(next, connectSource(next, id));
   }
   if (languagePairs(next).length === 0) {
     const id = uniqueId(next, 'headline');
@@ -118,13 +115,9 @@ export function createBoardProject(name: string): ProjectDoc {
   for (const s of doc.sources) doc = step(doc, connectSource(doc, s.id));
   doc = { ...doc, compositions: doc.compositions.map((c) => (c.id === MAIN ? { ...c, label: 'Layer comp', board: { ...BOARD_LAYOUT.comp } } : c)) };
   doc = boardStructure(doc);
-  const place = (b: string) => (b === 'logo' ? BOARD_LAYOUT.logo : b === 'background' ? BOARD_LAYOUT.background : null);
   return {
     ...doc,
-    sources: doc.sources.map((s) => {
-      const at = place(s.behavesLike);
-      return at ? { ...s, board: { ...at } } : s;
-    }),
-    ...(doc.stacks ? { stacks: doc.stacks.map((st, i) => (i === 0 ? { ...st, board: { ...BOARD_LAYOUT.image } } : st)) } : {}),
+    sources: doc.sources.map((s) => (s.behavesLike === 'background' ? { ...s, board: { ...BOARD_LAYOUT.background } } : s)),
+    ...(doc.stacks ? { stacks: doc.stacks.map((st) => ({ ...st, board: { ...BOARD_LAYOUT[stackKind(st)] } })) } : {}),
   };
 }

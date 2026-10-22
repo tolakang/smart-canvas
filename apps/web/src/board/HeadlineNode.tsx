@@ -4,12 +4,13 @@
  * file on a slot (PNG, JPEG, WebP or SVG); click a slot to set that language in the inspector.
  */
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { LANGUAGE_LABEL, layersOfPicture, LIMITS, mainComposition, setLanguage, unfitPictures, withComposition, type InputSource, type ProjectDoc } from '@smart-canvas/core';
+import { deletePair, LANGUAGE_LABEL, layersOfPicture, LIMITS, mainComposition, setLanguage, unfitPictures, withComposition, type InputSource, type ProjectDoc } from '@smart-canvas/core';
 import { useState, type DragEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
 import { setPicture, withSource } from './content';
 import { useBoard } from './context';
 import type { PairFlowNode } from './flow';
+import { confirmDelete, Icon } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 type Lang = 'km' | 'en';
@@ -111,6 +112,11 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
     <div className="sc-node sc-node--input sc-node--headline">
       <div className="sc-node__head">
         <div className="sc-node__title">{pair.label}</div>
+        {!readOnly && (
+          <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Delete ${pair.label}`} title="Delete this node and its two pictures" onClick={() => confirmDelete(pair.label) && run((d) => deletePair(d, pair.id))}>
+            <Icon name="trash" />
+          </button>
+        )}
       </div>
       <div className="sc-hl-slots">{(['km', 'en'] as const).map(slot)}</div>
       <div className={`sc-seg sc-hl-use ${NO_CANVAS}`} role="radiogroup" aria-label={`${pair.label} language in use`}>
@@ -127,7 +133,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
           {error}
         </p>
       )}
-      <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layers out: wire both languages into a master preview" />
+      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire both languages into the Layer Comp" />
     </div>
   );
 }

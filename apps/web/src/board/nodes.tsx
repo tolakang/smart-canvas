@@ -8,11 +8,10 @@ import { SourceHeader } from './SourceHeader';
 import type { InputFlowNode } from './flow';
 import { OutputNodeView } from './OutputNode';
 import { GroupNodeView } from './GroupNode';
-import { ProcessNodeView } from './ProcessNode';
 import { AssetsNodeView } from './AssetsNode';
 import { HeadlineNodeView } from './HeadlineNode';
+import { TextNodeView } from './TextNode';
 import { PresetNodeView } from './PresetNode';
-import { RuleNodeView } from './RuleNode';
 
 /**
  * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
@@ -28,10 +27,9 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   return (
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
-      <NodePreview source={source} upload={upload} />
-      {/* Page 3 (D43): a background's vertical and horizontal pictures, right on the card. */}
-      {source.behavesLike === 'background' && (source.content.kind === 'image' || source.content.kind === 'vector') && <BackgroundSlots source={source} />}
-      <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a master preview row" />
+      {/* D49 (page 3): a Background node is its vertical and horizontal slots; vertical outputs use one, horizontal the other. */}
+      {source.behavesLike === 'background' ? <BackgroundSlots source={source} /> : <NodePreview source={source} upload={upload} />}
+      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire into the Layer Comp" />
     </div>
   );
 }
@@ -110,4 +108,4 @@ export function SourceEditor({ source, upload }: { source: InputSource; upload: 
   }
 }
 
-export const nodeTypes: NodeTypes = { inputNode: InputNodeView, assetsNode: AssetsNodeView, headlineNode: HeadlineNodeView, presetNode: PresetNodeView, ruleNode: RuleNodeView, mainNode: MainNodeView, outputNode: OutputNodeView, processNode: ProcessNodeView, groupNode: GroupNodeView };
+export const nodeTypes: NodeTypes = { inputNode: InputNodeView, assetsNode: AssetsNodeView, textNode: TextNodeView, headlineNode: HeadlineNodeView, presetNode: PresetNodeView, mainNode: MainNodeView, outputNode: OutputNodeView, groupNode: GroupNodeView };

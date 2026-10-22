@@ -63,7 +63,8 @@ export async function setupAndCreateProject(page: Page, webUrl: string, name: st
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await page.getByPlaceholder('New project name').fill(name);
   await page.getByRole('button', { name: 'Create' }).click();
-  await page.locator('.sc-port').first().waitFor();
+  // D49: the board shows once the Layer Comp group is up.
+  await page.locator('.sc-comp-group').waitFor();
   const [, teamId = '', projectId = ''] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];
   return { teamId, projectId };
 }

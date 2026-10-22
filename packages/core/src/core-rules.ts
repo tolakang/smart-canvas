@@ -6,7 +6,7 @@
  */
 import { compositionById, MAIN, outputComposition } from './graph';
 import { familyOfShape, GUIDE_FAMILIES, guideFor, guidesOf, masterOf } from './guides';
-import { layerGroup, LAYER_GROUPS, type LayerGroup } from './layer-order';
+import { layerGroup, layerOrderOf, type LayerGroup } from './layer-order';
 import { languagePairs } from './languages';
 import { FILL_TOLERANCE, pinOf, type Pin } from './layout/grid';
 import { canvasMetrics, LIMITS, type Composition, type CoreRuleNode, type GuideFamily, type NFrame, type ProjectDoc } from './model';
@@ -42,13 +42,13 @@ export function deleteCoreRule(doc: ProjectDoc, id: string): SourceResult {
   return { ok: true, doc: withRules(doc, coreRules(doc).filter((r) => r.id !== id)) };
 }
 
-/** A composition's rows in their layer comp groups (D45), front first; empty groups included. */
+/** A composition's rows in their layer comp groups (D45, in the project's order D48), front first; empty groups included. */
 export function layerComp(doc: ProjectDoc, compositionId: string): { group: LayerGroup; layers: LayerSource[] }[] {
   const comp = compositionById(doc, compositionId);
   const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   const headline = new Set(languagePairs(doc).flatMap((p) => [p.km, p.en]));
   const rows = (comp?.layers ?? []).flatMap((id) => byId.get(id) ?? []);
-  return LAYER_GROUPS.map((group) => ({ group, layers: rows.filter((s) => layerGroup(s, headline) === group) }));
+  return layerOrderOf(doc).map((group) => ({ group, layers: rows.filter((s) => layerGroup(s, headline) === group) }));
 }
 
 /** The auto layout rule (D38) a layer follows in every output, from its behaviour and its frame on the master. */
