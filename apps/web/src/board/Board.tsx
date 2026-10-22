@@ -201,6 +201,8 @@ function BoardCanvas(props: {
   const { teamId, projectId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
   /** D49: the Preset node menu items (set each render; read by the group's out port callbacks). */
+  /** D49: the page-3 shape is applied once, when the project opens. */
+  const structured = useRef(false);
   const presetItemsRef = useRef<(at: { x: number; y: number }) => MenuItem[]>(() => []);
   const [doc, setDoc] = useState(initial.doc);
   /** The composition open in the master preview editor (T12.3: any composition). */
@@ -446,9 +448,12 @@ function BoardCanvas(props: {
   // screen). Not an undo step — it's how the doc is shown; undoing to an unfitted doc just fits it again.
   useEffect(() => {
     if (readOnly) return;
-    // D45 too: a project saved before the fixed order gets it here, also without an undo step; and D49: a project
-    // made before the page-3 board is brought into its shape (asset nodes, one Layer Comp, Preset nodes).
-    const fitted = orderLayers(fitFrames(boardStructure(docRef.current), sizes));
+    // D45 too: a project saved before the fixed order gets it here, also without an undo step; and D49: on open, a
+    // project made before the page-3 board is brought into its shape (asset nodes, one Layer Comp, Preset nodes) —
+    // once, so a node deleted afterwards stays deleted.
+    const base = structured.current ? docRef.current : boardStructure(docRef.current);
+    structured.current = true;
+    const fitted = orderLayers(fitFrames(base, sizes));
     if (fitted !== docRef.current) show(fitted);
   }, [doc, sizes, readOnly, show]);
 

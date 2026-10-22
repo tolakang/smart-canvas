@@ -8,7 +8,7 @@ import { addOutput, computeLayout, guidesOf, MAIN, withComposition, type Project
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+import { boardNode, openLayout, putPicture, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
 const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);
@@ -27,10 +27,8 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
     const ids = await setupAndCreateProject(page, stack.env.webUrl, 'Guides');
     url = `${stack.env.webUrl}api/teams/${ids.teamId}/projects/${ids.projectId}`;
     const png = await sharp({ create: { width: 200, height: 200, channels: 4, background: { r: 30, g: 120, b: 220, alpha: 1 } } }).png().toBuffer();
-    const inNode = (l: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${l}$`) }) });
-    await inNode('Subject').locator('input[type=file]').setInputFiles({ name: 's.png', mimeType: 'image/png', buffer: png });
-    await inNode('Subject').locator('img.sc-thumb').waitFor();
-    await page.getByRole('button', { name: 'Connect Subject', exact: true }).click();
+    await putPicture(page, 'Subject', { name: 's.png', mimeType: 'image/png', buffer: png });
+    await boardNode(page, 'Image').locator('img[alt="Subject preview"]').waitFor();
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
     const cur = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
     let doc = ok(addOutput(cur.doc, { id: 'story', label: 'Story', size: { width: 1080, height: 1920, unit: 'px' } }));
@@ -46,21 +44,25 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
   const doc = async (): Promise<{ rev: number; doc: ProjectDoc }> => (await page.request.get(url)).json();
   const subjectIn = (d: ProjectDoc, output: string) => computeLayout(d, output, { measure, assets: {} }).items.find((i) => i.sourceId === 'subject')?.frame;
 
-  it('the master preview inspector adds a vertical and a horizontal guide; outputs say which they follow; nothing moves', async () => {
+  it('the Layer Comp’s Vertical and Horizontal buttons add those layouts (D49); outputs say which they follow; nothing moves', async () => {
     const before = (await doc()).doc;
-    await page.locator('.react-flow__node-mainNode').first().locator('.sc-node__title').click();
-    const inspector = page.getByRole('complementary', { name: 'Inspector' });
-    await inspector.getByRole('button', { name: 'Add vertical guide and horizontal guide' }).click();
+    for (const family of ['Vertical', 'Horizontal'] as const) {
+      await openLayout(page, family);
+      const editor = page.getByRole('dialog', { name: /Master preview editor/ });
+      await editor.waitFor();
+      await page.keyboard.press('Escape');
+      await editor.waitFor({ state: 'detached' });
+    }
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
     const d = (await doc()).doc;
     expect(guidesOf(d, MAIN).map((g) => g.label)).toEqual(['Vertical guide', 'Horizontal guide']);
-    await expect.poll(() => page.locator('.react-flow__node-mainNode').count()).toBe(3);
+    // Still one Layer Comp on the board: the layouts open from it.
+    expect(await page.locator('.react-flow__node-mainNode').count()).toBe(1);
     await page.getByLabel('Output Story', { exact: true }).getByText('Vertical guide').waitFor();
     expect(await page.getByLabel('Output Post', { exact: true }).getByText('guide').count()).toBe(0);
     // Seeded from the master through the grid: the story looks the same as before.
     const [a, b] = [subjectIn(before, 'story'), subjectIn(d, 'story')];
     for (const k of ['x', 'y', 'w', 'h'] as const) expect(b?.[k]).toBeCloseTo(a?.[k] ?? NaN, 3);
-    await inspector.getByRole('button', { name: 'Edit' }).first().waitFor();
   }, 60_000);
 
   it('arranging the vertical guide moves the subject in the story only', async () => {

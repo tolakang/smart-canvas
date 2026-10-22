@@ -10,7 +10,7 @@ import { mainComposition, type ProjectDoc } from '@smart-canvas/core';
 import type { Locator, Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+import { boardNode, openLayout, putPicture, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
 describe.skipIf(!adminUrl)('master preview editor: direct move / resize (T8.6)', () => {
   let stack: Stack;
@@ -23,12 +23,10 @@ describe.skipIf(!adminUrl)('master preview editor: direct move / resize (T8.6)',
     const { teamId, projectId } = await setupAndCreateProject(page, stack.env.webUrl, 'Editor');
     url = `${stack.env.webUrl}api/teams/${teamId}/projects/${projectId}`;
     const png = await sharp({ create: { width: 300, height: 300, channels: 4, background: { r: 30, g: 90, b: 220, alpha: 1 } } }).png().toBuffer();
-    const inNode = (l: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${l}$`) }) });
-    await inNode('Subject').locator('input[type=file]').setInputFiles({ name: 's.png', mimeType: 'image/png', buffer: png });
-    await inNode('Subject').locator('img.sc-thumb').waitFor();
-    for (const l of ['Background', 'Subject']) await page.getByRole('button', { name: `Connect ${l}`, exact: true }).click();
+    await putPicture(page, 'Subject', { name: 's.png', mimeType: 'image/png', buffer: png });
+    await boardNode(page, 'Image').locator('img[alt="Subject preview"]').waitFor();
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
-    await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit' }).click();
+    await openLayout(page);
   }, 120_000);
   afterAll(async () => {
     await stack?.close();

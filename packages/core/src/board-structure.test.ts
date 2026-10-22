@@ -17,7 +17,7 @@ const ok = (r: SourceResult): ProjectDoc => {
 };
 
 describe('page-3 board structure (D49)', () => {
-  it('a new project: Logo, Headline (KH/EN), Text, Image, Background, all wired into the Layer Comp with its three layouts', () => {
+  it('a new project: Logo, Headline (KH/EN), Text, Image, Background, all wired into the Layer Comp', () => {
     const doc = createBoardProject('P');
     expect(assetStacks(doc).map((st) => [stackKind(st), st.items])).toEqual([
       ['logo', ['logo']],
@@ -28,8 +28,7 @@ describe('page-3 board structure (D49)', () => {
     expect(doc.sources.filter((s) => s.behavesLike === 'background')).toHaveLength(1);
     const wired = wiredLayers(doc, MAIN);
     for (const s of doc.sources) expect(wired.has(s.id)).toBe(true);
-    expect(guidesOf(doc, MAIN).map((g) => g.guide?.family).sort()).toEqual(['horizontal', 'vertical']);
-    for (const g of guidesOf(doc, MAIN)) expect(g.layers).toEqual(doc.compositions[0]?.layers);
+    expect(guidesOf(doc, MAIN)).toEqual([]); // added when first opened
     expect(doc.compositions[0]?.label).toBe('Layer comp');
     // Repeatable: already in shape.
     expect(boardStructure(doc)).toBe(doc);

@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+import { boardNode, putPicture, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
 const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);
@@ -33,9 +33,8 @@ describe.skipIf(!adminUrl)('browser export matches the worker (T11.1)', () => {
       .composite([{ input: Buffer.from('<svg width="600" height="400"><circle cx="300" cy="200" r="150" fill="#1b5e20"/></svg>') }])
       .png()
       .toBuffer();
-    const inNode = (l: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${l}$`) }) });
-    await inNode('Subject').locator('input[type=file]').setInputFiles({ name: 'photo.png', mimeType: 'image/png', buffer: photo });
-    await inNode('Subject').locator('img.sc-thumb').waitFor();
+    await putPicture(page, 'Subject', { name: 'photo.png', mimeType: 'image/png', buffer: photo });
+    await boardNode(page, 'Image').locator('img[alt="Subject preview"]').waitFor();
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
 
     const p = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };

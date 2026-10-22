@@ -7,18 +7,17 @@
  * `boardStructure` brings any document into that shape, keeping what fits: process nodes, other master previews
  * and Core Rule nodes are removed (owner: "delete process nodes and extra master previews"), their wires and rows
  * with them; inputs outside a node join the node of their kind (logo, text, picture); an output outside a Preset
- * node joins a "Sizes" preset node; a missing Logo / Headline / Text / Image / Background node is added; the master gets its vertical and horizontal layouts. It returns `doc` itself
+ * node joins a "Sizes" preset node; a missing Logo / Headline / Text / Image / Background node is added. (The Layer Comp's vertical and horizontal
+ * layouts are added when first opened; until then outputs follow the master on the stretched grid.) It returns `doc` itself
  * when the document is already in shape. Pure; ids of what it adds are derived from the doc, so it is repeatable.
  */
 import { edgeId, MAIN } from './graph';
-import { addGuides, familyOfShape, GUIDE_FAMILIES, guidesOf } from './guides';
 import { addLanguagePair, languagePairs } from './languages';
 import { orderLayers } from './layer-order';
-import { LIMITS, type GuideFamily, type ProjectDoc } from './model';
+import type { ProjectDoc } from './model';
 import { deleteComposition } from './compositions';
 import { deleteProcess } from './processes';
 import { createProjectDoc } from './project';
-import { sizeInDesignPx } from './render';
 import { connectSource } from './ports';
 import { addSource } from './sources';
 import { addStack, assetStacks, stackKind } from './stacks';
@@ -86,20 +85,7 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
     next = step(next, connectSource(next, id));
   }
 
-  // 3. The Layer Comp's three layouts: the master's own shape plus a vertical and a horizontal (or square) one.
-  const master = next.compositions.find((c) => c.id === MAIN);
-  if (master) {
-    const own = familyOfShape(sizeInDesignPx(master.size));
-    const have = new Set(guidesOf(next, MAIN).map((g) => g.guide?.family));
-    const missing = GUIDE_FAMILIES.filter((f) => f !== own && !have.has(f));
-    if (missing.length && next.compositions.length + missing.length <= LIMITS.maxCompositions) {
-      const ids: Partial<Record<GuideFamily, string>> = {};
-      for (const f of missing) ids[f] = uniqueId(next, `layout-${f}`);
-      next = step(next, addGuides(next, MAIN, ids));
-    }
-  }
-
-  // 4. Outputs outside a Preset node join a "Sizes" preset node.
+  // 3. Outputs outside a Preset node join a "Sizes" preset node.
   const inSets = new Set((next.presetSets ?? []).flatMap((s) => s.outputs));
   const loose2 = next.outputs.filter((o) => !inSets.has(o.id)).map((o) => o.id);
   if (loose2.length) next = { ...next, presetSets: [...(next.presetSets ?? []), { id: uniqueId(next, 'sizes'), label: 'Sizes', board: { ...BOARD_LAYOUT.preset }, outputs: loose2 }] };
