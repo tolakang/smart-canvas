@@ -68,7 +68,7 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
   const updateInternals = useUpdateNodeInternals();
   const handleKey = layers.map((l) => l.sourceId).join(',');
   useEffect(() => updateInternals(id), [id, handleKey, updateInternals]);
-  const { doc, readOnly, run, teamId, layoutDeps, missingFonts, openOutputEditor } = useBoard();
+  const { doc, readOnly, run, teamId, layoutDeps, missingFonts, openOutputEditor, exportOutputs } = useBoard();
   const [renaming, setRenaming] = useState<string | null>(null);
   const rename = () => {
     const name = renaming?.trim();
@@ -119,6 +119,10 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
         {health && <HealthBadge health={health} />}
         <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} output ${output.label}`}>
           {readOnly ? 'View' : 'Edit'}
+        </button>
+        {/* D46: a Preview exports itself. */}
+        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export output ${output.label}`}>
+          Export
         </button>
         {!readOnly && (
           <button

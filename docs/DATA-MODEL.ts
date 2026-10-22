@@ -17,7 +17,7 @@ export type PresetGroup = 'print' | 'social';
 
 export const LIMITS = {
   maxSources: 10, // includes the 4 defaults
-  maxOutputs: 10,
+  maxOutputs: 100, // D46 (was 10)
   maxCompositions: 5,
   maxProcesses: 20,
   maxUploadMB: 50,
@@ -209,6 +209,8 @@ export interface ProjectDoc {
   stacks?: AssetStack[];
   /** D44: Headline cards (a Khmer and an English input, one in use). */
   headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en' }[];
+  // D46: Preset nodes — each lists output ids (its sizes, in row order).
+  presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[] }[];
 }
 
 /** D40: an Assets card. Each picture is its own input (layer); the card only draws them together, `items` in card order. */

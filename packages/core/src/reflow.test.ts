@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { MAIN, withComposition } from './graph';
 import { computeLayout, type LayoutDeps } from './layout';
 import { mockMeasure } from './layout/test-doc';
-import { LIMITS, type ProjectDoc } from './model';
+import type { ProjectDoc } from './model';
 import { addOutput, updateOutput } from './outputs';
 import { setOverrideFrame, setOverrideHidden, setOverrideStyle } from './overrides';
 import { setPlacement } from './placement';
@@ -53,7 +53,7 @@ function bigProject(): ProjectDoc {
     doc = ok(setOverrideStyle(doc, `o${i}`, 'headline', { fontSizePx: 30 + i, color: '#ff0000' }, ada));
     doc = ok(setOverrideHidden(doc, `o${i}`, i % 2 ? 'logo' : 'd1', true, ada));
   });
-  expect(doc.outputs).toHaveLength(LIMITS.maxOutputs);
+  expect(doc.outputs).toHaveLength(10);
   return doc;
 }
 

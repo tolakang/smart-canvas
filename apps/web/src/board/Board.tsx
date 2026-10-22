@@ -1,4 +1,9 @@
 import {
+  addPresetSet,
+  connectSet,
+  presetFamilies,
+  presetSets,
+  setComposition,
   addLanguagePair,
   addStack,
   languagePairs,
@@ -88,6 +93,8 @@ import {
   withGroupFrames,
   stackIdOfNode,
   pairIdOfNode,
+  setIdOfNode,
+  outputOfSetRow,
   isCardNode,
 } from './flow';
 import { useTheme } from '../ui/theme';
@@ -511,6 +518,19 @@ function BoardCanvas(props: {
         reconnect(outputId, fromComposition);
         return;
       }
+      // D46: a master preview wired into a Preset node feeds every size; a row's wire reconnects its own Preview.
+      const intoSet = setIdOfNode(c.target);
+      const fromComp = compositionIdOfNode(c.source);
+      if (intoSet && fromComp) {
+        run((doc) => connectSet(doc, intoSet, fromComp));
+        return;
+      }
+      const fromSet = setIdOfNode(c.source);
+      const rowOutput = outputOfSetRow(c.sourceHandle);
+      if (fromSet && rowOutput) {
+        reconnect(rowOutput, setComposition(docRef.current, fromSet));
+        return;
+      }
       // D40: a wire from an Assets card wires every picture in it.
       const stackId = stackIdOfNode(c.source);
       const toComposition = compositionIdOfNode(c.target);
@@ -562,6 +582,17 @@ function BoardCanvas(props: {
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
       for (const e of deleted) {
+        // D46: the wire into a Preset node stands for all its sizes' wires; a row's wire is that size's own.
+        const set = setIdOfNode(e.target);
+        if (set) {
+          for (const o of presetSets(docRef.current).find((x) => x.id === set)?.outputs ?? []) if (docRef.current.edges.some((x) => x.kind === 'composition' && x.to === o)) disconnect(o);
+          continue;
+        }
+        const row = setIdOfNode(e.source) ? outputOfSetRow(e.sourceHandle) : undefined;
+        if (row) {
+          disconnect(row);
+          continue;
+        }
         // D40: a wire drawn from an Assets card is one picture's wire.
         const sourceId = layerOfConnection(e) ?? (isCardNode(e.source) ? docRef.current.edges.find((x) => x.id === e.id)?.from : undefined);
         const outputId = compositionIdOfNode(e.source) && e.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(e.target) : undefined;
@@ -774,6 +805,12 @@ function BoardCanvas(props: {
     if (result.ok) setAddingOutput(false);
   };
 
+  /** D46: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to the master preview. */
+  const addSet = (family: string, at: { x: number; y: number }) => {
+    const sizes = presetFamilies(presets).find((f) => f.label === family)?.presets ?? [];
+    run((d) => addPresetSet(d, { id: newId(), label: family, board: at, sizes: sizes.map((p) => ({ id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } })) }));
+  };
+
   /** T13.4: add from the node library at `at` (a drop point), or in the middle of the view (a click). */
   const addFromLibrary = (spec: AddSpec, drop?: { x: number; y: number }) => {
     if (readOnly || !flow.current) return;
@@ -795,6 +832,9 @@ function BoardCanvas(props: {
         return;
       case 'headline':
         run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at }));
+        return;
+      case 'presetSet':
+        addSet(spec.family, at);
         return;
       case 'library':
         run((d) => addSourceFromLibrary(d, spec.item, newId(), at));
@@ -822,7 +862,7 @@ function BoardCanvas(props: {
           { label: 'Undo', disabled: !canStep.undo, onSelect: undo },
           { label: 'Redo', disabled: !canStep.redo, onSelect: redo },
           { label: 'Add input', disabled: sourceCount >= LIMITS.maxSources, separated: true, onSelect: () => (setPlaceAt(null), setAdding(true)) },
-          { label: `Add output (${outputCount}/${LIMITS.maxOutputs})`, disabled: outputCount >= LIMITS.maxOutputs, onSelect: () => (setPlaceAt(null), setAddingOutput(true)) },
+          { label: `Add output (${outputCount})`, disabled: outputCount >= LIMITS.maxOutputs, onSelect: () => (setPlaceAt(null), setAddingOutput(true)) },
         ];
     setMenu({
       x: r.right - 220,
@@ -874,6 +914,10 @@ function BoardCanvas(props: {
           separated: true,
           onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at })),
         },
+        // D46: a Preset node per family of preset sizes.
+        ...presetFamilies(presets)
+          .filter((f) => f.presets.length > 1)
+          .map((f, i) => ({ label: `${f.label} preset (${f.presets.length} sizes)`, separated: i === 0, disabled: doc.outputs.length + f.presets.length > LIMITS.maxOutputs, onSelect: () => addSet(f.label, at) })),
         {
           label: outputsFull ? `Output… (${LIMITS.maxOutputs} max)` : 'Output…',
           disabled: outputsFull,
@@ -958,7 +1002,7 @@ function BoardCanvas(props: {
               disabled={outputCount >= LIMITS.maxOutputs}
               title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : 'Add an output size (or drag a wire out of the master preview)'}
             >
-              <Icon name="plus" /> Output <span className="sc-count">{outputCount}/{LIMITS.maxOutputs}</span>
+              <Icon name="plus" /> Output <span className="sc-count">{outputCount}</span>
             </button>
           </div>
         )}

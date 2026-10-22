@@ -1,4 +1,4 @@
-import { addComposition, addOutput, addProcess, connectProcessInput, createProjectDoc, DEFAULT_OPS, createGroup, outputDefaults, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addComposition, addPresetSet, addOutput, addProcess, connectProcessInput, createProjectDoc, DEFAULT_OPS, createGroup, outputDefaults, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { describe, expect, it } from 'vitest';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { groupNodeId, inputNodeId, MAIN_ID, outputNodeId, processNodeId } from './flow';
@@ -43,4 +43,15 @@ describe('Delete key on the board', () => {
   });
 
   it('nothing deletable → no change', () => expect(deleteNodes(sample(), deletableNodes(sample(), [MAIN_ID])).ok).toBe(false));
+});
+
+describe('Delete key on a Preset node (D46)', () => {
+  it('deletes the node with all its sizes', () => {
+    const d = ok(addPresetSet(sample(), { id: 's1', label: 'GDN', board: { x: 0, y: 0 }, sizes: [{ id: 'g1', label: 'GDN 300×250', size: { width: 300, height: 250, unit: 'px' } }] }));
+    const t = deletableNodes(d, ['set:s1']);
+    expect(t).toEqual([{ kind: 'preset', id: 's1', label: 'GDN' }]);
+    const next = ok(deleteNodes(d, t));
+    expect(next.presetSets).toBeUndefined();
+    expect(next.outputs.map((o) => o.id)).toEqual(['o1']);
+  });
 });

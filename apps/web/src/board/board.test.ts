@@ -1,4 +1,4 @@
-import { addPicturesToStack, addStack, createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
+import { addPresetSet, addPicturesToStack, addStack, createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
 import {
@@ -14,6 +14,9 @@ import {
   portRows,
   sourceIdOfNode,
   stackNodeId,
+  setNodeId,
+  setInEdgeId,
+  setRowHandle,
   syncNodes,
   withPositions,
 } from './flow';
@@ -292,5 +295,51 @@ describe('Assets cards on the board (D40)', () => {
     expect(connectionRefusal(doc, { source: stackNodeId('st'), target: MAIN_ID })).toBeNull();
     expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/master preview/);
     expect(withPositions(doc, [{ id: stackNodeId('st'), position: { x: 10.4, y: 20.6 } }]).stacks?.[0]?.board).toEqual({ x: 10, y: 21 });
+  });
+});
+
+describe('Preset nodes on the board (D46)', () => {
+  const withSet = () => {
+    const r = addPresetSet(sampleDoc(), { id: 'gdn', label: 'GDN', board: { x: 0, y: 600 }, sizes: [
+      { id: 'g1', label: 'GDN 300×250', size: { width: 300, height: 250, unit: 'px' } },
+      { id: 'g2', label: 'GDN 728×90', size: { width: 728, height: 90, unit: 'px' } },
+    ] });
+    if (!r.ok) throw new Error(r.error);
+    return r.doc;
+  };
+
+  it('draws one wire into the Preset node and one from each row to its preview', () => {
+    const doc = withSet();
+    const node = docToNodes(doc).find((n) => n.id === setNodeId('gdn'));
+    expect(node?.type).toBe('presetNode');
+    expect(node?.data).toMatchObject({ rows: [{ output: { id: 'g1' }, connected: true }, { output: { id: 'g2' }, connected: true }] });
+    const edges = docToEdges(doc).filter((e) => e.source === setNodeId('gdn') || e.target === setNodeId('gdn'));
+    expect(edges.map((e) => [e.id, e.source, e.sourceHandle, e.target])).toEqual([
+      [setInEdgeId('gdn'), MAIN_ID, 'out', setNodeId('gdn')],
+      [doc.edges.find((e) => e.to === 'g1')?.id, setNodeId('gdn'), setRowHandle('g1'), 'out:g1'],
+      [doc.edges.find((e) => e.to === 'g2')?.id, setNodeId('gdn'), setRowHandle('g2'), 'out:g2'],
+    ]);
+    // A plain output keeps its own wire from the master preview.
+    expect(docToEdges(doc).some((e) => e.source === MAIN_ID && e.target === 'out:ig')).toBe(true);
+  });
+
+  it('a disconnected row draws no wire; with none left, no wire goes in', () => {
+    const doc = { ...withSet(), edges: withSet().edges.filter((e) => e.to !== 'g1') };
+    expect(docToEdges(doc).filter((e) => e.source === setNodeId('gdn')).map((e) => e.target)).toEqual(['out:g2']);
+    const none = { ...doc, edges: doc.edges.filter((e) => e.to !== 'g2') };
+    expect(docToEdges(none).some((e) => e.target === setNodeId('gdn') || e.source === setNodeId('gdn'))).toBe(false);
+  });
+
+  it('a master preview may wire into a Preset node; a row only into its own preview', () => {
+    const doc = withSet();
+    expect(connectionRefusal(doc, { source: MAIN_ID, sourceHandle: 'out', target: setNodeId('gdn'), targetHandle: null })).toBeNull();
+    expect(connectionRefusal(doc, { source: 'src:bg', sourceHandle: null, target: setNodeId('gdn'), targetHandle: null })).not.toBeNull();
+    expect(connectionRefusal(doc, { source: setNodeId('gdn'), sourceHandle: setRowHandle('g1'), target: 'out:g1', targetHandle: null })).toBeNull();
+    expect(connectionRefusal(doc, { source: setNodeId('gdn'), sourceHandle: setRowHandle('g1'), target: 'out:g2', targetHandle: null })).not.toBeNull();
+  });
+
+  it('moving the node writes its board position', () => {
+    const doc = withPositions(withSet(), [{ id: setNodeId('gdn'), position: { x: 10.4, y: 20.6 } }]);
+    expect(doc.presetSets?.[0]?.board).toEqual({ x: 10, y: 21 });
   });
 });

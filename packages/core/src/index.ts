@@ -31,5 +31,6 @@ export * from './stacks';
 export * from './guides';
 export * from './languages';
 export * from './layer-order';
+export * from './preset-sets';
 
 export const CORE_VERSION = '0.0.0';

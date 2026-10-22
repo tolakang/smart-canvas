@@ -4,7 +4,7 @@
  * or click it to add it in the middle of the view (touch, keyboard). Collapses to a slim rail (remembered).
  * On tablets and phones (T13.6, D33) it floats instead — an overlay or a bottom sheet — and closes with `onClose`.
  */
-import { DEFAULT_OPS, fillToCss, LIMITS, PROCESS_LABEL, type LibraryItem, type ProcessOp, type SizePreset } from '@smart-canvas/core';
+import { DEFAULT_OPS, fillToCss, LIMITS, presetFamilies, PROCESS_LABEL, type LibraryItem, type ProcessOp, type SizePreset } from '@smart-canvas/core';
 import { useEffect, useState, type DragEvent, type ReactNode } from 'react';
 import { api, assetUrl } from '../api';
 import type { NewInput } from './AddInputDialog';
@@ -19,7 +19,9 @@ export type AddSpec =
   | { type: 'output'; preset: SizePreset | null }
   | { type: 'library'; item: LibraryItem }
   | { type: 'assets' }
-  | { type: 'headline' };
+  | { type: 'headline' }
+  /** D46: a Preset node with every size of a preset family. */
+  | { type: 'presetSet'; family: string };
 
 /** Drag payload type: dropping it on the canvas adds the spec there (Board). */
 export const ADD_DRAG_TYPE = 'application/x-sc-add';
@@ -96,6 +98,7 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
   const inputs = INPUTS.filter((i) => match(i.label, i.hint));
   const shownPresets = presets.filter((p) => match(p.name, `${p.size.width}×${p.size.height}`, p.group));
   const libraryItems = items.filter((i) => match(i.name, ...i.tags));
+  const families = presetFamilies(presets).filter((f) => f.presets.length > 1 && match(f.label, 'preset', 'sizes', ...f.presets.map((p) => p.name)));
 
   return (
     <aside className={`sc-library${floating ? ` sc-floating sc-floating--${floating} sc-floating--start` : ''}`} aria-label="Node library">
@@ -137,6 +140,21 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
             <Item spec={{ type: 'composition' }} label="Master preview" hint="Another artboard, e.g. a campaign variant" icon={<span className="sc-library__glyph sc-library__glyph--main"><Icon name="preview" /></span>} disabled={compsFull} onAdd={onAdd} />
           </Group>
         )}
+        {families.length > 0 && (
+          <Group title="Preset nodes">
+            {families.map((f) => (
+              <Item
+                key={f.label}
+                spec={{ type: 'presetSet', family: f.label }}
+                label={`${f.label} preset`}
+                hint={`${f.presets.length} sizes, one wire in, a preview for each`}
+                icon={<span className="sc-library__glyph sc-library__glyph--out"><Icon name="output" /></span>}
+                disabled={doc.outputs.length + f.presets.length > LIMITS.maxOutputs}
+                onAdd={onAdd}
+              />
+            ))}
+          </Group>
+        )}
         {(shownPresets.length > 0 || match('Custom size', 'output')) && (
           <Group title="Outputs" note={outputsFull ? `${LIMITS.maxOutputs} max` : undefined}>
             {match('Custom size', 'output') && (
@@ -162,7 +180,7 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
             ))}
           </Group>
         )}
-        {q && inputs.length + processes.length + shownPresets.length + libraryItems.length === 0 && !match('Master preview', 'composition', 'variant', 'Custom size', 'output', 'Assets', 'pictures', 'images', 'files', 'multiple') && (
+        {q && inputs.length + processes.length + shownPresets.length + libraryItems.length + families.length === 0 && !match('Master preview', 'composition', 'variant', 'Custom size', 'output', 'Assets', 'pictures', 'images', 'files', 'multiple') && (
           <p className="sc-muted sc-library__empty">Nothing matches “{query}”.</p>
         )}
       </div>

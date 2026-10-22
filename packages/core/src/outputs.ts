@@ -79,7 +79,9 @@ export function updateOutput(doc: ProjectDoc, id: string, patch: OutputSettings)
 
 export function deleteOutput(doc: ProjectDoc, id: string): SourceResult {
   if (!doc.outputs.some((o) => o.id === id)) return { ok: false, error: 'not_found' };
-  return { ok: true, doc: { ...doc, outputs: doc.outputs.filter((o) => o.id !== id), edges: doc.edges.filter((e) => e.to !== id && e.from !== id) } };
+  // D46: its Preset node row goes too.
+  const presetSets = doc.presetSets?.map((set) => (set.outputs.includes(id) ? { ...set, outputs: set.outputs.filter((o) => o !== id) } : set));
+  return { ok: true, doc: { ...doc, outputs: doc.outputs.filter((o) => o.id !== id), edges: doc.edges.filter((e) => e.to !== id && e.from !== id), ...(presetSets ? { presetSets } : {}) } };
 }
 
 /**
