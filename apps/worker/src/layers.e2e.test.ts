@@ -41,16 +41,25 @@ describe.skipIf(!adminUrl)('layer list (T8.1)', () => {
     for (const name of ['Hide layer Logo', 'Duplicate Logo', 'Delete Logo']) expect(await row('Logo').getByRole('button', { name, exact: true }).count()).toBe(1);
   }, 60_000);
 
-  it('re-orders by dragging a row onto another', async () => {
+  it('re-orders by dragging a row onto another — within its layer comp group (D45)', async () => {
+    // Across groups: the background dropped on the logo goes back under the elements.
     await row('Background').dragTo(row('Logo'));
-    await expect.poll(order).toEqual(['Background', 'Logo', 'Headline', 'Subject']);
+    await page.waitForTimeout(400);
+    await saved();
+    expect(await order()).toEqual(['Logo', 'Headline', 'Subject', 'Background']);
+    // Within a group: two elements swap.
+    await row('Subject').getByRole('button', { name: 'Duplicate Subject' }).click();
+    await expect.poll(order).toEqual(['Logo', 'Headline', 'Subject copy', 'Subject', 'Background']);
+    await row('Subject').dragTo(row('Subject copy'));
+    await expect.poll(order).toEqual(['Logo', 'Headline', 'Subject', 'Subject copy', 'Background']);
     await saved();
     const d = await doc();
-    expect(portsOf(d)).toMatchObject({ Background: 0, Logo: 1, Headline: 2, Subject: 3 });
-    expect(portOf(d, 'background')).toBe(0); // its wire is on that row
-    expect(d.edges.some((e) => e.from === 'background' && e.to === 'main')).toBe(true);
-    await row('Background').dragTo(row('Subject'));
+    expect(portsOf(d)).toMatchObject({ Subject: 2, 'Subject copy': 3 });
+    expect(d.edges.some((e) => e.from === 'subject' && e.to === 'main')).toBe(true); // its wire moved with it
+    page.once('dialog', (dl) => void dl.accept());
+    await row('Subject copy').getByRole('button', { name: 'Delete Subject copy' }).click();
     await expect.poll(order).toEqual(['Logo', 'Headline', 'Subject', 'Background']);
+    await saved();
   }, 60_000);
 
   it('+ duplicates a wired layer: wired, in front of the original, at the same spot', async () => {
@@ -82,16 +91,13 @@ describe.skipIf(!adminUrl)('layer list (T8.1)', () => {
     const panel = page.getByRole('complementary', { name: 'Layers' });
     const layer = (id: string) => panel.locator(`[data-layer="${id}"]`);
     expect(await panel.getByRole('button', { name: /^(Bring|Send) / }).count()).toBe(0);
+    // A drag out of the layer's group (D45) leaves it where it was.
     await layer('subject').dragTo(layer('logo'));
-    await expect.poll(async () => panel.locator('[data-layer]').evaluateAll((els) => els.map((e) => e.getAttribute('data-layer')))).toEqual([
-      'subject',
-      'logo',
-      'headline',
-      'background',
-    ]);
+    await page.waitForTimeout(400);
+    expect(await panel.locator('[data-layer]').evaluateAll((els) => els.map((e) => e.getAttribute('data-layer')))).toEqual(['logo', 'headline', 'subject', 'background']);
     expect(await layer('logo').getByRole('button', { name: 'Duplicate Logo' }).count()).toBe(1);
     await page.keyboard.press('Escape');
     await saved();
-    expect(portsOf(await doc())).toMatchObject({ Subject: 0, Logo: 1 });
+    expect(portsOf(await doc())).toMatchObject({ Logo: 0, Subject: 2 });
   }, 60_000);
 });
