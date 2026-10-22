@@ -30,23 +30,10 @@
  *   half-size (sx·w/2, sy·h/2), so scaling is a 1-D problem per axis.
  */
 
-import { MAX_SHEAR_DEG } from '@smart-canvas/core';
+import { MAX_SHEAR_DEG, type TransformHistory, type TransformOp as StoredTransformOp, type TransformOrigin } from '@smart-canvas/core';
 
-export interface TransformState {
-  /** Centre of the element, stage px. */
-  x: number;
-  y: number;
-  /** Untransformed size, px. */
-  width: number;
-  height: number;
-  /** Negative = flipped. Never 0 (clamped to ±MIN_SCALE). */
-  scaleX: number;
-  scaleY: number;
-  /** Degrees, clockwise (CSS): the direction of the top edge. */
-  rotation: number;
-  /** Degrees, CSS skewX(): how far the left/right edges lean from perpendicular to the top edge. */
-  shear: number;
-}
+/** Centre of the element, stage px. `width × height` is the untransformed size; negative scale = flipped. */
+export type TransformState = TransformOrigin;
 
 export type Vec = { x: number; y: number };
 /** Column-major 2×2: [a c; b d], as in CSS matrix(a, b, c, d, e, f). Columns: local x axis (a, b), local y axis (c, d). */
@@ -259,18 +246,10 @@ export function dragScale(start: TransformState, h: ScaleHandle, p0: Vec, p: Vec
  * handle's operations and replays the rest, so the element ends up exactly where it would be had those drags
  * never happened, whatever was done before or after them.
  */
-export type TransformOp =
-  | { type: 'scale'; kx: number; ky: number; pivot: Vec }
-  | { type: 'shear'; axis: 'lr' | 'tb'; k: number; pivot: Vec }
-  | { type: 'rotate'; deg: number }
-  | { type: 'move'; dx: number; dy: number };
-
+/** Same shape as the saved history (D41), so the editor and the project share one type. */
+export type TransformOp = StoredTransformOp;
 /** What to store (and undo/redo): the untransformed placement plus the operations. */
-export interface TransformDoc {
-  /** Centre and size, with no scale, shear or rotation. */
-  origin: TransformState;
-  ops: TransformOp[];
-}
+export type TransformDoc = TransformHistory;
 
 /** Move `next` so the element point `pivotUV` (unit coords) is where it was in `prev`. */
 export function keepPoint(prev: TransformState, next: TransformState, pivotUV: Vec): TransformState {

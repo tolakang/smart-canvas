@@ -36,8 +36,8 @@ export interface BoardActions {
   /** D40: the picture of an Assets card shown in the inspector (while its card is selected). */
   stackFocus: string | null;
   setStackFocus: (sourceId: string | null) => void;
-  /** Applies a core source operation; returns its error, if any. */
-  run: (op: (doc: ProjectDoc) => SourceResult) => SourceResult;
+  /** Applies a core source operation; returns its error, if any. `silent` skips the undo step (metadata saves). */
+  run: (op: (doc: ProjectDoc) => SourceResult, opts?: { silent?: boolean }) => SourceResult;
 }
 
 export const BoardContext = createContext<BoardActions | null>(null);

@@ -14,7 +14,7 @@ import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
 import { OutputRenderer } from '../render/OutputRenderer';
 import { DesignPanel } from './DesignPanel';
-import { fitScale, NUDGE_STEP } from './geometry';
+import { fitScale, NUDGE_STEP, resetRotation, resetTransform } from './geometry';
 import { frameOfState, sameFrame, snapMove, snapTargets, syncDoc } from './transform/frame';
 import type { TransformDoc } from './transform/math';
 import { TransformBox } from './transform/transform-box';
@@ -34,10 +34,14 @@ export interface CanvasEditorProps {
   label: string;
   title: ReactNode;
   scene: RenderScene;
-  /** Writes a layer's new frame (design px of `scene`) where this editor stores it. */
-  onCommit: (sourceId: string, frame: Frame) => void;
+  /** Writes a layer's new frame (design px of `scene`) where this editor stores it, with its history when known. */
+  onCommit: (sourceId: string, frame: Frame, history?: TransformDoc) => void;
   /** Delete / Backspace on the selected layer (master preview: as its row's trash button; output: hide it there). */
   onDelete?: (sourceId: string) => void;
+  /** Saved transform histories for this scene (D41), so resets work after a reload. Absent = none. */
+  histories?: Record<string, TransformDoc>;
+  /** Called when a layer's transform history changes (a gesture end, a reset, or an external frame edit). */
+  onHistory?: (sourceId: string, history: TransformDoc) => void;
   /** Left side panel (layers). */
   layers: (selected: string | null, select: (id: string | null) => void) => ReactNode;
   /** Extra panels for the selected input, under its position and size in the Design panel (text style, overrides). */
@@ -45,7 +49,7 @@ export interface CanvasEditorProps {
   onClose: () => void;
 }
 
-export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, props: sidePanel, onClose }: CanvasEditorProps) {
+export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, props: sidePanel, onClose }: CanvasEditorProps) {
   const { doc, readOnly, teamId, layoutDeps } = useBoard();
   // T12.5: rows can be processes; they draw (and select) as their effective layer.
   const layerList = useMemo(() => layerSources(doc), [doc]);
@@ -55,6 +59,13 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
   const box = useRef<TransformBox | null>(null);
   /** Each layer's transform history this session: double-clicks undo exactly what a handle did. */
   const history = useRef(new Map<string, TransformDoc>());
+  /** The saved histories and the save callback, always the latest render's (the box reads them lazily). */
+  const historiesRef = useRef(histories);
+  const onHistoryRef = useRef(onHistory);
+  useLayoutEffect(() => {
+    historiesRef.current = histories;
+    onHistoryRef.current = onHistory;
+  });
   /** The press that just selected a new layer: it goes on as a move of it (T8.6). */
   const pendingPress = useRef<globalThis.PointerEvent | null>(null);
   // zoom: × the fit scale; pan: screen px from the centred position.
@@ -192,7 +203,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
   // Empty canvas clears the selection. Handles keep resizing / rotating / skewing.
   function onPointerDown(e: PointerEvent<HTMLDivElement>) {
     const t = e.target as HTMLElement;
-    if (t.closest('.tb-handle')) return;
+    if (t.closest('.tb-handle') || t.closest('.sc-editor__resets')) return;
     const under = layersAt(e.clientX, e.clientY);
     let id = under[0] ?? null;
     if (e.altKey && selected && under.includes(selected)) id = under[(under.indexOf(selected) + 1) % under.length] ?? id;
@@ -251,7 +262,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
     const frame = latest.current.frame;
     if (!selected || !editable || !frame || !canvasEl.current || !control.current) return;
     const id = selected;
-    const start = syncDoc(history.current.get(id), frame);
+    // A saved history from the project (D41) starts the session; otherwise the frame's own.
+    const start = syncDoc(history.current.get(id) ?? historiesRef.current?.[id], frame);
     history.current.set(id, start);
     const b = new TransformBox(canvasEl.current, control.current, start, {
       getScale: () => latest.current.scale,
@@ -267,7 +279,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
         history.current.set(id, info.doc);
         setLive(null);
         const stored = latest.current.frame;
-        if (!stored || !sameFrame(stored, f, 1e-6)) latest.current.onCommit(id, f);
+        if (!stored || !sameFrame(stored, f, 1e-6)) latest.current.onCommit(id, f, info.doc);
+        else onHistoryRef.current?.(id, info.doc);
       },
     });
     box.current = b;
@@ -285,8 +298,12 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
     const b = box.current;
     if (!b || !selected || !selectedFrame || b.isBusy()) return;
     const doc = syncDoc(b.getDoc(), selectedFrame);
-    if (doc !== b.getDoc()) b.setDoc(doc);
-    history.current.set(selected, doc);
+    if (doc !== b.getDoc()) {
+      b.setDoc(doc);
+      history.current.set(selected, doc);
+      // Typed values, nudges and undo change the shape outside the box: keep the saved history in step.
+      onHistoryRef.current?.(selected, doc);
+    }
   }, [selected, selectedFrame]);
 
   // Zoom changes the box's screen size, not its state.
@@ -396,6 +413,41 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, layers, 
                 style={{ left: (frameNow.x + frameNow.w / 2) * scale, top: (frameNow.y + frameNow.h) * scale + 8 }}
               >
                 {Math.round(frameNow.w)} × {Math.round(frameNow.h)}
+              </div>
+            )}
+            {frameNow && editable && selected && (frameNow.rotation || frameNow.shear) && (
+              <div
+                className="sc-editor__resets"
+                role="group"
+                aria-label="Reset transform"
+                style={{ left: frameNow.x * scale + 4, top: frameNow.y * scale + 4 }}
+              >
+                {frameNow.rotation ? (
+                  <button
+                    type="button"
+                    aria-label="Reset rotation"
+                    title="Reset rotation"
+                    onClick={() => onCommit(selected, resetRotation(frameNow))}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                      <path d="M3 8a5 5 0 105-5" />
+                      <path d="M3 3v5h5" />
+                    </svg>
+                  </button>
+                ) : null}
+                {frameNow.shear ? (
+                  <button
+                    type="button"
+                    aria-label="Reset transform"
+                    title="Reset rotation and skew"
+                    onClick={() => onCommit(selected, resetTransform(frameNow))}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                      <path d="M3 6V3h3M13 6V3h-3M3 10v3h3M13 10v3h-3" />
+                      <path d="M6 6l4 4M10 6l-4 4" />
+                    </svg>
+                  </button>
+                ) : null}
               </div>
             )}
           </div>

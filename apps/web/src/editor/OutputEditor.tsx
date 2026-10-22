@@ -3,7 +3,7 @@
  * override on that output (move/resize/rotate → frame, text panel → style, eye → hidden); the master
  * and the other outputs are untouched.
  */
-import { computeLayout, isOutputConnected, outputScene, resetOutputOverrides, setOverrideFrame, setOverrideHidden, type Frame } from '@smart-canvas/core';
+import { computeLayout, isOutputConnected, outputScene, resetOutputOverrides, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type OutputNode, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
@@ -20,8 +20,9 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
   );
   // A frame without rotation / shear means 0: write that only when it replaces a non-zero value (else the
   // layer keeps following the master's).
+  const size = useMemo(() => (scene ? { width: scene.width, height: scene.height } : null), [scene]);
   const onCommit = useCallback(
-    (id: string, frame: Frame) => {
+    (id: string, frame: Frame, history?: TransformHistory) => {
       const cur = scene?.items.find((i) => i.sourceId === id)?.frame;
       const zeroed = {
         ...(cur?.rotation && !frame.rotation ? { rotation: 0 } : {}),
@@ -29,9 +30,21 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
         // D37: editing a fitted frame keeps it fitted (else the fit pass would fit it a second time).
         ...(cur?.fitted ? { fitted: true as const } : {}),
       };
-      run((d) => setOverrideFrame(d, outputId, id, { ...frame, ...zeroed }, author()));
+      run((d) => {
+        const overridden = setOverrideFrame(d, outputId, id, { ...frame, ...zeroed }, author());
+        // One undo step for the gesture and its reset history (D41).
+        return overridden.ok && history && size ? setLayerTransform(overridden.doc, id, history, { outputId }, size) : overridden;
+      });
     },
-    [run, outputId, author, scene],
+    [run, outputId, author, scene, size],
+  );
+  // Typed values / nudges update the history after the override write; metadata, so no extra undo step.
+  const onHistory = useCallback(
+    (id: string, history: TransformHistory) => {
+      if (!size) return;
+      run((d) => setLayerTransform(d, id, history, { outputId }, size), { silent: true });
+    },
+    [run, outputId, size],
   );
 
   if (!output) return null;
@@ -62,6 +75,8 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
       }
       scene={scene}
       onCommit={onCommit}
+      onHistory={onHistory}
+      histories={layerHistories(output, scene ? { width: scene.width, height: scene.height } : null)}
       // Delete key: a layer can't be deleted from one output; it's hidden there (eye in the layers panel).
       onDelete={readOnly ? undefined : (id) => run((d) => setOverrideHidden(d, output.id, id, true, author()))}
       layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} outputId={output.id} />}
@@ -74,4 +89,11 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
       onClose={onClose}
     />
   );
+}
+
+
+/** The output's saved histories, only while they were saved for the scene's current size. */
+function layerHistories(output: OutputNode, scene: { width: number; height: number } | null): Record<string, TransformHistory> | undefined {
+  const saved = output.transforms;
+  return scene && saved && saved.scene.width === scene.width && saved.scene.height === scene.height ? saved.layers : undefined;
 }

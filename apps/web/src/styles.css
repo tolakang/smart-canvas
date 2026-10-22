@@ -279,6 +279,11 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-editor__pan { position: absolute; inset: 0; z-index: 5; touch-action: none; }
 .sc-editor__pan:active { cursor: grabbing; }
 .sc-editor__size { position: absolute; transform: translateX(-50%); padding: 1px 4px; border-radius: 2px; background: var(--fig-blue); color: #fff; font-size: 10px; line-height: 14px; white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; z-index: 4; }
+.sc-editor__resets { position: absolute; display: flex; gap: 2px; padding: 2px; border-radius: 6px; border: 1px solid var(--fig-line); background: var(--fig-panel); box-shadow: var(--shadow-1); z-index: 6; }
+.sc-editor__resets button { width: 24px; height: 24px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 4px; background: none; color: var(--fig-muted); cursor: pointer; }
+.sc-editor__resets button:hover { background: var(--fig-hover); color: var(--fig-fg); }
+.sc-editor__resets button:focus-visible { outline: 2px solid var(--fig-blue); outline-offset: -2px; }
+@media (pointer: coarse) { .sc-editor__resets button { width: 36px; height: 36px; } }
 .sc-fig .sc-editor__hover { outline: 1.5px solid var(--fig-blue); outline-offset: 0; }
 
 /* Layers (left), Figma style */
