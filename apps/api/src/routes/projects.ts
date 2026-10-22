@@ -4,7 +4,7 @@
  * Saves are optimistic: the client sends the `rev` it loaded; a save against an older rev gets 409
  * with the current rev so the UI can offer "reload latest". The server owns `rev` (and mirrors it into doc.rev).
  */
-import { copyProjectDoc, createProjectDoc, migrateProjectDoc, type ProjectDoc } from '@smart-canvas/core';
+import { copyProjectDoc, createBoardProject, migrateProjectDoc, type ProjectDoc } from '@smart-canvas/core';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { currentUser, requireTeam } from '../auth/plugin';
@@ -46,7 +46,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
-      let doc = createProjectDoc(req.body.name);
+      let doc = createBoardProject(req.body.name); // D49: the page-3 board
       if (req.body.templateId) {
         const [template] = await db
           .select({ doc: projects.doc })

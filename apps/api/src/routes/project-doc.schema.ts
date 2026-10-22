@@ -181,6 +181,7 @@ export const projectDocV2Schema = {
     headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
     presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
     coreRules: { type: 'array', maxItems: LIMITS.maxCompositions, items: coreRule },
+    layerOrder: { type: 'array', minItems: 4, maxItems: 4, uniqueItems: true, items: { enum: ['logo', 'headline', 'elements', 'background'] } },
   },
 } as const;
 

@@ -33,5 +33,6 @@ export * from './languages';
 export * from './layer-order';
 export * from './preset-sets';
 export * from './core-rules';
+export * from './board-structure';
 
 export const CORE_VERSION = '0.0.0';

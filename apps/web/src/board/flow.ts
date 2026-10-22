@@ -214,16 +214,8 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         deletable: false,
       }),
     ),
-    ...doc.processes.map(
-      (process): ProcessFlowNode => ({
-        id: processNodeId(process.id),
-        type: 'processNode',
-        position: process.board,
-        data: { process, layer: resolveProcess(doc, process.id) },
-        deletable: false,
-      }),
-    ),
-    ...doc.compositions.map(compositionNode),
+    // D49 (page 3): one Layer Comp — the master; its square / vertical / horizontal layouts open from it.
+    ...doc.compositions.filter((c) => c.id === MAIN).map(compositionNode),
     ...presetSets(doc).map(
       (set): SetFlowNode => ({
         id: setNodeId(set.id),
@@ -233,7 +225,6 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         deletable: false,
       }),
     ),
-    ...coreRules(doc).map((rule): RuleFlowNode => ({ id: ruleNodeId(rule.id), type: 'ruleNode', position: rule.board, data: { rule }, deletable: false })),
     ...doc.outputs.map(
       (output): OutputFlowNode => ({
         id: outputNodeId(output.id),
@@ -251,6 +242,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
   // D46: a Preset node's sizes are fed by one wire into the node, then one wire from each row to its Preview.
   const setOfOutput = new Map(presetSets(doc).flatMap((set) => set.outputs.map((o) => [o, set] as const)));
   const setIn = new Map<string, Edge>();
+  const drawn = new Set<string>();
   return doc.edges.flatMap((e: DocEdge): Edge[] => {
     const set = e.kind === 'composition' ? setOfOutput.get(e.to) : undefined;
     if (set) {
@@ -262,26 +254,33 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
       setIn.set(set.id, into);
       return [into, row];
     }
+    // D49: only asset nodes → the Layer Comp (one wire per asset node, into its top), the Layer Comp → Preset
+    // nodes → Previews are drawn; the master's layouts and an output's own layers are not on the board.
+    if (e.kind !== 'layer' || e.to !== MAIN) return [];
     const source = endpoint(doc, e.from);
-    const target = endpoint(doc, e.to);
-    if (!source || !target) return [];
-    const rows = e.kind === 'layer' ? (compositionById(doc, e.to)?.layers ?? doc.outputs.find((o) => o.id === e.to)?.layers) : undefined;
-    const port = rows ? rows.indexOf(e.from) : -1;
+    if (!source) return [];
+    const card = isCardNode(source);
+    if (card && drawn.has(source)) return [];
+    drawn.add(source);
     return [
       {
-        id: e.id,
+        id: card ? cardEdgeId(source) : e.id,
         type: 'routed',
-        data: { points: e.points ?? [] },
+        data: { points: card ? [] : (e.points ?? []) },
         source,
-        target,
-        ...(port >= 0 ? { targetHandle: portHandleId(port) } : {}),
-        ...(e.kind === 'composition' ? { sourceHandle: OUTPUT_HANDLE } : compositionById(doc, e.from) ? { sourceHandle: LAYER_OUT_HANDLE } : {}),
-        className: `sc-edge--${e.kind}`,
+        target: MAIN_ID,
+        targetHandle: LAYERS_HANDLE,
+        className: 'sc-edge--layer',
         deletable: true,
       },
     ];
   });
 }
+
+/** D49: the Layer Comp's one layer port (top): every asset node wires in there. */
+export const LAYERS_HANDLE = 'layers';
+/** D49: the one wire drawn from a card (Image, Headline) into the Layer Comp; it stands for all its pictures' wires. */
+export const cardEdgeId = (cardNodeId: string) => `card:${cardNodeId}`;
 
 type Conn = { source: string | null; target: string | null; sourceHandle?: string | null };
 
