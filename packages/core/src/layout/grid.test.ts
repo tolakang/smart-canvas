@@ -57,13 +57,15 @@ describe('subject (v3 stretched grid, example A)', () => {
     expectFrame(item(place(at(1080, 1920), 'subject', near), 'subject')?.frame, { x: 804, y: 816, w: 240, h: 288 });
   });
 
-  it('example K: a layer filling the master covers the output; a full-width strip fills the width', () => {
+  it('example K: a layer filling the master covers the output (proportional); a full-width strip stretches with the grid', () => {
     const full = { x: 0, y: 0, w: 3000, h: 3000 };
     expectFrame(item(place(at(1080, 1350), 'subject', full), 'subject')?.frame, { x: -135, y: 0, w: 1350, h: 1350 });
     expectFrame(item(place(at(3000, 1000), 'subject', full), 'subject')?.frame, { x: 0, y: -1000, w: 3000, h: 3000 });
-    const strip = { x: 0, y: 2400, w: 3000, h: 600 }; // fills x; bottom edge pinned
-    expectFrame(item(place(at(1080, 1920), 'subject', strip), 'subject')?.frame, { x: 0, y: 1704, w: 1080, h: 216 });
-    expectFrame(item(place(at(3000, 1000), 'subject', strip), 'subject')?.frame, { x: 0, y: 400, w: 3000, h: 600 });
+    const strip = { x: 0, y: 2400, w: 3000, h: 600 }; // edge to edge across: x by sx, y by sy (the grid itself)
+    expectFrame(item(place(at(1080, 1920), 'subject', strip), 'subject')?.frame, { x: 0, y: 1536, w: 1080, h: 384 });
+    expectFrame(item(place(at(3000, 1000), 'subject', strip), 'subject')?.frame, { x: 0, y: 800, w: 3000, h: 200 });
+    // A strip down one side stretches the other way.
+    expectFrame(item(place(at(1080, 1920), 'subject', { x: 0, y: 0, w: 300, h: 3000 }), 'subject')?.frame, { x: 0, y: 0, w: 108, h: 1920 });
   });
 
   it('example L: never past the output edges — a wide layer is capped to the room around its pin', () => {

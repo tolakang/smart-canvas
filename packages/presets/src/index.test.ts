@@ -27,4 +27,10 @@ describe('built-in presets', () => {
     expect(find('Instagram portrait 4:5')).toEqual({ width: 1080, height: 1350, unit: 'px' });
     expect(find('A4')).toEqual({ width: 210, height: 297, unit: 'mm' });
   });
+
+  it('includes the campaign set (owner, 2026-10-22)', () => {
+    const sizes = new Set(presets.filter((p) => p.size.unit === 'px').map((p) => `${p.size.width}x${p.size.height}`));
+    for (const s of ['2400x2400', '1080x1920', '2400x3000', '1200x628', '1200x200', '900x1600', '300x250', '320x100', '440x140', '728x90', '1020x396', '1080x2340', '1600x385', '639x220', '450x307', '1500x400', '1660x930'])
+      expect(sizes.has(s), s).toBe(true);
+  });
 });
