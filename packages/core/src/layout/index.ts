@@ -7,6 +7,7 @@ import { canvasMetrics, DEFAULTS, type Frame, type OutputNode, type ProjectDoc }
 import { sizeInDesignPx, toDesignFrame } from '../render';
 import { backgroundFrame } from './background';
 import type { RuleContext } from './context';
+import { guideFor } from '../guides';
 import { gridFrame, gridScale } from './grid';
 import { logoFrame } from './logo';
 import { outputOnlyFrame } from './output-only';
@@ -37,7 +38,19 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   const comp = compositionById(doc, outputComposition(doc, outputId) ?? MAIN) ?? mainComposition(doc);
   const masterSize = sizeInDesignPx(comp.size);
   const master = { w: masterSize.width, h: masterSize.height };
-  const ctx: RuleContext = { metrics, family, master, k: Math.min(metrics.trim.w / master.w, metrics.trim.h / master.h) };
+  const contextOf = (m: { w: number; h: number }): RuleContext => ({ metrics, family, master: m, k: Math.min(metrics.trim.w / m.w, metrics.trim.h / m.h) });
+  const ctx = contextOf(master);
+  // D42: positions come from the master's guide closest to this output's shape (the master when it has none);
+  // a layer that guide hasn't placed keeps the master's position.
+  const guide = guideFor(doc, comp.id, metrics.trim) ?? comp;
+  const guideSize = sizeInDesignPx(guide.size);
+  const guideCtx = contextOf({ w: guideSize.width, h: guideSize.height });
+  const placed = (id: string): { f: Frame; ctx: RuleContext } | undefined => {
+    const g = guide.placements[id];
+    if (g) return { f: toDesignFrame(g, guideSize), ctx: guideCtx };
+    const p = comp.placements[id];
+    return p ? { f: toDesignFrame(p, masterSize), ctx } : undefined;
+  };
   const wired = wiredLayers(doc, comp.id);
   const overrides = new Map(output.overrides.map((o) => [o.sourceId, o]));
   // Disconnected (D20/D21, O7): frames frozen at disconnect time; content still updates, overrides still apply.
@@ -60,8 +73,9 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
       } else items.push({ sourceId: source.id, frame, overridden: !!override, warnings: [] });
       continue;
     }
-    const placement = comp.placements[source.id];
-    const f = placement ? toDesignFrame(placement, masterSize) : undefined;
+    const at = placed(source.id);
+    const f = at?.f;
+    const lctx = at?.ctx ?? ctx;
     let frame: Frame;
     let warnings: LayoutWarning[] = [];
     switch (source.behavesLike) {
@@ -71,18 +85,18 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
       case 'subject':
       case 'decoration':
         if (!f) continue;
-        frame = gridFrame(f, ctx);
+        frame = gridFrame(f, lctx);
         break;
       case 'logo':
         if (!f) continue;
-        ({ frame, warnings } = logoFrame(f, ctx));
+        ({ frame, warnings } = logoFrame(f, lctx));
         break;
       case 'text': {
         if (!f || source.content.kind !== 'text') continue;
         const style = { ...source.content.style, ...override?.style };
-        const job: TextJob = { text: source.content.text, style, master: f, fixedSizePx: override?.style?.fontSizePx, scale: gridScale(f, ctx) };
+        const job: TextJob = { text: source.content.text, style, master: f, fixedSizePx: override?.style?.fontSizePx, scale: gridScale(f, lctx) };
         // An override frame replaces the box; fit still runs inside it.
-        const box = { ...gridFrame(f, ctx), ...override?.frame };
+        const box = { ...gridFrame(f, lctx), ...override?.frame };
         items.push({ sourceId: source.id, ...fitInFrame(job, box, deps.measure), overridden: !!override });
         continue;
       }

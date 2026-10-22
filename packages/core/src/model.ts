@@ -135,7 +135,15 @@ export interface Composition {
   /** Editor transform histories (D41): so double-click resets keep working after a reload. Absent = none. */
   transforms?: LayerTransforms;
   board: { x: number; y: number };
+  /**
+   * D42: a layout guide of another composition (`of`, its master): its own artboard of that shape. An output
+   * of the master takes its layout from whichever of the master and its guides is closest to its shape.
+   */
+  guide?: { of: string; family: GuideFamily };
 }
+
+/** D42: the three layout guide shapes. */
+export type GuideFamily = 'square' | 'vertical' | 'horizontal';
 
 /** Process nodes (D32, T12.5+): change a layer on its way to a composition or output. */
 export type ProcessOp =

@@ -26,6 +26,9 @@ Think of the master canvas as a grid of coordinates `(u, v)`, 0..1 across and do
 - **Frame.** Size `F.w·c × F.h·c`; on each axis the pin point (master coordinate `a = F.lo + p·F.size`, `p` = 0, ½ or 1) lands at `b + (a/Wm)·Wt` and the frame hangs from it: `x = b + (a/Wm)·Wt − p·w` (same for y). Rotation, skew and `fitted` are kept.
 - A layer inside the master stays inside the trim (the room cap). There is no safe-area clamp.
 
+## Layout guides (D42)
+A master can have guide artboards (Square 1:1, Vertical 5:8, Horizontal 7:4). For each output, of the master and its guides the one with the smallest `|ln(Wt/Ht) − ln(Wg/Hg)|` gives the master frames `F` and the master size `Wm×Hm` above (the "guide"); the rules below then apply unchanged. A layer the guide has no placement for uses the master's. New guides are seeded through the stretched grid, so a fresh guide changes no output.
+
 ## Rules by behaviour
 **background (image)** — cover on the full canvas (incl. bleed).
 `s = max(W/iw, H/ih)`; size `iw·s × ih·s`; `left = clamp(W/2 − fx·iw·s, W − iw·s, 0)`; `top = clamp(H/2 − fy·ih·s, H − ih·s, 0)` where `(fx,fy)` = focal point.
