@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { assetStacks, compositionById, languagePairs, type LanguagePair, connectRefusal, type AssetStack, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { assetStacks, compositionById, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -13,6 +13,13 @@ export const processNodeId = (processId: string) => `proc:${processId}`;
 /** D40: an Assets card. */
 export const stackNodeId = (stackId: string) => `stk:${stackId}`;
 export const stackIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('stk:') ? nodeId.slice(4) : undefined);
+/** D46: a Preset node (many output sizes); its rows' handles are `row:<outputId>`. */
+export const setNodeId = (setId: string) => `set:${setId}`;
+export const setIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('set:') ? nodeId.slice(4) : undefined);
+export const setRowHandle = (outputId: string) => `row:${outputId}`;
+export const outputOfSetRow = (handle: string | null | undefined) => (handle?.startsWith('row:') ? handle.slice(4) : undefined);
+/** The edge drawn from a master preview into a Preset node (stands for its sizes' wires). */
+export const setInEdgeId = (setId: string) => `setin:${setId}`;
 /** D44: a Headline card (Khmer / English). */
 export const pairNodeId = (pairId: string) => `hl:${pairId}`;
 export const pairIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('hl:') ? nodeId.slice(3) : undefined);
@@ -26,6 +33,8 @@ export const compositionIdOfNode = (nodeId: string | null | undefined): string |
 export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
 /** D40: an Assets card and its pictures (inputs drawn inside it), in card order. */
 export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode'>;
+/** D46: a Preset node and its rows (sizes, in order), each with whether it is wired. */
+export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
 /** D44: a Headline card and its two inputs. */
 export type PairFlowNode = Node<{ pair: LanguagePair; km: InputSource | undefined; en: InputSource | undefined }, 'headlineNode'>;
 /** One row per port on the master preview, front (port 0) first. */
@@ -65,14 +74,14 @@ export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean; laye
 export type ProcessFlowNode = Node<{ process: ProcessNode; layer: LayerSource | undefined }, 'processNode'>;
 /** A board group's frame (T13.7): derived from its members every render, never stored. */
 export type GroupFlowNode = Node<{ group: BoardGroup; outputs: string[] }, 'groupNode'>;
-export type BoardNode = InputFlowNode | StackFlowNode | PairFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
+export type BoardNode = InputFlowNode | StackFlowNode | PairFlowNode | SetFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
 /** What React Flow draws: the nodes plus group frames. */
 export type FlowNode = BoardNode | GroupFlowNode;
 export const groupNodeId = (groupId: string) => `grp:${groupId}`;
 export const groupIdOfNode = (nodeId: string) => (nodeId.startsWith('grp:') ? nodeId.slice(4) : undefined);
 
 /** The doc id a board node stands for (input, process, composition, output). */
-export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? pairIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
+export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? pairIdOfNode(nodeId) ?? setIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
 
 const GROUP_PAD = 24;
 const GROUP_HEAD = 40;
@@ -210,6 +219,15 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
       }),
     ),
     ...doc.compositions.map(compositionNode),
+    ...presetSets(doc).map(
+      (set): SetFlowNode => ({
+        id: setNodeId(set.id),
+        type: 'presetNode',
+        position: set.board,
+        data: { set, rows: set.outputs.flatMap((id) => doc.outputs.find((o) => o.id === id) ?? []).map((output) => ({ output, connected: connected.has(output.id) })) },
+        deletable: false,
+      }),
+    ),
     ...doc.outputs.map(
       (output): OutputFlowNode => ({
         id: outputNodeId(output.id),
@@ -224,7 +242,20 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
 
 /** Layer edges land on their row's handle; deleting one disconnects the input, deleting composition→output freezes the output (T4.9). */
 export function docToEdges(doc: ProjectDoc): Edge[] {
+  // D46: a Preset node's sizes are fed by one wire into the node, then one wire from each row to its Preview.
+  const setOfOutput = new Map(presetSets(doc).flatMap((set) => set.outputs.map((o) => [o, set] as const)));
+  const setIn = new Map<string, Edge>();
   return doc.edges.flatMap((e: DocEdge): Edge[] => {
+    const set = e.kind === 'composition' ? setOfOutput.get(e.to) : undefined;
+    if (set) {
+      const fromNode = endpoint(doc, e.from);
+      if (!fromNode) return [];
+      const row: Edge = { id: e.id, type: 'routed', data: { points: [] }, source: setNodeId(set.id), sourceHandle: setRowHandle(e.to), target: outputNodeId(e.to), className: 'sc-edge--composition', deletable: true };
+      if (setIn.has(set.id)) return [row];
+      const into: Edge = { id: setInEdgeId(set.id), type: 'routed', data: { points: [] }, source: fromNode, sourceHandle: OUTPUT_HANDLE, target: setNodeId(set.id), className: 'sc-edge--composition', deletable: true };
+      setIn.set(set.id, into);
+      return [into, row];
+    }
     const source = endpoint(doc, e.from);
     const target = endpoint(doc, e.to);
     if (!source || !target) return [];
@@ -269,6 +300,9 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
   if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'A card wires into a master preview.';
+  // D46: a master preview wires into a Preset node; a Preset node's row wires into its own Preview.
+  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? null : 'A master preview wires into a Preset node.';
+  if (setIdOfNode(c.source)) return outputOfSetRow(c.sourceHandle) && c.target === outputNodeId(outputOfSetRow(c.sourceHandle) ?? '') ? null : 'A size row wires into its own preview.';
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
@@ -326,6 +360,7 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     sources: doc.sources.map((s) => place(s, inputNodeId(s.id))),
     ...(doc.stacks ? { stacks: doc.stacks.map((st) => place(st, stackNodeId(st.id))) } : {}),
     ...(doc.headlines ? { headlines: doc.headlines.map((p) => place(p, pairNodeId(p.id))) } : {}),
+    ...(doc.presetSets ? { presetSets: doc.presetSets.map((s) => place(s, setNodeId(s.id))) } : {}),
     processes: doc.processes.map((p) => place(p, processNodeId(p.id))),
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };

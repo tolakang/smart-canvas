@@ -1,12 +1,12 @@
 /**
  * The Delete / Backspace key on the board: what the selected nodes are, in words for the confirm, and the
- * doc without them. Inputs, Assets cards (with their pictures), processes, extra master previews and outputs are deleted (as their own delete
+ * doc without them. Inputs, Assets cards (with their pictures), Preset nodes (with their sizes), processes, extra master previews and outputs are deleted (as their own delete
  * buttons do); a group frame is ungrouped (its nodes stay); the first master preview can't be deleted.
  */
-import { assetStacks, deleteComposition, deletePair, languagePairs, deleteOutput, deleteProcess, deleteSource, deleteStack, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
-import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, pairIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
+import { assetStacks, deleteComposition, deletePair, languagePairs, deleteOutput, deletePresetSet, presetSets, deleteProcess, deleteSource, deleteStack, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, pairIdOfNode, setIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
 
-type Target = { kind: 'input' | 'stack' | 'headline' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
+type Target = { kind: 'input' | 'stack' | 'headline' | 'preset' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
 
 /** The deletable nodes among `nodeIds`, with their labels. */
 export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Target[] {
@@ -19,7 +19,11 @@ export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Tar
     const comp = compositionIdOfNode(n);
     const stk = stackIdOfNode(n);
     const hl = pairIdOfNode(n);
-    if (hl) {
+    const set = setIdOfNode(n);
+    if (set) {
+      const s = presetSets(doc).find((x) => x.id === set);
+      if (s) out.push({ kind: 'preset', id: set, label: s.label });
+    } else if (hl) {
       const p = languagePairs(doc).find((x) => x.id === hl);
       if (p) out.push({ kind: 'headline', id: hl, label: p.label });
     } else if (stk) {
@@ -62,6 +66,7 @@ export function deleteNodes(doc: ProjectDoc, targets: readonly Target[], deps?: 
       t.kind === 'input' ? deleteSource(next, t.id)
       : t.kind === 'stack' ? deleteStack(next, t.id)
       : t.kind === 'headline' ? deletePair(next, t.id)
+      : t.kind === 'preset' ? deletePresetSet(next, t.id)
       : t.kind === 'process' ? deleteProcess(next, t.id)
       : t.kind === 'output' ? deleteOutput(next, t.id)
       : t.kind === 'group' ? ungroup(next, t.id)

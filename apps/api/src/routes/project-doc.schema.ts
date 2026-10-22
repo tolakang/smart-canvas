@@ -147,6 +147,14 @@ const headline = {
   properties: { id, label: { type: 'string', maxLength: 200 }, board: point, km: id, en: id, use: { enum: ['km', 'en'] } },
 } as const;
 
+/** D46: a Preset node — its sizes are outputs (ids). */
+const presetSet = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'label', 'board', 'outputs'],
+  properties: { id, label: { type: 'string', maxLength: 200 }, board: point, outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: id } },
+} as const;
+
 export const projectDocV2Schema = {
   type: 'object',
   additionalProperties: false,
@@ -163,6 +171,7 @@ export const projectDocV2Schema = {
     groups: { type: 'array', maxItems: LIMITS.maxGroups, items: group },
     stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
     headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
+    presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
   },
 } as const;
 

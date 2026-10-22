@@ -854,3 +854,13 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-port--group-start { position: relative; margin-top: 14px; }
 .sc-port--group-start::before { content: attr(data-group-label); position: absolute; left: 22px; top: -14px; font-size: 10px; line-height: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
 .sc-port--group-start:first-child { margin-top: 12px; }
+
+/* D46: Preset node — a list of media sizes, each row wired out to its own preview. */
+.sc-node--preset { width: 280px; }
+.sc-node--preset > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 8px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; background: color-mix(in srgb, #2e9d5b 18%, var(--surface)); }
+.sc-node--preset > .react-flow__handle { top: 22px; }
+.sc-preset__rows .sc-port { padding-right: 18px; }
+.sc-preset__size { flex: none; min-width: 84px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.sc-port--frozen { color: var(--muted); }
+.sc-preset__remove { margin-left: auto; }
+.sc-preset__add { margin-top: 8px; width: 100%; }

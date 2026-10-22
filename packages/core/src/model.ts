@@ -17,7 +17,7 @@ export type PresetGroup = 'print' | 'social';
 
 export const LIMITS = {
   maxSources: 500, // D39: no practical layer limit; a safety ceiling for the API only
-  maxOutputs: 10,
+  maxOutputs: 100, // D46: a preset set (GDN alone is 7 sizes) — was 10
   maxCompositions: 5,
   maxProcesses: 20,
   maxGroups: 20,
@@ -237,6 +237,19 @@ export interface ProjectDoc {
   /** Assets cards (D40): one board node holding many pictures; absent = none. Board only, no effect on layout. */
   stacks?: AssetStack[];  /** D44: Headline cards — a Khmer and an English picture of one headline, one of them in use. */
   headlines?: LanguagePair[];
+  /** D46: Preset nodes — a list of output sizes (e.g. GDN) fed by one master preview. */
+  presetSets?: PresetSet[];
+}
+
+/**
+ * D46: a Preset node (PDF page 3, "GDN Preset Node"): one node listing many output sizes, fed by one wire from a
+ * master preview; each size is its own output (its "Preview" node) wired from its row. `outputs` in row order.
+ */
+export interface PresetSet {
+  id: string;
+  label: string;
+  board: { x: number; y: number };
+  outputs: string[];
 }
 
 /**
