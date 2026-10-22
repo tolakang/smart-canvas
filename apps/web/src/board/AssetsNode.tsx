@@ -1,11 +1,12 @@
 /**
  * D40: an Assets card — one board node holding many pictures. Drop several files on it (or pick them) and each
  * becomes its own layer, wired into the card's master previews. Click a picture to set it in the inspector,
- * drag pictures to reorder the card, × deletes one.
+ * drag pictures to reorder the card, × deletes one. Page 3: a grid / list switch (remembered per card, in this browser).
  */
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { deleteSource, moveStackItem, renameStack } from '@smart-canvas/core';
 import { useState, type DragEvent } from 'react';
+import { useStoredFlag } from './board-keys';
 import { assetUrl } from '../api';
 import { useBoard } from './context';
 import type { StackFlowNode } from './flow';
@@ -22,6 +23,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
   const [over, setOver] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(stack.label);
+  const [list, setList] = useStoredFlag(`sc-assets-list:${stack.id}`, false);
 
   const dropProps = readOnly
     ? {}
@@ -72,8 +74,16 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         <span className="sc-count" aria-label={`${items.length} pictures`}>
           {items.length}
         </span>
+        <div className={`sc-seg sc-assets__view ${NO_CANVAS}`} role="group" aria-label={`${stack.label} view`}>
+          <button type="button" aria-pressed={!list} aria-label="Grid view" title="Grid" onClick={() => setList(false)}>
+            ▦
+          </button>
+          <button type="button" aria-pressed={list} aria-label="List view" title="List" onClick={() => setList(true)}>
+            ☰
+          </button>
+        </div>
       </div>
-      <ul className={`sc-assets ${NO_CANVAS}`} aria-label={`${stack.label} pictures`}>
+      <ul className={`sc-assets${list ? ' sc-assets--list' : ''} ${NO_CANVAS}`} aria-label={`${stack.label} pictures`}>
         {items.map((s, i) => {
           const asset = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null;
           const focused = selected && (stackFocus === s.id || (!items.some((x) => x.id === stackFocus) && i === 0));
@@ -95,6 +105,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
               <button type="button" className="sc-assets__pick" title={s.label} aria-label={`Select ${s.label}`} onClick={() => setStackFocus(s.id)}>
                 {asset ? <img src={assetUrl(teamId, asset)} alt={`${s.label} preview`} draggable={false} /> : <span className="sc-muted">?</span>}
               </button>
+              {list && <span className="sc-assets__label">{s.label}</span>}
               {!readOnly && (
                 <button type="button" className="sc-assets__remove" aria-label={`Delete ${s.label}`} title="Delete" onClick={() => confirmDelete(s.label) && run((d) => deleteSource(d, s.id))}>
                   <Icon name="close" />
@@ -107,6 +118,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
           <li className="sc-assets__item">
             <label className="sc-assets__add" title="Add pictures (or drop files on the card)">
               {drop.busy ? '…' : <Icon name="plus" />}
+              {list && <span>Drag &amp; drop or add pictures</span>}
               <input
                 type="file"
                 multiple

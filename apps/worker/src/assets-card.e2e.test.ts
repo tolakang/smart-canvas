@@ -87,6 +87,14 @@ describe.skipIf(!adminUrl)('Assets card: many pictures in one input (D40)', () =
     expect(d.stacks?.[0]?.items).toHaveLength(2);
   }, 60_000);
 
+  it('page 3: the card switches between a grid and a list (with names)', async () => {
+    const card = cards().first();
+    await card.getByRole('button', { name: 'List view' }).click();
+    await expect.poll(() => card.locator('.sc-assets--list .sc-assets__label').allInnerTexts()).toEqual(['pic-1', 'pic-3']);
+    await card.getByRole('button', { name: 'Grid view' }).click();
+    await expect.poll(() => card.locator('.sc-assets__label').count()).toBe(0);
+  }, 30_000);
+
   it('pictures dropped on the empty canvas make a new card there', async () => {
     const spot = await emptySpot();
     if (!spot) throw new Error('no empty spot');

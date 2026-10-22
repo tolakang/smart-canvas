@@ -1,7 +1,7 @@
 import { Handle, Position, type NodeProps, type NodeTypes } from '@xyflow/react';
 import { ALLOWED_BEHAVIORS, fillToCss, fontStack, setBehavior, type Behavior, type InputSource } from '@smart-canvas/core';
 import { assetUrl } from '../api';
-import { AssetEditor, FillEditor, TextEditor, useAssetUpload, type AssetUpload } from './editors';
+import { AssetEditor, BackgroundSlots, FillEditor, TextEditor, useAssetUpload, type AssetUpload } from './editors';
 import { useBoard } from './context';
 import { MainNodeView } from './MainNode';
 import { SourceHeader } from './SourceHeader';
@@ -29,6 +29,8 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
       <NodePreview source={source} upload={upload} />
+      {/* Page 3 (D43): a background's vertical and horizontal pictures, right on the card. */}
+      {source.behavesLike === 'background' && (source.content.kind === 'image' || source.content.kind === 'vector') && <BackgroundSlots source={source} />}
       <Handle type="source" position={Position.Right} isConnectable={!readOnly} className="sc-handle--layer" title="Layer out: wire into a master preview row" />
     </div>
   );

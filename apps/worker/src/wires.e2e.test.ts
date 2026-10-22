@@ -73,6 +73,29 @@ describe.skipIf(!adminUrl)('wires attach and detach by dragging (T8.5)', () => {
     expect(await page.locator('.react-flow__edge[data-id="in:logo"]').count()).toBe(0);
   }, 60_000);
 
+  it('page 3: every wire carries a ✂ badge; clicking it cuts that wire', async () => {
+    const badge = page.locator('.react-flow__edgelabel-renderer .sc-wire-cut--idle');
+    // Background, headline and subject are wired (the logo was just detached): one badge each.
+    await expect.poll(() => badge.count()).toBe(3);
+    await drag(inputHandle('Logo'), rowHandle(0));
+    await expect.poll(async () => Object.keys(await wiredPorts()).sort()).toEqual(['background', 'headline', 'logo', 'subject']);
+    // The logo's badge is the one nearest its wire's middle; cut it and the logo is unwired again.
+    const logoBadge = await page.evaluate(() => {
+      const path = document.querySelector('.react-flow__edge[data-id="in:logo"] path.react-flow__edge-path') as SVGPathElement | null;
+      const box = path?.getBoundingClientRect();
+      if (!box) return -1;
+      const mid = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      const badges = [...document.querySelectorAll('.react-flow__edgelabel-renderer .sc-wire-cut--idle')];
+      const d = badges.map((b) => {
+        const r = b.getBoundingClientRect();
+        return Math.hypot(r.x + r.width / 2 - mid.x, r.y + r.height - mid.y);
+      });
+      return d.indexOf(Math.min(...d));
+    });
+    await badge.nth(logoBadge).click();
+    await expect.poll(async () => Object.keys(await wiredPorts()).sort()).toEqual(['background', 'headline', 'subject']);
+  }, 60_000);
+
   it('dropping the main end on another row moves the input there, but never out of its layer comp group (D45)', async () => {
     // The headline dropped on the background's row stays in the headline group, under the logo.
     await drag(end('in:headline', 'target'), rowHandle(3));

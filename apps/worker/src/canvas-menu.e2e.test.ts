@@ -51,7 +51,14 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
   };
 
   it('offers the quick inputs, the input dialog and the output dialog', async () => {
-    await rightClickEmpty();
+    // The team's presets (the Preset node items) load after the board: reopen until they are listed.
+    await expect
+      .poll(async () => {
+        if (await menu().count()) await page.keyboard.press('Escape');
+        await rightClickEmpty();
+        return menu().getByRole('menuitem', { name: 'GDN preset (7 sizes)' }).count();
+      }, { timeout: 20_000 })
+      .toBe(1);
     expect(await menu().getByRole('menuitem').allInnerTexts()).toEqual([
       'Assets (many pictures)',
       'Headline (Khmer / English)',
