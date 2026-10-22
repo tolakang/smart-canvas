@@ -207,6 +207,8 @@ export interface ProjectDoc {
   groups?: BoardGroup[];
   /** Assets cards (D40): one board node holding many pictures; absent = none. Board only, no effect on layout. */
   stacks?: AssetStack[];
+  /** D44: Headline cards (a Khmer and an English input, one in use). */
+  headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en' }[];
 }
 
 /** D40: an Assets card. Each picture is its own input (layer); the card only draws them together, `items` in card order. */

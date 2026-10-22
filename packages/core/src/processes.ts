@@ -7,6 +7,7 @@
  * process id stands for its effective layer: the chain's input with every op applied. `layerSources(doc)`
  * gives all of them — the inputs as they are, plus one per process whose chain reaches an input.
  */
+import { unusedLanguageInputs } from './languages';
 import { edgeId } from './graph';
 import { compositionScene, type RenderScene } from './render';
 import { LIMITS, type Frame, type InputSource, type NFrame, type ProcessNode, type ProcessOp, type ProjectDoc, type SourceContent } from './model';
@@ -140,7 +141,10 @@ export function layerSources(doc: ProjectDoc): LayerSource[] {
 
 /** Inputs, resolved processes, and the compositions `include` picks, each with its scene. */
 function buildLayers(doc: ProjectDoc, include: (compositionId: string) => boolean): LayerSource[] {
-  const base: LayerSource[] = [...doc.sources, ...doc.processes.flatMap((p) => resolveProcess(doc, p.id) ?? [])];
+  // D44: a Headline card's language not in use is drawn nowhere (as if hidden).
+  const off = unusedLanguageInputs(doc);
+  const sources = off.size ? doc.sources.map((s) => (off.has(s.id) ? { ...s, visible: false } : s)) : doc.sources;
+  const base: LayerSource[] = [...sources, ...doc.processes.flatMap((p) => resolveProcess(doc, p.id) ?? [])];
   if (!doc.compositions.some((c) => include(c.id))) return base;
   // T12.8: compositions wired as layers, each with its scene (nested ones resolved first; loops are refused when wiring).
   const byId = new Map(base.map((s) => [s.id, s]));

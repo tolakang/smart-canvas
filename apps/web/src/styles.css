@@ -839,3 +839,13 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-bg-slot__title { font-size: 11px; color: var(--muted); }
 .sc-bg-slot .sc-thumb { height: 72px; }
 .sc-bg-slot__actions { display: flex; gap: 8px; align-items: center; }
+
+/* D44: Headline card — Khmer / English slots and the language switch. */
+.sc-node--headline { width: 260px; }
+.sc-hl-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sc-hl-slot { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 4px; border-radius: var(--r-md, 6px); border: 1px solid transparent; }
+.sc-hl-slot--use { border-color: var(--accent); }
+.sc-hl-slot__title { font-size: 11px; color: var(--muted); }
+.sc-hl-slot .sc-assets__pick { height: 72px; aspect-ratio: auto; }
+.sc-hl-use { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+.sc-node--headline > .react-flow__handle { top: 26px; }

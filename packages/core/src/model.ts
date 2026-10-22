@@ -235,7 +235,21 @@ export interface ProjectDoc {
   /** Board groups (T13.7): named, coloured frames around nodes; absent = none. Board only, no effect on layout. */
   groups?: BoardGroup[];
   /** Assets cards (D40): one board node holding many pictures; absent = none. Board only, no effect on layout. */
-  stacks?: AssetStack[];
+  stacks?: AssetStack[];  /** D44: Headline cards — a Khmer and an English picture of one headline, one of them in use. */
+  headlines?: LanguagePair[];
+}
+
+/**
+ * D44: a Headline card (PDF page 3, "Headline asset Node"): the same headline as a Khmer picture and an English
+ * picture, each its own input (its own placement and overrides); only the one in `use` is drawn, everywhere.
+ */
+export interface LanguagePair {
+  id: string;
+  label: string;
+  board: { x: number; y: number };
+  km: string;
+  en: string;
+  use: 'km' | 'en';
 }
 
 /**

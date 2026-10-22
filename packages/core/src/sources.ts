@@ -190,6 +190,8 @@ export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
       })),
       edges: doc.edges.filter((e) => e.from !== id && e.to !== id),
       ...(doc.stacks ? { stacks: doc.stacks.map((st) => (st.items.includes(id) ? { ...st, items: st.items.filter((i) => i !== id) } : st)) } : {}),
+      // D44: a Headline card without one of its languages is no card (the other stays an ordinary input).
+      ...(doc.headlines ? { headlines: doc.headlines.filter((p) => p.km !== id && p.en !== id) } : {}),
       outputs: doc.outputs.map((o) => ({
         ...o,
         overrides: o.overrides.filter((ov) => ov.sourceId !== id),

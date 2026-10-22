@@ -6,6 +6,11 @@
  */
 import {
   addGuides,
+  deletePair,
+  LANGUAGE_LABEL,
+  languagePairs,
+  renamePair,
+  setLanguage,
   assetStacks,
   detachGuide,
   familyOfShape,
@@ -42,7 +47,7 @@ import { newId } from './ids';
 import { useBoard } from './context';
 import { BackgroundSlots, useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
-import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, processNodeId, stackNodeId } from './flow';
+import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, pairNodeId, processNodeId, stackNodeId } from './flow';
 import { ProcessSettings } from './ProcessSettings';
 import { HealthIssues, healthSummary } from './HealthBadge';
 import { confirmDelete, Icon } from './LayerRow';
@@ -59,6 +64,7 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
   const composition = compositionIdOfNode(selected);
   const process = doc.processes.find((p) => processNodeId(p.id) === selected);
   const stack = assetStacks(doc).find((st) => stackNodeId(st.id) === selected);
+  const pair = languagePairs(doc).find((p) => pairNodeId(p.id) === selected);
   return (
     <aside className={`sc-inspector-panel${floating ? ` sc-floating sc-floating--${floating} sc-floating--end` : ''}`} aria-label="Inspector">
       {floating && (
@@ -69,7 +75,9 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
           </button>
         </div>
       )}
-      {stack ? (
+      {pair ? (
+        <HeadlineInspector key={pair.id} pairId={pair.id} />
+      ) : stack ? (
         <AssetsInspector key={stack.id} stackId={stack.id} />
       ) : source ? (
         <InputInspector key={source.id} source={source} />
@@ -220,6 +228,37 @@ function InputActions({ source }: { source: InputSource }) {
       </div>
       <p className="sc-muted sc-inspector-panel__hint">Or select nodes and press Delete.</p>
     </Section>
+  );
+}
+
+/** D44: a Headline card — its name, the language in use, and the picked language's input settings. */
+function HeadlineInspector({ pairId }: { pairId: string }) {
+  const { doc, run, readOnly, stackFocus } = useBoard();
+  const pair = languagePairs(doc).find((p) => p.id === pairId);
+  if (!pair) return null;
+  const focusId = stackFocus === pair.km || stackFocus === pair.en ? stackFocus : pair.use === 'km' ? pair.km : pair.en;
+  const focused = doc.sources.find((s) => s.id === focusId);
+  return (
+    <>
+      <Section title="Headline">
+        <NameField label="Headline name" value={pair.label} onCommit={(label) => run((d) => renamePair(d, pair.id, label))} />
+        <div className="sc-seg" role="radiogroup" aria-label="Language every output uses">
+          {(['km', 'en'] as const).map((lang) => (
+            <label key={lang}>
+              <input type="radio" name={`inspector-use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang))} />
+              {LANGUAGE_LABEL[lang]}
+            </label>
+          ))}
+        </div>
+        <p className="sc-inspector-panel__hint">Every output draws the language in use. Each language keeps its own position and size.</p>
+        {!readOnly && (
+          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and output overrides go with them.`) && run((d) => deletePair(d, pair.id))}>
+            <Icon name="trash" /> Delete card
+          </button>
+        )}
+      </Section>
+      {focused && <InputInspector key={focused.id} source={focused} />}
+    </>
   );
 }
 

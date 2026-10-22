@@ -3,10 +3,10 @@
  * doc without them. Inputs, Assets cards (with their pictures), processes, extra master previews and outputs are deleted (as their own delete
  * buttons do); a group frame is ungrouped (its nodes stay); the first master preview can't be deleted.
  */
-import { assetStacks, deleteComposition, deleteOutput, deleteProcess, deleteSource, deleteStack, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
-import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
+import { assetStacks, deleteComposition, deletePair, languagePairs, deleteOutput, deleteProcess, deleteSource, deleteStack, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, pairIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
 
-type Target = { kind: 'input' | 'stack' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
+type Target = { kind: 'input' | 'stack' | 'headline' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
 
 /** The deletable nodes among `nodeIds`, with their labels. */
 export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Target[] {
@@ -18,7 +18,11 @@ export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Tar
     const outp = outputIdOfNode(n);
     const comp = compositionIdOfNode(n);
     const stk = stackIdOfNode(n);
-    if (stk) {
+    const hl = pairIdOfNode(n);
+    if (hl) {
+      const p = languagePairs(doc).find((x) => x.id === hl);
+      if (p) out.push({ kind: 'headline', id: hl, label: p.label });
+    } else if (stk) {
       const st = assetStacks(doc).find((x) => x.id === stk);
       if (st) out.push({ kind: 'stack', id: stk, label: st.label });
     } else if (src) {
@@ -57,6 +61,7 @@ export function deleteNodes(doc: ProjectDoc, targets: readonly Target[], deps?: 
     const r =
       t.kind === 'input' ? deleteSource(next, t.id)
       : t.kind === 'stack' ? deleteStack(next, t.id)
+      : t.kind === 'headline' ? deletePair(next, t.id)
       : t.kind === 'process' ? deleteProcess(next, t.id)
       : t.kind === 'output' ? deleteOutput(next, t.id)
       : t.kind === 'group' ? ungroup(next, t.id)
