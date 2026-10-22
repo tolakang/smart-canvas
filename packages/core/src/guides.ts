@@ -7,7 +7,7 @@
  */
 import { compositionById, edgeId, newComposition, withComposition } from './graph';
 import { gridFrame } from './layout/grid';
-import { canvasMetrics, LIMITS, type Composition, type Frame, type GuideFamily, type NFrame, type ProjectDoc, type Size } from './model';
+import { canvasMetrics, LIMITS, type Composition, type Frame, type GuideFamily, type NFrame, type ProjectDoc, type Size, type SourceContent } from './model';
 import { sizeInDesignPx, toDesignFrame } from './render';
 import type { SourceResult } from './sources';
 
@@ -105,4 +105,22 @@ export function detachGuide(doc: ProjectDoc, id: string): SourceResult {
     void _guide;
     return rest;
   }) };
+}
+
+/**
+ * D43: the picture an output of shape `trim` draws for this content — its vertical or horizontal slot when the
+ * output's shape is that family and the slot is filled, else the main picture. Null when it has no picture.
+ */
+export function pictureForShape(content: SourceContent, trim: { w: number; h: number }): string | null {
+  if (content.kind !== 'image' && content.kind !== 'vector') return null;
+  const family = familyOfShape({ width: trim.w, height: trim.h });
+  return (family !== 'square' ? content.variants?.[family] : undefined) ?? content.assetId;
+}
+
+/** A source with its picture for this output's shape in place of the main one (itself when that's the same). */
+export function withPictureForShape<T extends { content: SourceContent }>(source: T, trim: { w: number; h: number }): T {
+  const c = source.content;
+  if (c.kind !== 'image' && c.kind !== 'vector') return source;
+  const id = pictureForShape(c, trim);
+  return id === c.assetId ? source : { ...source, content: { ...c, assetId: id } };
 }

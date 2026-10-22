@@ -96,7 +96,8 @@ function Layer({
     ...(effect && effectFilter(effect) ? { filter: effectFilter(effect) } : {}),
   };
   const data = { 'data-source-id': source.id, 'data-kind': source.kind };
-  const { content } = source;
+  // D43: this output's slot (a background's vertical / horizontal picture) in place of the main picture.
+  const content = item.assetId && (source.content.kind === 'image' || source.content.kind === 'vector') ? { ...source.content, assetId: item.assetId } : source.content;
 
   // T12.8: a composition used as a layer draws its own scene, contain-fitted (cover as a background) and centred.
   if (source.nested) {

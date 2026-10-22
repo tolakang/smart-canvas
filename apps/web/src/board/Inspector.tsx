@@ -40,7 +40,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { api, assetUrl } from '../api';
 import { newId } from './ids';
 import { useBoard } from './context';
-import { useAssetUpload } from './editors';
+import { BackgroundSlots, useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
 import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, processNodeId, stackNodeId } from './flow';
 import { ProcessSettings } from './ProcessSettings';
@@ -179,6 +179,12 @@ function InputInspector({ source }: { source: InputSource }) {
           <SourceEditor source={source} upload={upload} />
         </div>
       </Section>
+      {source.behavesLike === 'background' && source.content.kind !== 'text' && (
+        <Section title="For vertical and horizontal outputs">
+          <p className="sc-muted sc-inspector-panel__hint">Optional: a picture for vertical outputs and one for horizontal outputs. Each output uses the one for its shape; square outputs use the main picture.</p>
+          <BackgroundSlots source={source} />
+        </Section>
+      )}
       {!readOnly && <InputActions source={source} />}
     </>
   );

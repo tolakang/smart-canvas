@@ -91,7 +91,7 @@ export function outputScene(layout: LayoutResult, output?: Pick<OutputNode, 'ove
   return {
     width: layout.metrics.full.w,
     height: layout.metrics.full.h,
-    items: layout.items.map(({ sourceId, frame, fontSizePx, lines }) => {
+    items: layout.items.map(({ sourceId, frame, fontSizePx, lines, assetId }) => {
       const style = styles.get(sourceId);
       return {
         sourceId,
@@ -99,6 +99,7 @@ export function outputScene(layout: LayoutResult, output?: Pick<OutputNode, 'ove
         ...(fontSizePx !== undefined ? { fontSizePx } : {}),
         ...(lines ? { lines } : {}),
         ...(style ? { style } : {}),
+        ...(assetId ? { assetId } : {}),
       };
     }),
   };

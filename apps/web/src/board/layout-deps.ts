@@ -21,7 +21,11 @@ function fontRequestsJson(doc: ProjectDoc): string {
 /** The picture assets a doc draws, as a stable string (effect key). */
 export function usedAssetsKey(doc: ProjectDoc): string {
   const ids = new Set<string>();
-  for (const s of doc.sources) if ((s.content.kind === 'image' || s.content.kind === 'vector') && s.content.assetId) ids.add(s.content.assetId);
+  for (const s of doc.sources) {
+    if (s.content.kind !== 'image' && s.content.kind !== 'vector') continue;
+    if (s.content.assetId) ids.add(s.content.assetId);
+    for (const v of Object.values(s.content.variants ?? {})) if (v) ids.add(v); // D43
+  }
   return [...ids].sort().join(',');
 }
 

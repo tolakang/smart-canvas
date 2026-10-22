@@ -88,7 +88,7 @@ export interface TextStyle {
 }
 
 export type SourceContent =
-  | { kind: 'image' | 'vector'; assetId: string | null; focal: { x: number; y: number } } // focal 0..1
+  | { kind: 'image' | 'vector'; assetId: string | null; focal: { x: number; y: number }; variants?: { vertical?: string; horizontal?: string } } // focal 0..1; D43 slots
   | { kind: 'text'; text: string; style: TextStyle }
   | { kind: 'fill'; fill: Fill };
 

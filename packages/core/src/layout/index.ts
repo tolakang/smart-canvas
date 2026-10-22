@@ -7,7 +7,7 @@ import { canvasMetrics, DEFAULTS, type Frame, type OutputNode, type ProjectDoc }
 import { sizeInDesignPx, toDesignFrame } from '../render';
 import { backgroundFrame } from './background';
 import type { RuleContext } from './context';
-import { guideFor } from '../guides';
+import { guideFor, withPictureForShape } from '../guides';
 import { gridFrame, gridScale } from './grid';
 import { logoFrame } from './logo';
 import { outputOnlyFrame } from './output-only';
@@ -58,7 +58,8 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
 
   const layers = layerSources(doc);
   const items: LayoutItem[] = [];
-  const byId = new Map(layers.map((s) => [s.id, s]));
+  // D43: each picture input draws its slot for this output's shape (a background's vertical / horizontal picture).
+  const byId = new Map(layers.map((s) => [s.id, withPictureForShape(s, metrics.trim)]));
   for (const source of [...comp.layers].reverse().flatMap((id) => byId.get(id) ?? [])) {
     const override = overrides.get(source.id);
     if (!source.visible || !wired.has(source.id) || override?.hidden) continue;
@@ -125,5 +126,14 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
       items.push({ sourceId: source.id, ...fitInFrame(job, frame, deps.measure), overridden: !!override });
     } else items.push({ sourceId: source.id, frame, overridden: !!override, warnings: [] });
   }
-  return { metrics, family, items };
+  const main = new Map(layers.map((s) => [s.id, s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null]));
+  return {
+    metrics,
+    family,
+    items: items.map((it) => {
+      const c = byId.get(it.sourceId)?.content;
+      const id = c && (c.kind === 'image' || c.kind === 'vector') ? c.assetId : null;
+      return id && id !== main.get(it.sourceId) ? { ...it, assetId: id } : it;
+    }),
+  };
 }

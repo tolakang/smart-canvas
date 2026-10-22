@@ -57,7 +57,7 @@ Picture frames hug their visible pixels, and stretching distorts the picture.
 ## Layout guides (D42) — PDF "Core Preset Guide"
 - `packages/core/src/guides.ts` (`familyOfShape`, `guideFor`, `addGuides`, `detachGuide`); `computeLayout` takes positions from `guideFor` (falls back to the master per layer).
 - UI: Inspector "Layout guides" section (`GuidesSection`), guide chip on `MainNode`, "· Vertical guide" on `OutputNode`.
-- Not yet from the PDF: page 3's board redesign (Logo / Headline KH+EN / Image / Background V+H asset nodes, Layer Comp node, Core Rule node, GDN preset node with many sizes).
+- Page 3 plan (one PR each): 1. Background V/H pictures — **done (D43)**; 2. Headline asset node with Khmer / English slots + "Use" switch; 3. Layer Comp fixed order (logo top → headline → elements → background); 4. Preset group node (GDN: many sizes, one preview each); 5. Core Rule node. Logo and Image asset nodes already exist (logo input, Assets card).
 
 ## Known limits / ideas
 - `output.family` is still computed and reported but no longer changes placement (D38).

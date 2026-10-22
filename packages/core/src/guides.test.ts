@@ -76,3 +76,31 @@ describe('layout guides (D42)', () => {
     expect(guideFor(doc, MAIN, { w: 1080, h: 1920 })?.id).toBe(MAIN);
   });
 });
+
+describe('background pictures for vertical / horizontal outputs (D43)', () => {
+  const withVariants = (doc: ProjectDoc): ProjectDoc => ({
+    ...doc,
+    sources: doc.sources.map((s) =>
+      s.id === 'background' ? { ...s, kind: 'image', content: { kind: 'image', assetId: 'main', focal: { x: 0.5, y: 0.5 }, variants: { vertical: 'tall', horizontal: 'wide' } } } : s,
+    ),
+  });
+  const bg = (doc: ProjectDoc, width: number, height: number) =>
+    computeLayout({ ...doc, outputs: [output({ size: { width, height, unit: 'px' } })] }, 'o1', { measure: mockMeasure, assets: { main: { width: 1000, height: 1000 }, tall: { width: 1000, height: 2000 }, wide: { width: 3000, height: 1000 } } }).items.find((i) => i.sourceId === 'background');
+
+  it('each output draws the slot of its shape; square ones the main picture', () => {
+    const doc = withVariants(project());
+    expect(bg(doc, 1080, 1920)?.assetId).toBe('tall');
+    expect(bg(doc, 728, 90)?.assetId).toBe('wide');
+    expect(bg(doc, 2400, 2400)?.assetId).toBeUndefined(); // the main picture
+  });
+
+  it('the cover is computed on that picture: a 1:2 picture on a 1080×1920 story', () => {
+    // cover: s = max(1080/1000, 1920/2000) = 1.08 → 1080×2160, centred vertically
+    expectFrame(bg(withVariants(project()), 1080, 1920)?.frame, { x: 0, y: -120, w: 1080, h: 2160 });
+  });
+
+  it('an empty slot falls back to the main picture', () => {
+    const doc = { ...withVariants(project()), sources: withVariants(project()).sources.map((s) => (s.id === 'background' && s.content.kind === 'image' ? { ...s, content: { ...s.content, variants: { vertical: 'tall' } } } : s)) };
+    expect(bg(doc, 728, 90)?.assetId).toBeUndefined();
+  });
+});

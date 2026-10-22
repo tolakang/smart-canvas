@@ -127,7 +127,7 @@ export function RenderPage({ route }: { route: RenderRoute }) {
       const assets = await api<AssetMeta[]>('GET', `/teams/${route.teamId}/assets`);
       const sizes: Record<string, AssetSize> = Object.fromEntries(assets.flatMap((a) => (a.width && a.height ? [[a.id, { width: a.width, height: a.height }]] : [])));
       // D37: fitted frames draw a picture's visible part — measured here exactly as on the board.
-      const used = new Set(doc.sources.flatMap((s) => ((s.content.kind === 'image' || s.content.kind === 'vector') && s.content.assetId ? [s.content.assetId] : [])));
+      const used = new Set(doc.sources.flatMap((s) => (s.content.kind === 'image' || s.content.kind === 'vector' ? [s.content.assetId, ...Object.values(s.content.variants ?? {})].filter((id): id is string => !!id) : [])));
       for (const a of assets) {
         const size = sizes[a.id];
         if (!size || !used.has(a.id)) continue;
