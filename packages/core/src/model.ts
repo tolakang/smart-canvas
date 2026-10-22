@@ -239,6 +239,15 @@ export interface ProjectDoc {
   headlines?: LanguagePair[];
   /** D46: Preset nodes — a list of output sizes (e.g. GDN) fed by one master preview. */
   presetSets?: PresetSet[];
+  /** D47: Core Rule nodes — each shows how one master preview adapts (layer comp, guides, auto layout). */
+  coreRules?: CoreRuleNode[];
+}
+
+/** D47: a Core Rule node on the board, for one master preview. Its contents are derived, never stored. */
+export interface CoreRuleNode {
+  id: string;
+  composition: string;
+  board: { x: number; y: number };
 }
 
 /**

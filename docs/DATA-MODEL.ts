@@ -211,6 +211,8 @@ export interface ProjectDoc {
   headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en' }[];
   // D46: Preset nodes — each lists output ids (its sizes, in row order).
   presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[] }[];
+  // D47: Core Rule nodes — one master preview each; what they show is derived.
+  coreRules?: { id: string; composition: string; board: { x: number; y: number } }[];
 }
 
 /** D40: an Assets card. Each picture is its own input (layer); the card only draws them together, `items` in card order. */

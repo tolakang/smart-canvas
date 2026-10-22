@@ -21,7 +21,9 @@ export type AddSpec =
   | { type: 'assets' }
   | { type: 'headline' }
   /** D46: a Preset node with every size of a preset family. */
-  | { type: 'presetSet'; family: string };
+  | { type: 'presetSet'; family: string }
+  /** D47: a Core Rule node for the master preview. */
+  | { type: 'coreRule' };
 
 /** Drag payload type: dropping it on the canvas adds the spec there (Board). */
 export const ADD_DRAG_TYPE = 'application/x-sc-add';
@@ -135,9 +137,14 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
             ))}
           </Group>
         )}
-        {match('Master preview', 'composition', 'variant') && (
+        {match('Master preview', 'composition', 'variant', 'Core rules', 'guide', 'auto layout', 'layer comp') && (
           <Group title="Master previews" note={compsFull ? `${LIMITS.maxCompositions} max` : undefined}>
-            <Item spec={{ type: 'composition' }} label="Master preview" hint="Another artboard, e.g. a campaign variant" icon={<span className="sc-library__glyph sc-library__glyph--main"><Icon name="preview" /></span>} disabled={compsFull} onAdd={onAdd} />
+            {match('Master preview', 'composition', 'variant') && (
+              <Item spec={{ type: 'composition' }} label="Master preview" hint="Another artboard, e.g. a campaign variant" icon={<span className="sc-library__glyph sc-library__glyph--main"><Icon name="preview" /></span>} disabled={compsFull} onAdd={onAdd} />
+            )}
+            {match('Core rules', 'guide', 'auto layout', 'layer comp') && (
+              <Item spec={{ type: 'coreRule' }} label="Core rules" hint="Layer comp, preset guides and auto layout of a master preview" icon={<span className="sc-library__glyph sc-library__glyph--main"><Icon name="preview" /></span>} disabled={false} onAdd={onAdd} />
+            )}
           </Group>
         )}
         {families.length > 0 && (
@@ -180,7 +187,7 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
             ))}
           </Group>
         )}
-        {q && inputs.length + processes.length + shownPresets.length + libraryItems.length + families.length === 0 && !match('Master preview', 'composition', 'variant', 'Custom size', 'output', 'Assets', 'pictures', 'images', 'files', 'multiple') && (
+        {q && inputs.length + processes.length + shownPresets.length + libraryItems.length + families.length === 0 && !match('Master preview', 'composition', 'variant', 'Core rules', 'guide', 'auto layout', 'layer comp', 'Custom size', 'output', 'Assets', 'pictures', 'images', 'files', 'multiple') && (
           <p className="sc-muted sc-library__empty">Nothing matches “{query}”.</p>
         )}
       </div>

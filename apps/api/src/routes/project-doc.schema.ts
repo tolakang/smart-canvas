@@ -155,6 +155,14 @@ const presetSet = {
   properties: { id, label: { type: 'string', maxLength: 200 }, board: point, outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: id } },
 } as const;
 
+/** D47: a Core Rule node — which master preview, and where. */
+const coreRule = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'composition', 'board'],
+  properties: { id, composition: id, board: point },
+} as const;
+
 export const projectDocV2Schema = {
   type: 'object',
   additionalProperties: false,
@@ -172,6 +180,7 @@ export const projectDocV2Schema = {
     stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
     headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
     presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
+    coreRules: { type: 'array', maxItems: LIMITS.maxCompositions, items: coreRule },
   },
 } as const;
 

@@ -3,10 +3,10 @@
  * doc without them. Inputs, Assets cards (with their pictures), Preset nodes (with their sizes), processes, extra master previews and outputs are deleted (as their own delete
  * buttons do); a group frame is ungrouped (its nodes stay); the first master preview can't be deleted.
  */
-import { assetStacks, deleteComposition, deletePair, languagePairs, deleteOutput, deletePresetSet, presetSets, deleteProcess, deleteSource, deleteStack, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
-import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, pairIdOfNode, setIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
+import { assetStacks, deleteComposition, deletePair, languagePairs, deleteOutput, deletePresetSet, presetSets, coreRules, deleteCoreRule, deleteProcess, deleteSource, deleteStack, MAIN, ungroup, type LayoutDeps, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { compositionIdOfNode, groupIdOfNode, outputIdOfNode, processIdOfNode, pairIdOfNode, setIdOfNode, ruleIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
 
-type Target = { kind: 'input' | 'stack' | 'headline' | 'preset' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
+type Target = { kind: 'input' | 'stack' | 'headline' | 'preset' | 'rule' | 'process' | 'composition' | 'output' | 'group'; id: string; label: string };
 
 /** The deletable nodes among `nodeIds`, with their labels. */
 export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Target[] {
@@ -20,7 +20,10 @@ export function deletableNodes(doc: ProjectDoc, nodeIds: readonly string[]): Tar
     const stk = stackIdOfNode(n);
     const hl = pairIdOfNode(n);
     const set = setIdOfNode(n);
-    if (set) {
+    const rule = ruleIdOfNode(n);
+    if (rule) {
+      if (coreRules(doc).some((x) => x.id === rule)) out.push({ kind: 'rule', id: rule, label: 'Core rules' });
+    } else if (set) {
       const s = presetSets(doc).find((x) => x.id === set);
       if (s) out.push({ kind: 'preset', id: set, label: s.label });
     } else if (hl) {
@@ -67,6 +70,7 @@ export function deleteNodes(doc: ProjectDoc, targets: readonly Target[], deps?: 
       : t.kind === 'stack' ? deleteStack(next, t.id)
       : t.kind === 'headline' ? deletePair(next, t.id)
       : t.kind === 'preset' ? deletePresetSet(next, t.id)
+      : t.kind === 'rule' ? deleteCoreRule(next, t.id)
       : t.kind === 'process' ? deleteProcess(next, t.id)
       : t.kind === 'output' ? deleteOutput(next, t.id)
       : t.kind === 'group' ? ungroup(next, t.id)

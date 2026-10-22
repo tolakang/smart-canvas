@@ -1,4 +1,4 @@
-import { addComposition, addPresetSet, addOutput, addProcess, connectProcessInput, createProjectDoc, DEFAULT_OPS, createGroup, outputDefaults, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addComposition, addCoreRule, addPresetSet, addOutput, addProcess, connectProcessInput, createProjectDoc, DEFAULT_OPS, createGroup, outputDefaults, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { describe, expect, it } from 'vitest';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { groupNodeId, inputNodeId, MAIN_ID, outputNodeId, processNodeId } from './flow';
@@ -53,5 +53,16 @@ describe('Delete key on a Preset node (D46)', () => {
     const next = ok(deleteNodes(d, t));
     expect(next.presetSets).toBeUndefined();
     expect(next.outputs.map((o) => o.id)).toEqual(['o1']);
+  });
+});
+
+describe('Delete key on a Core Rule node (D47)', () => {
+  it('deletes only the node', () => {
+    const d = ok(addCoreRule(sample(), { id: 'r1', board: { x: 0, y: 0 } }));
+    const t = deletableNodes(d, ['rule:r1']);
+    expect(t).toEqual([{ kind: 'rule', id: 'r1', label: 'Core rules' }]);
+    const next = ok(deleteNodes(d, t));
+    expect(next.coreRules).toBeUndefined();
+    expect(next.compositions).toEqual(d.compositions);
   });
 });

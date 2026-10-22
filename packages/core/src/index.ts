@@ -32,5 +32,6 @@ export * from './guides';
 export * from './languages';
 export * from './layer-order';
 export * from './preset-sets';
+export * from './core-rules';
 
 export const CORE_VERSION = '0.0.0';

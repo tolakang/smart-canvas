@@ -1,4 +1,5 @@
 import {
+  addCoreRule,
   addPresetSet,
   connectSet,
   presetFamilies,
@@ -833,6 +834,9 @@ function BoardCanvas(props: {
       case 'headline':
         run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at }));
         return;
+      case 'coreRule':
+        run((d) => addCoreRule(d, { id: newId(), board: at }));
+        return;
       case 'presetSet':
         addSet(spec.family, at);
         return;
@@ -914,6 +918,8 @@ function BoardCanvas(props: {
           separated: true,
           onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at })),
         },
+        // D47: how the master preview adapts (layer comp, preset guides, auto layout).
+        { label: 'Core rules', onSelect: () => run((d) => addCoreRule(d, { id: newId(), board: at })) },
         // D46: a Preset node per family of preset sizes.
         ...presetFamilies(presets)
           .filter((f) => f.presets.length > 1)
