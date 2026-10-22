@@ -29,5 +29,6 @@ export * from './library';
 export * from './fit';
 export * from './stacks';
 export * from './guides';
+export * from './languages';
 
 export const CORE_VERSION = '0.0.0';

@@ -1,5 +1,7 @@
 import {
+  addLanguagePair,
   addStack,
+  languagePairs,
   connectStack,
   fitFrames,
   addComposition,
@@ -84,6 +86,8 @@ import {
   groupIdOfNode,
   withGroupFrames,
   stackIdOfNode,
+  pairIdOfNode,
+  isCardNode,
 } from './flow';
 import { useTheme } from '../ui/theme';
 import { align } from './guides';
@@ -510,6 +514,15 @@ function BoardCanvas(props: {
         run((doc) => connectStack(doc, stackId, toComposition));
         return;
       }
+      // D44: a wire from a Headline card wires both languages.
+      const pair = languagePairs(docRef.current).find((p) => p.id === pairIdOfNode(c.source));
+      if (pair && toComposition) {
+        run((doc) => {
+          const km = connectSource(doc, pair.km, undefined, toComposition);
+          return km.ok ? connectSource(km.doc, pair.en, undefined, toComposition) : km;
+        });
+        return;
+      }
       const sourceId = layerOfConnection(c);
       if (sourceId) run((doc) => connectLayer(doc, sourceId, c.target, portFromHandle(c.targetHandle)));
     },
@@ -546,7 +559,7 @@ function BoardCanvas(props: {
     (deleted: Edge[]) => {
       for (const e of deleted) {
         // D40: a wire drawn from an Assets card is one picture's wire.
-        const sourceId = layerOfConnection(e) ?? (stackIdOfNode(e.source) ? docRef.current.edges.find((x) => x.id === e.id)?.from : undefined);
+        const sourceId = layerOfConnection(e) ?? (isCardNode(e.source) ? docRef.current.edges.find((x) => x.id === e.id)?.from : undefined);
         const outputId = compositionIdOfNode(e.source) && e.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(e.target) : undefined;
         if (sourceId) run((doc) => disconnectLayer(doc, sourceId, e.target));
         else if (outputId) disconnect(outputId);
@@ -776,6 +789,9 @@ function BoardCanvas(props: {
       case 'assets':
         run((d) => addStack(d, { id: newId(), board: at }));
         return;
+      case 'headline':
+        run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at }));
+        return;
       case 'library':
         run((d) => addSourceFromLibrary(d, spec.item, newId(), at));
         return;
@@ -833,6 +849,8 @@ function BoardCanvas(props: {
         // T8.7: each with the behaviour that adapts the way people expect (changeable on the node).
         // D40: one card for many pictures.
         { label: 'Assets (many pictures)', onSelect: () => run((d) => addStack(d, { id: newId(), board: at })) },
+        // D44: a headline as a Khmer and an English picture.
+        { label: 'Headline (Khmer / English)', onSelect: () => run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at })) },
         quick('Image (subject)', { kind: 'image', label: 'Image', behavesLike: 'subject' }),
         quick('Logo / SVG', { kind: 'vector', label: 'Logo', behavesLike: 'logo' }),
         quick('Text', { kind: 'text', label: 'Text', behavesLike: 'text' }),

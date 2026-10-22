@@ -18,7 +18,8 @@ export type AddSpec =
   | { type: 'process'; op: ProcessOp }
   | { type: 'output'; preset: SizePreset | null }
   | { type: 'library'; item: LibraryItem }
-  | { type: 'assets' };
+  | { type: 'assets' }
+  | { type: 'headline' };
 
 /** Drag payload type: dropping it on the canvas adds the spec there (Board). */
 export const ADD_DRAG_TYPE = 'application/x-sc-add';
@@ -111,10 +112,13 @@ export function NodeLibrary({ onAdd, floating, onClose }: { onAdd: (spec: AddSpe
         )}
       </div>
       <div className="sc-library__body">
-        {(inputs.length > 0 || match('Assets', 'pictures', 'images', 'files', 'multiple')) && (
+        {(inputs.length > 0 || match('Assets', 'pictures', 'images', 'files', 'multiple', 'Headline', 'Khmer', 'English', 'language')) && (
           <Group title="Inputs" note={inputsFull ? `${LIMITS.maxSources} max` : undefined}>
-            {match('Assets', 'pictures', 'images', 'files', 'multiple') && (
+            {match('Assets', 'pictures', 'images', 'files', 'multiple', 'Headline', 'Khmer', 'English', 'language') && (
               <Item spec={{ type: 'assets' }} label="Assets" hint="Many pictures in one card: drop them all at once" icon={<span className="sc-library__glyph"><Icon name="image" /></span>} disabled={false} onAdd={onAdd} />
+            )}
+            {match('Headline', 'Khmer', 'English', 'language') && (
+              <Item spec={{ type: 'headline' }} label="Headline (Khmer / English)" hint="Two pictures, one switch: every output swaps" icon={<span className="sc-library__glyph"><Icon name="text" /></span>} disabled={false} onAdd={onAdd} />
             )}
             {inputs.map((i) => (
               <Item key={i.label} spec={{ type: 'input', input: i.input }} label={i.label} hint={i.hint} icon={<span className="sc-library__glyph"><Icon name={i.icon} /></span>} disabled={inputsFull} onAdd={onAdd} />

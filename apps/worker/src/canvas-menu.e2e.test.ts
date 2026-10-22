@@ -54,6 +54,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
     await rightClickEmpty();
     expect(await menu().getByRole('menuitem').allInnerTexts()).toEqual([
       'Assets (many pictures)',
+      'Headline (Khmer / English)',
       'Image (subject)',
       'Logo / SVG',
       'Text',

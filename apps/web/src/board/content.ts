@@ -45,6 +45,12 @@ export function setVariant(s: InputSource, family: 'vertical' | 'horizontal', as
   return { ...base, content: Object.keys(variants).length ? { ...rest, variants } : rest };
 }
 
+/** D44: a picture input takes any picture file, becoming an image or a vector input to match it. */
+export function setPicture(s: InputSource, assetId: string, kind: 'image' | 'vector'): InputSource {
+  if (s.content.kind !== 'image' && s.content.kind !== 'vector') return s;
+  return { ...s, kind, content: { ...s.content, kind, assetId } };
+}
+
 /** D9 the other way: an image background goes back to a solid colour. */
 export function colourBackground(s: InputSource): InputSource {
   if (s.content.kind !== 'image' || s.behavesLike !== 'background') return s;
