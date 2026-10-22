@@ -54,6 +54,11 @@ Picture frames hug their visible pixels, and stretching distorts the picture.
 2. **DONE (D39) — No limit on layers in the master preview.** `LIMITS.maxSources = 10` (`packages/core/src/model.ts:19`, enforced in `sources.ts` `canAddSource`, shown in UI and likely the API schema `maxItems`). Remove the cap (owner decision; note it in DECISIONS).
 3. **DONE (D39) — Rename "Main preview" → "Master preview"** in UI copy: `MainNode.tsx`, `MainEditor.tsx` ("Master preview editor" dialog label — e2e tests use `/Master preview editor/`), `Inspector.tsx`, `Board.tsx`, `palette.ts`, `NodeLibrary.tsx`, defaults in `core/project.ts`, `compositions.ts`, `graph.ts` (migration label). Update tests and docs that match the text.
 
+## Layout guides (D42) — PDF "Core Preset Guide"
+- `packages/core/src/guides.ts` (`familyOfShape`, `guideFor`, `addGuides`, `detachGuide`); `computeLayout` takes positions from `guideFor` (falls back to the master per layer).
+- UI: Inspector "Layout guides" section (`GuidesSection`), guide chip on `MainNode`, "· Vertical guide" on `OutputNode`.
+- Not yet from the PDF: page 3's board redesign (Logo / Headline KH+EN / Image / Background V+H asset nodes, Layer Comp node, Core Rule node, GDN preset node with many sizes).
+
 ## Known limits / ideas
 - `output.family` is still computed and reported but no longer changes placement (D38).
 - Resizes don't snap; only moves do.

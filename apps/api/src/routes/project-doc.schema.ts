@@ -92,6 +92,8 @@ const composition = {
     layers: { type: 'array', maxItems: LIMITS.maxSources + LIMITS.maxProcesses, items: id },
     transforms: layerTransforms,
     board: point,
+    // D42: a layout guide of another composition.
+    guide: { type: 'object', additionalProperties: false, required: ['of', 'family'], properties: { of: id, family: { enum: ['square', 'vertical', 'horizontal'] } } },
   },
 } as const;
 

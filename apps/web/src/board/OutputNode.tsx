@@ -5,6 +5,9 @@
  * master preview's layers; wire an input onto "Add a layer".
  */
 import {
+  canvasMetrics,
+  guideFor,
+  outputComposition,
   computeLayout,
   outputHealth,
   convertSize,
@@ -83,6 +86,12 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
   }, [shownDoc, output.id, layoutDeps, missingFonts]);
   const shownLayers = useMemo(() => layerSources(shownDoc), [shownDoc]);
   const bleed = output.bleedMm ?? 0;
+  // D42: the guide this output's layout comes from (none shown when it is the master itself).
+  const guide = useMemo(() => {
+    const comp = outputComposition(shownDoc, output.id);
+    const g = comp && connected ? guideFor(shownDoc, comp, canvasMetrics(output).trim) : undefined;
+    return g?.guide ? g.label : null;
+  }, [shownDoc, output, connected]);
 
   return (
     <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`} aria-label={`Output ${output.label}`}>
@@ -126,6 +135,7 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
       <div className="sc-node__meta">
         {output.size.width} × {output.size.height} {output.size.unit}
         {bleed > 0 && ` · bleed ${bleed} mm`}
+        {guide && <span title="Its layout comes from this guide, the closest to its shape (D42)"> · {guide}</span>}
       </div>
       {output.overrides.length > 0 && (
         <div className="sc-node__overrides">

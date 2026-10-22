@@ -5,7 +5,14 @@
  * size, rows and health.
  */
 import {
+  addGuides,
   assetStacks,
+  detachGuide,
+  familyOfShape,
+  GUIDE_FAMILIES,
+  GUIDE_LABEL,
+  guidesOf,
+  sizeInDesignPx,
   compositionById,
   deleteStack,
   renameStack,
@@ -247,6 +254,57 @@ function AssetsInspector({ stackId }: { stackId: string }) {
   );
 }
 
+/**
+ * D42: a master preview's layout guides — Square, Vertical, Horizontal artboards; each output uses the one
+ * closest to its shape. On a guide: what it is a guide of, and a way to make it an ordinary master again.
+ */
+function GuidesSection({ compositionId }: { compositionId: string }) {
+  const { doc, run, readOnly, openMainEditor } = useBoard();
+  const comp = compositionById(doc, compositionId);
+  if (!comp) return null;
+  if (comp.guide) {
+    const master = compositionById(doc, comp.guide.of);
+    return (
+      <Section title="Layout guide">
+        <p className="sc-inspector-panel__hint">
+          {GUIDE_LABEL[comp.guide.family]} of “{master?.label}”: outputs of that master shaped closest to this artboard take their layout from it. Arrange the layers here for that shape.
+        </p>
+        {!readOnly && (
+          <button type="button" className="sc-btn" onClick={() => window.confirm('Make this an ordinary master preview? Outputs stop taking their layout from it.') && run((d) => detachGuide(d, comp.id))}>
+            Stop using as a guide
+          </button>
+        )}
+      </Section>
+    );
+  }
+  const guides = guidesOf(doc, comp.id);
+  const own = familyOfShape(sizeInDesignPx(comp.size));
+  const missing = GUIDE_FAMILIES.filter((f) => f !== own && !guides.some((g) => g.guide?.family === f));
+  return (
+    <Section title="Layout guides">
+      <p className="sc-inspector-panel__hint">
+        This artboard is the {GUIDE_LABEL[own].toLowerCase().replace(' guide', '')} layout. {guides.length ? 'Each output uses the closest of these to its shape:' : 'Add a vertical and a horizontal guide to arrange the layers for those shapes; each output then uses the closest one.'}
+      </p>
+      {guides.map((g) => (
+        <div key={g.id} className="sc-output__row">
+          <span>{g.label}</span>
+          <span className="sc-muted">
+            {g.size.width} × {g.size.height}
+          </span>
+          <button type="button" className="sc-btn" onClick={() => openMainEditor(g.id)}>
+            {readOnly ? 'View' : 'Edit'}
+          </button>
+        </div>
+      ))}
+      {!readOnly && missing.length > 0 && (
+        <button type="button" className="sc-btn" onClick={() => run((d) => addGuides(d, comp.id, Object.fromEntries(missing.map((f) => [f, newId()]))))}>
+          Add {missing.map((f) => GUIDE_LABEL[f].toLowerCase()).join(' and ')}
+        </button>
+      )}
+    </Section>
+  );
+}
+
 function CompositionInspector({ compositionId }: { compositionId: string }) {
   const { doc, run, missingFonts, openMainEditor, readOnly } = useBoard();
   const comp = compositionById(doc, compositionId);
@@ -268,6 +326,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
         </p>
       </Section>
       <HealthSection health={health} />
+      <GuidesSection compositionId={comp.id} />
       <Section title="Canvas">
         <div className="sc-output__row">
           <NumberField label="Width" value={comp.size.width} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ width: n })} />

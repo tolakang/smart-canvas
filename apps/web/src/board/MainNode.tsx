@@ -1,4 +1,4 @@
-import { compositionHealth, connectSource, deleteComposition, disconnectSource, renameComposition } from '@smart-canvas/core';
+import { canvasMetrics, compositionHealth, connectSource, deleteComposition, disconnectSource, guideFor, outputComposition, renameComposition } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useMemo, useState } from 'react';
 import { assetUrl } from '../api';
@@ -21,6 +21,13 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
   const { compositionId } = data;
   const isMain = compositionId === MAIN_ID;
   const health = useMemo(() => compositionHealth(doc, compositionId, missingFonts), [doc, compositionId, missingFonts]);
+  // D42: a guide names its master and counts the outputs whose shape picks it.
+  const comp = doc.compositions.find((c) => c.id === compositionId);
+  const guideOf = comp?.guide ? (doc.compositions.find((c) => c.id === comp.guide?.of)?.label ?? null) : null;
+  const usedBy = useMemo(() => {
+    const master = comp?.guide?.of;
+    return master ? doc.outputs.filter((o) => outputComposition(doc, o.id) === master && guideFor(doc, master, canvasMetrics(o).trim)?.id === comp?.id).length : 0;
+  }, [doc, comp]);
   const updateInternals = useUpdateNodeInternals();
   const { dropAt, rowProps } = useLayerReorder(compositionId);
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -74,7 +81,15 @@ export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
         )}
       </div>
       <div className="sc-node__meta">
-        {data.size.width} × {data.size.height} {data.size.unit} · {data.ports.length} layers · {data.outputs} outputs
+        {guideOf ? (
+          <>
+            <span className="sc-chip" title={`Outputs of “${guideOf}” shaped like this take their layout from it (D42)`}>Guide</span> {data.size.width} × {data.size.height} {data.size.unit} · {usedBy} {usedBy === 1 ? 'output uses' : 'outputs use'} it
+          </>
+        ) : (
+          <>
+            {data.size.width} × {data.size.height} {data.size.unit} · {data.ports.length} layers · {data.outputs} outputs
+          </>
+        )}
       </div>
       <div className="sc-main-thumb" aria-label={isMain ? 'Master preview' : `${data.label} preview`}>
         <RenderThumbnail
