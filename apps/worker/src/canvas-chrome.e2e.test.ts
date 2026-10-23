@@ -102,6 +102,8 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     await expect.poll(() => page.locator('.sc-guide--v').count()).toBe(1); // drag moves land a frame later
     await page.mouse.up();
     expect(await page.locator('.sc-guide').count()).toBe(0);
-    await expect.poll(async () => (await doc()).sources.find((s) => s.id === source.id)?.board.x).toBe((await doc()).compositions[0]?.board.x);
+    // Autosave waits 800 ms after the drop: give the save time to land (the default 1 s poll races it on slow runners).
+    const masterX = (await doc()).compositions[0]?.board.x;
+    await expect.poll(async () => (await doc()).sources.find((s) => s.id === source.id)?.board.x, { timeout: 15_000 }).toBe(masterX);
   }, 60_000);
 });
