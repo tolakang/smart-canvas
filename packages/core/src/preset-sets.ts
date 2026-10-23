@@ -121,11 +121,11 @@ export function deletePresetSet(doc: ProjectDoc, id: string): SourceResult {
   return { ok: true, doc: withSets(next, presetSets(next).filter((s) => s.id !== id)) };
 }
 
-/** Preset families from preset names: "GDN 300×250" → GDN. A family with sizes becomes a Preset node's list. */
-export function presetFamilies<T extends { name: string }>(presets: readonly T[]): { label: string; presets: T[] }[] {
+/** N5: the preset families (Preset nodes on offer), in first-seen order — by each preset's `family`. */
+export function presetFamilies<T extends { family?: string }>(presets: readonly T[]): { label: string; presets: T[] }[] {
   const families = new Map<string, T[]>();
   for (const p of presets) {
-    const label = /^(.*?)\s+\d+\s*[×x]\s*\d+$/.exec(p.name)?.[1]?.trim();
+    const label = p.family?.trim();
     if (!label) continue;
     families.set(label, [...(families.get(label) ?? []), p]);
   }

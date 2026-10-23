@@ -27,6 +27,8 @@ export interface BoardActions {
   missingFonts: readonly string[];
   /** Size presets for output pickers (built-in + team). */
   presets: readonly SizePreset[];
+  /** N5: loads the presets again (after the team's presets changed). */
+  reloadPresets: () => void;
   /** Records a newly uploaded asset's size for the engine. */
   rememberAsset: (asset: AssetMeta) => void;
   /** Disconnects an output, freezing its current layout (D20). */

@@ -130,7 +130,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] N2 — PDF uploads (D52) — [#109](https://github.com/tolakang/smart-canvas/pull/109)
 - [x] N3 — Several KH/EN pairs per Headline node (D53) — [#110](https://github.com/tolakang/smart-canvas/pull/110)
 - [x] N4 — Preset placement / tidy board — [#111](https://github.com/tolakang/smart-canvas/pull/111)
-- [ ] N5 — Preset families as data
+- [x] N5 — Preset families as data (D54) — [#112](https://github.com/tolakang/smart-canvas/pull/112)
 - [ ] N6 — Export from a Preset node
 - [ ] N7 — Resize snapping
 

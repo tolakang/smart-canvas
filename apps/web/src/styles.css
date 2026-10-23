@@ -944,6 +944,8 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-preset__custom { display: flex; gap: 4px; align-items: center; margin-top: 8px; }
 .sc-preset__custom input { width: 64px; }
 .sc-preset__add-custom { margin-top: 8px; width: 100%; justify-content: center; }
+.sc-preset__save { margin-top: 6px; width: 100%; }
+.sc-preset__note { margin: 6px 0 0; font-size: 11px; }
 .sc-node--preset .sc-port { cursor: grab; }
 
 /* D50: Core Preset Guide — outputs in their layout's section; drag a chip into another section. */

@@ -17,6 +17,7 @@ export async function seedBuiltInPresets(db: Db): Promise<void> {
           teamId: null,
           group: p.group,
           name: p.name,
+          family: p.family ?? null,
           width: p.size.width,
           height: p.size.height,
           unit: p.size.unit,
@@ -29,6 +30,7 @@ export async function seedBuiltInPresets(db: Db): Promise<void> {
         set: {
           group: sql`excluded."group"`,
           name: sql`excluded.name`,
+          family: sql`excluded.family`,
           width: sql`excluded.width`,
           height: sql`excluded.height`,
           unit: sql`excluded.unit`,

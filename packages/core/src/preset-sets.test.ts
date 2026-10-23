@@ -60,8 +60,8 @@ describe('Preset nodes (D46)', () => {
     expect(doc.presetSets).toBeUndefined();
   });
 
-  it('families from preset names: "GDN 300×250" → GDN', () => {
-    const fams = presetFamilies([{ name: 'GDN 1200×628' }, { name: 'GDN 728×90' }, { name: 'Website 1600×385' }, { name: 'Instagram square' }]);
+  it('N5: families from each preset’s family field (not its name); presets without one are single sizes', () => {
+    const fams = presetFamilies([{ name: 'GDN 1200×628', family: 'GDN' }, { name: 'Banner', family: 'GDN' }, { name: 'Website 1600×385', family: 'Website' }, { name: 'Instagram square' }, { name: 'Gift 1500×400' }, { name: 'x', family: '  ' }]);
     expect(fams.map((f) => [f.label, f.presets.length])).toEqual([['GDN', 2], ['Website', 1]]);
   });
 });

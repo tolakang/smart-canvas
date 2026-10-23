@@ -181,6 +181,8 @@ export const presets = pgTable(
     teamId: uuid('team_id').references(() => teams.id, { onDelete: 'cascade' }), // null = built-in
     group: presetGroup('group').notNull(),
     name: text('name').notNull(),
+    /** N5: the Preset node family this size belongs to (e.g. 'GDN'); null = a single size. */
+    family: text('family'),
     width: doublePrecision('width').notNull(),
     height: doublePrecision('height').notNull(),
     unit: unit('unit').notNull(),

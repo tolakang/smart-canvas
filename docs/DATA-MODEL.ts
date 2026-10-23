@@ -242,6 +242,7 @@ export interface LibraryItem {
 export interface SizePreset {
   id: string; teamId: string | null; // null = built-in
   group: PresetGroup; name: string; size: Size; dpi?: number; bleedMm?: number;
+  family?: string; // N5: the Preset node family (e.g. 'GDN'); absent = a single size
 }
 export interface ExportOptions {
   scale?: number; dpi?: number; // px outputs use scale, mm outputs use dpi

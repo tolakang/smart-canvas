@@ -1,7 +1,8 @@
 /**
  * D46 end to end: a Preset node from the canvas menu adds every size of a preset family (GDN: 7), each an output
  * with its own Preview wired from its row; the master preview wires into the node once. Cutting a row's wire
- * disconnects that size; wiring the row back reconnects it. Delete removes the node with its sizes.
+ * disconnects that size; wiring the row back reconnects it. Delete removes the node with its sizes. N5: a custom
+ * Preset node saved as a team preset family.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -123,5 +124,32 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await page.keyboard.press('Delete');
     await expect.poll(async () => (await doc()).presetSets).toBeUndefined();
     expect((await doc()).outputs).toHaveLength(before.outputs.length - 7);
+  }, 60_000);
+
+  it('N5: a custom Preset node saved as a team preset is offered as a family from then on', async () => {
+    page.once('dialog', (d) => void d.accept('Promo'));
+    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Custom preset…' }).click();
+    await preset().waitFor();
+    for (const [w, h] of [['300', '250'], ['728', '90']] as const) {
+      await preset().getByRole('button', { name: 'Custom size' }).click();
+      await preset().getByLabel('Width (px)').fill(w);
+      await preset().getByLabel('Height (px)').fill(h);
+      await preset().getByRole('button', { name: 'Add', exact: true }).click();
+    }
+    await expect.poll(() => preset().locator('.sc-preset__size').count()).toBe(2);
+    // The prompt offers the node's name.
+    page.once('dialog', (d) => void d.accept(d.defaultValue()));
+    await preset().getByRole('button', { name: 'Save as team preset' }).click();
+    await preset().getByRole('status').getByText('Saved as team preset “Promo” (2 sizes).').waitFor();
+    const list = (await (await page.request.get(url.replace(/projects\/.*$/, 'presets'))).json()) as { name: string; family?: string }[];
+    expect(list.filter((p) => p.family === 'Promo').map((p) => p.name).sort()).toEqual(['Promo 300×250', 'Promo 728×90']);
+    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Promo preset (2 sizes)' }).waitFor();
+    await page.keyboard.press('Escape');
+    // A built-in family's name is refused.
+    page.once('dialog', (d) => void d.accept('GDN'));
+    await preset().getByRole('button', { name: 'Save as team preset' }).click();
+    await preset().getByRole('status').getByText('“GDN” is a built-in preset; pick another name.').waitFor();
   }, 60_000);
 });

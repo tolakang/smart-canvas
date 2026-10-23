@@ -10,7 +10,7 @@ import { presets } from '../db/schema';
 
 type Row = typeof presets.$inferSelect;
 type Params = { teamId: string; presetId: string };
-type Body = { group: 'print' | 'social'; name: string; size: { width: number; height: number; unit: 'px' | 'mm' }; dpi?: number | null; bleedMm?: number | null };
+type Body = { group: 'print' | 'social'; name: string; family?: string | null; size: { width: number; height: number; unit: 'px' | 'mm' }; dpi?: number | null; bleedMm?: number | null };
 
 const body = {
   type: 'object',
@@ -19,6 +19,8 @@ const body = {
   properties: {
     group: { enum: ['print', 'social'] },
     name: { type: 'string', minLength: 1, maxLength: 120 },
+    // N5: the Preset node family; null / absent = a single size.
+    family: { type: ['string', 'null'], maxLength: 60 },
     size: {
       type: 'object',
       required: ['width', 'height', 'unit'],
@@ -45,6 +47,7 @@ export function toPreset(r: Row): SizePreset {
     teamId: r.teamId,
     group: r.group,
     name: r.name,
+    ...(r.family !== null ? { family: r.family } : {}),
     size: { width: r.width, height: r.height, unit: r.unit },
     ...(r.dpi !== null ? { dpi: r.dpi } : {}),
     ...(r.bleedMm !== null ? { bleedMm: r.bleedMm } : {}),
@@ -54,6 +57,7 @@ export function toPreset(r: Row): SizePreset {
 const columns = (b: Body) => ({
   group: b.group,
   name: b.name.trim(),
+  family: b.family?.trim() || null,
   width: b.size.width,
   height: b.size.height,
   unit: b.size.unit,

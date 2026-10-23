@@ -10,16 +10,18 @@ interface Draft {
   id: string | null;
   group: PresetGroup;
   name: string;
+  /** N5: the Preset node family ('' = a single size). */
+  family: string;
   width: string;
   height: string;
   unit: Unit;
   dpi: string;
   bleedMm: string;
 }
-const EMPTY: Draft = { id: null, group: 'social', name: '', width: '1080', height: '1080', unit: 'px', dpi: '', bleedMm: '' };
+const EMPTY: Draft = { id: null, group: 'social', name: '', family: '', width: '1080', height: '1080', unit: 'px', dpi: '', bleedMm: '' };
 
 const sizeText = (p: SizePreset) =>
-  `${p.size.width} × ${p.size.height} ${p.size.unit}${p.dpi ? ` · ${p.dpi} dpi` : ''}${p.bleedMm ? ` · bleed ${p.bleedMm} mm` : ''}`;
+  `${p.family ? `${p.family} family · ` : ''}${p.size.width} × ${p.size.height} ${p.size.unit}${p.dpi ? ` · ${p.dpi} dpi` : ''}${p.bleedMm ? ` · bleed ${p.bleedMm} mm` : ''}`;
 
 export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -49,6 +51,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
       id: p.id,
       group: p.group,
       name: p.name,
+      family: p.family ?? '',
       width: String(p.size.width),
       height: String(p.size.height),
       unit: p.size.unit,
@@ -62,6 +65,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
     const body = {
       group: draft.group,
       name: draft.name.trim(),
+      family: draft.family.trim() || null,
       size: { width: Number(draft.width), height: Number(draft.height), unit: draft.unit },
       dpi: draft.dpi ? Number(draft.dpi) : null,
       bleedMm: draft.bleedMm ? Number(draft.bleedMm) : null,
@@ -133,6 +137,10 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
               <label className="sc-fields__wide">
                 Name
                 <input value={draft.name} onChange={(e) => set({ name: e.target.value })} required maxLength={120} placeholder="e.g. Shop banner" />
+              </label>
+              <label className="sc-fields__wide">
+                Preset node family
+                <input value={draft.family} onChange={(e) => set({ family: e.target.value })} maxLength={60} placeholder="e.g. GDN — sizes of one family are added together" />
               </label>
               <label>
                 Group
