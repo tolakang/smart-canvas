@@ -50,7 +50,7 @@ describe.skipIf(!adminUrl)('team and invites (T7.7)', () => {
     await form.getByLabel('Your name').fill('Sam');
     await form.getByLabel('Password').fill('password123');
     await form.getByRole('button', { name: 'Create account and join' }).click();
-    await sam.getByRole('heading', { name: 'Studio · Projects' }).waitFor();
+    await sam.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
     expect(new URL(sam.url()).pathname).toBe('/');
     await sam.getByRole('button', { name: 'Poster', exact: true }).waitFor(); // an editor sees the team's projects
 
@@ -95,8 +95,8 @@ describe.skipIf(!adminUrl)('team and invites (T7.7)', () => {
     await sam.getByLabel('Email').fill('sam@example.com');
     await sam.getByLabel('Password').fill('password123');
     await sam.getByRole('button', { name: 'Sign in' }).click();
-    await sam.getByRole('heading', { name: 'Studio · Projects' }).waitFor();
-    expect(await sam.getByPlaceholder('New project name').count()).toBe(0); // viewers can't create
+    await sam.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
+    expect(await sam.getByRole('button', { name: 'New project' }).count()).toBe(0); // viewers can't create
     await sam.getByRole('button', { name: 'Team' }).click();
     const dialog = sam.getByRole('dialog', { name: /Team/ });
     await expect.poll(() => dialog.locator('[data-member]').count()).toBe(2);

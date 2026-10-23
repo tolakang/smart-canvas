@@ -135,6 +135,19 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     expect((await call('DELETE', `${base()}/${p.id}`, editor)).statusCode).toBe(404);
   });
 
+  it('renames a project: the name, doc.name and a new rev (an open board reloads instead of saving the old name back)', async () => {
+    const p = await create('Spring');
+    const res = await call('PATCH', `${base()}/${p.id}`, editor, { name: '  Summer sale ' });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ id: p.id, name: 'Summer sale', rev: p.rev + 1 });
+    const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ rev: number; doc: ProjectDoc }>();
+    expect(got).toMatchObject({ rev: p.rev + 1, doc: { name: 'Summer sale', rev: p.rev + 1 } });
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: p.rev, doc: p.doc })).statusCode).toBe(409);
+    expect((await call('PATCH', `${base()}/${p.id}`, editor, { name: '   ' })).statusCode).toBe(400);
+    expect((await call('PATCH', `${base()}/${p.id}`, viewer, { name: 'x' })).statusCode).toBe(403);
+    expect((await call('PATCH', `${base()}/00000000-0000-4000-8000-000000000000`, editor, { name: 'x' })).statusCode).toBe(404);
+  });
+
   it('viewers read only; other teams and signed-out users get nothing', async () => {
     const p = await create();
     expect((await call('GET', `${base()}/${p.id}`, viewer)).statusCode).toBe(200);

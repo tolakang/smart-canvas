@@ -11,7 +11,7 @@
 
 ## Screens
 1. Login / accept invite
-2. Projects list (team)
+2. Projects (team): templates as cards on top ("Start from a template"), the projects with search and sort, a ⋯ menu per project (Open, Open in new tab · Rename, Duplicate · Save as template, Copy link · Delete) and per template, "+ New project" (blank or from a template)
 3. **Board** (main screen): asset nodes in a row on top, the Layer Comp + Core Rule group below, Preset nodes under it with their Previews to the right. Inspector side panel. Top bar: + Add, Export, Fonts, Library. Canvas toolbar: tools, zoom, fit, Tidy board, grid snap, minimap.
 4. Layout editor (Square / Vertical / Horizontal from the Layer Comp): place/move/resize/rotate/skew (moves and resizes snap; double-click a handle or use the reset buttons to undo a transform without moving the layer), layers panel (re-order, lock, hide, delete), text panel.
 5. Preview editor (Edit on a Preview): same tools; edits are overrides ("edited" tag), Reset layer / Reset output.

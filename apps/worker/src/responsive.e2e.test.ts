@@ -212,7 +212,7 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
         return { scroll: document.documentElement.scrollWidth - window.innerWidth, inner: box.scrollWidth - box.clientWidth, over: over.map((el) => el.outerHTML.slice(0, 60)) };
       });
     await phone.goto(stack.env.webUrl);
-    await phone.getByRole('heading', { name: 'Studio · Projects' }).waitFor();
+    await phone.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
     // One-line rows: a short relative date, not a full timestamp.
     expect(await phone.locator('[data-project="Phone"] .sc-rows__meta').innerText()).toMatch(/^Edited (just now|\d+ min ago)$/);
     expect(await fits()).toEqual({ scroll: 0, inner: 0, over: [] });
