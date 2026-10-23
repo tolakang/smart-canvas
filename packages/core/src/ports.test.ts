@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { layerOrder, portOf } from './graph';
 import type { ProjectDoc } from './model';
-import { connectSource, disconnectSource, inputWire, moveSourceToPort } from './ports';
+import { connectSource, disconnectSource, moveSourceToPort } from './ports';
 import { createProjectDoc } from './project';
 import { addSource, deleteSource, duplicateSource, type SourceResult } from './sources';
 
@@ -54,7 +54,7 @@ describe('connect / disconnect', () => {
   it('disconnecting keeps the input in its place in the stack', () => {
     const wired = ok(connectSource(createProjectDoc('P'), 'headline'));
     const doc = ok(disconnectSource(wired, 'headline'));
-    expect(inputWire(doc, 'headline')).toBeUndefined();
+    expect(doc.edges.some((e) => e.kind === 'layer' && e.from === 'headline')).toBe(false);
     expect(stack(doc)).toEqual(stack(wired));
   });
 

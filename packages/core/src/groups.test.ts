@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boardGroups, createGroup, groupOf, groupOutputs, ungroup, updateGroup } from './groups';
+import { boardGroups, createGroup, groupOf, ungroup, updateGroup } from './groups';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { deleteSource } from './sources';
@@ -21,7 +21,6 @@ describe('board groups (T13.7)', () => {
       { id: 'g2', label: 'Brand', color: 'purple', nodes: ['logo', 'o2'] },
     ]);
     expect(groupOf(d, 'o2')?.id).toBe('g2');
-    expect(groupOutputs(d, 'g2')).toEqual(['o2']);
     expect(createGroup(d, { id: 'g3', label: 'x', nodes: ['nope'] }).ok).toBe(false);
   });
 

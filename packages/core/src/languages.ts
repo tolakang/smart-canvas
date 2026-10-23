@@ -42,9 +42,6 @@ export function unusedLanguageInputs(doc: ProjectDoc): Set<string> {
   return new Set(languagePairs(doc).flatMap((p) => pairRows(p).map((r) => (p.use === 'km' ? r.en : r.km))));
 }
 
-/** The card an input belongs to, if any. */
-export const pairOf = (doc: ProjectDoc, sourceId: string): LanguagePair | undefined => languagePairs(doc).find((p) => pairInputs(p).includes(sourceId));
-
 const withPairs = (doc: ProjectDoc, pairs: LanguagePair[]): ProjectDoc => {
   const next = { ...doc };
   if (pairs.length) next.headlines = pairs;
@@ -126,11 +123,6 @@ export function setLanguage(doc: ProjectDoc, id: string, use: 'km' | 'en'): Sour
 export function renamePair(doc: ProjectDoc, id: string, label: string): SourceResult {
   const clean = label.trim();
   return editPair(doc, id, (p) => (clean ? { ...p, label: clean } : p));
-}
-
-/** Places a card on the board. */
-export function movePair(doc: ProjectDoc, id: string, board: { x: number; y: number }): SourceResult {
-  return editPair(doc, id, (p) => ({ ...p, board: { x: Math.round(board.x), y: Math.round(board.y) } }));
 }
 
 /** Deletes a card with all its inputs. */

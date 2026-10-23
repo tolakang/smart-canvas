@@ -5,7 +5,7 @@
  * (D38) adapts that to its exact size. Guides only hold positions: the master decides which layers exist and
  * their order; a layer a guide hasn't placed yet uses the master's position.
  */
-import { compositionById, edgeId, newComposition, withComposition } from './graph';
+import { compositionById, edgeId, newComposition } from './graph';
 import { gridFrame } from './layout/grid';
 import { canvasMetrics, LIMITS, type Composition, type Frame, type GuideFamily, type NFrame, type ProjectDoc, type Size, type SourceContent } from './model';
 import { sizeInDesignPx, toDesignFrame } from './render';
@@ -104,17 +104,6 @@ export function addGuides(doc: ProjectDoc, masterId: string, ids: Partial<Record
     next = { ...next, compositions: [...next.compositions, comp], edges: [...next.edges, ...edges] };
   });
   return { ok: true, doc: next };
-}
-
-/** Turns a guide back into an ordinary master preview (it stops being picked for the master's outputs). */
-export function detachGuide(doc: ProjectDoc, id: string): SourceResult {
-  const comp = compositionById(doc, id);
-  if (!comp?.guide) return { ok: false, error: 'not_found' };
-  return { ok: true, doc: withComposition(doc, id, (c) => {
-    const { guide: _guide, ...rest } = c;
-    void _guide;
-    return rest;
-  }) };
 }
 
 /**

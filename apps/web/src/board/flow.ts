@@ -1,15 +1,14 @@
 /**
  * ProjectDoc ↔ React Flow. The doc is the source of truth: node positions live in `board`
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
- * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
+ * D49: the master ('main') is the Layer Comp group, node id `main`.
  */
-import { stackKind, assetStacks, compositionById, type CoreRuleNode, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { stackKind, assetStacks, compositionById, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, type BoardGroup, isOutputConnected, MAIN, outputComposition, wiredLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
 export const inputNodeId = (sourceId: string) => `src:${sourceId}`;
 export const outputNodeId = (outputId: string) => `out:${outputId}`;
-export const processNodeId = (processId: string) => `proc:${processId}`;
 /** D40: an Assets card. */
 export const stackNodeId = (stackId: string) => `stk:${stackId}`;
 export const stackIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('stk:') ? nodeId.slice(4) : undefined);
@@ -20,9 +19,6 @@ export const setRowHandle = (outputId: string) => `row:${outputId}`;
 export const outputOfSetRow = (handle: string | null | undefined) => (handle?.startsWith('row:') ? handle.slice(4) : undefined);
 /** The edge drawn from a master preview into a Preset node (stands for its sizes' wires). */
 export const setInEdgeId = (setId: string) => `setin:${setId}`;
-/** D47: a Core Rule node. */
-export const ruleNodeId = (ruleId: string) => `rule:${ruleId}`;
-export const ruleIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('rule:') ? nodeId.slice(5) : undefined);
 /** D44: a Headline card (Khmer / English). */
 export const pairNodeId = (pairId: string) => `hl:${pairId}`;
 export const pairIdOfNode = (nodeId: string | null | undefined) => (nodeId?.startsWith('hl:') ? nodeId.slice(3) : undefined);
@@ -38,34 +34,11 @@ export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
 export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode' | 'textNode'>;
 /** D46: a Preset node and its rows (sizes, in order), each with whether it is wired. */
 export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
-/** D47: a Core Rule node (what it shows is derived from the doc). */
-export type RuleFlowNode = Node<{ rule: CoreRuleNode }, 'ruleNode'>;
 /** D44: a Headline card and its two inputs. */
 export type PairFlowNode = Node<{ pair: LanguagePair; rows: { km: InputSource | undefined; en: InputSource | undefined }[] }, 'headlineNode'>;
-/** One row per port on the master preview, front (port 0) first. */
-export interface PortRow {
-  port: number;
-  sourceId: string;
-  label: string;
-  visible: boolean;
-  connected: boolean;
-}
-export type MainFlowNode = Node<
-  {
-    compositionId: string;
-    label: string;
-    size: Size;
-    ports: PortRow[];
-    inputs: number;
-    outputs: number;
-    /** What the master looks like now, for the thumbnail (same OutputRenderer as export). */
-    scene: RenderScene;
-    sources: LayerSource[];
-  },
-  'mainNode'
->;
+/** D49: the Layer Comp + Core Rule group (the master); what it shows is read from the doc. */
+export type MainFlowNode = Node<{ compositionId: string }, 'mainNode'>;
 
-export const portHandleId = (port: number) => `p${port}`;
 export const OUTPUT_HANDLE = 'out';
 /** A composition's second out port (T12.8): itself as a layer of another composition or an output. */
 export const LAYER_OUT_HANDLE = 'layer';
@@ -73,20 +46,17 @@ export function portFromHandle(handle: string | null | undefined): number | unde
   const m = handle ? /^p(\d+)$/.exec(handle) : null;
   return m?.[1] === undefined ? undefined : Number(m[1]);
 }
-/** `layers`: the output's own rows (T12.4), front first. */
-export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean; layers: PortRow[] }, 'outputNode'>;
-/** A process node (T12.5): its op and the effective layer it outputs (undefined while its in port is empty). */
-export type ProcessFlowNode = Node<{ process: ProcessNode; layer: LayerSource | undefined }, 'processNode'>;
+export type OutputFlowNode = Node<{ output: OutputNode; connected: boolean }, 'outputNode'>;
 /** A board group's frame (T13.7): derived from its members every render, never stored. */
 export type GroupFlowNode = Node<{ group: BoardGroup; outputs: string[] }, 'groupNode'>;
-export type BoardNode = InputFlowNode | StackFlowNode | PairFlowNode | SetFlowNode | RuleFlowNode | MainFlowNode | OutputFlowNode | ProcessFlowNode;
+export type BoardNode = InputFlowNode | StackFlowNode | PairFlowNode | SetFlowNode | MainFlowNode | OutputFlowNode;
 /** What React Flow draws: the nodes plus group frames. */
 export type FlowNode = BoardNode | GroupFlowNode;
 export const groupNodeId = (groupId: string) => `grp:${groupId}`;
 export const groupIdOfNode = (nodeId: string) => (nodeId.startsWith('grp:') ? nodeId.slice(4) : undefined);
 
-/** The doc id a board node stands for (input, process, composition, output). */
-export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? pairIdOfNode(nodeId) ?? setIdOfNode(nodeId) ?? ruleIdOfNode(nodeId) ?? processIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
+/** The doc id a board node stands for (input, asset or Headline node, Preset node, the master, Preview). */
+export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? pairIdOfNode(nodeId) ?? setIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);
 
 const GROUP_PAD = 24;
 const GROUP_HEAD = 40;
@@ -139,28 +109,7 @@ function endpoint(doc: ProjectDoc, id: string): string | null {
     return pair ? pairNodeId(pair.id) : inputNodeId(id);
   }
   if (doc.outputs.some((o) => o.id === id)) return outputNodeId(id);
-  if (doc.processes.some((p) => p.id === id)) return processNodeId(id);
   return null;
-}
-
-/** A composition's rows (default: the master preview), front (port 0) first. */
-export function portRows(doc: ProjectDoc, compositionId: string = MAIN): PortRow[] {
-  const wired = new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === compositionId).map((e) => e.from));
-  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
-  return (compositionById(doc, compositionId)?.layers ?? []).flatMap((id, port) => {
-    const s = byId.get(id);
-    return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
-  });
-}
-
-/** An output's own rows (output-only layers, T12.4), front first. */
-export function outputRows(doc: ProjectDoc, outputId: string): PortRow[] {
-  const wired = wiredOutputLayers(doc, outputId);
-  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
-  return (doc.outputs.find((o) => o.id === outputId)?.layers ?? []).flatMap((id, port) => {
-    const s = byId.get(id);
-    return s ? [{ port, sourceId: s.id, label: s.label, visible: s.visible, connected: wired.has(s.id) }] : [];
-  });
 }
 
 // Nodes are never removed with the Delete key (inputs have a delete button with a confirm).
@@ -171,16 +120,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
     id: compositionNodeId(c.id),
     type: 'mainNode',
     position: c.board,
-    data: {
-      compositionId: c.id,
-      label: c.label,
-      size: c.size,
-      ports: portRows(doc, c.id),
-      inputs: doc.sources.length,
-      outputs: doc.outputs.filter((o) => outputComposition(doc, o.id) === c.id).length,
-      scene: masterScene(doc, c.id),
-      sources: layerSources(doc),
-    },
+    data: { compositionId: c.id },
     deletable: false,
   });
   const stacks = assetStacks(doc);
@@ -234,7 +174,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         id: outputNodeId(output.id),
         type: 'outputNode',
         position: output.board,
-        data: { output, connected: connected.has(output.id), layers: outputRows(doc, output.id) },
+        data: { output, connected: connected.has(output.id) },
         deletable: false,
       }),
     ),
@@ -289,15 +229,15 @@ export const cardEdgeId = (cardNodeId: string) => `card:${cardNodeId}`;
 
 type Conn = { source: string | null; target: string | null; sourceHandle?: string | null };
 
-/** The layer a connection carries (an input, a process, or a composition out of its layer port, T12.8). */
+/** The layer a connection carries (an input, or a composition out of its layer port, T12.8). */
 export function layerOfConnection(c: Conn): string | undefined {
   if (!c.source) return undefined;
-  return c.sourceHandle === LAYER_OUT_HANDLE ? compositionIdOfNode(c.source) : layerIdOfNode(c.source);
+  return c.sourceHandle === LAYER_OUT_HANDLE ? compositionIdOfNode(c.source) : sourceIdOfNode(c.source);
 }
 
 /** A board connection as a typed graph edge (D32): node ids → doc ids; out of a composition's main port = 'composition'. */
 export function edgeOfConnection(c: Conn): { from: string; to: string; kind: EdgeKind } | null {
-  const id = (n: string | null) => (n ? (compositionIdOfNode(n) ?? layerIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
+  const id = (n: string | null) => (n ? (compositionIdOfNode(n) ?? sourceIdOfNode(n) ?? outputIdOfNode(n) ?? null) : null);
   const from = id(c.source);
   const to = id(c.target);
   if (!from || !to) return null;
@@ -352,9 +292,6 @@ export function compositionToOutput(c: Conn): string | undefined {
 export const outputIdOfNode = (nodeId: string) => (nodeId.startsWith('out:') ? nodeId.slice(4) : undefined);
 
 export const sourceIdOfNode = (nodeId: string) => (nodeId.startsWith('src:') ? nodeId.slice(4) : undefined);
-export const processIdOfNode = (nodeId: string) => (nodeId.startsWith('proc:') ? nodeId.slice(5) : undefined);
-/** A node whose out port is a `layer`: an input or a process (T12.5). */
-export const layerIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? processIdOfNode(nodeId);
 
 /** Returns a new doc with the given node positions written into `board`; unknown ids are ignored. */
 export function withPositions(doc: ProjectDoc, moved: { id: string; position: { x: number; y: number } }[]): ProjectDoc {
@@ -371,8 +308,6 @@ export function withPositions(doc: ProjectDoc, moved: { id: string; position: { 
     ...(doc.stacks ? { stacks: doc.stacks.map((st) => place(st, stackNodeId(st.id))) } : {}),
     ...(doc.headlines ? { headlines: doc.headlines.map((p) => place(p, pairNodeId(p.id))) } : {}),
     ...(doc.presetSets ? { presetSets: doc.presetSets.map((s) => place(s, setNodeId(s.id))) } : {}),
-    ...(doc.coreRules ? { coreRules: doc.coreRules.map((r) => place(r, ruleNodeId(r.id))) } : {}),
-    processes: doc.processes.map((p) => place(p, processNodeId(p.id))),
     outputs: doc.outputs.map((o) => place(o, outputNodeId(o.id))),
   };
 }
@@ -388,7 +323,8 @@ export function syncNodes(current: BoardNode[], fresh: BoardNode[], positionsFro
     const prev = byId.get(n.id);
     if (!prev) return n;
     // T7.4: an unchanged node keeps its object, so React Flow doesn't re-render it on every edit.
-    if (!positionsFromDoc && sameData(prev.data, n.data)) return prev;
+    if (!positionsFromDoc && sameData(prev.data, n.data) && prev.hidden === n.hidden) return prev;
+    // `hidden` (D51) comes from the doc like the data.
     return { ...n, position: positionsFromDoc ? n.position : prev.position, selected: prev.selected, dragging: prev.dragging, measured: prev.measured } as BoardNode;
   });
 }

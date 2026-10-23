@@ -23,12 +23,10 @@ import {
   duplicateSource,
   libraryEntryOf,
   LIMITS,
-  renameComposition,
   setCompositionSize,
   computeLayout,
   isOutputConnected,
   outputHealth,
-  PROCESS_LABEL,
   renameSource,
   resetOutputOverrides,
   setSourceVisible,
@@ -44,8 +42,7 @@ import { newId } from './ids';
 import { useBoard } from './context';
 import { BackgroundSlots, useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
-import { compositionIdOfNode, inputNodeId, MAIN_ID, outputNodeId, pairNodeId, processNodeId, stackNodeId } from './flow';
-import { ProcessSettings } from './ProcessSettings';
+import { compositionIdOfNode, inputNodeId, outputNodeId, pairNodeId, stackNodeId } from './flow';
 import { HealthIssues, healthSummary } from './HealthBadge';
 import { confirmDelete, Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
@@ -60,7 +57,6 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
   const source = doc.sources.find((s) => inputNodeId(s.id) === selected);
   const output = doc.outputs.find((o) => outputNodeId(o.id) === selected);
   const composition = compositionIdOfNode(selected);
-  const process = doc.processes.find((p) => processNodeId(p.id) === selected);
   const stack = assetStacks(doc).find((st) => stackNodeId(st.id) === selected);
   const pair = languagePairs(doc).find((p) => pairNodeId(p.id) === selected);
   return (
@@ -81,10 +77,6 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
         <InputInspector key={source.id} source={source} />
       ) : output ? (
         <OutputInspector key={output.id} output={output} />
-      ) : process ? (
-        <Section key={process.id} title={PROCESS_LABEL[process.op.type]}>
-          <ProcessSettings process={process} />
-        </Section>
       ) : composition && compositionById(doc, composition) ? (
         <CompositionInspector key={composition} compositionId={composition} />
       ) : (
@@ -310,7 +302,6 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
   return (
     <>
       <Section title="Layer Comp">
-        {comp.id === MAIN_ID ? null : <NameField label="Layer comp name" value={comp.label} onCommit={(label) => run((d) => renameComposition(d, comp.id, label))} />}
         <p className="sc-inspector-panel__hint">
           {wired.size} of {comp.layers.length} layers wired · {outputs} {outputs === 1 ? 'size follows' : 'sizes follow'} it
         </p>

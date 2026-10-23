@@ -11,7 +11,6 @@ import {
   MAIN_ID,
   outputIdOfNode,
   portFromHandle,
-  portRows,
   sourceIdOfNode,
   stackNodeId,
   setNodeId,
@@ -65,18 +64,6 @@ describe('docToNodes / docToEdges', () => {
     ]);
   });
 
-  it('lists the master preview ports front first, with wired state', () => {
-    const doc = createProjectDoc('P');
-    doc.edges.push({ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' });
-    doc.sources = doc.sources.map((s) => (s.id === 'logo' ? { ...s, visible: false } : s));
-    expect(portRows(doc)).toEqual([
-      { port: 0, sourceId: 'logo', label: 'Logo', visible: false, connected: false },
-      { port: 1, sourceId: 'headline', label: 'Headline', visible: true, connected: false },
-      { port: 2, sourceId: 'subject', label: 'Subject', visible: true, connected: true },
-      { port: 3, sourceId: 'background', label: 'Background', visible: true, connected: false },
-    ]);
-  });
-
   it('parses port handles and only allows input → main connections', () => {
     expect(portFromHandle('p3')).toBe(3);
     expect(portFromHandle('out')).toBeUndefined();
@@ -116,6 +103,14 @@ describe('syncNodes', () => {
     expect(ig?.selected).toBe(true);
     expect(ig?.measured).toEqual({ width: 160, height: 60 });
     expect(ig?.type === 'outputNode' && ig.data.output.label).toBe('IG square');
+  });
+
+  it('follows a node shown / hidden by the doc even when its data is unchanged (D51 eye)', () => {
+    const doc = sampleDoc();
+    const shown = docToNodes(doc);
+    const hidden = docToNodes(doc).map((n) => (n.id === 'out:a4' ? { ...n, hidden: true } : n));
+    expect(syncNodes(shown, hidden).find((n) => n.id === 'out:a4')?.hidden).toBe(true);
+    expect(syncNodes(hidden, shown).find((n) => n.id === 'out:a4')?.hidden).toBeUndefined();
   });
 
   it('adds new nodes as they come from the doc and drops removed ones', () => {

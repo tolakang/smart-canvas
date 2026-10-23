@@ -28,12 +28,6 @@ export function groupOf(doc: ProjectDoc, nodeId: string): BoardGroup | undefined
   return boardGroups(doc).find((g) => g.nodes.includes(nodeId));
 }
 
-/** The outputs in a group (what "Export group" exports). */
-export function groupOutputs(doc: ProjectDoc, groupId: string): string[] {
-  const g = boardGroups(doc).find((x) => x.id === groupId);
-  return g ? doc.outputs.filter((o) => g.nodes.includes(o.id)).map((o) => o.id) : [];
-}
-
 const withGroups = (doc: ProjectDoc, groups: BoardGroup[]): ProjectDoc => {
   const next = { ...doc };
   if (groups.length) next.groups = groups;

@@ -4,16 +4,12 @@
  * "move this node to row k": the others shift and keep their order.
  */
 import { createsCycle, edgeId, isLayerWired, MAIN, withComposition } from './graph';
-import type { Edge, ProjectDoc } from './model';
+import type { ProjectDoc } from './model';
 import { ensurePlacement } from './placement';
 import { isLayerNode } from './processes';
 import type { SourceResult } from './sources';
 
 export { MAIN } from './graph';
-
-export function inputWire(doc: ProjectDoc, sourceId: string, compositionId: string = MAIN): Edge | undefined {
-  return doc.edges.find((e) => e.kind === 'layer' && e.from === sourceId && e.to === compositionId);
-}
 
 /** Moves a row to `port` (clamped to 0..n-1); rows in between shift by one. */
 export function moveSourceToPort(doc: ProjectDoc, sourceId: string, port: number, compositionId: string = MAIN): SourceResult {
