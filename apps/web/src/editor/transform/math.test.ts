@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
   classifyEdgeDrag, corners, decompose, det, dragRotate, dragScale, dragSkew, edgeLean, HANDLE_UV, linear, pointAt,
-  applyOp, derive, docFromState, keepPoint, pushOp, resetForHandle, restoreAspect, rotateOp, scaleOp, skewOp, toCssMatrix,
+  applyOp, derive, docFromState, keepPoint, pushOp, resetForHandle, resetKinds, restoreAspect, rotateOp, scaleOp, skewOp, toCssMatrix,
   type TransformDoc, type TransformOp, type TransformState, type Vec,
 } from './math';
 
@@ -256,6 +256,45 @@ describe('resets: as if those drags never happened, in any combination', () => {
   it('keepPoint keeps the given point', () => {
     const next = { ...base, scaleX: 3 };
     closeV(pointAt(keepPoint(base, next, { x: -1, y: 1 }), { x: -1, y: 1 }), pointAt(base, { x: -1, y: 1 }));
+  });
+});
+
+describe('the selection\'s reset buttons go through the history too (no drift)', () => {
+  it('a skew from one edge, then "Reset transform" → exactly where it started (the old frame-only reset left it shifted)', () => {
+    const skewed = session(original, [{ h: 'n', d: { x: 40, y: 0 }, kind: 'skew' }]);
+    sameShape(derive(resetKinds(skewed, ['rotate', 'shear'])), base);
+  });
+  it('rotate, stretch, then "Reset rotation" → the stretch alone, as if the rotation never happened', () => {
+    const doc = session(original, [{ h: 'rotate', d: { x: 0, y: 60 } }, { h: 'e', d: { x: 60, y: 30 } }]);
+    sameShape(derive(resetKinds(doc, ['rotate'])), derive({ ...doc, ops: doc.ops.filter((o) => o.type !== 'rotate') }));
+  });
+  it('the same as the rotate handle\'s reset; "Reset transform" = every rotation and skew gone, sizes and moves kept', () => {
+    const after = session(original, MIX);
+    sameShape(derive(resetKinds(after, ['rotate'])), derive(resetForHandle(after, 'rotate')));
+    const r = derive(resetKinds(after, ['rotate', 'shear']));
+    close(r.rotation, 0);
+    close(r.shear, 0);
+  });
+  it('any random session: resetting the last gesture\'s handle lands on the shape just before it; resetting all lands on the original plus the moves', () => {
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
+    const handles: Drag['h'][] = ['e', 'w', 'n', 's', 'se', 'nw', 'ne', 'rotate', 'body'];
+    for (let run = 0; run < 200; run++) {
+      const drags: Drag[] = Array.from({ length: 4 }, () => {
+        const h = handles[Math.floor(((rnd() + 1) / 2) * handles.length) % handles.length] as Drag['h'];
+        return { h, d: { x: rnd() * 60, y: rnd() * 60 }, ...(rnd() > 0.3 && h.length === 1 && h !== 'body' ? { kind: 'skew' as const } : {}), ...(rnd() > 0.5 ? { center: true } : {}) };
+      });
+      // Last gesture with a fresh kind of handle: its reset gives back the shape before it.
+      const last = drags[3] as Drag;
+      const before = session(original, drags.slice(0, 3));
+      const fresh = last.h === 'rotate' ? !drags.slice(0, 3).some((g) => g.h === 'rotate') : false;
+      if (fresh) sameShape(derive(resetForHandle(session(original, drags), 'rotate')), derive(before));
+      // All resets: the original box, moved by the moves only.
+      let all = session(original, drags);
+      for (const h of ['rotate', 'se', 'e', 'n'] as const) all = resetForHandle(all, h);
+      const moves = all.ops.filter((o) => o.type === 'move').reduce((m, o) => (o.type === 'move' ? { x: m.x + o.dx, y: m.y + o.dy } : m), { x: 0, y: 0 });
+      sameShape(derive(all), { ...base, x: base.x + moves.x, y: base.y + moves.y });
+    }
   });
 });
 

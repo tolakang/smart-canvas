@@ -14,7 +14,7 @@ import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
 import { OutputRenderer } from '../render/OutputRenderer';
 import { DesignPanel } from './DesignPanel';
-import { fitScale, NUDGE_STEP, resetRotation, resetTransform } from './geometry';
+import { fitScale, NUDGE_STEP } from './geometry';
 import { frameOfState, sameFrame, snapMove, snapResize, snapTargets, syncDoc } from './transform/frame';
 import type { TransformDoc } from './transform/math';
 import { TransformBox } from './transform/transform-box';
@@ -429,7 +429,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
                     type="button"
                     aria-label="Reset rotation"
                     title="Reset rotation"
-                    onClick={() => onCommit(selected, resetRotation(frameNow))}
+                    onClick={() => box.current?.resetKinds(['rotate'])}
                   >
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                       <path d="M3 8a5 5 0 105-5" />
@@ -442,7 +442,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
                     type="button"
                     aria-label="Reset transform"
                     title="Reset rotation and skew"
-                    onClick={() => onCommit(selected, resetTransform(frameNow))}
+                    onClick={() => box.current?.resetKinds(['rotate', 'shear'])}
                   >
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                       <path d="M3 6V3h3M13 6V3h-3M3 10v3h3M13 10v3h-3" />

@@ -432,6 +432,14 @@ export function restoreAspect(doc: TransformDoc, h: HandleId, aspect: number | u
   return { ...doc, origin: { ...doc.origin, width, height } };
 }
 
+/**
+ * The selection's reset buttons: every operation of these kinds (rotations; skews) goes, the rest replays — the
+ * same rule as a handle's reset, so the element lands where it would be had those drags never happened.
+ */
+export function resetKinds(doc: TransformDoc, kinds: readonly ('rotate' | 'shear')[]): TransformDoc {
+  return { ...doc, ops: doc.ops.filter((op) => !(kinds as readonly string[]).includes(op.type)) };
+}
+
 export function resetForHandle(doc: TransformDoc, h: HandleId): TransformDoc {
   const ops = doc.ops.map((op) => removeForHandle(op, h)).filter((op): op is TransformOp => op !== null && !isIdentityOp(op));
   return { ...doc, ops };

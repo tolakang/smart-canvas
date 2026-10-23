@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fitScale, nudge, resetRotation, resetTransform, toBox, toNFrame } from './geometry';
+import { fitScale, nudge, toBox, toNFrame } from './geometry';
 
 const canvas = { width: 3000, height: 2000 };
 
@@ -23,11 +23,5 @@ describe('editor geometry', () => {
   it('fits the canvas into the area', () => {
     expect(fitScale(canvas, { width: 1064, height: 1064 })).toBeCloseTo(1000 / 3000, 9);
     expect(fitScale(canvas, { width: 3064, height: 564 })).toBeCloseTo(500 / 2000, 9);
-  });
-
-  it('resets rotation only, or rotation and shear, keeping position and size', () => {
-    const f = { x: 10, y: 20, w: 300, h: 200, rotation: 35, shear: -12 };
-    expect(resetRotation(f)).toEqual({ x: 10, y: 20, w: 300, h: 200, rotation: 0, shear: -12 });
-    expect(resetTransform(f)).toEqual({ x: 10, y: 20, w: 300, h: 200, rotation: 0, shear: 0 });
   });
 });
