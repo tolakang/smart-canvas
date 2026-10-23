@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { dimensions } from './dimensions';
 import { readFontFamily } from './font';
+import { isPdf, pdfFirstPageToSvg, PdfRejected, PdfUnavailable } from './pdf';
 import { sniff } from './sniff';
 import { sanitizeCss, sanitizeSvg, SvgRejected } from './svg-sanitize';
 
@@ -147,5 +148,26 @@ describe('fonts (T2.5)', () => {
     expect(sniff(fixture('broken.ttf'))).toMatchObject({ kind: 'font' });
     expect(readFontFamily(fixture('broken.ttf'))).toBeNull();
     expect(readFontFamily(fixture('tiny.png'))).toBeNull();
+  });
+});
+
+describe('PDF → SVG (M3)', () => {
+  const maxBytes = 1024 * 1024;
+  it('recognises a PDF by its signature', () => {
+    expect(isPdf(fixture('page.pdf'))).toBe(true);
+    expect(isPdf(fixture('tiny.png'))).toBe(false);
+  });
+  it('draws the first page as an SVG the sanitizer keeps', async () => {
+    const svg = await pdfFirstPageToSvg(fixture('page.pdf'), { maxBytes });
+    expect(sniff(svgBytes(svg))?.kind).toBe('vector');
+    const clean = sanitizeSvg(svg);
+    expect(clean).toMatch(/<path d="M /);
+    expect(clean).toMatch(/<use href="#glyph/);
+    expect(dimensions(svgBytes(clean))).toEqual({ width: 200, height: 100 });
+  });
+  it('a broken PDF, an oversized page and a missing converter each say so', async () => {
+    await expect(pdfFirstPageToSvg(svgBytes('%PDF-1.4 not really'), { maxBytes })).rejects.toBeInstanceOf(PdfRejected);
+    await expect(pdfFirstPageToSvg(fixture('page.pdf'), { maxBytes: 100 })).rejects.toBeInstanceOf(PdfRejected);
+    await expect(pdfFirstPageToSvg(fixture('page.pdf'), { maxBytes, bin: 'sc-no-such-pdftocairo' })).rejects.toBeInstanceOf(PdfUnavailable);
   });
 });

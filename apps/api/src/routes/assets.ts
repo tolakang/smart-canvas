@@ -1,6 +1,7 @@
 /**
  * Asset upload (images and SVG). The file type comes from magic bytes only; SVGs are sanitized before
- * storage; identical content within a team is stored once (sha256 of the stored bytes).
+ * storage; identical content within a team is stored once (sha256 of the stored bytes). A PDF is stored as
+ * its first page drawn as a sanitized SVG (M3 / D55); a server without the converter answers 501.
  */
 import { createHash } from 'node:crypto';
 import multipart from '@fastify/multipart';
@@ -8,6 +9,7 @@ import { LIMITS } from '@smart-canvas/core';
 import { and, desc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { dimensions } from '../assets/dimensions';
+import { isPdf, pdfFirstPageToSvg, PdfRejected, PdfUnavailable } from '../assets/pdf';
 import { readFontFamily } from '../assets/font';
 import { sniff } from '../assets/sniff';
 import { sanitizeSvg, SvgRejected } from '../assets/svg-sanitize';
@@ -46,9 +48,18 @@ export const assetRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (ap
     if (!file) return reply.code(400).send({ error: 'file_required' });
     let body: Uint8Array = await file.toBuffer(); // throws 413 past MAX_UPLOAD_BYTES
 
+    if (isPdf(body)) {
+      try {
+        body = new TextEncoder().encode(await pdfFirstPageToSvg(body, { maxBytes: MAX_UPLOAD_BYTES }));
+      } catch (err) {
+        if (err instanceof PdfUnavailable) return reply.code(501).send({ error: 'pdf_vector_unavailable' });
+        if (err instanceof PdfRejected) return reply.code(422).send({ error: 'unreadable_pdf', reason: err.message });
+        throw err;
+      }
+    }
     const type = sniff(body);
     if (!type) {
-      return reply.code(415).send({ error: 'unsupported_type', accepted: ['png', 'jpg', 'webp', 'svg', 'ttf', 'otf', 'woff2'] });
+      return reply.code(415).send({ error: 'unsupported_type', accepted: ['png', 'jpg', 'webp', 'svg', 'pdf', 'ttf', 'otf', 'woff2'] });
     }
     let fontFamily: string | null = null;
     if (type.kind === 'font') {

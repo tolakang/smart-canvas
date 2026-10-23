@@ -9,14 +9,14 @@ const NO_CANVAS = 'nodrag nopan nowheel';
 
 const ACCEPT: Record<'image' | 'vector', string> = {
   image: 'image/png,image/jpeg,image/webp,application/pdf,.pdf',
-  vector: 'image/svg+xml,.svg',
+  vector: 'image/svg+xml,.svg,application/pdf,.pdf',
 };
 
 function uploadMessage(err: unknown, kind: 'image' | 'vector'): string {
   if (!(err instanceof ApiError)) return 'Upload failed. Check your connection and try again.';
   const body = err.body as { error?: string; reason?: string } | null;
   if (err.status === 413) return `File is larger than ${LIMITS.maxUploadMB} MB.`;
-  if (err.status === 415) return kind === 'image' ? 'Use a PNG, JPEG, WebP or PDF file.' : 'Use an SVG file.';
+  if (err.status === 415) return kind === 'image' ? 'Use a PNG, JPEG, WebP or PDF file.' : 'Use an SVG or PDF file.';
   if (body?.error === 'svg_rejected') return `This SVG can't be used (${body.reason ?? 'invalid'}).`;
   if (err.status === 403) return 'You can only view this project.';
   return 'Upload failed. Try again.';
@@ -48,8 +48,8 @@ export function useAssetUpload(source: InputSource) {
     }
     setBusy(true);
     try {
-      const asset = await uploadAsset(teamId, file);
-      if (asset.kind !== kind) setError(kind === 'image' ? 'This input takes PNG, JPEG, WebP or PDF.' : 'This input takes SVG files.');
+      const asset = await uploadAsset(teamId, file, { pdf: kind === 'vector' ? 'vector' : 'image' });
+      if (asset.kind !== kind) setError(kind === 'image' ? 'This input takes PNG, JPEG, WebP or PDF.' : 'This input takes SVG or PDF files.');
       else {
         rememberAsset(asset);
         // D37: the old picture's frames stop hugging it; once the new one is measured, it's fitted into them.
@@ -249,7 +249,7 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
     if (file.size > LIMITS.maxUploadMB * 1024 * 1024) return setError(`File is larger than ${LIMITS.maxUploadMB} MB.`);
     setBusy(family);
     try {
-      const asset = await uploadAsset(teamId, file);
+      const asset = await uploadAsset(teamId, file, { pdf: 'image' });
       if (asset.kind !== 'image') setError('Use a PNG, JPEG, WebP or PDF file.');
       else {
         rememberAsset(asset);

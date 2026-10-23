@@ -21,9 +21,10 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm --filter @smart-canvas/api deploy --prod --legacy /out/api \
  && pnpm --filter @smart-canvas/worker deploy --prod --legacy /out/worker
 
-# ---- api: migrations on start, then the server ----
+# ---- api: migrations on start, then the server. poppler-utils draws a PDF's first page as SVG (D55). ----
 FROM node:22-trixie-slim AS api
 ENV NODE_ENV=production PORT=3000
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build --chown=node:node /out/api ./
 USER node

@@ -36,23 +36,36 @@ export interface AssetMeta {
   fontFamily: string | null;
 }
 
-/** Multipart upload of one file to the team's assets. A PDF goes up as its first page, a PNG (N2). */
-export async function uploadAsset(teamId: string, original: File): Promise<AssetMeta> {
+async function postAsset(teamId: string, file: File): Promise<{ ok: boolean; status: number; data: unknown }> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`/api/teams/${teamId}/assets`, { method: 'POST', credentials: 'same-origin', body: form });
+  const text = await res.text();
+  return { ok: res.ok, status: res.status, data: text ? JSON.parse(text) : null };
+}
+
+/**
+ * Multipart upload of one file to the team's assets. A PDF (M3 / D55) goes up as is and comes back as its
+ * first page in vector (an SVG); where the slot takes only pixels (`pdf: 'image'`), or the server can't draw
+ * the PDF, the browser draws the first page to a PNG and uploads that instead (N2 / D52).
+ */
+export async function uploadAsset(teamId: string, original: File, opts: { pdf?: 'vector' | 'image' } = {}): Promise<AssetMeta> {
   let file = original;
   if (await isPdf(original)) {
+    if (opts.pdf !== 'image') {
+      const res = await postAsset(teamId, original);
+      if (res.ok) return res.data as AssetMeta;
+      if (res.status !== 501 && res.status !== 422) throw new ApiError(res.status, res.data);
+    }
     try {
       file = await pdfToPng(original);
     } catch {
       throw new ApiError(415, { error: 'unreadable_pdf' });
     }
   }
-  const form = new FormData();
-  form.append('file', file);
-  const res = await fetch(`/api/teams/${teamId}/assets`, { method: 'POST', credentials: 'same-origin', body: form });
-  const text = await res.text();
-  const data: unknown = text ? JSON.parse(text) : null;
-  if (!res.ok) throw new ApiError(res.status, data);
-  return data as AssetMeta;
+  const res = await postAsset(teamId, file);
+  if (!res.ok) throw new ApiError(res.status, res.data);
+  return res.data as AssetMeta;
 }
 
 export const assetUrl = (teamId: string, assetId: string) => `/api/teams/${teamId}/assets/${assetId}/content`;

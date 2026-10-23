@@ -36,6 +36,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Poppler for PDF uploads (D55)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
       - name: Chromium for the export worker's render tests
         run: pnpm --filter @smart-canvas/worker exec playwright install --with-deps chromium
       - run: pnpm lint
