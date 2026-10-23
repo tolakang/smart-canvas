@@ -1,6 +1,6 @@
 /**
  * T8.3 / D49 end to end: drop image files from the desktop onto the asset nodes. The Image and Logo nodes add
- * each file as its own layer (PNG, JPEG, WebP or SVG); a fill background takes a photo in a slot and becomes an
+ * each file as its own layer (PNG, JPEG, WebP or SVG; a PDF as its first page, N2); a fill background takes a photo in a slot and becomes an
  * image background (D9).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
@@ -9,6 +9,26 @@ import type { Locator, Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { boardNode, setupAndCreateProject, startStack, type Stack } from './test/stack';
+
+/** N2: a one-page PDF (200 × 100 pt) with a filled rectangle, with a correct cross-reference table. */
+function onePagePdf(): string {
+  const content = '0 0.6 0.4 rg 20 20 160 60 re f';
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Contents 4 0 R >>',
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+  ];
+  let out = '%PDF-1.4\n';
+  const offsets = objects.map((o, i) => {
+    const at = out.length;
+    out += `${i + 1} 0 obj\n${o}\nendobj\n`;
+    return at;
+  });
+  const xref = out.length;
+  out += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('')}`;
+  return `${out}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+}
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100" fill="#0a7"/></svg>';
 
@@ -64,6 +84,27 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
     await saved();
     const logos = (await doc()).sources.filter((s) => s.label === 'mark');
     expect(logos.map((s) => [s.kind, s.behavesLike]).sort()).toEqual([['image', 'logo'], ['vector', 'logo']]);
+  }, 60_000);
+
+  it('N2: a PDF dropped on the Image node adds its first page as a PNG picture; an unreadable PDF says so', async () => {
+    await dropFile(boardNode(page, 'Image').locator('.sc-node__head'), { name: 'flyer.pdf', type: 'application/pdf', text: onePagePdf() });
+    await expect.poll(() => boardNode(page, 'Image').locator('.sc-assets__pick img').count(), { timeout: 20_000 }).toBe(2);
+    await saved();
+    const added = (await doc()).sources.find((s) => s.label === 'flyer');
+    expect(added).toMatchObject({ kind: 'image', behavesLike: 'subject' });
+    const assetId = added?.content.kind === 'image' ? added.content.assetId : '';
+    const res = await page.request.get(url.replace(/projects\/.*$/, `assets/${assetId}/content`));
+    expect(res.headers()['content-type']).toBe('image/png');
+    const meta = await sharp(await res.body()).metadata();
+    expect([meta.width, meta.height]).toEqual([4000, 2000]);
+    // The page's rectangle is drawn; outside it the page is transparent.
+    const { data, info } = await sharp(await res.body()).raw().toBuffer({ resolveWithObject: true });
+    const at = (x: number, y: number) => data[(y * info.width + x) * info.channels + 3];
+    expect(at(2000, 1000)).toBe(255);
+    expect(at(10, 10)).toBe(0);
+
+    await dropFile(boardNode(page, 'Image').locator('.sc-node__head'), { name: 'broken.pdf', type: 'application/pdf', text: '%PDF-1.4 not really' });
+    await expect.poll(() => boardNode(page, 'Image').getByRole('alert').innerText(), { timeout: 20_000 }).toContain('broken.pdf: use a PNG, JPEG, WebP, SVG or PDF file.');
   }, 60_000);
 
   it('a photo dropped on the Background node’s Vertical slot makes it an image background (D9, D43); undo restores the fill', async () => {

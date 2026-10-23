@@ -1,3 +1,4 @@
+import { isPdf, pdfToPng } from './pdf';
 /** Thin JSON client for the API (same origin under /api; the session cookie rides along). */
 export class ApiError extends Error {
   constructor(
@@ -35,8 +36,16 @@ export interface AssetMeta {
   fontFamily: string | null;
 }
 
-/** Multipart upload of one file to the team's assets. */
-export async function uploadAsset(teamId: string, file: File): Promise<AssetMeta> {
+/** Multipart upload of one file to the team's assets. A PDF goes up as its first page, a PNG (N2). */
+export async function uploadAsset(teamId: string, original: File): Promise<AssetMeta> {
+  let file = original;
+  if (await isPdf(original)) {
+    try {
+      file = await pdfToPng(original);
+    } catch {
+      throw new ApiError(415, { error: 'unreadable_pdf' });
+    }
+  }
   const form = new FormData();
   form.append('file', file);
   const res = await fetch(`/api/teams/${teamId}/assets`, { method: 'POST', credentials: 'same-origin', body: form });

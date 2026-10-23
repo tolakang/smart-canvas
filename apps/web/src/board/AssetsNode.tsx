@@ -175,7 +175,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
           </li>
         )}
       </ul>
-      {!readOnly && <p className="sc-muted sc-assets__hint">{drop.busy ? 'Uploading…' : `+ Drag & drop ${isLogo ? 'logos' : 'pictures'} · PNG, JPG, WebP, SVG`}</p>}
+      {!readOnly && <p className="sc-muted sc-assets__hint">{drop.busy ? 'Uploading…' : `+ Drag & drop ${isLogo ? 'logos' : 'pictures'} · PNG, JPG, WebP, SVG, PDF`}</p>}
       {drop.errors.length > 0 && (
         <p className="sc-error" role="alert">
           {drop.errors.join(' ')}
