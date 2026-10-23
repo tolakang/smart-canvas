@@ -92,7 +92,7 @@ import {
 import { useTheme } from '../ui/theme';
 import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
-import { boxOf, clearSpot, presetBlock, tidyPositions } from './tidy';
+import { boxOf, clearSpot, onGrid, presetBlock, tidyPositions, tidySelectionPositions } from './tidy';
 import { CanvasToolbar, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
@@ -304,6 +304,9 @@ function BoardCanvas(props: {
 
   // T13.5: a dragged node snaps to other nodes' edges and centres; the guide lines show where.
   const [guides, setGuides] = useState<{ vertical?: number; horizontal?: number }>({});
+  /** Grid snap on / Alt held, for handlers (synced below, after their state). */
+  const gridRef = useRef(false);
+  const altRef = useRef(false);
   const onNodesChange = useCallback((all: NodeChange<FlowNode>[]) => {
     // T13.7: group frames are derived; selecting one is tracked here, dragging one moves its members.
     const changes: NodeChange<BoardNode>[] = [];
@@ -328,7 +331,9 @@ function BoardCanvas(props: {
       const ns = nodesRef.current;
       const node = ns.find((n) => n.id === moving.id);
       const size = (n: BoardNode) => ({ w: n.measured?.width ?? 0, h: n.measured?.height ?? 0 });
-      if (moving.dragging && moving.position && node && size(node).w) {
+      // D57: with grid snap on the grid decides (React Flow snaps the drag); Alt held skips snapping for this move.
+      if (moving.dragging && (gridRef.current || altRef.current)) setGuides({});
+      else if (moving.dragging && moving.position && node && size(node).w) {
         const others = ns.filter((n) => n.id !== moving.id && !n.selected && size(n).w).map((n) => ({ x: n.position.x, y: n.position.y, ...size(n) }));
         const a = align({ ...moving.position, ...size(node) }, others);
         moving.position = { x: a.x ?? moving.position.x, y: a.y ?? moving.position.y };
@@ -362,10 +367,38 @@ function BoardCanvas(props: {
     return true;
   });
   const [grid, setGrid] = useStoredFlag('sc-board-grid', false);
-  const gridRef = useRef(grid);
   useLayoutEffect(() => {
     gridRef.current = grid;
   }, [grid]);
+  /** Alt / Option held: a drag skips grid snap and the alignment guides (D57). */
+  const [altHeld, setAltHeld] = useState(false);
+  useEffect(() => {
+    const set = (on: boolean) => {
+      if (altRef.current === on) return;
+      altRef.current = on;
+      setAltHeld(on);
+    };
+    const down = (e: KeyboardEvent) => e.key === 'Alt' && set(true);
+    const up = (e: KeyboardEvent) => e.key === 'Alt' && set(false);
+    const off = () => set(false);
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', off);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', off);
+    };
+  }, []);
+  /** Tidy glides panels into place (the class is on for one move). */
+  const [tidying, setTidying] = useState(false);
+  /** A short notice after Tidy, with Undo (D57). */
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(t);
+  }, [toast]);
   const [minimap, setMinimap] = useStoredFlag('sc-board-minimap', true);
 
   // Undo / redo (T7.2): snapshots of the doc, per session.
@@ -938,13 +971,30 @@ function BoardCanvas(props: {
     setMenu({ x: e.clientX, y: e.clientY, title: 'Add here', items: [...addItems(at), { label: 'Tidy board', separated: true, onSelect: tidy }] });
   };
 
-  /** N4: lays the whole board out again (one undo step), then fits it on screen. */
+  /**
+   * N4 / D57 Tidy (one undo step): two or more panels selected → those panels in an even grid; otherwise the whole
+   * board laid out again, then fitted on screen. Positions land on the grid with grid snap on; panels glide there;
+   * a notice says what happened, with Undo.
+   */
   const tidy = () => {
     if (readOnly) return;
+    const picked = displayNodesRef.current.filter((n) => n.selected && !n.hidden && !n.id.startsWith('grp:'));
+    const selection = picked.length >= 2;
+    let moves = selection ? tidySelectionPositions(picked) : tidyPositions(docRef.current, nodesRef.current);
+    if (gridRef.current) moves = moves.map((m) => ({ ...m, position: onGrid(m.position, 16) }));
+    const at = new Map(nodesRef.current.map((n) => [n.id, n.position]));
+    const changed = moves.some((m) => {
+      const p = at.get(m.id);
+      return !p || Math.round(p.x) !== Math.round(m.position.x) || Math.round(p.y) !== Math.round(m.position.y);
+    });
+    if (!changed) return setToast(selection ? 'The selected panels are already tidy' : 'The board is already tidy');
     history.current.record(docRef.current);
     syncHistory();
-    show(withPositions(docRef.current, tidyPositions(docRef.current, nodesRef.current)), true);
-    requestAnimationFrame(() => void flow.current?.fitView({ ...FIT_OPTIONS, duration: 200 }));
+    setTidying(true);
+    setTimeout(() => setTidying(false), 320);
+    show(withPositions(docRef.current, moves), true);
+    setToast(selection ? `${picked.length} panels tidied` : 'Board tidied');
+    if (!selection) requestAnimationFrame(() => void flow.current?.fitView({ ...FIT_OPTIONS, duration: 200 }));
   };
 
   /**
@@ -1134,7 +1184,7 @@ function BoardCanvas(props: {
         }}
       >
         <BoardContext.Provider value={actions}>
-          <div className={`sc-board__flow${activeTool === 'hand' ? ' sc-board__flow--hand' : ''}`} ref={flowEl} onContextMenuCapture={onPortContextMenu}>
+          <div className={`sc-board__flow${activeTool === 'hand' ? ' sc-board__flow--hand' : ''}${tidying ? ' sc-board__flow--tidying' : ''}`} ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
             nodes={displayNodes}
             edges={displayEdges}
@@ -1179,13 +1229,14 @@ function BoardCanvas(props: {
             // Select: the middle mouse button pans; on touch, one finger selects (React Flow starts a touch selection
             // box only when finger panning is off) and two fingers pan and pinch-zoom.
             panOnDrag={activeTool === 'hand' || readOnly ? true : coarse ? false : [1]}
-            snapToGrid={grid}
+            snapToGrid={grid && !altHeld}
             snapGrid={[16, 16]}
             minZoom={0.1}
             maxZoom={2}
             proOptions={{ hideAttribution: false }}
           >
-            <Background gap={16} />
+            {/* D57: the dots show the grid's state — every 16 px and stronger while panels snap to it, faint every 32 px when not. */}
+            <Background gap={grid ? 16 : 32} size={grid ? 1.6 : 1} color={grid ? 'var(--muted)' : undefined} className={grid ? 'sc-bg sc-bg--grid' : 'sc-bg'} />
             {/* The minimap needs a desktop-sized canvas; on tablets and phones it would cover the work. */}
             {minimap && screen === 'desktop' && <MiniMap pannable zoomable position="bottom-right" />}
             <CanvasToolbar
@@ -1199,6 +1250,7 @@ function BoardCanvas(props: {
               compact={screen === 'phone'}
               minimapToggle={screen === 'desktop'}
               onTidy={readOnly ? undefined : tidy}
+              tidySelection={selectedCount >= 2}
             />
             {!readOnly && activeTool === 'select' && selectedCount >= 2 && (
               <Panel position="top-center" className="sc-selbar nodrag nopan nowheel" aria-label="Selection" role="toolbar">
@@ -1218,6 +1270,22 @@ function BoardCanvas(props: {
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
               {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}
             </ViewportPortal>
+            {toast && (
+              <Panel position="bottom-center" className="sc-board__toast nodrag nopan" role="status">
+                <span>{toast}</span>
+                {/already tidy$/.test(toast) ? null : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      undo();
+                      setToast(null);
+                    }}
+                  >
+                    Undo
+                  </button>
+                )}
+              </Panel>
+            )}
             <BoardKeys
               onTool={setTool}
               onDelete={readOnly ? undefined : deleteSelection}

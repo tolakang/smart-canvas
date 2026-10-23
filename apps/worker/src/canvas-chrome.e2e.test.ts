@@ -225,4 +225,69 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     await page.keyboard.up('Space');
     await expect.poll(() => select.getAttribute('aria-pressed')).toBe('true');
   }, 30_000);
+
+  /** Drags the input panel by its header by (dx, dy) screen px, with `hold` keys down (Alt). */
+  const dragInput = async (dx: number, dy: number, hold?: string) => {
+    const node = page.locator('.react-flow__node-inputNode').first();
+    const box = await node.boundingBox();
+    if (!box) throw new Error('no input');
+    const grab = { x: box.x + 20, y: box.y + 10 };
+    if (hold) await page.keyboard.down(hold);
+    await page.mouse.move(grab.x, grab.y);
+    await page.mouse.down();
+    await page.mouse.move(grab.x + 1, grab.y + 1);
+    await page.mouse.move(grab.x + dx, grab.y + dy, { steps: 10 });
+    const guides = await page.locator('.sc-guide').count();
+    await page.mouse.up();
+    if (hold) await page.keyboard.up(hold);
+    return { id: (await node.getAttribute('data-id'))?.replace('src:', '') ?? '', guides };
+  };
+  const inputBoard = async (id: string) => (await doc()).sources.find((s) => s.id === id)?.board;
+
+  it('grid snap on: a drop lands on the 16 px grid and no alignment guides show; holding Alt places it freely (D57)', async () => {
+    const grid = bar().getByRole('button', { name: 'Snap to grid' });
+    if ((await grid.getAttribute('aria-pressed')) !== 'true') await grid.click();
+    await page.locator('.react-flow__pane').click({ position: { x: 5, y: 5 } });
+    const snapped = await dragInput(53, 37);
+    expect(snapped.guides).toBe(0);
+    await expect.poll(async () => { const b = await inputBoard(snapped.id); return b ? b.x % 16 === 0 && b.y % 16 === 0 : false; }, { timeout: 15_000 }).toBe(true);
+    const before = await inputBoard(snapped.id);
+    const free = await dragInput(29, 21, 'Alt');
+    expect(free.guides).toBe(0);
+    await expect.poll(async () => { const b = await inputBoard(free.id); return b && before ? b.x !== before.x && (b.x % 16 !== 0 || b.y % 16 !== 0) : false; }, { timeout: 15_000 }).toBe(true);
+    await grid.click();
+    expect(await grid.getAttribute('aria-pressed')).toBe('false');
+  }, 60_000);
+
+  it('Tidy: two panels selected → just those in a row, with an Undo notice; nothing selected → the whole board (D57)', async () => {
+    await page.locator('.react-flow__pane').click({ position: { x: 5, y: 5 } });
+    const panels = async () => {
+      const d = await doc();
+      return new Map<string, { x: number; y: number }>([...d.compositions.map((c) => [`c:${c.id}`, c.board] as const), ...d.sources.map((s) => [`s:${s.id}`, s.board] as const), ...d.outputs.map((o) => [`o:${o.id}`, o.board] as const)]);
+    };
+    // Spread the two panels apart first so there is something to tidy.
+    const start = await panels();
+    await comp().click();
+    await page.locator('.react-flow__node-inputNode .sc-node__title').first().click({ modifiers: ['Shift'] });
+    expect(await bar().getByRole('button', { name: 'Tidy selection' }).count()).toBe(1);
+    await page.keyboard.press('Shift+T');
+    const toast = page.locator('.sc-board__toast');
+    await toast.getByText(/^(2 panels tidied|The selected panels are already tidy)$/).waitFor();
+    const d = await doc();
+    const mainId = `c:main`;
+    const srcId = `s:${d.sources[0]?.id}`;
+    await expect.poll(async () => { const p = await panels(); return p.get(mainId)?.y === p.get(srcId)?.y; }, { timeout: 15_000 }).toBe(true);
+    // Panels not selected stay where they were.
+    const after = await panels();
+    for (const [id, b] of start) if (id !== mainId && id !== srcId) expect(after.get(id)).toEqual(b);
+    if ((await toast.textContent())?.includes('tidied')) {
+      await toast.getByRole('button', { name: 'Undo' }).click();
+      await toast.waitFor({ state: 'detached' });
+      await expect.poll(async () => (await panels()).get(mainId), { timeout: 15_000 }).toEqual(start.get(mainId));
+    }
+    await page.keyboard.press('Escape');
+    expect(await bar().getByRole('button', { name: 'Tidy board' }).count()).toBe(1);
+    await bar().getByRole('button', { name: 'Tidy board' }).click();
+    await toast.getByText(/^(Board tidied|The board is already tidy)$/).waitFor();
+  }, 60_000);
 });

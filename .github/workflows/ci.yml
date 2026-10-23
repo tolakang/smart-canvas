@@ -15,7 +15,7 @@ jobs:
   check:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:16-alpine
@@ -38,8 +38,21 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Poppler for PDF uploads (D55)
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
+      # The Chromium download is cached per Playwright version: fetching it fresh can take most of the job's time.
+      - name: Playwright version
+        id: pw
+        run: echo "version=$(pnpm --filter @smart-canvas/worker exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.pw.outputs.version }}
       - name: Chromium for the export worker's render tests
+        if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm --filter @smart-canvas/worker exec playwright install --with-deps chromium
+      - name: Chromium system libraries (browser from cache)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @smart-canvas/worker exec playwright install-deps chromium
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

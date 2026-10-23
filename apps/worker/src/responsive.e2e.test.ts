@@ -36,6 +36,10 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(await phone.getByRole('complementary', { name: 'Inspector' }).count()).toBe(0);
     expect(await bar(phone).getByRole('button', { name: 'Select (V)' }).getAttribute('aria-pressed')).toBe('true');
     expect(await phone.locator('.react-flow__minimap').count()).toBe(0);
+    // D57: grid snap is on phones too, and the toolbar still fits the screen.
+    expect(await bar(phone).getByRole('button', { name: 'Snap to grid' }).count()).toBe(1);
+    const toolsBox = await bar(phone).boundingBox();
+    expect((toolsBox?.x ?? -1) >= 0 && (toolsBox?.x ?? 0) + (toolsBox?.width ?? 0) <= 390).toBe(true);
     // The board fills exactly the visible height (dvh) and the page never scrolls, so the top bar and the
     // canvas toolbar both stay on screen — also when the browser's own bars shrink the visible area.
     for (const height of [844, 700]) {

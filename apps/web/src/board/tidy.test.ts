@@ -1,7 +1,7 @@
 import { addPresetSet, PREVIEW_OFFSET, type ProjectDoc } from '@smart-canvas/core';
 import { describe, expect, it } from 'vitest';
 import { compositionNodeId, MAIN_ID, outputNodeId, setNodeId } from './flow';
-import { clearSpot, GAP, tidyPositions, type BoardBox } from './tidy';
+import { clearSpot, GAP, onGrid, tidyPositions, tidySelectionPositions, type BoardBox } from './tidy';
 
 const box = (x: number, y: number, w = 100, h = 100) => ({ x, y, w, h });
 
@@ -57,3 +57,28 @@ describe('tidyPositions (N4)', () => {
     expect(at.get(outputNodeId('b'))).toEqual({ x: 100 + PREVIEW_OFFSET.x, y: (set?.y ?? 0) + 300 + GAP });
   });
 });
+
+describe('tidySelectionPositions (D57)', () => {
+  const n = (id: string, x: number, y: number, w = 100, h = 100): BoardBox => ({ id, position: { x, y }, measured: { width: w, height: h } });
+
+  it('the selected panels in an even grid, reading order, from the selection\'s top-left corner', () => {
+    // A messy scatter of four: b sits right of a on the same row (within half a panel), d below.
+    const at = new Map(tidySelectionPositions([n('d', 500, 400), n('b', 900, 130, 200), n('a', 300, 100), n('c', 50, 420, 100, 150)]).map((m) => [m.id, m.position]));
+    expect([...at.keys()]).toEqual(['a', 'b', 'c', 'd']);
+    // 2 columns: column 1 is as wide as its widest (a, c: 100), row 1 as tall as its tallest (100).
+    expect(at.get('a')).toEqual({ x: 50, y: 100 });
+    expect(at.get('b')).toEqual({ x: 50 + 100 + GAP, y: 100 });
+    expect(at.get('c')).toEqual({ x: 50, y: 100 + 100 + GAP });
+    expect(at.get('d')).toEqual({ x: 50 + 100 + GAP, y: 100 + 100 + GAP });
+  });
+
+  it('one panel (or none) is left as it is; hidden panels are skipped', () => {
+    expect(tidySelectionPositions([n('a', 0, 0)])).toEqual([]);
+    expect(tidySelectionPositions([n('a', 0, 0), { ...n('b', 50, 50), hidden: true }])).toEqual([]);
+  });
+
+  it('onGrid rounds to the grid step', () => {
+    expect(onGrid({ x: 23, y: -9 }, 16)).toEqual({ x: 16, y: -16 });
+  });
+});
+
