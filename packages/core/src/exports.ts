@@ -55,6 +55,24 @@ export function exportRoute(o: OutputNode, format: ExportFormat, opts: ExportOpt
   return px && Math.max(px.w, px.h) <= BROWSER_MAX_EDGE_PX ? 'browser' : 'server';
 }
 
+/**
+ * M6: above this many raster pixels in one multi-file export, every file is made and zipped on the server: the
+ * browser would otherwise render each one and hold them all in memory to build the ZIP.
+ */
+export const BROWSER_ZIP_MAX_PX = 40_000_000;
+
+/** M6: total raster pixels of an export (vector formats count 0: their files are small). */
+export function exportPixelTotal(outputs: readonly OutputNode[], format: ExportFormat, opts: ExportOptions): number {
+  return outputs.reduce((n, o) => {
+    const px = rasterPixels(o, format, opts);
+    return n + (px ? px.w * px.h : 0);
+  }, 0);
+}
+
+/** M6: a multi-file export too large to zip in the browser. */
+export const zipOnServer = (outputs: readonly OutputNode[], format: ExportFormat, opts: ExportOptions): boolean =>
+  outputs.length > 1 && exportPixelTotal(outputs, format, opts) > BROWSER_ZIP_MAX_PX;
+
 /** T6.7: a raster export larger than LIMITS.maxExportEdgePx is refused, with the reason. */
 export function exportCapError(o: OutputNode, format: ExportFormat, opts: ExportOptions): string | null {
   const px = rasterPixels(o, format, opts);

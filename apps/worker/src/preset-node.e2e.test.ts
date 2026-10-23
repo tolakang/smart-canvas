@@ -178,4 +178,26 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await preset().getByRole('button', { name: 'Save as team preset' }).click();
     await preset().getByRole('status').getByText('“GDN” is a built-in preset; pick another name.').waitFor();
   }, 60_000);
+
+  it('M6: a Preset node too large to zip in the browser is made and zipped on the server', async () => {
+    for (let i = 0; i < 3; i++) {
+      await preset().getByRole('button', { name: 'Custom size' }).click();
+      await preset().getByLabel('Width (px)').fill('4000');
+      await preset().getByLabel('Height (px)').fill(String(4000 - i));
+      await preset().getByRole('button', { name: 'Add', exact: true }).click();
+    }
+    await expect.poll(() => preset().locator('.sc-preset__size').count()).toBe(5);
+    await saved();
+    await preset().getByRole('button', { name: 'Export all Promo sizes' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Format').selectOption('jpg');
+    await dialog.getByText(/^Large export \(\d+ million pixels\): made and zipped on the server\.$/).waitFor();
+    const [zip] = await Promise.all([page.waitForEvent('download', { timeout: 240_000 }), dialog.getByRole('button', { name: /^Export 5 outputs/ }).click()]);
+    expect(await dialog.locator('[data-where="browser"]').count()).toBe(0);
+    expect(zip.suggestedFilename()).toBe('Presets_Promo.zip');
+    expect(zip.url()).toMatch(/\/exports\/zip\?ids=.+&set=/);
+    const names = new Set(readFileSync((await zip.path()) as string).toString('latin1').match(/Presets_Promo-\d+[^_]*_\d+x\d+\.jpg/g));
+    expect(names.size).toBe(5);
+    await dialog.getByRole('button', { name: 'Close' }).click();
+  }, 300_000);
 });

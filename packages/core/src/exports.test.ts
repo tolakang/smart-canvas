@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveOutput, exportCapError, exportRoute, exportFileName, exportZipName, rasterPixels, renderScaleOf, withBleedOf } from './exports';
+import { BROWSER_ZIP_MAX_PX, effectiveOutput, exportCapError, exportPixelTotal, exportRoute, exportFileName, exportZipName, rasterPixels, renderScaleOf, withBleedOf, zipOnServer } from './exports';
 import type { OutputNode } from './model';
 
 const out = (patch: Partial<OutputNode> = {}): OutputNode => ({
@@ -67,5 +67,22 @@ describe('hybrid export route (D31)', () => {
     expect(exportRoute(out(), 'webp', { scale: 4 })).toBe('server'); // 4320×5400
     expect(exportRoute(a4, 'png', {})).toBe('browser'); // 300 dpi A4 + bleed: 2551×3579
     expect(exportRoute(out({ size: { width: 297, height: 420, unit: 'mm' }, dpi: 300 }), 'png', {})).toBe('server'); // A3: 3508×4961
+  });
+});
+
+describe('server ZIP for large exports (M6)', () => {
+  const out = (id: string, w: number, h: number) => ({ id, label: id, size: { width: w, height: h, unit: 'px' as const } }) as unknown as Parameters<typeof rasterPixels>[0];
+  const big = [out('a', 4000, 4000), out('b', 4000, 4000), out('c', 4000, 4000)];
+  it('counts raster pixels; vector formats count nothing', () => {
+    expect(exportPixelTotal(big, 'png', {})).toBe(48_000_000);
+    expect(exportPixelTotal(big, 'png', { scale: 0.5 })).toBe(12_000_000);
+    expect(exportPixelTotal(big, 'svg', {})).toBe(0);
+  });
+  it('several files over the limit zip on the server; one file, or a small set, stays in the browser', () => {
+    expect(BROWSER_ZIP_MAX_PX).toBe(40_000_000);
+    expect(zipOnServer(big, 'jpg', {})).toBe(true);
+    expect(zipOnServer(big.slice(0, 2), 'jpg', {})).toBe(false);
+    expect(zipOnServer([out('x', 12000, 12000)], 'png', {})).toBe(false);
+    expect(zipOnServer(big, 'pdf', {})).toBe(false);
   });
 });
