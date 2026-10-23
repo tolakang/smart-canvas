@@ -128,7 +128,7 @@ Legend: `[x]` done · `[ ]` to do
 ## Next (see BACKLOG)
 - [x] N1 — Inspector clean-up — [#108](https://github.com/tolakang/smart-canvas/pull/108)
 - [x] N2 — PDF uploads (D52) — [#109](https://github.com/tolakang/smart-canvas/pull/109)
-- [ ] N3 — Several KH/EN pairs per Headline node
+- [x] N3 — Several KH/EN pairs per Headline node (D53) — [#110](https://github.com/tolakang/smart-canvas/pull/110)
 - [ ] N4 — Preset placement / tidy board
 - [ ] N5 — Preset families as data
 - [ ] N6 — Export from a Preset node

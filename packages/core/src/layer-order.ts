@@ -4,7 +4,7 @@
  * (`ProjectDoc.layerOrder`). Every composition's rows (and each output's own rows) are kept in these groups,
  * front to back; within a group the order is the user's. Pure.
  */
-import { languagePairs } from './languages';
+import { languagePairs, pairInputs } from './languages';
 import type { ProjectDoc } from './model';
 import { layerSources, type LayerSource } from './processes';
 
@@ -46,7 +46,7 @@ const same = (a: readonly string[], b: readonly string[]) => a.length === b.leng
 
 /** The doc with every composition's and output's rows in group order; `doc` itself when nothing moves. */
 export function orderLayers(doc: ProjectDoc): ProjectDoc {
-  const headline = new Set(languagePairs(doc).flatMap((p) => [p.km, p.en]));
+  const headline = new Set(languagePairs(doc).flatMap(pairInputs));
   const byId = new Map(layerSources(doc).map((l) => [l.id, l]));
   const groupOf = (id: string): LayerGroup => {
     const l = byId.get(id);

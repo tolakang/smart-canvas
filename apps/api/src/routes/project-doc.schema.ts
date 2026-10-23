@@ -147,7 +147,16 @@ const headline = {
   type: 'object',
   additionalProperties: false,
   required: ['id', 'label', 'board', 'km', 'en', 'use'],
-  properties: { id, label: { type: 'string', maxLength: 200 }, board: point, km: id, en: id, use: { enum: ['km', 'en'] } },
+  properties: {
+    id,
+    label: { type: 'string', maxLength: 200 },
+    board: point,
+    km: id,
+    en: id,
+    use: { enum: ['km', 'en'] },
+    // N3: more pairs in the same card.
+    more: { type: 'array', maxItems: LIMITS.maxSources, items: { type: 'object', additionalProperties: false, required: ['km', 'en'], properties: { km: id, en: id } } },
+  },
 } as const;
 
 /** D46: a Preset node — its sizes are outputs (ids). */

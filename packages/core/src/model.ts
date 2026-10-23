@@ -280,6 +280,8 @@ export interface LanguagePair {
   km: string;
   en: string;
   use: 'km' | 'en';
+  /** N3: more Khmer / English pairs in the same card (each its own two inputs); `use` applies to all. */
+  more?: { km: string; en: string }[];
 }
 
 /**

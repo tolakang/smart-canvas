@@ -8,6 +8,7 @@ import {
   deletePair,
   LANGUAGE_LABEL,
   languagePairs,
+  pairInputs,
   renamePair,
   setLanguage,
   assetStacks,
@@ -233,7 +234,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
   const { doc, run, readOnly, stackFocus } = useBoard();
   const pair = languagePairs(doc).find((p) => p.id === pairId);
   if (!pair) return null;
-  const focusId = stackFocus === pair.km || stackFocus === pair.en ? stackFocus : pair.use === 'km' ? pair.km : pair.en;
+  const focusId = stackFocus && pairInputs(pair).includes(stackFocus) ? stackFocus : pair.use === 'km' ? pair.km : pair.en;
   const focused = doc.sources.find((s) => s.id === focusId);
   return (
     <>

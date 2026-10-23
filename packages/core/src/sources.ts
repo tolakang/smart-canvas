@@ -6,7 +6,7 @@
  * - nothing in the doc points at a deleted source (rows, edges, placements, output overrides, frozen frames).
  */
 import { edgeId, MAIN, withComposition } from './graph';
-import { LIMITS, type Behavior, type InputSource, type ProjectDoc, type SourceContent, type SourceKind, type TextStyle } from './model';
+import { LIMITS, type Behavior, type InputSource, type LanguagePair, type ProjectDoc, type SourceContent, type SourceKind, type TextStyle } from './model';
 
 export const DEFAULT_TEXT_STYLE: TextStyle = {
   fontFamily: 'Noto Sans',
@@ -199,8 +199,9 @@ export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
       })),
       edges: doc.edges.filter((e) => e.from !== id && e.to !== id),
       ...(doc.stacks ? { stacks: doc.stacks.map((st) => (st.items.includes(id) ? { ...st, items: st.items.filter((i) => i !== id) } : st)) } : {}),
-      // D44: a Headline card without one of its languages is no card (the other stays an ordinary input).
-      ...(doc.headlines ? { headlines: doc.headlines.filter((p) => p.km !== id && p.en !== id) } : {}),
+      // D44: a pair without one of its languages leaves its card (the other stays an ordinary input); N3: the card's
+      // next pair then leads it, and a card without pairs is gone.
+      ...(doc.headlines ? { headlines: doc.headlines.flatMap((p) => withoutInput(p, id)) } : {}),
       outputs: doc.outputs.map((o) => ({
         ...o,
         overrides: o.overrides.filter((ov) => ov.sourceId !== id),
@@ -209,4 +210,21 @@ export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
       })),
     },
   };
+}
+
+/** A Headline card once input `id` is gone (D44, N3): the pair holding it leaves; none left = no card. */
+function withoutInput(p: LanguagePair, id: string): LanguagePair[] {
+  const more = p.more ?? [];
+  if (p.km !== id && p.en !== id) {
+    if (!more.some((r) => r.km === id || r.en === id)) return [p];
+    const left = more.filter((r) => r.km !== id && r.en !== id);
+    const { more: _more, ...rest } = p;
+    void _more;
+    return [left.length ? { ...rest, more: left } : rest];
+  }
+  const [lead, ...rest] = more;
+  if (!lead) return [];
+  const { more: _more, ...card } = p;
+  void _more;
+  return [{ ...card, km: lead.km, en: lead.en, ...(rest.length ? { more: rest } : {}) }];
 }

@@ -361,6 +361,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1); height: var(--field-h); padding: 0 var(--sp-3);
   border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); line-height: 1; text-decoration: none; cursor: pointer; transition: background var(--t-fast), border-color var(--t-fast);
 }
+.sc-btn .sc-icon { margin: 0; } /* sits next to its label (the button centres it) */
 .sc-btn:hover:not(:disabled), .sc-open-editor:hover, .sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
 .sc-btn:focus-visible, .sc-open-editor:focus-visible, .sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
 .sc-btn--ghost { border-color: transparent; background: none; color: var(--accent); padding: 0 var(--sp-2); }
@@ -851,6 +852,10 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-hl-slot__title { font-size: 11px; color: var(--muted); }
 .sc-hl-slot .sc-assets__pick { height: 72px; aspect-ratio: auto; }
 .sc-hl-use { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+/* N3: several Khmer / English pairs, one row each, each with a small head (name, delete) when there are more. */
+.sc-hl-row + .sc-hl-row { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); }
+.sc-hl-row__head { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-bottom: 2px; }
+.sc-hl-add { margin-top: 8px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* D45: where each layer comp group starts in a master preview's rows. */
 .sc-port--group-start { position: relative; margin-top: 14px; }

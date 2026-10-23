@@ -12,7 +12,7 @@
  * when the document is already in shape. Pure; ids of what it adds are derived from the doc, so it is repeatable.
  */
 import { edgeId, MAIN } from './graph';
-import { addLanguagePair, languagePairs } from './languages';
+import { addLanguagePair, languagePairs, pairInputs } from './languages';
 import { orderLayers } from './layer-order';
 import type { ProjectDoc } from './model';
 import { deleteComposition } from './compositions';
@@ -62,7 +62,7 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
   // 2. The asset nodes. Inputs outside a node join the first node of their kind: logos the Logo node, text the
   // Text node, other pictures the Image node (backgrounds are each their own Background node). Each kind of
   // node exists at least once.
-  const inCards = new Set([...assetStacks(next).flatMap((s) => s.items), ...languagePairs(next).flatMap((p) => [p.km, p.en])]);
+  const inCards = new Set([...assetStacks(next).flatMap((s) => s.items), ...languagePairs(next).flatMap(pairInputs)]);
   const kindOf = (b: string, k: string): 'logo' | 'text' | 'image' | null => (b === 'background' ? null : b === 'logo' ? 'logo' : b === 'text' || k === 'text' ? 'text' : 'image');
   for (const kind of ['logo', 'text', 'image'] as const) {
     const loose = next.sources.filter((x) => !inCards.has(x.id) && kindOf(x.behavesLike, x.kind) === kind).map((x) => x.id);

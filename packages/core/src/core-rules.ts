@@ -7,7 +7,7 @@
 import { compositionById, MAIN, outputComposition } from './graph';
 import { addGuides, familyOfShape, GUIDE_FAMILIES, layoutOf, masterOf } from './guides';
 import { layerGroup, layerOrderOf, type LayerGroup } from './layer-order';
-import { languagePairs } from './languages';
+import { languagePairs, pairInputs } from './languages';
 import { FILL_TOLERANCE, pinOf, type Pin } from './layout/grid';
 import { canvasMetrics, LIMITS, type Composition, type CoreRuleNode, type GuideFamily, type NFrame, type ProjectDoc } from './model';
 import { layerSources, type LayerSource } from './processes';
@@ -45,7 +45,7 @@ export function deleteCoreRule(doc: ProjectDoc, id: string): SourceResult {
 export function layerComp(doc: ProjectDoc, compositionId: string): { group: LayerGroup; layers: LayerSource[] }[] {
   const comp = compositionById(doc, compositionId);
   const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
-  const headline = new Set(languagePairs(doc).flatMap((p) => [p.km, p.en]));
+  const headline = new Set(languagePairs(doc).flatMap(pairInputs));
   const rows = (comp?.layers ?? []).flatMap((id) => byId.get(id) ?? []);
   return layerOrderOf(doc).map((group) => ({ group, layers: rows.filter((s) => layerGroup(s, headline) === group) }));
 }
