@@ -1,4 +1,4 @@
-import { fillToCss, fontStack, layersOfPicture, LIMITS, unfitPictures, type Fill, type InputSource } from '@smart-canvas/core';
+import { fillToCss, fontStack, LIMITS, unfitPictures, type Fill, type InputSource } from '@smart-canvas/core';
 import { useState, type ChangeEvent, type DragEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
 import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, setVariant, switchFillType, withSource } from './content';
@@ -55,7 +55,7 @@ export function useAssetUpload(source: InputSource) {
         // D37: the old picture's frames stop hugging it; once the new one is measured, it's fitted into them.
         run((d) => ({
           ok: true,
-          doc: withSource(unfitPictures(d, layersOfPicture(d, source.id)), source.id, (s) => (s.content.kind === 'fill' ? photoBackground(s, asset.id) : setAsset(s, asset.id))),
+          doc: withSource(unfitPictures(d, new Set([source.id])), source.id, (s) => (s.content.kind === 'fill' ? photoBackground(s, asset.id) : setAsset(s, asset.id))),
         }));
       }
     } catch (err) {

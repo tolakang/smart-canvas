@@ -53,7 +53,7 @@ export interface CanvasEditorProps {
 
 export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, spotsOf, props: sidePanel, onClose }: CanvasEditorProps) {
   const { doc, readOnly, teamId, layoutDeps } = useBoard();
-  // T12.5: rows can be processes; they draw (and select) as their effective layer.
+  // The layers the canvas draws (a Headline card's unused language hidden, D44).
   const layerList = useMemo(() => layerSources(doc), [doc]);
   const stage = useRef<HTMLDivElement>(null);
   const canvasEl = useRef<HTMLDivElement>(null);

@@ -96,7 +96,7 @@ jobs:
           p = json.load(open('/tmp/out'))
           doc = p['doc']
           doc['sources'] = [dict(s, content={'kind': 'fill', 'fill': {'type': 'solid', 'color': '#ff0000'}}) if s['id'] == 'background' else s for s in doc['sources']]
-          assert doc['schema'] == 2  # D32 graph model
+          assert doc['schema'] == 3  # D56
           doc['edges'] += [{'id': 'in:background', 'from': 'background', 'to': 'main', 'kind': 'layer'}, {'id': 'out:o1', 'from': 'main', 'to': 'o1', 'kind': 'composition'}]
           doc['compositions'][0]['placements']['background'] = {'x': 0, 'y': 0, 'w': 1, 'h': 1}
           doc['outputs'] = [{'id': 'o1', 'label': 'Smoke', 'size': {'width': 320, 'height': 200, 'unit': 'px'}, 'exportScale': 2, 'family': 'auto', 'overrides': [], 'board': {'x': 420, 'y': 0}}]

@@ -4,7 +4,7 @@
  */
 import { MAIN, withComposition } from './graph';
 import { cleanShear, type Behavior, type NFrame, type ProjectDoc } from './model';
-import { isLayerNode, layerSource } from './processes';
+import { isLayerNode, layerSource } from './layers';
 import type { SourceResult } from './sources';
 
 const DEFAULT_PLACEMENT: Record<Behavior, NFrame> = {

@@ -72,7 +72,6 @@ export function sceneTexts(scene: RenderScene, sources: readonly LayerSource[]):
   const byId = new Map(sources.map((s) => [s.id, s]));
   return scene.items.flatMap((item) => {
     const source = byId.get(item.sourceId);
-    if (source?.nested) return sceneTexts(source.nested.scene, sources); // T12.8: its texts too
     const c = source?.content;
     return c?.kind === 'text' ? [{ style: { ...c.style, ...item.style }, text: item.lines?.join('\n') ?? c.text }] : [];
   });
@@ -80,12 +79,7 @@ export function sceneTexts(scene: RenderScene, sources: readonly LayerSource[]):
 
 /** Resolves once every text font of the scene is loaded and every image in the frame has decoded. */
 export async function frameReady(frame: HTMLElement, scene: RenderScene, sources: readonly LayerSource[]): Promise<void> {
-  const masks = [...frame.querySelectorAll<HTMLElement>('[data-mask-src]')].map((el) => {
-    const img = new Image();
-    img.src = el.dataset.maskSrc ?? '';
-    return img.decode();
-  });
-  await Promise.all([ensureFonts(sceneTexts(scene, sources)), ...[...frame.querySelectorAll('img')].map((img) => img.decode()), ...masks]);
+  await Promise.all([ensureFonts(sceneTexts(scene, sources)), ...[...frame.querySelectorAll('img')].map((img) => img.decode())]);
 }
 
 /** The export frame: whole pixels (same rounding as exportPixels), clipping the canvas' fraction. */
@@ -123,7 +117,7 @@ export function RenderPage({ route }: { route: RenderRoute }) {
       ]);
       registerTeamFonts(route.teamId, fonts);
       const { doc } = project;
-      // Same deps as the board: fonts loaded before measuring, intrinsic asset sizes (layout, and crops: T12.5).
+      // Same deps as the board: fonts loaded before measuring, intrinsic asset sizes (layout, fitted pictures).
       const assets = await api<AssetMeta[]>('GET', `/teams/${route.teamId}/assets`);
       const sizes: Record<string, AssetSize> = Object.fromEntries(assets.flatMap((a) => (a.width && a.height ? [[a.id, { width: a.width, height: a.height }]] : [])));
       // D37: fitted frames draw a picture's visible part — measured here exactly as on the board.

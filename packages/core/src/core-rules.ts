@@ -9,7 +9,7 @@ import { layerGroup, layerOrderOf, type LayerGroup } from './layer-order';
 import { languagePairs, pairInputs } from './languages';
 import { FILL_TOLERANCE, pinOf, type Pin } from './layout/grid';
 import { canvasMetrics, type Composition, type GuideFamily, type NFrame, type ProjectDoc } from './model';
-import { layerSources, type LayerSource } from './processes';
+import { layerSources, type LayerSource } from './layers';
 import type { SourceResult } from './sources';
 
 /** A composition's rows in their layer comp groups (D45, in the project's order D48), front first; empty groups included. */

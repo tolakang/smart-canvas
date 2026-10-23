@@ -9,11 +9,10 @@ import type { SourceResult } from './sources';
 
 export const GROUP_COLORS: readonly GroupColor[] = ['grey', 'blue', 'purple', 'green', 'orange', 'red'];
 
-/** What a group can hold: any board node — inputs, asset and Headline nodes (D40, D44), Preset nodes (D46), the master, Previews (and processes). */
+/** What a group can hold: any board node — inputs, asset and Headline nodes (D40, D44), Preset nodes (D46), the master, Previews. */
 const exists = (doc: ProjectDoc) => {
   const ids = new Set([
     ...doc.sources.map((s) => s.id),
-    ...doc.processes.map((p) => p.id),
     ...doc.compositions.map((c) => c.id),
     ...doc.outputs.map((o) => o.id),
     ...(doc.stacks ?? []).map((s) => s.id),

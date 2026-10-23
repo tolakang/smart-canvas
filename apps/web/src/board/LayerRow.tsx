@@ -3,7 +3,7 @@
  * drag & drop re-ordering (the row dropped on takes that port, D11), and the row actions — show/hide,
  * duplicate (+) and delete (trash). Port 0 = front = top row.
  */
-import { deleteSource, duplicateSource, fillToCss, LIMITS, MAIN, moveSourceToPort, removeRow, setSourceLocked, setSourceVisible, type InputSource } from '@smart-canvas/core';
+import { deleteSource, duplicateSource, fillToCss, LIMITS, MAIN, moveSourceToPort, setSourceLocked, setSourceVisible, type InputSource } from '@smart-canvas/core';
 import { useState, type DragEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from './context';
@@ -58,19 +58,10 @@ export function useLayerReorder(compositionId: string = MAIN) {
   return { dropAt, rowProps };
 }
 
-/** Eye, duplicate (+) and delete for one layer. */
-/** On a composition other than main (T12.3), the trash takes the row out of that preview; the input stays. */
-export function LayerActions({ source, compositionId = MAIN }: { source: InputSource; compositionId?: string }) {
+/** Eye, lock, duplicate (+) and delete for one layer. */
+export function LayerActions({ source }: { source: InputSource }) {
   const { run, doc } = useBoard();
-  const rowOnly = compositionId !== MAIN;
   const full = doc.sources.length >= LIMITS.maxSources;
-  // T12.5: a process row only comes off the stack (the process node itself is deleted on the board).
-  if (doc.processes.some((p) => p.id === source.id))
-    return (
-      <button type="button" aria-label={`Remove ${source.label} from this preview`} title="Remove from this preview" onClick={() => run((d) => removeRow(d, compositionId, source.id))}>
-        <Icon name="trash" />
-      </button>
-    );
   return (
     <>
       <button
@@ -103,12 +94,9 @@ export function LayerActions({ source, compositionId = MAIN }: { source: InputSo
       </button>
       <button
         type="button"
-        aria-label={rowOnly ? `Remove ${source.label} from this preview` : `Delete ${source.label}`}
-        title={rowOnly ? 'Remove from this preview' : 'Delete'}
-        onClick={() => {
-          if (rowOnly) run((d) => removeRow(d, compositionId, source.id));
-          else if (confirmDelete(source.label)) run((d) => deleteSource(d, source.id));
-        }}
+        aria-label={`Delete ${source.label}`}
+        title="Delete"
+        onClick={() => confirmDelete(source.label) && run((d) => deleteSource(d, source.id))}
       >
         <Icon name="trash" />
       </button>

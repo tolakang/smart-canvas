@@ -18,8 +18,7 @@ export type PresetGroup = 'print' | 'social';
 export const LIMITS = {
   maxSources: 10, // includes the 4 defaults
   maxOutputs: 100, // D46 (was 10)
-  maxCompositions: 5,
-  maxProcesses: 20,
+  maxCompositions: 3, // D56: the master and its layouts
   maxUploadMB: 50,
   maxExportEdgePx: 12000,
 } as const;
@@ -123,21 +122,6 @@ export interface Composition {
   guide?: { of: string; family: 'square' | 'vertical' | 'horizontal' };
 }
 
-/** Process nodes (D32, T12.5+): change a layer on its way to a composition or output. */
-export type ProcessOp =
-  | { type: 'crop'; rect: NFrame }
-  | { type: 'adjust'; opacity?: number; brightness?: number; contrast?: number; saturation?: number; blurPx?: number }
-  | { type: 'flip'; x: boolean; y: boolean; rotate?: 0 | 90 | 180 | 270 }
-  | { type: 'textVariant'; text?: string; style?: Partial<TextStyle> }
-  | { type: 'recolor'; color: string };
-
-export interface ProcessNode {
-  id: string;
-  label: string;
-  op: ProcessOp;
-  board: { x: number; y: number };
-}
-
 export interface Override {
   sourceId: string;
   frame?: Partial<Frame>; // design px in the output canvas
@@ -158,9 +142,6 @@ export interface OutputNode {
   safeMarginPct?: number; // default DEFAULTS.safeMarginPct
   family: LayoutFamily; // default 'auto'
   overrides: Override[]; // empty = fully automatic
-  /** Output-only layers (D32, T12.4): its own rows, front first (row index = port), drawn above the composition's
-   *  layers while a `layer` edge feeds them. Absent = none. */
-  layers?: string[];
   /** Only present while disconnected: frames captured at disconnect time. Deleted on reconnect.
    *  Frames only: text/asset content edits on sources still show; positions/sizes stay frozen. */
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };
@@ -171,9 +152,8 @@ export interface OutputNode {
 }
 
 /**
- * A wire on the board (D32). `layer`: an input or process feeds a composition row, a process, or an output's
- * own layers. `composition`: a composition feeds an output; an output is "connected" iff it has one (no flag).
- * Each in-port takes one edge; an out-port can feed many. No cycles.
+ * A wire on the board (D32; D56). `layer`: an input feeds a composition row. `composition`: a composition feeds
+ * an output; an output is "connected" iff it has one (no flag). Each in-port takes one edge; an out-port can feed many.
  */
 export type EdgeKind = 'layer' | 'composition';
 export interface Edge {
@@ -190,19 +170,18 @@ export interface BoardGroup {
   id: string;
   label: string;
   color: GroupColor;
-  /** Node ids (inputs, processes, compositions, outputs). */
+  /** Node ids (inputs, asset cards, compositions, Preset nodes, outputs). */
   nodes: string[];
   collapsed?: boolean;
 }
 export type GroupColor = 'grey' | 'blue' | 'purple' | 'green' | 'orange' | 'red';
 
 export interface ProjectDoc {
-  schema: 2;
+  schema: 3; // D56 (v1, v2 are migrated on load: migrateProjectDoc)
   rev: number; // increments on every save; reject stale writes
   name: string;
-  compositions: Composition[]; // [0] is 'main'; length <= LIMITS.maxCompositions
+  compositions: Composition[]; // [0] is 'main', then its layout guides (D42, D56); length <= LIMITS.maxCompositions
   sources: InputSource[]; // length <= LIMITS.maxSources
-  processes: ProcessNode[]; // length <= LIMITS.maxProcesses
   outputs: OutputNode[]; // length <= LIMITS.maxOutputs
   edges: Edge[];
   /** Board groups (T13.7): named, coloured frames around nodes; absent = none. Board only, no effect on layout. */
@@ -213,8 +192,6 @@ export interface ProjectDoc {
   headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en'; more?: { km: string; en: string }[] }[]; // more: N3
   // D46: Preset nodes — each lists output ids (its sizes, in row order).
   presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[]; hidden?: string[] }[]; // hidden: D51
-  // D47: Core Rule nodes — one master preview each; what they show is derived.
-  coreRules?: { id: string; composition: string; board: { x: number; y: number } }[]; // no longer drawn (D49)
   // D48: the layer comp's group order, front first; absent = logo, headline, elements, background.
   layerOrder?: ('logo' | 'headline' | 'elements' | 'background')[];
 }

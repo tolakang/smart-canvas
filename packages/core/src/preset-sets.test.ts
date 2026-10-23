@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addComposition } from './compositions';
-import { outputComposition } from './graph';
+import { MAIN, outputComposition } from './graph';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { deleteOutput, disconnectOutput, isOutputConnected } from './outputs';
@@ -42,14 +41,13 @@ describe('Preset nodes (D46)', () => {
     expect(doc.presetSets?.[0]?.outputs).toEqual(['g4', 'g2', 'g3']);
   });
 
-  it('one wire feeds every size: rewired to another master preview, frozen ones reconnect', () => {
-    let doc = ok(addComposition(withSet(), { id: 'v2', label: 'Variant' }));
-    doc = ok(disconnectOutput(doc, 'g2', deps));
+  it('one wire feeds every size: wiring the master into the node reconnects frozen ones', () => {
+    let doc = ok(disconnectOutput(withSet(), 'g2', deps));
     expect(isOutputConnected(doc, 'g2')).toBe(false);
-    doc = ok(connectSet(doc, 'gdn', 'v2'));
-    for (const o of ['g1', 'g2', 'g3']) expect(outputComposition(doc, o)).toBe('v2');
+    doc = ok(connectSet(doc, 'gdn', MAIN));
+    for (const o of ['g1', 'g2', 'g3']) expect(outputComposition(doc, o)).toBe(MAIN);
     expect(doc.outputs.find((o) => o.id === 'g2')?.frozen).toBeUndefined();
-    expect(setComposition(doc, 'gdn')).toBe('v2');
+    expect(setComposition(doc, 'gdn')).toBe(MAIN);
   });
 
   it('deleting the node deletes its sizes; other outputs stay', () => {

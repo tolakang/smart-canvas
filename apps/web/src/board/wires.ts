@@ -14,7 +14,7 @@ export function relatedEdges(edges: readonly { id: string; source: string; targe
   return new Set(edges.filter((e) => selectedEdges.has(e.id) || selectedNodes.has(e.source) || selectedNodes.has(e.target)).map((e) => e.id));
 }
 
-/** Nodes whose content changed between two docs (inputs, processes, compositions, outputs); moves don't count. */
+/** Nodes whose content changed between two docs (inputs, compositions, outputs); moves don't count. */
 export function changedNodes(prev: ProjectDoc, next: ProjectDoc): Set<string> {
   const changed = new Set<string>();
   const strip = (x: { board?: unknown }) => {
@@ -30,7 +30,6 @@ export function changedNodes(prev: ProjectDoc, next: ProjectDoc): Set<string> {
     }
   };
   compare(prev.sources, next.sources);
-  compare(prev.processes, next.processes);
   compare(prev.compositions, next.compositions);
   compare(prev.outputs, next.outputs);
   return changed;

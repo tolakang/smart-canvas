@@ -18,8 +18,7 @@ export type PresetGroup = 'print' | 'social';
 export const LIMITS = {
   maxSources: 500, // D39: no practical layer limit; a safety ceiling for the API only
   maxOutputs: 100, // D46: a preset set (GDN alone is 7 sizes) — was 10
-  maxCompositions: 5,
-  maxProcesses: 20,
+  maxCompositions: 3, // D56: the master and its layouts
   maxGroups: 20,
   maxUploadMB: 50,
   maxExportEdgePx: 12000,
@@ -153,21 +152,6 @@ export interface Composition {
 /** D42: the three layout guide shapes. */
 export type GuideFamily = 'square' | 'vertical' | 'horizontal';
 
-/** Process nodes (D32, T12.5+): change a layer on its way to a composition or output. */
-export type ProcessOp =
-  | { type: 'crop'; rect: NFrame }
-  | { type: 'adjust'; opacity?: number; brightness?: number; contrast?: number; saturation?: number; blurPx?: number }
-  | { type: 'flip'; x: boolean; y: boolean; rotate?: 0 | 90 | 180 | 270 }
-  | { type: 'textVariant'; text?: string; style?: Partial<TextStyle> }
-  | { type: 'recolor'; color: string };
-
-export interface ProcessNode {
-  id: string;
-  label: string;
-  op: ProcessOp;
-  board: { x: number; y: number };
-}
-
 export interface Override {
   sourceId: string;
   frame?: Partial<Frame>; // design px in the output canvas
@@ -188,9 +172,6 @@ export interface OutputNode {
   safeMarginPct?: number; // default DEFAULTS.safeMarginPct
   family: LayoutFamily; // default 'auto'
   overrides: Override[]; // empty = fully automatic
-  /** Output-only layers (D32, T12.4): its own rows, front first (row index = port), drawn above the composition's
-   *  layers while a `layer` edge feeds them. Absent = none. */
-  layers?: string[];
   /** Only present while disconnected: frames captured at disconnect time. Deleted on reconnect.
    *  Frames only: text/asset content edits on sources still show; positions/sizes stay frozen. */
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };
@@ -202,8 +183,8 @@ export interface OutputNode {
 }
 
 /**
- * A wire on the board (D32). `layer`: an input or process feeds a composition row, a process, or an output's
- * own layers. `composition`: a composition feeds an output; an output is "connected" iff it has one (no flag).
+ * A wire on the board (D32; D56). `layer`: an input feeds a composition row. `composition`: a composition feeds
+ * an output; an output is "connected" iff it has one (no flag).
  * Each in-port takes one edge; an out-port can feed many. No cycles.
  */
 export type EdgeKind = 'layer' | 'composition';
@@ -221,19 +202,18 @@ export interface BoardGroup {
   id: string;
   label: string;
   color: GroupColor;
-  /** Node ids (inputs, processes, compositions, outputs). */
+  /** Node ids (inputs, asset cards, compositions, Preset nodes, outputs). */
   nodes: string[];
   collapsed?: boolean;
 }
 export type GroupColor = 'grey' | 'blue' | 'purple' | 'green' | 'orange' | 'red';
 
 export interface ProjectDoc {
-  schema: 2;
+  schema: 3;
   rev: number; // increments on every save; reject stale writes
   name: string;
   compositions: Composition[]; // [0] is 'main'; length <= LIMITS.maxCompositions
   sources: InputSource[]; // length <= LIMITS.maxSources
-  processes: ProcessNode[]; // length <= LIMITS.maxProcesses
   outputs: OutputNode[]; // length <= LIMITS.maxOutputs
   edges: Edge[];
   /** Board groups (T13.7): named, coloured frames around nodes; absent = none. Board only, no effect on layout. */
@@ -243,17 +223,8 @@ export interface ProjectDoc {
   headlines?: LanguagePair[];
   /** D46: Preset nodes — a list of output sizes (e.g. GDN) fed by one master preview. */
   presetSets?: PresetSet[];
-  /** D47: Core Rule nodes — each shows how one master preview adapts (layer comp, guides, auto layout). */
-  coreRules?: CoreRuleNode[];
   /** D48: the layer comp's group order, front first ('logo' | 'headline' | 'elements' | 'background'); absent = default. */
   layerOrder?: ('logo' | 'headline' | 'elements' | 'background')[];
-}
-
-/** D47: a Core Rule node on the board, for one master preview. Its contents are derived, never stored. */
-export interface CoreRuleNode {
-  id: string;
-  composition: string;
-  board: { x: number; y: number };
 }
 
 /**
@@ -286,7 +257,7 @@ export interface LanguagePair {
 
 /**
  * An Assets card (D40): one board node that holds many pictures. Each picture is still its own input (and layer:
- * placement, behaviour, processes, overrides); the card only draws them together. `items` lists the input ids in
+ * placement, behaviour, overrides); the card only draws them together. `items` lists the input ids in
  * card order; an input is in one card at most, and ids that no longer exist are ignored.
  */
 export interface AssetStack {

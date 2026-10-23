@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { boardStructure, createBoardProject } from './board-structure';
-import { addComposition } from './compositions';
 import { MAIN, wiredLayers } from './graph';
 import { guidesOf } from './guides';
 import { languagePairs } from './languages';
 import { layerOrderOf, moveLayerGroup } from './layer-order';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
-import { addProcess, DEFAULT_OPS } from './processes';
 import { addTextToStack, assetStacks, stackKind } from './stacks';
 import type { SourceResult } from './sources';
 
@@ -34,18 +32,12 @@ describe('page-3 board structure (D49)', () => {
     expect(boardStructure(doc)).toBe(doc);
   });
 
-  it('an old project: processes and other master previews go; text joins the Text node; loose outputs join a Sizes preset node', () => {
-    let doc = { ...project(output()), edges: [...project().edges, { id: 'w', from: MAIN, to: 'o1', kind: 'composition' as const }] };
-    doc = ok(addProcess(doc, { id: 'p1', op: JSON.parse(JSON.stringify(DEFAULT_OPS.crop)), board: { x: 0, y: 0 } }));
-    doc = ok(addComposition(doc, { id: 'c2', label: 'B', board: { x: 0, y: 0 } }));
-    doc = { ...doc, edges: doc.edges.map((e) => (e.kind === 'composition' && e.to === 'o1' ? { ...e, id: 'c2->o1', from: 'c2' } : e)) };
+  it('an old project: text joins the Text node; loose outputs join a Sizes preset node', () => {
+    const doc = { ...project(output()), edges: [...project().edges, { id: 'w', from: MAIN, to: 'o1', kind: 'composition' as const }] };
     const next = boardStructure(doc);
-    expect(next.processes).toEqual([]);
-    expect(next.compositions.filter((c) => !c.guide).map((c) => c.id)).toEqual([MAIN]);
     expect(assetStacks(next).find((st) => stackKind(st) === 'text')?.items).toEqual(['headline']);
     expect(languagePairs(next)).toHaveLength(1); // and a Headline node
     expect(next.presetSets).toEqual([expect.objectContaining({ label: 'Sizes', outputs: ['o1'] })]);
-    // Its output now follows the master.
     expect(next.edges).toContainEqual(expect.objectContaining({ from: MAIN, to: 'o1', kind: 'composition' }));
   });
 

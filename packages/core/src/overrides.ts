@@ -6,7 +6,7 @@ import { computeLayout, type LayoutDeps } from './layout';
 import { cleanShear, type Frame, type Override, type OutputNode, type ProjectDoc, type TextStyle } from './model';
 import type { SourceResult } from './sources';
 import { applyTextStylePatch, type TextStylePatch } from './text-style';
-import { isLayerNode, layerSource } from './processes';
+import { isLayerNode, layerSource } from './layers';
 
 /** Who and when, stamped on every override write. */
 export interface OverrideAuthor {

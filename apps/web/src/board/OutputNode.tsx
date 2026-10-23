@@ -1,8 +1,7 @@
 /**
  * Output node (T4.7): name, size, layout health and a live thumbnail computed by the layout engine and drawn
  * by the same OutputRenderer as export. Its settings (preset, size, scale / DPI, bleed, disconnect) are in the
- * inspector (T13.2, OutputSettings.tsx). Its own layer rows (T12.4): inputs only this output gets, drawn above the
- * master preview's layers; wire an input onto "Add a layer".
+ * inspector (T13.2, OutputSettings.tsx).
  */
 import {
   canvasMetrics,

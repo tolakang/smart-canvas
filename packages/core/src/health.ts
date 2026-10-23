@@ -8,8 +8,7 @@
  * Export progress is not health; it stays in the export dialog.
  */
 import { compositionById, MAIN, outputComposition, wiredLayers } from './graph';
-import { wiredOutputLayers } from './output-layers';
-import { layerSources } from './processes';
+import { layerSources } from './layers';
 import type { LayoutResult, LayoutWarning } from './layout';
 import type { InputSource, ProjectDoc } from './model';
 
@@ -37,9 +36,8 @@ const MESSAGE: Record<HealthCode, string> = {
   'font-missing': 'Font could not be loaded',
 };
 
-/** No file or text yet (a composition used as a layer, T12.8, is never empty itself). */
-function isEmpty(s: InputSource & { nested?: unknown }): boolean {
-  if (s.nested) return false;
+/** No file or text yet. */
+function isEmpty(s: InputSource): boolean {
   const c = s.content;
   return c.kind === 'image' || c.kind === 'vector' ? !c.assetId : c.kind === 'text' ? !c.text.trim() : false;
 }
@@ -90,12 +88,5 @@ export function outputHealth(doc: ProjectDoc, outputId: string, layout: LayoutRe
   }
   const connected = outputComposition(doc, outputId);
   issues.push(...emptyIssues(doc, connected ?? MAIN));
-  // Output-only layers (T12.4) still empty.
-  const own = wiredOutputLayers(doc, outputId);
-  const listed = new Set(issues.filter((i) => i.code === 'empty').map((i) => i.sourceId));
-  for (const id of doc.outputs.find((o) => o.id === outputId)?.layers ?? []) {
-    const s = byId.get(id);
-    if (s && s.visible && own.has(id) && isEmpty(s) && !listed.has(id)) issues.push(issue(s, 'empty'));
-  }
   return { level: levelOf(issues, !connected), issues };
 }

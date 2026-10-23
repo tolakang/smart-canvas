@@ -95,7 +95,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     }));
     for (const doc of [
       { ...p.doc, sources: tooMany },
-      { ...p.doc, schema: 3 },
+      { ...p.doc, schema: 4 },
       { ...p.doc, name: '' },
       { ...p.doc, compositions: p.doc.compositions.map((c) => ({ ...c, size: { width: 0, height: 10, unit: 'px' } })) },
       { ...p.doc, compositions: [] },
@@ -109,7 +109,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     );
   });
 
-  it('upgrades a v1 document (D32): accepted on save, stored and served as v2', async () => {
+  it('upgrades a v1 document (D32): accepted on save, stored and served as the current schema', async () => {
     const p = await create();
     const v1 = {
       schema: 1,
@@ -122,9 +122,29 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     };
     expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v1 })).statusCode).toBe(200);
     const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
-    expect(got.schema).toBe(2);
+    expect(got.schema).toBe(3);
     expect(got.compositions[0]).toMatchObject({ id: 'main', size: { width: 2000, height: 1000, unit: 'px' }, layers: ['logo', 'headline', 'subject', 'background'] });
     expect(got.edges).toEqual([{ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' }]);
+  });
+
+  it('D56: a v2 document with a process node and a Core Rule node is accepted on save and stored as v3 without them', async () => {
+    const p = await create();
+    const v2 = {
+      ...p.doc,
+      schema: 2,
+      processes: [{ id: 'p1', label: 'Crop', op: { type: 'crop', rect: { x: 0, y: 0, w: 1, h: 1 } }, board: { x: 0, y: 0 } }],
+      coreRules: [{ id: 'cr', composition: 'main', board: { x: 0, y: 0 } }],
+      edges: [...p.doc.edges, { id: 'in:subject>p1', from: 'subject', to: 'p1', kind: 'layer' }, { id: 'in:p1', from: 'p1', to: 'main', kind: 'layer' }],
+    };
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v2 })).statusCode).toBe(200);
+    const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
+    expect(got.schema).toBe(3);
+    expect(got).not.toHaveProperty('processes');
+    expect(got).not.toHaveProperty('coreRules');
+    expect(got.edges.some((e) => e.from === 'p1' || e.to === 'p1')).toBe(false);
+    // A v3 save that still carries `processes`: the unknown field is dropped, not stored.
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 1, doc: { ...got, processes: [] } })).statusCode).toBe(200);
+    expect((await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc).not.toHaveProperty('processes');
   });
 
   it('deletes', async () => {
