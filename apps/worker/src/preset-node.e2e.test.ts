@@ -4,6 +4,7 @@
  * disconnects that size; wiring the row back reconnects it. Delete removes the node with its sizes. N5: a custom
  * Preset node saved as a team preset family.
  */
+import { readFileSync } from 'node:fs';
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
 import type { Locator, Page } from 'playwright';
@@ -111,6 +112,31 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await out.waitFor();
     await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toBeUndefined();
   }, 60_000);
+
+  it('N6: Export on a Preset node exports its sizes as one ZIP named by the family; a hidden Preview can be left out', async () => {
+    const d0 = await doc();
+    const set = d0.presetSets?.[0];
+    const hiddenId = set?.outputs[1] ?? '';
+    await preset().locator(`[data-output="${hiddenId}"]`).getByRole('button', { name: /^Hide preview / }).click();
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toEqual([hiddenId]);
+    await preset().getByRole('button', { name: 'Export all GDN sizes' }).click();
+    const dialog = page.getByRole('dialog');
+    // Its sizes only, all chosen — the hidden one too, until unticked.
+    expect(await dialog.getByRole('group', { name: 'Outputs' }).getByRole('checkbox').count()).toBe(7);
+    const include = dialog.getByLabel(/Include hidden previews \(1\)/);
+    expect(await include.isChecked()).toBe(true);
+    await include.uncheck();
+    await dialog.getByLabel('Format').selectOption('png');
+    const [zip] = await Promise.all([page.waitForEvent('download', { timeout: 120_000 }), dialog.getByRole('button', { name: /^Export 6 outputs/ }).click()]);
+    expect(zip.suggestedFilename()).toBe('Presets_GDN.zip');
+    // A stored ZIP: each name appears in its local header and in the central directory.
+    const names = new Set(readFileSync((await zip.path()) as string).toString('utf8').match(/Presets_GDN-\d+×\d+_\d+x\d+\.png/g));
+    const want = (set?.outputs ?? []).filter((id) => id !== hiddenId).map((id) => d0.outputs.find((o) => o.id === id)?.label);
+    expect([...names].map((n) => n.replace(/^Presets_/, '').replace(/_\d+x\d+\.png$/, '').replace('-', ' ')).sort()).toEqual([...want].sort());
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await preset().locator(`[data-output="${hiddenId}"]`).getByRole('button', { name: /^Show preview / }).click();
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toBeUndefined();
+  }, 150_000);
 
   it('a Preview exports itself; Delete removes the node with its sizes', async () => {
     const before = await doc();

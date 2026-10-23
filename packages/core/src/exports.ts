@@ -79,9 +79,9 @@ export function exportFileName(project: string, o: OutputNode, format: ExportFor
   return `${safe(project)}_${safe(o.label)}_${size}.${format}`;
 }
 
-/** Name of a "download all" archive (API and browser ZIPs alike). */
-export function exportZipName(project: string): string {
-  return `${safe(project)}_exports.zip`;
+/** Name of a "download all" archive (API and browser ZIPs alike); N6: a Preset node's ZIP is named by its family. */
+export function exportZipName(project: string, family?: string): string {
+  return `${safe(project)}_${family?.trim() ? safe(family) : 'exports'}.zip`;
 }
 
 /** Where a finished export file is stored (worker writes, API serves). */

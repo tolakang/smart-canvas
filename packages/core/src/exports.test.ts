@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveOutput, exportCapError, exportRoute, exportFileName, rasterPixels, renderScaleOf, withBleedOf } from './exports';
+import { effectiveOutput, exportCapError, exportRoute, exportFileName, exportZipName, rasterPixels, renderScaleOf, withBleedOf } from './exports';
 import type { OutputNode } from './model';
 
 const out = (patch: Partial<OutputNode> = {}): OutputNode => ({
@@ -46,6 +46,12 @@ describe('export settings', () => {
     expect(exportFileName('Poster', a4, 'pdf', {})).toBe('Poster_A4-poster_210x297mm.pdf');
     expect(exportFileName('a/b:c', out({ label: 'ផ្ទាំង' }), 'svg', {})).toBe('a-b-c_ផ្ទាំង_1080x1350px.svg');
     expect(exportFileName('', out({ label: '...' }), 'jpg', {})).toBe('untitled_untitled_1080x1350.jpg');
+  });
+
+  it('ZIP names: the project\'s exports, or (N6) a Preset node\'s family', () => {
+    expect(exportZipName('Grand opening')).toBe('Grand-opening_exports.zip');
+    expect(exportZipName('Grand opening', 'App banner')).toBe('Grand-opening_App-banner.zip');
+    expect(exportZipName('Grand opening', '  ')).toBe('Grand-opening_exports.zip');
   });
 });
 

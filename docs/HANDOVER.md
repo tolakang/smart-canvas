@@ -49,6 +49,8 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 **Preset node (D46, D51).**
 - Rows reorder by their grip. Add a size from presets or as a custom W×H.
 - The **eye** hides that size's Preview on the board (`PresetSet.hidden`; it still exports). The **trash** removes the size.
+- **Export** (N6) opens the export dialog on the node's sizes only (hidden ones included unless "Include hidden previews" is unticked) and downloads one ZIP named `<project>_<family>.zip` once all are done (`exportZipName(project, family)`).
+- **Save as team preset** (D54) saves the sizes as a team preset family.
 - Row wires have no ✂ badge.
 
 **Preview.**

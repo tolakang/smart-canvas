@@ -129,6 +129,6 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - N3 — **Done (D53).** Several Khmer / English pairs in one Headline node (today: one pair per node; add another node).
 - N4 — **Done.** Placement: a Preset node added by right-click lays its Previews out clear of other nodes (as + Add does under the group); "tidy board" action.
 - N5 — **Done (D54).** Preset families as data: a `family` field on presets (team presets join a family) instead of parsing names; save a custom Preset node as a team family.
-- N6 — Export from a Preset node: one ZIP named by the family; hidden Previews included by default, toggle to skip.
+- N6 — **Done.** Export from a Preset node: one ZIP named by the family; hidden Previews included by default, toggle to skip.
 - N7 — Resizes snap (moves already do); snapping between layouts' guides.
 

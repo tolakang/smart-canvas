@@ -3,7 +3,8 @@
  * errors; download each file or all as a ZIP (T6.6).
  * D31 hybrid (T11.1): each file is made in the user's browser when exportRoute allows it and the browser
  * passes the feature check, else by the export worker; a file that fails in the browser is made on the
- * server instead. "Download all" zips every finished file in the browser.
+ * server instead. "Download all" zips every finished file in the browser. N6: from a Preset node, its sizes only
+ * (hidden Previews included unless unticked), downloaded as one ZIP named by its family once all are done.
  */
 import {
   EXPORT_FORMATS,
@@ -12,6 +13,7 @@ import {
   exportRoute,
   exportZipName,
   LIMITS,
+  presetSets,
   type ExportFormat,
   type ExportJob,
   type ExportOptions,
@@ -43,9 +45,13 @@ interface Row {
   fellBack?: boolean;
 }
 
-export function ExportDialog(props: { teamId: string; projectId: string; doc: ProjectDoc; layoutDeps: LayoutDeps | null; initialOutputs?: string[]; onClose: () => void }) {
+export function ExportDialog(props: { teamId: string; projectId: string; doc: ProjectDoc; layoutDeps: LayoutDeps | null; initialOutputs?: string[]; presetSet?: string; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const { doc } = props;
+  /** N6: exporting a Preset node — its sizes only, hidden ones included unless unticked, one ZIP named by its family. */
+  const set = props.presetSet ? presetSets(doc).find((s) => s.id === props.presetSet) : undefined;
+  const hidden = new Set(set?.hidden ?? []);
+  const listed = set ? set.outputs.flatMap((id) => doc.outputs.find((o) => o.id === id) ?? []) : doc.outputs;
   const base = `/teams/${props.teamId}/projects/${props.projectId}/exports`;
   const [selected, setSelected] = useState<string[]>(() => props.initialOutputs ?? doc.outputs.map((o) => o.id));
   const [format, setFormat] = useState<ExportFormat>('png');
@@ -170,7 +176,7 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
       const url = URL.createObjectURL(new Blob([zipStore(entries)], { type: 'application/zip' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = exportZipName(doc.name);
+      a.download = exportZipName(doc.name, set?.label);
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
@@ -181,6 +187,14 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
   }
 
   const done = rows?.filter((r) => r.status === 'done') ?? [];
+  // N6: a Preset node's export downloads its ZIP once every size has finished.
+  const finished = !!rows && rows.length > 0 && rows.every((r) => r.status === 'done' || r.status === 'failed');
+  const zipped = useRef(false);
+  useEffect(() => {
+    if (!set || !finished || zipped.current || done.length === 0) return;
+    zipped.current = true;
+    void downloadAll(done);
+  });
   const inBrowserNow = !!props.layoutDeps && browserExportSupported();
   const plan = inBrowserNow
     ? doc.outputs.filter((o) => selected.includes(o.id)).reduce((n, o) => n + (exportRoute(o, format, options()) === 'browser' ? 1 : 0), 0)
@@ -194,18 +208,24 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
           <form onSubmit={start}>
             <fieldset className="sc-export__outputs">
               <legend>Outputs</legend>
-              {doc.outputs.length === 0 && <p className="sc-muted">Add an output first.</p>}
-              {doc.outputs.map((o) => (
+              {listed.length === 0 && <p className="sc-muted">Add an output first.</p>}
+              {listed.map((o) => (
                 <label key={o.id}>
                   <input
                     type="checkbox"
                     checked={selected.includes(o.id)}
                     onChange={(e) => setSelected((s) => (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)))}
                   />
-                  {o.label} <span className="sc-muted">{o.size.width} × {o.size.height} {o.size.unit}</span>
+                  {o.label} <span className="sc-muted">{o.size.width} × {o.size.height} {o.size.unit}{hidden.has(o.id) ? ' · hidden on the board' : ''}</span>
                 </label>
               ))}
             </fieldset>
+            {set && hidden.size > 0 && (
+              <label className="sc-check">
+                <input type="checkbox" checked={[...hidden].every((id) => selected.includes(id))} onChange={(e) => setSelected((s) => (e.target.checked ? [...s.filter((id) => !hidden.has(id)), ...hidden] : s.filter((id) => !hidden.has(id))))} /> Include hidden
+                previews ({hidden.size})
+              </label>
+            )}
             <label>
               Format
               <select value={format} onChange={(e) => setFormat(e.target.value as ExportFormat)}>
@@ -298,9 +318,9 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
               </p>
             )}
             <div className="sc-row">
-              {done.length > 1 && (
+              {(done.length > 1 || (set && done.length > 0)) && (
                 <button type="button" className="sc-button" disabled={zipping} onClick={() => void downloadAll(done)}>
-                  {zipping ? 'Making ZIP…' : `Download all (ZIP, ${done.length})`}
+                  {zipping ? 'Making ZIP…' : set ? `Download ${set.label} (ZIP, ${done.length})` : `Download all (ZIP, ${done.length})`}
                 </button>
               )}
               <button type="button" onClick={() => ref.current?.close()}>
