@@ -47,6 +47,7 @@ const sourceProps = {
     kind: { enum: ['image', 'vector', 'text', 'fill'] },
     behavesLike: { enum: ['background', 'subject', 'text', 'logo', 'decoration'] },
     visible: { type: 'boolean' },
+    locked: { const: true }, // D50
     content: { type: 'object', required: ['kind'], properties: { kind: { enum: ['image', 'vector', 'text', 'fill'] } } },
     libraryItemId: str,
     board: point,
@@ -75,6 +76,7 @@ const output = {
     frozen: { type: 'object' },
     layers: { type: 'array', maxItems: LIMITS.maxSources, items: id },
     transforms: layerTransforms,
+    layout: { enum: ['square', 'vertical', 'horizontal'] }, // D50
     board: point,
   },
 } as const;

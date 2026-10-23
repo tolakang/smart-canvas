@@ -156,13 +156,13 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
         else onClose();
         return;
       }
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selected && onDelete && !readOnly) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selected && onDelete && !readOnly && !selectedSource?.locked) {
         e.preventDefault();
         onDelete(selected);
         return;
       }
       const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-      if (!dir || !selected || !selectedItem || readOnly) return;
+      if (!dir || !selected || !selectedItem || readOnly || selectedSource?.locked) return;
       e.preventDefault();
       const step = e.shiftKey ? NUDGE_STEP.shift : NUDGE_STEP.normal;
       const f = selectedItem.frame;
@@ -182,7 +182,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
       window.removeEventListener('keyup', onUp);
       window.removeEventListener('blur', onBlur);
     };
-  }, [selected, selectedItem, readOnly, onCommit, onDelete, onClose, zoomAt]);
+  }, [selected, selectedItem, selectedSource, readOnly, onCommit, onDelete, onClose, zoomAt]);
 
   /**
    * The layers under a point, front first (T8.6). Looks through the selection box and its handles,
@@ -193,7 +193,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     for (const el of document.elementsFromPoint(x, y)) {
       if (!canvasEl.current?.contains(el)) continue;
       const id = (el as HTMLElement).closest<HTMLElement>('.sc-render [data-source-id]')?.dataset.sourceId;
-      if (id && !ids.includes(id)) ids.push(id);
+      // D50: a locked layer is not picked on the canvas; a press goes through to the one behind it.
+      if (id && !ids.includes(id) && !layerList.find((s) => s.id === id)?.locked) ids.push(id);
     }
     return ids;
   };
@@ -257,7 +258,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
   });
 
   // One transform box per selected layer, picking up its history from this session.
-  const editable = !!selectedFrame && !readOnly;
+  const editable = !!selectedFrame && !readOnly && !selectedSource?.locked;
   useLayoutEffect(() => {
     const frame = latest.current.frame;
     if (!selected || !editable || !frame || !canvasEl.current || !control.current) return;

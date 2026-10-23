@@ -140,6 +140,15 @@ export function setSourceVisible(doc: ProjectDoc, id: string, visible: boolean):
   return update(doc, id, (s) => ({ ...s, visible }));
 }
 
+/** D50: locks / unlocks a layer in every layout. */
+export function setSourceLocked(doc: ProjectDoc, id: string, locked: boolean): SourceResult {
+  return update(doc, id, (s) => {
+    const { locked: _was, ...rest } = s;
+    void _was;
+    return locked ? { ...rest, locked: true } : rest;
+  });
+}
+
 /**
  * Copies a source (content, behaviour, visibility) directly in front of the original in every composition it
  * is a row of. Where the original is wired, so is the copy, at the same spot (T8.1: duplicate = "the same

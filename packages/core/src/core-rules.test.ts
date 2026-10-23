@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { addCoreRule, coreRules, deleteCoreRule, guideRows, layerComp, layerRule, layerRuleText, setCoreRuleComposition } from './core-rules';
+import { addCoreRule, coreRules, deleteCoreRule, guideRows, layerComp, layerRule, layerRuleText, setCoreRuleComposition, setOutputLayout } from './core-rules';
+import { guideFor } from './guides';
+import { canvasMetrics } from './model';
+import { masterScene } from './render';
 import { addComposition, deleteComposition } from './compositions';
 import { MAIN } from './graph';
 import { addGuides } from './guides';
@@ -47,25 +50,38 @@ describe('Core Rule nodes (D47)', () => {
     expect(layerRuleText({ kind: 'stretch', axis: 'x' })).toBe('Stretches edge to edge across');
   });
 
-  it('core preset guide: the master holds its own shape; guides the others, with the outputs using each (D42)', () => {
+  it('core preset guide: each output in the section closest to its shape, or the one chosen for it (D42, D50)', () => {
     const p = project();
     const base: ProjectDoc = {
       ...p,
       outputs: [output({ id: 'sq' }), output({ id: 'tall', size: { width: 1080, height: 1920, unit: 'px' } }), output({ id: 'wide', size: { width: 728, height: 90, unit: 'px' } })],
       edges: [...p.edges, ...['sq', 'tall', 'wide'].map((o) => ({ id: `w-${o}`, from: MAIN, to: o, kind: 'composition' as const }))],
     };
-    expect(guideRows(base, MAIN).map((r) => [r.family, r.composition?.id, r.outputs])).toEqual([
-      ['square', MAIN, 3],
-      ['vertical', undefined, 0],
-      ['horizontal', undefined, 0],
+    const rows = (d: ProjectDoc) => guideRows(d, MAIN).map((r) => [r.family, r.composition?.id, r.outputs.map((o) => o.id)]);
+    expect(rows(base)).toEqual([
+      ['square', MAIN, ['sq']],
+      ['vertical', undefined, ['tall']],
+      ['horizontal', undefined, ['wide']],
     ]);
-    const doc = ok(addGuides(base, MAIN, { vertical: 'gv', horizontal: 'gh' }));
-    expect(guideRows(doc, MAIN).map((r) => [r.family, r.composition?.id, r.outputs])).toEqual([
-      ['square', MAIN, 1],
-      ['vertical', 'gv', 1],
-      ['horizontal', 'gh', 1],
+    // Assigning the wide banner to the vertical layout adds that layout; the banner now follows it.
+    const doc = ok(setOutputLayout(base, 'wide', 'vertical', 'gv'));
+    expect(rows(doc)).toEqual([
+      ['square', MAIN, ['sq']],
+      ['vertical', 'gv', ['tall', 'wide']],
+      ['horizontal', undefined, []],
     ]);
+    expect(guideRows(doc, MAIN)[1]?.outputs.map((o) => o.chosen)).toEqual([false, true]);
+    expect(guideFor(doc, MAIN, canvasMetrics(doc.outputs[2] ?? output()).trim, 'vertical')?.id).toBe('gv');
+    // Back to auto.
+    expect(rows(ok(setOutputLayout(doc, 'wide', null, 'x')))[2]).toEqual(['horizontal', undefined, ['wide']]);
     // A guide's node shows its master's rows.
     expect(guideRows(doc, 'gv')).toEqual(guideRows(doc, MAIN));
+  });
+
+  it('a layout of the master draws the master’s layers, at its own positions or the master’s (D50)', () => {
+    const doc = ok(addGuides(project(), MAIN, { vertical: 'gv' }));
+    const withNew = { ...doc, compositions: doc.compositions.map((c) => (c.id === MAIN ? { ...c, placements: { ...c.placements, extra: { x: 0.1, y: 0.1, w: 0.2, h: 0.2 } } } : c)) };
+    const ids = masterScene(withNew, 'gv').items.map((i) => i.sourceId).sort();
+    expect(ids).toEqual(masterScene(withNew, MAIN).items.map((i) => i.sourceId).sort());
   });
 });

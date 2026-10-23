@@ -9,13 +9,13 @@ import {
   addGuides,
   compositionHealth,
   GUIDE_FAMILIES,
-  GUIDE_LABEL,
   guideRows,
   LAYER_GROUP_LABEL,
   layerComp,
   layerRule,
   layerRuleText,
   moveLayerGroup,
+  setOutputLayout,
   wiredLayers,
   type GuideFamily,
   type LayerGroup,
@@ -30,6 +30,7 @@ import { Icon } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 const GROUP_DRAG = 'application/x-sc-layer-group';
+const OUTPUT_DRAG = 'application/x-sc-output-layout';
 const FAMILY_LABEL: Record<GuideFamily, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
 
 export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
@@ -38,6 +39,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
   const health = useMemo(() => compositionHealth(doc, compositionId, missingFonts), [doc, compositionId, missingFonts]);
   const [panel, setPanel] = useState<'preset' | 'layout' | null>(null);
   const [dropAt, setDropAt] = useState<number | null>(null);
+  const [overFamily, setOverFamily] = useState<GuideFamily | null>(null);
   const { groups, guides, rules } = useMemo(() => {
     const wired = wiredLayers(doc, compositionId);
     const groups = layerComp(doc, compositionId).map((g) => ({ ...g, layers: g.layers.filter((l) => wired.has(l.id)) }));
@@ -133,14 +135,49 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
           </button>
         </div>
         {panel === 'preset' && (
-          <ul className={`sc-rule__guides ${NO_CANVAS}`} aria-label="Core preset guide">
+          // D50: each output in its layout's section (closest shape, or as chosen); drag one into another section.
+          <div className={`sc-rule__sections ${NO_CANVAS}`} role="list" aria-label="Core preset guide">
             {guides.map((g) => (
-              <li key={g.family} data-family={g.family}>
-                <span>{GUIDE_LABEL[g.family].replace(' guide', '')}</span>
-                <span className="sc-muted">{g.composition ? `${g.outputs} ${g.outputs === 1 ? 'output' : 'outputs'}` : 'not added'}</span>
-              </li>
+              <section
+                key={g.family}
+                role="listitem"
+                data-family={g.family}
+                aria-label={`${FAMILY_LABEL[g.family]} layout`}
+                className={`sc-rule__section-drop${overFamily === g.family ? ' sc-rule__section-drop--over' : ''}`}
+                onDragOver={(e) => {
+                  if (readOnly || !e.dataTransfer.types.includes(OUTPUT_DRAG)) return;
+                  e.preventDefault();
+                  setOverFamily(g.family);
+                }}
+                onDragLeave={() => setOverFamily(null)}
+                onDrop={(e) => {
+                  const id = e.dataTransfer.getData(OUTPUT_DRAG);
+                  setOverFamily(null);
+                  if (!id) return;
+                  e.preventDefault();
+                  run((d) => setOutputLayout(d, id, g.family, newId()));
+                }}
+              >
+                <h4 className="sc-rule__section-title">
+                  {FAMILY_LABEL[g.family]}
+                  <span className="sc-muted">{g.composition ? '' : ' · follows the closest layout until opened'}</span>
+                </h4>
+                <ul className="sc-rule__chips">
+                  {g.outputs.map((o) => (
+                    <li key={o.id} className={`sc-chip sc-rule__chip${o.chosen ? ' sc-rule__chip--chosen' : ''}`} draggable={!readOnly} onDragStart={(e) => e.dataTransfer.setData(OUTPUT_DRAG, o.id)} data-output={o.id} title={o.chosen ? 'Chosen by hand' : 'Closest to its shape'}>
+                      {o.label}
+                      {o.chosen && !readOnly && (
+                        <button type="button" className="sc-rule__chip-reset" aria-label={`${o.label}: back to the closest layout`} title="Back to the closest layout" onClick={() => run((d) => setOutputLayout(d, o.id, null, newId()))}>
+                          ×
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                  {g.outputs.length === 0 && <li className="sc-muted">No outputs</li>}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
         )}
         {panel === 'layout' && (
           <ul className={`sc-rule__layers ${NO_CANVAS}`} aria-label="Core auto layout guide">
