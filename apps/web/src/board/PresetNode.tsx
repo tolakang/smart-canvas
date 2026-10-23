@@ -14,6 +14,7 @@ import { setRowHandle, type SetFlowNode } from './flow';
 import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { presetSettings } from './OutputNode';
+import { TOUCH_NO_PAN } from './pinch';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 const ROW_DRAG = 'application/x-sc-preset-row';
@@ -126,7 +127,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           >
             {/* Only the grip drags the row (the row's handle starts a wire). */}
             {!readOnly && (
-              <span className="sc-port__grip" aria-hidden="true" draggable onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)} title="Drag to re-order">
+              <span className={`sc-port__grip ${TOUCH_NO_PAN}`} aria-hidden="true" draggable onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)} title="Drag to re-order">
                 <Icon name="grip" />
               </span>
             )}

@@ -1,10 +1,10 @@
 /**
  * T13.6 end to end (D33): the workspace on a phone and a tablet. Phone: condensed top bar with a More menu,
- * library and inspector as bottom sheets, the Select tool by default (a finger drag on empty canvas selects several
- * panels, then Group / Delete), long-press for the canvas menu, tap a port then a target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
+ * library and inspector as bottom sheets, the Select tool by default (D58: one finger moves the board, a selected
+ * panel moves under the finger, two fingers pinch and pan anywhere; Group / Delete), long-press for the canvas menu, tap a port then a target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import { addSource, connectSource, type ProjectDoc } from '@smart-canvas/core';
+import { addSource, connectSource, deleteSource, type ProjectDoc } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
@@ -96,28 +96,145 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     await expect.poll(async () => (await doc()).edges.some((e) => e.kind === 'layer' && e.from === 'bg2' && e.to === 'main'), { timeout: 15_000 }).toBe(true);
   }, 60_000);
 
-  it('phone: a finger drag on empty canvas draws a selection box; two panels selected show Group / Delete; a long press on a tool shows its tooltip', async () => {
+  /** The board's viewport transform (pan and zoom). */
+  const viewport = () => phone.evaluate(() => {
+    const m = new DOMMatrix(getComputedStyle(document.querySelector('.react-flow__viewport') as Element).transform);
+    return { x: m.e, y: m.f, zoom: m.a };
+  });
+  type Pt = { x: number; y: number };
+  /** A scripted touch gesture: each finger goes from its start to its end in `steps` moves. */
+  const touchDrag = async (fingers: { from: Pt; to: Pt }[], steps = 8) => {
+    const cdp = await phone.context().newCDPSession(phone);
+    const at = (i: number) => fingers.map((f, id) => ({ id, x: f.from.x + ((f.to.x - f.from.x) * i) / steps, y: f.from.y + ((f.to.y - f.from.y) * i) / steps }));
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(0) });
+    for (let i = 1; i <= steps; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(i) });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await cdp.detach();
+    // (The first tap right after a scripted touch drag is taken as part of it: wait like a person would.)
+    await phone.waitForTimeout(600);
+  };
+  const boxOf = async (sel: string) => {
+    const b = await phone.locator(sel).first().boundingBox();
+    if (!b) throw new Error(`no ${sel}`);
+    return b;
+  };
+  const MAIN = '.react-flow__node[data-id="main"]';
+  /** A point on the panel's title where a finger grabs the panel itself (not a port, button or other control). */
+  const grabPoint = (node: string) => phone.evaluate((sel) => {
+    const panel = document.querySelector(sel);
+    const title = panel?.querySelector('.sc-node__title')?.getBoundingClientRect();
+    if (!panel || !title) throw new Error(`no ${sel}`);
+    for (let fx = 0.1; fx < 1; fx += 0.1) {
+      const p = { x: title.x + title.width * fx, y: title.y + title.height / 2 };
+      const hit = document.elementFromPoint(p.x, p.y);
+      if (hit && hit.closest('.react-flow__node') === panel && !hit.closest('.react-flow__handle, button, input, .nodrag')) return p;
+    }
+    throw new Error(`no grab point on ${sel}`);
+  }, node);
+
+  it('phone (D58): one finger on empty canvas moves the board and selects nothing', async () => {
+    // The far-off Background 2 from the wiring test would make Fit zoom out until panels are a few px tall.
+    const cur = (await (await phone.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
+    const gone = deleteSource(cur.doc, 'bg2');
+    if (gone.ok) {
+      expect((await phone.request.put(url, { data: { rev: cur.rev, doc: gone.doc } })).status()).toBe(200);
+      await phone.reload();
+      await bar(phone).waitFor();
+    }
+    await phone.keyboard.press('Escape');
     await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
     await phone.waitForTimeout(400);
-    // A box around the top row's first two asset nodes, from empty canvas above-left of them.
-    const boxes = await phone.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>('.react-flow__node')].map((n) => ({ id: n.dataset.id ?? '', ...n.getBoundingClientRect().toJSON() as { x: number; y: number; width: number; height: number } })),
-    );
-    const row = boxes.filter((b) => b.id.startsWith('stk:') || b.id.startsWith('hl:')).sort((a, b) => a.x - b.x).slice(0, 2);
-    if (row.length < 2) throw new Error('no asset row');
-    // From empty canvas below-right of them (a touch close to a panel is moved onto it by the browser), up-left
-    // past their corner.
-    const from = { x: Math.max(...row.map((b) => b.x + b.width)) + 4, y: Math.max(...row.map((b) => b.y + b.height)) + 40 };
-    const to = { x: Math.min(...row.map((b) => b.x)) - 2, y: Math.min(...row.map((b) => b.y)) - 2 };
+    const pane = await boxOf('.react-flow__pane');
+    const from = { x: pane.x + 20, y: pane.y + pane.height - 120 };
     expect(await phone.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.classList.contains('react-flow__pane'), from)).toBe(true);
+    const v0 = await viewport();
+    await touchDrag([{ from, to: { x: from.x + 120, y: from.y - 80 } }]);
+    const v1 = await viewport();
+    expect(Math.round(v1.x - v0.x)).toBe(120);
+    expect(Math.round(v1.y - v0.y)).toBe(-80);
+    expect(await phone.locator('.react-flow__node.selected').count()).toBe(0);
+    // A finger that starts on a card's button moves the board too (and doesn't press it).
+    const edit = await boxOf(`${MAIN} button`);
+    const onButton = { x: edit.x + edit.width / 2, y: edit.y + edit.height / 2 };
+    await touchDrag([{ from: onButton, to: { x: onButton.x - 50, y: onButton.y + 40 } }]);
+    const v2 = await viewport();
+    expect(Math.round(v2.x - v1.x)).toBe(-50);
+    expect(await phone.getByRole('dialog').count()).toBe(0);
+    // Double-tap on empty canvas zooms in a step.
     const cdp = await phone.context().newCDPSession(phone);
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
-    for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from.x + ((to.x - from.x) * i) / 8, y: from.y + ((to.y - from.y) * i) / 8 }] });
+    const empty = { x: pane.x + 20, y: pane.y + pane.height - 120 };
+    for (let i = 0; i < 2; i++) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [empty] });
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await phone.waitForTimeout(80);
+    }
+    await cdp.detach();
+    await expect.poll(async () => (await viewport()).zoom / v2.zoom).toBeGreaterThan(1.5);
+  }, 60_000);
+
+  it('phone (D58): a finger on a panel not selected moves the board, not the panel; tap it, then the drag moves it', async () => {
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(400);
+    const board0 = (await doc()).compositions.find((c) => c.id === 'main')?.board;
+    const from = await grabPoint(MAIN);
+    const v0 = await viewport();
+    await touchDrag([{ from, to: { x: from.x + 60, y: from.y + 50 } }]);
+    const v1 = await viewport();
+    expect(Math.round(v1.x - v0.x)).toBe(60);
+    expect((await doc()).compositions.find((c) => c.id === 'main')?.board).toEqual(board0);
+    // Tap selects it; now the same drag moves the panel (and saves it), not the board.
+    const on = await grabPoint(MAIN);
+    await phone.touchscreen.tap(on.x, on.y);
+    await expect.poll(() => phone.locator(`${MAIN}.selected`).count()).toBe(1);
+    await phone.waitForTimeout(400);
+    // (A finger reports small steps; the panel follows once it has moved past the few px a tap may wobble.)
+    await touchDrag([{ from: on, to: { x: on.x + 60, y: on.y + 50 } }], 30);
+    expect(await viewport()).toEqual(v1);
+    await expect.poll(async () => {
+      const now = (await doc()).compositions.find((c) => c.id === 'main')?.board;
+      // About under the finger (the alignment guides may pull it a few px onto another panel's edge).
+      return now && board0 ? Math.abs((now.x - board0.x) * v1.zoom - 60) <= 16 && Math.abs((now.y - board0.y) * v1.zoom - 50) <= 16 : false;
+    }, { timeout: 15_000 }).toBe(true);
+    await phone.keyboard.press('ControlOrMeta+z');
+    await expect.poll(async () => (await doc()).compositions.find((c) => c.id === 'main')?.board, { timeout: 15_000 }).toEqual(board0);
+  }, 60_000);
+
+  it('phone (D58): two fingers pinch-zoom and pan, also with both fingers on a panel and its buttons', async () => {
+    await phone.keyboard.press('Escape');
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(400);
+    const pane = await boxOf('.react-flow__pane');
+    // Both fingers on the Layer Comp panel, one on its Edit button.
+    const panel = await boxOf(MAIN);
+    const edit = await boxOf(`${MAIN} button`);
+    const c = { x: Math.min(panel.x + panel.width / 2, pane.x + pane.width - 60), y: Math.min(panel.y + panel.height / 2, pane.y + pane.height - 60) };
+    const f1 = { x: edit.x + edit.width / 2, y: edit.y + edit.height / 2 };
+    const f2 = { x: 2 * c.x - f1.x, y: 2 * c.y - f1.y };
+    const v0 = await viewport();
+    // Spread to twice the distance about the same midpoint.
+    await touchDrag([{ from: f1, to: { x: 2 * f1.x - c.x, y: 2 * f1.y - c.y } }, { from: f2, to: { x: 2 * f2.x - c.x, y: 2 * f2.y - c.y } }]);
+    const v1 = await viewport();
+    expect(v1.zoom / v0.zoom).toBeGreaterThan(1.8);
+    expect(await phone.getByRole('dialog').count()).toBe(0); // the Edit button wasn't pressed
+    expect(await phone.locator('.react-flow__node.selected').count()).toBe(0);
+    // Two fingers moving together pan.
+    await touchDrag([{ from: { x: c.x - 30, y: c.y }, to: { x: c.x - 30, y: c.y + 90 } }, { from: { x: c.x + 30, y: c.y }, to: { x: c.x + 30, y: c.y + 90 } }]);
+    const v2 = await viewport();
+    expect(Math.round(v2.y - v1.y)).toBe(90);
+    expect(v2.zoom).toBeCloseTo(v1.zoom, 3);
+  }, 60_000);
+
+  it('phone: two panels selected show Group / Delete; a long press on a tool shows its tooltip', async () => {
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(400);
+    const cdp = await phone.context().newCDPSession(phone);
+    await phone.locator('.react-flow__node[data-id^="stk:"] .sc-node__title').first().tap();
+    const other = await grabPoint(MAIN);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [other] });
+    await phone.waitForTimeout(700);
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     const selbar = phone.getByRole('toolbar', { name: 'Selection' });
-    await selbar.waitFor();
-    expect(await selbar.getByText(/^\d+ selected$/).innerText()).toMatch(/^[2-9] selected$/);
-    // (The first tap right after a scripted touch drag is taken as part of it: wait like a person would.)
+    await selbar.getByText('2 selected').waitFor();
     await phone.waitForTimeout(600);
     await selbar.getByRole('button', { name: 'Group' }).tap();
     await expect.poll(async () => (await doc()).groups?.length, { timeout: 15_000 }).toBe(1);
@@ -154,17 +271,15 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     await phone.waitForTimeout(400);
     const cdp = await phone.context().newCDPSession(phone);
     const hold = async (sel: string) => {
-      const b = await phone.locator(sel).first().boundingBox();
-      if (!b) throw new Error(`no ${sel}`);
-      const at = [{ x: b.x + Math.min(30, b.width / 2), y: b.y + b.height / 2 }];
+      const at = [await grabPoint(sel)];
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at });
       await phone.waitForTimeout(700);
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
       await phone.waitForTimeout(600);
     };
-    await phone.locator('.react-flow__node-mainNode .sc-node__title').first().tap();
+    await phone.locator('.react-flow__node[data-id^="stk:"] .sc-node__title').first().tap();
     await expect.poll(() => phone.locator('.react-flow__node.selected').count()).toBe(1);
-    const other = '.react-flow__node[data-id^="stk:"] .sc-node__title';
+    const other = MAIN;
     await hold(other);
     const selbar = phone.getByRole('toolbar', { name: 'Selection' });
     await selbar.getByText('2 selected').waitFor();

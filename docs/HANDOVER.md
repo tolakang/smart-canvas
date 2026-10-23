@@ -1,6 +1,6 @@
 # Handover — 2026-10-23 (after #129)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D57**), `docs/BACKLOG.md` (P15–P19 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D58**), `docs/BACKLOG.md` (P15–P20 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -85,6 +85,8 @@ New projects come from `createBoardProject` (API `POST /projects`).
 **Export:** files are made in the browser when they can be (D31). A multi-file export over 40 million raster pixels is made on the server and its ZIP streamed by the API, named by the Preset node's family (M6, `zipOnServer`, `GET …/exports/zip?ids=…&set=…`).
 
 **Size presets dialog:** sizes by group plus "Preset node families" with their sizes; admins rename or delete a team family as a whole (M4, `PUT` / `DELETE /teams/:teamId/preset-families/:family`).
+
+**Touch (D58, T20.1).** One finger moves the board (empty canvas, panels not selected, their buttons: `noPanClassName` is `TOUCH_NO_PAN` on touch, so a card's `nopan` counts with a mouse only); a tap selects, a selected panel follows the finger (`flowNodes` makes unselected panels non-draggable on touch, `nodeDragThreshold` 4); two fingers pinch and pan anywhere (`usePinch` in `board/pinch.ts`, capture phase, locked until every finger is up); double-tap zooms in. In e2e, Chrome moves a touch onto a control near it: grab panels at a point with no control within ~10 px (`grabPoint` in `responsive.e2e.test.ts`), and keep Fit from zooming out to tiny panels.
 
 **Canvas tools (T16.1, T19, D57).** Shift-click adds a panel, Esc clears, Ctrl/⌘+A selects all, arrows nudge (saved, one undo step per run), holding Space is Hand while held (`BoardKeys` in `board-keys.tsx`), and on touch a long-press on a panel adds or removes it (`useLongPress(…, onPanel)` in `ui/long-press.ts`). Select is the default on every device: click / tap selects, drag moves a panel, a drag on empty canvas selects several (on touch, finger panning is off in Select so React Flow can draw the box; two fingers pan and pinch), and two or more selected show the selection bar (Group / Delete / clear). Hand moves the board only (`nodesDraggable` / `elementsSelectable` off). Toolbar buttons have tooltips (`ToolButton` in `CanvasToolbar.tsx`: hover 350 ms, keyboard focus, long press on touch). Wire badges use the owner's scissor icon (`ScissorIcon` in `RoutedEdge.tsx`). Groups take any panel id (`groups.ts` `exists`); a group's export includes its Preset nodes' sizes. Grid snap on: drops land on the 16 px grid and the alignment guides step aside; Alt skips snapping (`altRef` in `Board.tsx`); the dots show the state; the grid button shows on phones. Tidy (Shift+T) arranges the selection (`tidySelectionPositions`) or the board, on the grid when snap is on, glides (`sc-board__flow--tidying`) and shows a notice with Undo (`sc-board__toast`).
 

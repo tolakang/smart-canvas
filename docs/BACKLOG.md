@@ -151,6 +151,10 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T19.1 — **Done.** Select, Hand and keys: Shift-click / Shift-drag add to the selection, Esc clears, Ctrl/⌘+A selects all; a touch long-press on a panel adds or removes it; holding Space is Hand while held (the toolbar shows it); the Hand cursor; arrow-key nudges saved and undoable (one step per run).
 - T19.2 — **Done.** Grid snap and Tidy: grid on → panels land on the 16 px grid and the alignment guides step aside, Alt skips snapping for one move, the dots show the grid's state, the grid button on phones; Tidy arranges the selection (two or more panels) or the board, lands on the grid, glides into place (not with reduced motion), says what it did with Undo, Shift+T.
 
+## P20 — The board on touch screens (owner, 2026-10-23: "go ahead" on the mobile plan; D58)
+- T20.1 — **Done.** Move and zoom: one finger moves the board (empty canvas, panels not selected, their buttons); tap selects, a selected panel follows the finger; two fingers pinch and pan anywhere; double-tap zooms in.
+- T20.2 — Select: long-press opens the menu again (D33); a Select mode on phones (taps add or remove, a drag draws a box; Group, Delete, Done); the phone toolbar shows Select mode, Fit, grid and Tidy.
+
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q1 — Multi-page PDFs: pick which page to use when uploading (today the first page; D52, D55). The API converts the chosen page (`pdftocairo -f N -l N`); the browser fallback renders the same page.
 - Q2 — Preset nodes and team families: after a family is renamed in the Size presets dialog (M4), offer to rename the Preset nodes that came from it, and to add sizes the family gained. Today nodes on boards are left as they were.
