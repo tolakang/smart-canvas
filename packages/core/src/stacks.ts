@@ -13,11 +13,6 @@ export function assetStacks(doc: ProjectDoc): AssetStack[] {
   return (doc.stacks ?? []).map((st) => (st.items.every((i) => ids.has(i)) ? st : { ...st, items: st.items.filter((i) => ids.has(i)) }));
 }
 
-/** The card an input is drawn in, if any. */
-export function stackOf(doc: ProjectDoc, sourceId: string): AssetStack | undefined {
-  return assetStacks(doc).find((st) => st.items.includes(sourceId));
-}
-
 const withStacks = (doc: ProjectDoc, stacks: AssetStack[]): ProjectDoc => {
   const next = { ...doc };
   if (stacks.length) next.stacks = stacks;
@@ -161,9 +156,4 @@ export function deleteStack(doc: ProjectDoc, stackId: string): SourceResult {
     if (r.ok) next = r.doc;
   }
   return { ok: true, doc: withStacks(next, assetStacks(next).filter((st) => st.id !== stackId)) };
-}
-
-/** Places a card on the board. */
-export function moveStack(doc: ProjectDoc, stackId: string, board: { x: number; y: number }): SourceResult {
-  return editStack(doc, stackId, (st) => ({ ...st, board: { x: Math.round(board.x), y: Math.round(board.y) } }));
 }

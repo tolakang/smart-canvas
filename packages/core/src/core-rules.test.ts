@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { addCoreRule, coreRules, deleteCoreRule, guideRows, layerComp, layerRule, layerRuleText, setCoreRuleComposition, setOutputLayout } from './core-rules';
+import { guideRows, layerComp, layerRule, layerRuleText, setOutputLayout } from './core-rules';
 import { guideFor } from './guides';
 import { canvasMetrics } from './model';
 import { masterScene } from './render';
-import { addComposition, deleteComposition } from './compositions';
 import { MAIN } from './graph';
 import { addGuides } from './guides';
 import { output, project } from './layout/test-doc';
@@ -15,18 +14,7 @@ const ok = (r: SourceResult): ProjectDoc => {
   return r.doc;
 };
 
-describe('Core Rule nodes (D47)', () => {
-  it('adds, retargets and deletes a node; a node whose master preview is gone is dropped', () => {
-    let doc = ok(addCoreRule(project(), { id: 'r1', board: { x: 10.4, y: -3.6 } }));
-    expect(coreRules(doc)).toEqual([{ id: 'r1', composition: MAIN, board: { x: 10, y: -4 } }]);
-    expect(addCoreRule(doc, { id: 'r2', board: { x: 0, y: 0 }, composition: 'nope' }).ok).toBe(false);
-    doc = ok(addComposition(doc, { id: 'c2', label: 'B', board: { x: 0, y: 0 } }));
-    doc = ok(setCoreRuleComposition(doc, 'r1', 'c2'));
-    expect(coreRules(doc)[0]?.composition).toBe('c2');
-    expect(coreRules(ok(deleteComposition(doc, 'c2')))).toEqual([]);
-    expect(ok(deleteCoreRule(doc, 'r1')).coreRules).toBeUndefined();
-  });
-
+describe('Core Rule (D47, D49)', () => {
   it('layer comp: the rows in their groups, front to back (D45)', () => {
     const groups = layerComp(project(), MAIN);
     expect(groups.map((g) => [g.group, g.layers.map((l) => l.id)])).toEqual([

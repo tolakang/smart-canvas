@@ -25,12 +25,6 @@ export function addComposition(doc: ProjectDoc, spec: { id: string; label: strin
   return { ok: true, doc: { ...doc, compositions: [...doc.compositions, newComposition(spec.id, spec.label.trim() || 'Master preview', board, spec.size)] } };
 }
 
-export function renameComposition(doc: ProjectDoc, id: string, label: string): SourceResult {
-  if (!compositionById(doc, id)) return { ok: false, error: 'not_found' };
-  const clean = label.trim();
-  return { ok: true, doc: clean ? withComposition(doc, id, (c) => ({ ...c, label: clean })) : doc };
-}
-
 export function setCompositionSize(doc: ProjectDoc, id: string, size: Size): SourceResult {
   if (!compositionById(doc, id)) return { ok: false, error: 'not_found' };
   if (!(size.width > 0 && size.height > 0 && size.width <= 100_000 && size.height <= 100_000)) return { ok: false, error: 'invalid' };

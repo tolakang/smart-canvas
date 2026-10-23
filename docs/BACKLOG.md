@@ -123,12 +123,20 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T14.10 — Layouts share the master's layers; lock; Core Preset Guide drag-to-assign (D50).
 - T14.11 — Preset rows: eye shows / hides a Preview; trash; no ✂ on row wires (D51).
 
-## Next — dev plan (the owner started N1–N7, in order)
-- N1 — **Done.** Inspector clean-up: the group shows "Layer Comp" (not "Master preview"); drop the "Layout guides" section (the Layer Comp buttons and Core Preset Guide replace it); Preview and asset-node inspectors match the page-3 names.
-- N2 — **Done (D52).** PDF uploads in the Logo, Headline, Image and Background nodes (owner: "later"): first page rasterised or kept vector, magic-byte check, same 50 MB cap.
-- N3 — **Done (D53).** Several Khmer / English pairs in one Headline node (today: one pair per node; add another node).
-- N4 — **Done.** Placement: a Preset node added by right-click lays its Previews out clear of other nodes (as + Add does under the group); "tidy board" action.
-- N5 — **Done (D54).** Preset families as data: a `family` field on presets (team presets join a family) instead of parsing names; save a custom Preset node as a team family.
-- N6 — **Done.** Export from a Preset node: one ZIP named by the family; hidden Previews included by default, toggle to skip.
-- N7 — **Done (resizes).** Resizes snap (moves already do): the edges a resize moves land on the canvas edges / centre lines and the other layers' edges / centres (`snapResize`); rotated or skewed boxes don't snap. Left for later: snapping between layouts' guides (needs a definition from the owner).
+## P15 — After the page-3 board (owner, 2026-10-23: "Start N1-N7 auto"; D52–D54)
+- T15.1 (N1) — Inspector speaks the page-3 board: "Layer Comp" with its three layouts, Preview, asset nodes by kind; no "Layout guides".
+- T15.2 (N2) — PDF uploads: the first page as a PNG in every picture slot (D52).
+- T15.3 (N3) — Several Khmer / English pairs in one Headline node (D53).
+- T15.4 (N4) — Preset nodes land clear of other nodes; Tidy board.
+- T15.5 (N5) — Preset families as data; Save as team preset (D54).
+- T15.6 (N6) — Export from a Preset node: one ZIP named by its family; hidden Previews optional.
+- T15.7 (N7) — Resizes snap like moves (axis-aligned layers).
+- Reset rule (owner, 2026-10-23): a reset never moves the element; the selection's Reset rotation / Reset transform buttons clear rotation / skew in place (a history-replay version, #115, was reverted in #116).
 
+## Next — dev plan (proposed; the owner picks and orders)
+- M1 — Snapping between layouts' guides (left from N7): needs the owner's definition first, e.g. "while editing the Vertical layout, a layer snaps to where it sits in the Square layout".
+- M2 — Resize snapping for rotated or skewed layers (snap their drawn bounds; today only axis-aligned layers snap when resized).
+- M3 — PDF pages kept as vector (D52 rasterises the first page): needs a safe PDF → SVG path that keeps fonts and passes the SVG sanitiser.
+- M4 — Team preset families in the Presets dialog: rename or delete a whole family; see which sizes a family holds.
+- M5 — Retire engine features the board no longer offers (process nodes, nested compositions, output-only layers; D49 kept them in the engine and export, `boardStructure` deletes process nodes on open): keep or remove them from the engine, export and API schema. Owner decision (changes D49).
+- M6 — Large Preset exports: a family with many big sizes zips in the browser today; offer a server-side ZIP when it is large.

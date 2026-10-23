@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** BACKLOG P14 (page-3 board) is done; the owner started BACKLOG **Next** (N1–N7), in order. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
+**Next:** P14 (page-3 board) and P15 (N1–N7) are done; the proposed next work is BACKLOG **Next** (M1–M6), to be chosen by the owner. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -125,12 +125,21 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T14.11 — Preset row eye / trash (D51) — [#106](https://github.com/tolakang/smart-canvas/pull/106)
 - Also merged: layout v3 (#90, #91, #97), editor fixes (#94, #95), JPG 4:4:4 + "edited" tag (#96).
 
-## Next (see BACKLOG)
-- [x] N1 — Inspector clean-up — [#108](https://github.com/tolakang/smart-canvas/pull/108)
-- [x] N2 — PDF uploads (D52) — [#109](https://github.com/tolakang/smart-canvas/pull/109)
-- [x] N3 — Several KH/EN pairs per Headline node (D53) — [#110](https://github.com/tolakang/smart-canvas/pull/110)
-- [x] N4 — Preset placement / tidy board — [#111](https://github.com/tolakang/smart-canvas/pull/111)
-- [x] N5 — Preset families as data (D54) — [#112](https://github.com/tolakang/smart-canvas/pull/112)
-- [x] N6 — Export from a Preset node — [#113](https://github.com/tolakang/smart-canvas/pull/113)
-- [x] N7 — Resize snapping — [#114](https://github.com/tolakang/smart-canvas/pull/114)
+## P15 After the page-3 board (N1–N7)
+- [x] T15.1 (N1) — Inspector clean-up — [#108](https://github.com/tolakang/smart-canvas/pull/108)
+- [x] T15.2 (N2) — PDF uploads (D52) — [#109](https://github.com/tolakang/smart-canvas/pull/109)
+- [x] T15.3 (N3) — Several KH/EN pairs per Headline node (D53) — [#110](https://github.com/tolakang/smart-canvas/pull/110)
+- [x] T15.4 (N4) — Preset placement / Tidy board — [#111](https://github.com/tolakang/smart-canvas/pull/111)
+- [x] T15.5 (N5) — Preset families as data (D54) — [#112](https://github.com/tolakang/smart-canvas/pull/112)
+- [x] T15.6 (N6) — Export from a Preset node — [#113](https://github.com/tolakang/smart-canvas/pull/113)
+- [x] T15.7 (N7) — Resize snapping — [#114](https://github.com/tolakang/smart-canvas/pull/114)
+- Reset buttons: history replay tried in #115, reverted in #116 (owner: the in-place reset was right).
+- Clean-up of code the page-3 board no longer reaches, and of these docs — [#117](https://github.com/tolakang/smart-canvas/pull/117)
 
+## Next (see BACKLOG; proposals, the owner picks)
+- [ ] M1 — Snapping between layouts' guides (needs a definition)
+- [ ] M2 — Resize snapping for rotated / skewed layers
+- [ ] M3 — PDF pages kept as vector
+- [ ] M4 — Team preset families in the Presets dialog
+- [ ] M5 — Retire process nodes / nesting / output-only layers from the engine (owner decision)
+- [ ] M6 — Server-side ZIP for large Preset exports

@@ -14,9 +14,6 @@ export function presetSets(doc: ProjectDoc): PresetSet[] {
   return (doc.presetSets ?? []).map((s) => (s.outputs.every((o) => ids.has(o)) ? s : { ...s, outputs: s.outputs.filter((o) => ids.has(o)) }));
 }
 
-/** The set an output is a row of, if any. */
-export const setOf = (doc: ProjectDoc, outputId: string): PresetSet | undefined => presetSets(doc).find((s) => s.outputs.includes(outputId));
-
 const withSets = (doc: ProjectDoc, sets: PresetSet[]): ProjectDoc => {
   const next = { ...doc };
   if (sets.length) next.presetSets = sets;

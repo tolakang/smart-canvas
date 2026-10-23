@@ -16,8 +16,6 @@ import {
   orderLayers,
   addSource,
   connectOutputLayer,
-  connectProcessInput,
-  disconnectProcessInput,
   boardGroups,
   setEdgePoints,
   createGroup,
@@ -81,7 +79,6 @@ import {
   layerOfConnection,
   LAYER_OUT_HANDLE,
   OUTPUT_HANDLE,
-  processIdOfNode,
   syncNodes,
   withPositions,
   type BoardNode,
@@ -175,8 +172,6 @@ const edgeTypes = { routed: RoutedEdge };
 function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, port: number | undefined): SourceResult {
   const composition = compositionIdOfNode(target);
   if (composition) return connectSource(doc, sourceId, port, composition);
-  const processId = target ? processIdOfNode(target) : undefined;
-  if (processId) return connectProcessInput(doc, processId, sourceId);
   const outputId = target ? outputIdOfNode(target) : undefined;
   return outputId ? connectOutputLayer(doc, outputId, sourceId, port) : { ok: false, error: 'not_found' };
 }
@@ -184,8 +179,6 @@ function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, 
 function disconnectLayer(doc: ProjectDoc, sourceId: string, target: string): SourceResult {
   const composition = compositionIdOfNode(target);
   if (composition) return disconnectSource(doc, sourceId, composition);
-  const processId = processIdOfNode(target);
-  if (processId) return disconnectProcessInput(doc, processId);
   const outputId = outputIdOfNode(target);
   return outputId ? disconnectOutputLayer(doc, outputId, sourceId) : { ok: false, error: 'not_found' };
 }
@@ -644,8 +637,8 @@ function BoardCanvas(props: {
       return;
     }
     const targets = deletableNodes(docRef.current, picked.map((n) => n.id));
-    if (targets.length && window.confirm(deleteQuestion(targets))) run((d) => deleteNodes(d, targets, layoutDeps ?? undefined));
-  }, [run, layoutDeps, onEdgesDelete]);
+    if (targets.length && window.confirm(deleteQuestion(targets))) run((d) => deleteNodes(d, targets));
+  }, [run, onEdgesDelete]);
 
   /**
    * T8.5: every wire can be picked up by either end. Drop it on another valid handle to re-route it;
@@ -664,7 +657,7 @@ function BoardCanvas(props: {
       reconnectDone.current = true;
       const oldSource = layerOfConnection(old);
       const newSource = layerOfConnection(c);
-      if (oldSource && newSource && (inputToComposition(c) || inputToOutput(c) || processIdOfNode(c.target ?? ''))) {
+      if (oldSource && newSource && (inputToComposition(c) || inputToOutput(c))) {
         // Same input to another row = move it to that row; another input onto this row = swap who feeds it.
         const port = portFromHandle(c.targetHandle);
         run((doc) => {

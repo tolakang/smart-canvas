@@ -3,7 +3,7 @@ import { addComposition } from './compositions';
 import { mainComposition, wiredLayers } from './graph';
 import type { ProjectDoc } from './model';
 import { createProjectDoc } from './project';
-import { addPicturesToStack, addStack, assetStacks, connectStack, deleteStack, dropGrid, moveStackItem, stackCompositions, stackOf } from './stacks';
+import { addPicturesToStack, addStack, assetStacks, connectStack, deleteStack, dropGrid, moveStackItem, stackCompositions } from './stacks';
 import { deleteSource, duplicateSource, type SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -30,7 +30,6 @@ describe('Assets cards (D40)', () => {
       expect(mainComposition(doc).placements[id]).toBeDefined();
     }
     expect(mainComposition(doc).layers.slice(0, 3)).toEqual(['a', 'b', 'c']);
-    expect(stackOf(doc, 'b')?.id).toBe('st');
   });
 
   it('one drop is laid out in a grid on the master, so every picture shows', () => {

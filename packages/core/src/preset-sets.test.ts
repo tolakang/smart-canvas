@@ -4,7 +4,7 @@ import { outputComposition } from './graph';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { deleteOutput, disconnectOutput, isOutputConnected } from './outputs';
-import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setOf, setPreviewHidden } from './preset-sets';
+import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setPreviewHidden } from './preset-sets';
 import type { SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -30,7 +30,6 @@ describe('Preset nodes (D46)', () => {
       ['GDN 728×90', { x: 1220, y: 760 }],
     ]);
     for (const o of ['g1', 'g2', 'g3']) expect(outputComposition(doc, o)).toBe('main');
-    expect(setOf(doc, 'g2')?.id).toBe('gdn');
   });
 
   it('adds sizes as rows, re-orders rows, and drops a deleted output\'s row', () => {

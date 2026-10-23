@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAIN, mainComposition, wiredLayers } from './graph';
-import { addLanguagePair, addPairRow, deletePair, deletePairRow, languagePairs, pairInputs, pairOf, setLanguage, unusedLanguageInputs } from './languages';
+import { addLanguagePair, addPairRow, deletePair, deletePairRow, languagePairs, pairInputs, setLanguage, unusedLanguageInputs } from './languages';
 import { computeLayout } from './layout';
 import { mockMeasure, output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
@@ -28,7 +28,6 @@ describe('Headline cards: Khmer / English (D44)', () => {
     ]);
     for (const id of ['hk', 'he']) expect(wiredLayers(doc, MAIN).has(id)).toBe(true);
     expect(mainComposition(doc).placements.hk).toEqual(mainComposition(doc).placements.he);
-    expect(pairOf(doc, 'he')?.id).toBe('h');
   });
 
   it('only the language in use is drawn — in outputs and on the master; switching swaps them', () => {
@@ -78,7 +77,6 @@ describe('Several pairs in one Headline card (N3)', () => {
     const at = mainComposition(doc).placements;
     expect(at.hk2?.y).toBeGreaterThan((at.hk?.y ?? 0) + (at.hk?.h ?? 0));
     expect(at.hk2).toEqual(at.he2);
-    expect(pairOf(doc, 'he2')?.id).toBe('h');
     expect([...unusedLanguageInputs(doc)].sort()).toEqual(['he', 'he2']);
     doc = ok(setLanguage(doc, 'h', 'en'));
     expect([...unusedLanguageInputs(doc)].sort()).toEqual(['hk', 'hk2']);

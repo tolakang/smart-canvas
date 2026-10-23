@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addComposition, deleteComposition, removeRow, renameComposition, setCompositionSize } from './compositions';
+import { addComposition, deleteComposition, removeRow, setCompositionSize } from './compositions';
 import { compositionById, layerOrder, outputComposition } from './graph';
 import { computeLayout } from './layout';
 import { mockMeasure } from './layout/test-doc';
@@ -47,12 +47,11 @@ describe('compositions (T12.3, D32)', () => {
     expect(computeLayout(doc, 'o', deps).items.map((i) => i.sourceId)).toEqual(['background', 'subject']);
   });
 
-  it('rename, resize, remove a row (not from main)', () => {
+  it('resize, remove a row (not from main)', () => {
     let doc = ok(addComposition(createProjectDoc('P'), { id: 'b', label: 'B' }));
     doc = ok(connectSource(doc, 'logo', undefined, 'b'));
-    doc = ok(renameComposition(doc, 'b', '  Story set '));
     doc = ok(setCompositionSize(doc, 'b', { width: 1080, height: 1920, unit: 'px' }));
-    expect(compositionById(doc, 'b')).toMatchObject({ label: 'Story set', size: { width: 1080, height: 1920, unit: 'px' } });
+    expect(compositionById(doc, 'b')).toMatchObject({ size: { width: 1080, height: 1920, unit: 'px' } });
     expect(setCompositionSize(doc, 'b', { width: 0, height: 10, unit: 'px' })).toEqual({ ok: false, error: 'invalid' });
     const removed = ok(removeRow(doc, 'b', 'logo'));
     expect(layerOrder(removed, 'b')).toEqual([]);

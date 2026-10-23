@@ -80,9 +80,3 @@ export function fitText(text: string, style: TextStyle, box: { w: number; h: num
   }
   return wrapAt(text, style, box, min, measure);
 }
-
-/** Snaps a size down onto the font grid, not below minFontPx. */
-export function gridSize(px: number): number {
-  const step = DEFAULTS.fontStepPx;
-  return Math.max(DEFAULTS.minFontPx, Math.floor(px / step + EPS) * step);
-}

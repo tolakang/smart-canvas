@@ -1,45 +1,16 @@
 /**
- * Core Rule nodes (D47, PDF page 3 "Core Rule" with "Core Preset Guide" and "Core Auto Layout Guide"): a board
- * node that explains how one master preview adapts — its layer comp groups (D45), its layout guides (D42) and
- * the auto layout rule each layer follows (D38). Only the node (its master and position) is stored; what it
- * shows is derived from the doc. Pure.
+ * What the Layer Comp + Core Rule group shows (D49, PDF page 3 "Core Rule" with "Core Preset Guide" and "Core
+ * Auto Layout Guide"): the master's layer comp groups (D45/D48), which layout each output uses (D42/D50) and the
+ * auto layout rule each layer follows (D38). All derived from the doc. Pure.
  */
-import { compositionById, MAIN, outputComposition } from './graph';
+import { compositionById, outputComposition } from './graph';
 import { addGuides, familyOfShape, GUIDE_FAMILIES, layoutOf, masterOf } from './guides';
 import { layerGroup, layerOrderOf, type LayerGroup } from './layer-order';
 import { languagePairs, pairInputs } from './languages';
 import { FILL_TOLERANCE, pinOf, type Pin } from './layout/grid';
-import { canvasMetrics, LIMITS, type Composition, type CoreRuleNode, type GuideFamily, type NFrame, type ProjectDoc } from './model';
+import { canvasMetrics, type Composition, type GuideFamily, type NFrame, type ProjectDoc } from './model';
 import { layerSources, type LayerSource } from './processes';
 import type { SourceResult } from './sources';
-
-/** The Core Rule nodes whose master preview still exists. */
-export const coreRules = (doc: ProjectDoc): CoreRuleNode[] => (doc.coreRules ?? []).filter((r) => compositionById(doc, r.composition));
-
-const withRules = (doc: ProjectDoc, rules: CoreRuleNode[]): ProjectDoc => {
-  const next = { ...doc };
-  if (rules.length) next.coreRules = rules;
-  else delete next.coreRules;
-  return next;
-};
-
-export function addCoreRule(doc: ProjectDoc, spec: { id: string; board: { x: number; y: number }; composition?: string }): SourceResult {
-  const composition = spec.composition ?? MAIN;
-  if (!compositionById(doc, composition)) return { ok: false, error: 'not_found' };
-  if (coreRules(doc).some((r) => r.id === spec.id)) return { ok: false, error: 'invalid' };
-  if (coreRules(doc).length >= LIMITS.maxCompositions) return { ok: false, error: 'limit' };
-  return { ok: true, doc: withRules(doc, [...coreRules(doc), { id: spec.id, composition, board: { x: Math.round(spec.board.x), y: Math.round(spec.board.y) } }]) };
-}
-
-export function setCoreRuleComposition(doc: ProjectDoc, id: string, composition: string): SourceResult {
-  if (!compositionById(doc, composition) || !coreRules(doc).some((r) => r.id === id)) return { ok: false, error: 'not_found' };
-  return { ok: true, doc: withRules(doc, coreRules(doc).map((r) => (r.id === id ? { ...r, composition } : r))) };
-}
-
-export function deleteCoreRule(doc: ProjectDoc, id: string): SourceResult {
-  if (!coreRules(doc).some((r) => r.id === id)) return { ok: false, error: 'not_found' };
-  return { ok: true, doc: withRules(doc, coreRules(doc).filter((r) => r.id !== id)) };
-}
 
 /** A composition's rows in their layer comp groups (D45, in the project's order D48), front first; empty groups included. */
 export function layerComp(doc: ProjectDoc, compositionId: string): { group: LayerGroup; layers: LayerSource[] }[] {

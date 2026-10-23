@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAIN, mainComposition, withComposition } from './graph';
-import { addGuides, detachGuide, familyOfShape, guideFor, guideSize, guidesOf } from './guides';
+import { addGuides, familyOfShape, guideFor, guideSize, guidesOf } from './guides';
 import { computeLayout } from './layout';
 import { expectFrame, mockMeasure, output, place, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
@@ -68,12 +68,6 @@ describe('layout guides (D42)', () => {
     // Without a placement on the guide, the master's position (through the grid) is used.
     doc = withComposition(doc, 'gv', (c) => ({ ...c, placements: Object.fromEntries(Object.entries(c.placements).filter(([k]) => k !== 'subject')) }));
     expectFrame(at(doc, 1080, 1920), at(place(project(), 'subject', subjectFrame), 1080, 1920) ?? { x: 0, y: 0, w: 0, h: 0 });
-  });
-
-  it('a detached guide is an ordinary master preview again (no longer picked)', () => {
-    const doc = ok(detachGuide(ok(addGuides(place(project(), 'subject', subjectFrame), MAIN, ids)), 'gv'));
-    expect(guidesOf(doc, MAIN).map((g) => g.id)).toEqual(['gh']);
-    expect(guideFor(doc, MAIN, { w: 1080, h: 1920 })?.id).toBe(MAIN);
   });
 });
 
