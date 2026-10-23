@@ -69,7 +69,7 @@ export interface TransformBoxOptions {
   snapMove?: (moved: TransformState) => { dx: number; dy: number; x: number[]; y: number[] } | null;
   /**
    * N7: resizes snap: given the box for a pointer position, return the pointer that lands its moving edges on the
-   * caller's guides and the lines to show, or null for no snap. Not called for rotated or skewed boxes.
+   * caller's guides and the lines to show, or null for no snap. Turned and leaned boxes snap their drawn bounds.
    */
   snapResize?: (resize: (at: Vec) => TransformState, at: Vec) => { at: Vec; x: number[]; y: number[] } | null;
 }
@@ -469,10 +469,9 @@ export class TransformBox {
     return this.snappedScale(start, at, (p) => scaleOp(start, edge, origin, p, scaleOpts));
   }
 
-  /** N7: a resize whose moving edges snap to the caller's guides (axis-aligned, unskewed boxes only). */
+  /** N7 / M2: a resize whose moving edges (of the drawn bounds, turned or leaned too) snap to the caller's guides. */
   private snappedScale(start: TransformState, at: Vec, op: (p: Vec) => TransformOp): TransformOp {
-    const aligned = Math.abs(start.shear) < 1e-6 && Math.abs(((start.rotation % 90) + 90) % 90) < 1e-6;
-    const snap = aligned ? (this.opts.snapResize?.((p) => applyOp(start, op(p)), at) ?? null) : null;
+    const snap = this.opts.snapResize?.((p) => applyOp(start, op(p)), at) ?? null;
     this.setGuides(snap ?? { x: [], y: [] });
     return op(snap?.at ?? at);
   }

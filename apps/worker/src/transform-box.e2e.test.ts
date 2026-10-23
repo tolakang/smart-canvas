@@ -157,6 +157,44 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     near(await placement(), before);
   }, 90_000);
 
+  it('M2: a turned layer snaps when resized — its drawn right edge lands on the canvas edge; the resets put it back', async () => {
+    const before = await placement();
+    await drag('rotate', 70, 40, 'Shift');
+    const turned = await placement();
+    const deg = (((turned.rotation ?? 0) % 90) + 90) % 90;
+    expect(deg).toBeGreaterThan(5);
+    expect(deg).toBeLessThan(85);
+    const canvas = await editor().locator('.sc-editor__canvas').boundingBox();
+    if (!canvas) throw new Error('no canvas');
+    const right = canvas.x + canvas.width;
+    const edge = async () => {
+      const b = await layer().boundingBox();
+      return b ? b.x + b.width : 0;
+    };
+    // Drag the e handle outward along the layer's own axis until the drawn right edge reaches the canvas edge.
+    const c = await handle('e');
+    const w = await handle('w');
+    const len = Math.hypot(c.x - w.x, c.y - w.y);
+    const dir = { x: (c.x - w.x) / len, y: (c.y - w.y) / len };
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    let snapped = false;
+    for (let i = 1; i < 400 && !snapped; i++) {
+      await page.mouse.move(c.x + dir.x * i * 1.5, c.y + dir.y * i * 1.5);
+      const e = await edge();
+      if (Math.abs(e - right) < 0.75 && (await editor().locator('.tb-guides line').count()) > 0) snapped = true;
+      if (e > right + 20) break;
+    }
+    await page.mouse.up();
+    await settle();
+    expect(snapped).toBe(true);
+    expect(Math.abs((await edge()) - right)).toBeLessThan(0.75);
+    expect((await placement()).rotation ?? 0).toBeCloseTo(turned.rotation ?? 0, 3);
+    await dbl('e');
+    await dbl('rotate');
+    near(await placement(), before);
+  }, 120_000);
+
   it('phone: a quick drag edits nothing; long-press then drag skews (a handle) and moves (the layer); a double-tap resets', async () => {
     // The same signed-in session, as a phone.
     const ctx = await stack.env.browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, storageState: await page.context().storageState() });

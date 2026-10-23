@@ -137,9 +137,11 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T16.1 — Canvas tools: every toolbar button has a tooltip (name, what it does, shortcut; hover, keyboard focus, long press on touch). Select is the default tool everywhere: click / tap selects, drag moves a panel, a drag on empty canvas (mouse or finger) selects several, and a selection bar offers Group / Delete. Hand moves the board only (panels don't move or get selected). Tidy board gets an "arrange" icon. Wire badges use the owner's scissor icon. Board groups accept every page-3 panel (asset, Headline and Preset nodes were refused).
 - T16.2 — Projects screen: templates as cards on top; search and sort; "+ New project" dialog (blank or from a template); a ⋯ menu per project (Open, Open in new tab · Rename, Duplicate · Save as template, Copy link · Delete) and per template; viewers see only the safe items.
 
+## P17 — Dev plan picks (owner, 2026-10-23: "Start M2-M6 auto, skip M1 and M5")
+- T17.1 (M2) — Resizes of turned or leaned layers snap too: the moving edges of the drawn bounds land on the guides (the pointer is corrected through both axes; a handle that can land only one line lands the closer).
+
 ## Next — dev plan (proposed; the owner picks and orders)
 - M1 — Snapping between layouts' guides (left from N7): needs the owner's definition first, e.g. "while editing the Vertical layout, a layer snaps to where it sits in the Square layout".
-- M2 — Resize snapping for rotated or skewed layers (snap their drawn bounds; today only axis-aligned layers snap when resized).
 - M3 — PDF pages kept as vector (D52 rasterises the first page): needs a safe PDF → SVG path that keeps fonts and passes the SVG sanitiser.
 - M4 — Team preset families in the Presets dialog: rename or delete a whole family; see which sizes a family holds.
 - M5 — Retire engine features the board no longer offers (process nodes, nested compositions, output-only layers; D49 kept them in the engine and export, `boardStructure` deletes process nodes on open): keep or remove them from the engine, export and API schema. Owner decision (changes D49).
