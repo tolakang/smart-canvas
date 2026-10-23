@@ -75,6 +75,48 @@ export function snapMove(moved: TransformState, targets: SnapTargets, tol: numbe
   return { dx: hx?.d ?? 0, dy: hy?.d ?? 0, x: hx ? [hx.line] : [], y: hy ? [hy.line] : [] };
 }
 
+const bounds = (s: TransformState): { x: [number, number]; y: [number, number] } => {
+  const pts = corners(s);
+  const xs = pts.map((p) => p.x);
+  const ys = pts.map((p) => p.y);
+  return { x: [Math.min(...xs), Math.max(...xs)], y: [Math.min(...ys), Math.max(...ys)] };
+};
+
+/**
+ * N7: snap a resize. `resize(at)` is the box for the pointer at `at`; the edges of its drawn bounds that the
+ * pointer moves (found by nudging it) snap to the nearest target within `tol`, per axis. Returns the pointer
+ * that lands them exactly (edges move linearly with the pointer, so one correction per axis does) and the lines,
+ * or null for no snap. With a locked ratio one axis moves the other: if both snapped and the pair can't hold,
+ * only the closer one is kept.
+ */
+export function snapResize(resize: (at: Vec) => TransformState, at: Vec, targets: SnapTargets, tol: number): { at: Vec; x: number[]; y: number[] } | null {
+  const b0 = bounds(resize(at));
+  const nudged = { x: bounds(resize({ x: at.x + 1, y: at.y })), y: bounds(resize({ x: at.x, y: at.y + 1 })) };
+  const axis = (k: 'x' | 'y', lines: number[]) => {
+    let hit: { shift: number; d: number; line: number; edge: 0 | 1 } | null = null;
+    for (const edge of [0, 1] as const) {
+      const rate = nudged[k][k][edge] - b0[k][edge];
+      if (Math.abs(rate) < 1e-6) continue;
+      for (const line of lines) {
+        const d = line - b0[k][edge];
+        if (Math.abs(d) <= tol && (!hit || Math.abs(d) < Math.abs(hit.d))) hit = { shift: d / rate, d, line, edge };
+      }
+    }
+    return hit;
+  };
+  const hx = axis('x', targets.x);
+  const hy = axis('y', targets.y);
+  if (!hx && !hy) return null;
+  const pick = (useX: boolean, useY: boolean) => ({ at: { x: at.x + (useX && hx ? hx.shift : 0), y: at.y + (useY && hy ? hy.shift : 0) }, x: useX && hx ? [hx.line] : [], y: useY && hy ? [hy.line] : [] });
+  if (hx && hy) {
+    const both = pick(true, true);
+    const b = bounds(resize(both.at));
+    if (Math.abs(b.x[hx.edge] - hx.line) < 0.01 && Math.abs(b.y[hy.edge] - hy.line) < 0.01) return both;
+    return Math.abs(hx.d) <= Math.abs(hy.d) ? pick(true, false) : pick(false, true);
+  }
+  return pick(!!hx, !!hy);
+}
+
 /** Snap lines from the canvas (edges, centre) and the other layers' drawn bounds (edges, centre). */
 export function snapTargets(canvas: { width: number; height: number }, others: readonly Frame[]): SnapTargets {
   const x = [0, canvas.width / 2, canvas.width];
