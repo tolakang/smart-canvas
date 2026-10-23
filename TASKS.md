@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P16 (UI polish, owner-approved) is in progress; then BACKLOG **Next** (M1–M6), to be chosen by the owner. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
+**Next:** P16 (UI polish) is done; the proposed next work is BACKLOG **Next** (M1–M6), to be chosen by the owner. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -138,7 +138,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P16 UI polish
 - [x] T16.1 — Canvas tools: tooltips, Select / Hand, selection bar, Tidy icon, scissor badge, groups of page-3 panels — [#118](https://github.com/tolakang/smart-canvas/pull/118)
-- [ ] T16.2 — Projects screen redesign
+- [x] T16.2 — Projects screen: template cards, ⋯ menus, search / sort, New project dialog, rename — [#119](https://github.com/tolakang/smart-canvas/pull/119)
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] M1 — Snapping between layouts' guides (needs a definition)

@@ -1,6 +1,7 @@
 /**
- * Right-click menu for the board (T8.2 nodes, T8.4 empty canvas): a small list at the pointer, closed by a
- * click elsewhere, Escape or choosing an item.
+ * Right-click menu for the board (T8.2 nodes, T8.4 empty canvas), also the ⋯ menus of the Projects screen: a
+ * small list at the pointer, closed by a click elsewhere, Escape or choosing an item; ↑ ↓ Home End move between
+ * items.
  */
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { COARSE_QUERY } from '../ui/responsive';
@@ -30,6 +31,12 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
     };
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      const items = [...(ref.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])];
+      const at = items.indexOf(document.activeElement as HTMLButtonElement);
+      const to = e.key === 'ArrowDown' ? at + 1 : e.key === 'ArrowUp' ? at - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : null;
+      if (to === null || items.length === 0) return;
+      e.preventDefault();
+      items[(to + items.length) % items.length]?.focus();
     };
     window.addEventListener('pointerdown', away, true);
     window.addEventListener('keydown', key);

@@ -131,6 +131,30 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
+  /** Rename a project or template (the Projects screen's ⋯ menu): the name and doc.name; the rev moves on, so an open board reloads rather than saving the old name back. */
+  app.patch<{ Params: Params; Body: { name: string } }>(
+    '/teams/:teamId/projects/:projectId',
+    {
+      preHandler: member,
+      schema: { params: projectParams, body: { type: 'object', required: ['name'], additionalProperties: false, properties: { name: nameSchema } } },
+    },
+    async (req, reply) => {
+      const name = req.body.name.trim();
+      if (!name) return reply.code(400).send({ error: 'invalid' });
+      const [row] = await db
+        .update(projects)
+        .set({
+          name,
+          rev: sql`${projects.rev} + 1`,
+          doc: sql`jsonb_set(jsonb_set(${projects.doc}, '{name}', to_jsonb(${name}::text)), '{rev}', to_jsonb(${projects.rev} + 1))`,
+          updatedAt: sql`now()`,
+        })
+        .where(inTeam(req.params))
+        .returning({ id: projects.id, name: projects.name, rev: projects.rev, updatedAt: projects.updatedAt });
+      return row ?? reply.code(404).send({ error: 'not_found' });
+    },
+  );
+
   app.delete<{ Params: Params }>(
     '/teams/:teamId/projects/:projectId',
     { preHandler: member, schema: { params: projectParams } },

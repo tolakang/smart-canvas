@@ -61,8 +61,10 @@ export async function setupAndCreateProject(page: Page, webUrl: string, name: st
   await page.getByLabel('Email').fill('ada@example.com');
   await page.getByLabel('Password').fill('password123');
   await page.getByRole('button', { name: 'Create workspace' }).click();
-  await page.getByPlaceholder('New project name').fill(name);
-  await page.getByRole('button', { name: 'Create' }).click();
+  // T16.2: "+ New project" opens a dialog for the name.
+  await page.getByRole('button', { name: 'New project' }).first().click();
+  await page.getByRole('dialog', { name: 'New project' }).getByPlaceholder('New project name').fill(name);
+  await page.getByRole('dialog', { name: 'New project' }).getByRole('button', { name: 'Create', exact: true }).click();
   // D49: the board shows once the Layer Comp group is up.
   await page.locator('.sc-comp-group').waitFor();
   const [, teamId = '', projectId = ''] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];
