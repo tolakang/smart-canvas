@@ -93,4 +93,31 @@ describe.skipIf(!adminUrl)('presets API (Postgres)', () => {
     expect((await call('GET', `/teams/00000000-0000-4000-8000-000000000000/presets`, admin)).statusCode).toBe(404);
     expect(created.teamId).toBe(teamId);
   });
+
+  it('M4: admins rename or delete a whole team family; built-in families and names are refused', async () => {
+    const fam = (family: string) => `/teams/${teamId}/preset-families/${encodeURIComponent(family)}`;
+    const add = (name: string, family: string, width: number) =>
+      call('POST', base(), admin, { group: 'social', name, family, size: { width, height: 250, unit: 'px' } });
+    await add('Shop A', 'Shop / web', 300);
+    await add('Shop B', 'Shop / web', 728);
+    await add('Other', 'Other', 160);
+    const families = async () => (await call('GET', base(), viewer)).json<SizePreset[]>().filter((p) => p.teamId === teamId && p.family);
+
+    expect((await call('PUT', fam('Shop / web'), editor, { name: 'Shop' })).statusCode).toBe(403);
+    expect((await call('PUT', fam('Shop / web'), admin, { name: '  ' })).statusCode).toBe(400);
+    expect((await call('PUT', fam('Shop / web'), admin, { name: 'gdn' })).json()).toEqual({ error: 'builtin_family' });
+    expect((await call('PUT', fam('Shop / web'), admin, { name: 'Other' })).json()).toEqual({ error: 'family_exists' });
+    expect((await call('PUT', fam('GDN'), admin, { name: 'Mine' })).statusCode).toBe(404); // built-ins are read-only
+    const renamed = await call('PUT', fam('Shop / web'), admin, { name: ' Shop ' });
+    expect(renamed.json()).toEqual({ family: 'Shop', count: 2 });
+    expect((await families()).filter((p) => p.family === 'Shop').map((p) => p.name).sort()).toEqual(['Shop A', 'Shop B']);
+    // A change of case is a rename of the same family.
+    expect((await call('PUT', fam('Shop'), admin, { name: 'SHOP' })).json()).toEqual({ family: 'SHOP', count: 2 });
+
+    expect((await call('DELETE', fam('SHOP'), editor)).statusCode).toBe(403);
+    expect((await call('DELETE', fam('GDN'), admin)).statusCode).toBe(404);
+    expect((await call('DELETE', fam('SHOP'), admin)).statusCode).toBe(204);
+    expect((await families()).map((p) => p.family)).toEqual(['Other']);
+    expect((await call('DELETE', fam('SHOP'), admin)).statusCode).toBe(404);
+  });
 });
