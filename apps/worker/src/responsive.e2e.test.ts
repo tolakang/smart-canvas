@@ -28,7 +28,6 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
 
   const doc = async (): Promise<ProjectDoc> => (await (await phone.request.get(url)).json()).doc;
   const bar = (p: Page) => p.getByRole('toolbar', { name: 'Canvas tools' });
-  const saved = (p: Page) => p.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
 
   it('phone: condensed top bar, More menu, no docked panels, Hand tool', async () => {
     await bar(phone).waitFor();

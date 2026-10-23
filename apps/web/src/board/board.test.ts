@@ -293,7 +293,7 @@ describe('Assets cards on the board (D40)', () => {
   it('a card wires into a master preview only; moving it writes its position', () => {
     const doc = withCard();
     expect(connectionRefusal(doc, { source: stackNodeId('st'), target: MAIN_ID })).toBeNull();
-    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/master preview/);
+    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/Layer Comp/);
     expect(withPositions(doc, [{ id: stackNodeId('st'), position: { x: 10.4, y: 20.6 } }]).stacks?.[0]?.board).toEqual({ x: 10, y: 21 });
   });
 });

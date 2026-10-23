@@ -305,9 +305,9 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
  * an output the right port (T12.4: layer rows vs the master preview port). Without `targetHandle` the port isn't checked.
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
-  if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'A card wires into a master preview.';
-  // D46: a master preview wires into a Preset node; a Preset node's row wires into its own Preview.
-  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? null : 'A master preview wires into a Preset node.';
+  if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'An asset node wires into the Layer Comp.';
+  // D46 / D49: the Layer Comp group wires into a Preset node; a Preset node's row wires into its own Preview.
+  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? null : 'Only the Layer Comp group wires into a Preset node.';
   if (setIdOfNode(c.source)) return outputOfSetRow(c.sourceHandle) && c.target === outputNodeId(outputOfSetRow(c.sourceHandle) ?? '') ? null : 'A size row wires into its own preview.';
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';

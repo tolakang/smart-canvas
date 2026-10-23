@@ -56,6 +56,7 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
             // Just above the wire, never on it: a double-click there (adding a reroute point) must not hit it.
             style={{ transform: `translate(-50%, calc(-100% - ${selected ? 12 : 6}px)) translate(${mid.x}px, ${mid.y}px)` }}
             aria-label={selected ? 'Disconnect wire' : 'Cut wire'}
+            data-edge={id}
             title="Cut this wire (or select it and press Delete)"
             onClick={(e) => {
               e.stopPropagation();
