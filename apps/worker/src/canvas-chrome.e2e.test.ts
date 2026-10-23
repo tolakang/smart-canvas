@@ -265,26 +265,33 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
       const d = await doc();
       return new Map<string, { x: number; y: number }>([...d.compositions.map((c) => [`c:${c.id}`, c.board] as const), ...d.sources.map((s) => [`s:${s.id}`, s.board] as const), ...d.outputs.map((o) => [`o:${o.id}`, o.board] as const)]);
     };
-    // Spread the two panels apart first so there is something to tidy.
-    const start = await panels();
+    const grid = bar().getByRole('button', { name: 'Snap to grid' });
+    if ((await grid.getAttribute('aria-pressed')) === 'true') await grid.click();
+    const input = page.locator('.react-flow__node-inputNode').first();
+    const mainId = 'c:main';
+    const srcId = `s:${(await input.getAttribute('data-id'))?.replace('src:', '')}`;
+    // Nudge the composition off the input's row first, so the selection is never already tidy.
     await comp().click();
-    await page.locator('.react-flow__node-inputNode .sc-node__title').first().click({ modifiers: ['Shift'] });
+    const offRow = async () => { const p = await panels(); return p.get(mainId)?.y !== p.get(srcId)?.y; };
+    const y0 = (await panels()).get(mainId)?.y ?? 0;
+    for (let i = 0; i < 4; i++) await page.keyboard.press('Shift+ArrowDown');
+    await expect.poll(async () => (await panels()).get(mainId)?.y, { timeout: 15_000 }).toBe(y0 + 40);
+    if (!(await offRow())) await page.keyboard.press('Shift+ArrowDown');
+    await expect.poll(offRow, { timeout: 15_000 }).toBe(true);
+    const start = await panels();
+    await input.locator('.sc-node__title').click({ modifiers: ['Shift'] });
     expect(await bar().getByRole('button', { name: 'Tidy selection' }).count()).toBe(1);
     await page.keyboard.press('Shift+T');
     const toast = page.locator('.sc-board__toast');
-    await toast.getByText(/^(2 panels tidied|The selected panels are already tidy)$/).waitFor();
-    const d = await doc();
-    const mainId = `c:main`;
-    const srcId = `s:${d.sources[0]?.id}`;
+    await toast.getByText('2 panels tidied', { exact: true }).waitFor();
     await expect.poll(async () => { const p = await panels(); return p.get(mainId)?.y === p.get(srcId)?.y; }, { timeout: 15_000 }).toBe(true);
     // Panels not selected stay where they were.
     const after = await panels();
     for (const [id, b] of start) if (id !== mainId && id !== srcId) expect(after.get(id)).toEqual(b);
-    if ((await toast.textContent())?.includes('tidied')) {
-      await toast.getByRole('button', { name: 'Undo' }).click();
-      await toast.waitFor({ state: 'detached' });
-      await expect.poll(async () => (await panels()).get(mainId), { timeout: 15_000 }).toEqual(start.get(mainId));
-    }
+    // Undo puts both back.
+    await toast.getByRole('button', { name: 'Undo' }).click();
+    await toast.waitFor({ state: 'detached' });
+    await expect.poll(async () => { const p = await panels(); return [p.get(mainId), p.get(srcId)]; }, { timeout: 15_000 }).toEqual([start.get(mainId), start.get(srcId)]);
     await page.keyboard.press('Escape');
     expect(await bar().getByRole('button', { name: 'Tidy board' }).count()).toBe(1);
     await bar().getByRole('button', { name: 'Tidy board' }).click();
