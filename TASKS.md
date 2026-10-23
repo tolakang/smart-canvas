@@ -152,7 +152,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P19 Board tools to standard (D57)
 - [x] T19.1 — Select, Hand and keys — [#127](https://github.com/tolakang/smart-canvas/pull/127)
-- [x] T19.2 — Grid snap and Tidy
+- [x] T19.2 — Grid snap and Tidy — [#128](https://github.com/tolakang/smart-canvas/pull/128); its e2e test always exercises Tidy selection and Undo — [#129](https://github.com/tolakang/smart-canvas/pull/129)
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] Q1 — Pick the page of a multi-page PDF

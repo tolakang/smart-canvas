@@ -968,7 +968,7 @@ function BoardCanvas(props: {
     if (readOnly || !flow.current) return;
     e.preventDefault();
     const at = flow.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
-    setMenu({ x: e.clientX, y: e.clientY, title: 'Add here', items: [...addItems(at), { label: 'Tidy board', separated: true, onSelect: tidy }] });
+    setMenu({ x: e.clientX, y: e.clientY, title: 'Add here', items: [...addItems(at), { label: selectedCount >= 2 ? 'Tidy selection' : 'Tidy board', separated: true, onSelect: tidy }] });
   };
 
   /**

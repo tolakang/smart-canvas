@@ -281,7 +281,9 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     const start = await panels();
     await input.locator('.sc-node__title').click({ modifiers: ['Shift'] });
     expect(await bar().getByRole('button', { name: 'Tidy selection' }).count()).toBe(1);
-    await page.keyboard.press('Shift+T');
+    // The canvas menu names the same action the toolbar does.
+    await page.locator('.react-flow__pane').click({ position: { x: 5, y: 5 }, button: 'right' });
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Tidy selection' }).click();
     const toast = page.locator('.sc-board__toast');
     await toast.getByText('2 panels tidied', { exact: true }).waitFor();
     await expect.poll(async () => { const p = await panels(); return p.get(mainId)?.y === p.get(srcId)?.y; }, { timeout: 15_000 }).toBe(true);
@@ -294,7 +296,7 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     await expect.poll(async () => { const p = await panels(); return [p.get(mainId), p.get(srcId)]; }, { timeout: 15_000 }).toEqual([start.get(mainId), start.get(srcId)]);
     await page.keyboard.press('Escape');
     expect(await bar().getByRole('button', { name: 'Tidy board' }).count()).toBe(1);
-    await bar().getByRole('button', { name: 'Tidy board' }).click();
+    await page.keyboard.press('Shift+T');
     await toast.getByText(/^(Board tidied|The board is already tidy)$/).waitFor();
   }, 60_000);
 });
