@@ -25,6 +25,8 @@ describe.skipIf(!adminUrl)('layout health on nodes (T13.1)', () => {
     url = `${stack.env.webUrl}api/teams/${ids.teamId}/projects/${ids.projectId}`;
     const p = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
     let doc = p.doc;
+    // D49: a new project wires every asset node; only these three stay wired here.
+    doc = { ...doc, edges: doc.edges.filter((e) => e.kind !== 'layer' || ['background', 'subject', 'headline'].includes(e.from)) };
     for (const id of ['background', 'subject', 'headline']) doc = ok(connectSource(doc, id));
     // A headline far too long for one line in a wide banner.
     doc = {
@@ -34,6 +36,9 @@ describe.skipIf(!adminUrl)('layout health on nodes (T13.1)', () => {
     doc = ok(addOutput(doc, { id: 'banner', label: 'Banner', size: { width: 1500, height: 500, unit: 'px' } }));
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     await page.reload();
+    await page.locator('.react-flow__node-outputNode[data-id="out:banner"]').waitFor();
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
@@ -70,6 +75,8 @@ describe.skipIf(!adminUrl)('layout health on nodes (T13.1)', () => {
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     await page.reload();
     await expect.poll(() => badge(banner()).getAttribute('data-health'), { timeout: 15_000 }).toBe('ok');
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
     await banner().locator('.sc-node__title').click();
     await page.getByRole('complementary', { name: 'Inspector' }).getByRole('button', { name: 'Disconnect' }).click();
     await expect.poll(() => badge(banner()).getAttribute('data-health')).toBe('frozen');

@@ -41,17 +41,10 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
   const card = () => page.locator('.react-flow__node-headlineNode').first();
   const drawnInStory = () => page.getByLabel('Output Story', { exact: true }).locator('.sc-render').first().evaluate((r) => [...r.querySelectorAll('[data-source-id]')].map((e) => e.getAttribute('data-source-id')));
 
-  it('add a Headline card; a picture in each slot; the story draws Khmer only', async () => {
-    const spot = await page.evaluate(() => {
-      const p = document.querySelector('.react-flow__pane')?.getBoundingClientRect();
-      if (!p) return null;
-      for (let y = p.bottom - 200; y > p.top; y -= 40)
-        for (let x = p.left + 340; x < p.right - 300; x += 40) if (document.elementFromPoint(x, y)?.classList.contains('react-flow__pane')) return { x, y };
-      return null;
-    });
-    if (!spot) throw new Error('no empty spot');
-    await page.mouse.click(spot.x, spot.y, { button: 'right' });
-    await page.getByRole('menu').getByRole('menuitem', { name: 'Headline (Khmer / English)' }).click();
+  it('the Headline node: a picture in each slot; the story draws Khmer only', async () => {
+    // D49: every project starts with a Headline node.
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
     await card().waitFor();
     const pic = (r: number, g: number, b: number, w: number) => sharp({ create: { width: w, height: 100, channels: 3, background: { r, g, b } } }).png().toBuffer();
     await card().getByLabel('Khmer headline picture').setInputFiles({ name: 'km.png', mimeType: 'image/png', buffer: await pic(200, 30, 30, 400) });

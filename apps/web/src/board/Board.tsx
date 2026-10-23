@@ -451,10 +451,12 @@ function BoardCanvas(props: {
     // D45 too: a project saved before the fixed order gets it here, also without an undo step; and D49: on open, a
     // project made before the page-3 board is brought into its shape (asset nodes, one Layer Comp, Preset nodes) —
     // once, so a node deleted afterwards stays deleted.
-    const base = structured.current ? docRef.current : boardStructure(docRef.current);
+    const first = !structured.current;
+    const base = first ? boardStructure(docRef.current) : docRef.current;
     structured.current = true;
     const fitted = orderLayers(fitFrames(base, sizes));
-    if (fitted !== docRef.current) show(fitted);
+    // On open the structure may place nodes (a Sizes preset's Previews): the board takes those positions.
+    if (fitted !== docRef.current) show(fitted, first && base !== docRef.current);
   }, [doc, sizes, readOnly, show]);
 
   const disconnect = useCallback(
