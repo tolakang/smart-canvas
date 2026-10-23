@@ -123,8 +123,8 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T14.10 — Layouts share the master's layers; lock; Core Preset Guide drag-to-assign (D50).
 - T14.11 — Preset rows: eye shows / hides a Preview; trash; no ✂ on row wires (D51).
 
-## Next — dev plan (proposed; the owner picks and orders)
-- N1 — Inspector clean-up: the group shows "Layer Comp" (not "Master preview"); drop the "Layout guides" section (the Layer Comp buttons and Core Preset Guide replace it); Preview and asset-node inspectors match the page-3 names.
+## Next — dev plan (the owner started N1–N7, in order)
+- N1 — **Done.** Inspector clean-up: the group shows "Layer Comp" (not "Master preview"); drop the "Layout guides" section (the Layer Comp buttons and Core Preset Guide replace it); Preview and asset-node inspectors match the page-3 names.
 - N2 — PDF uploads in the Logo, Headline, Image and Background nodes (owner: "later"): first page rasterised or kept vector, magic-byte check, same 50 MB cap.
 - N3 — Several Khmer / English pairs in one Headline node (today: one pair per node; add another node).
 - N4 — Placement: a Preset node added by right-click lays its Previews out clear of other nodes (as + Add does under the group); "tidy board" action.

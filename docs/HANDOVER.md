@@ -77,10 +77,10 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies`) |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
 | Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `LAYERS_HANDLE`, `cardEdgeId`, `connectionRefusal`) |
-| Board UI | `Board.tsx` (wiring, menus, `+ Add`, preset popup, conversion on open), `MainNode.tsx` (Layer Comp + Core Rule group), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
+| Board UI | `Inspector.tsx` (Layer Comp: its three layouts via `useOpenLayout` from `MainNode.tsx`; Preview; asset nodes by kind), `Board.tsx` (wiring, menus, `+ Add`, preset popup, conversion on open), `MainNode.tsx` (Layer Comp + Core Rule group), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
 | Editors | `apps/web/src/editor/` (`MainEditor` lists the master's layers in every layout; `CanvasEditor` skips locked layers; `LayersPanel`, `board/LayerRow.tsx` `LayerActions` incl. lock) |
 | API schema | `apps/api/src/routes/project-doc.schema.ts` (every new doc field must be added: `additionalProperties: false`) |
-| e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` |
+| e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` (the Layer Comp's buttons; the inspector has the same ones) |
 
 ## Testing tips (learned the hard way)
 - **Off‑screen nodes:** press **Fit to screen** before clicking a node the test just added, or one placed by the conversion.
@@ -91,7 +91,6 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - **Default project:** a new project wires every asset node. Tests that need fewer layers filter the layer edges in a PUT doc.
 
 ## Known limits
-- The side Inspector still says "Master preview" and shows a "Layout guides" section when the group is selected.
 - PDF uploads aren't supported yet. The owner deferred them.
 - One Khmer/English pair per Headline node; add another Headline node for more.
 - `output.family` is computed but no longer changes placement (D38).

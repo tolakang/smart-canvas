@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** BACKLOG P14 (page-3 board) is done; proposed next work is BACKLOG **Next** (N1–N7), to be chosen by the owner. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
+**Next:** BACKLOG P14 (page-3 board) is done; the owner started BACKLOG **Next** (N1–N7), in order. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -126,7 +126,7 @@ Legend: `[x]` done · `[ ]` to do
 - Also merged: layout v3 (#90, #91, #97), editor fixes (#94, #95), JPG 4:4:4 + "edited" tag (#96).
 
 ## Next (see BACKLOG)
-- [ ] N1 — Inspector clean-up
+- [x] N1 — Inspector clean-up — [#108](https://github.com/tolakang/smart-canvas/pull/108)
 - [ ] N2 — PDF uploads
 - [ ] N3 — Several KH/EN pairs per Headline node
 - [ ] N4 — Preset placement / tidy board

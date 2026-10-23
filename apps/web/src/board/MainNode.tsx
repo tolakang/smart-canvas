@@ -31,10 +31,23 @@ import { Icon } from './LayerRow';
 const NO_CANVAS = 'nodrag nopan nowheel';
 const GROUP_DRAG = 'application/x-sc-layer-group';
 const OUTPUT_DRAG = 'application/x-sc-output-layout';
-const FAMILY_LABEL: Record<GuideFamily, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
+export const FAMILY_LABEL: Record<GuideFamily, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
+
+/** Opens one of the master's layout editors; a missing layout is added first (then opened). */
+export function useOpenLayout(compositionId: string) {
+  const { readOnly, run, openMainEditor, doc } = useBoard();
+  return (family: GuideFamily) => {
+    const have = guideRows(doc, compositionId).find((g) => g.family === family)?.composition;
+    if (have) return openMainEditor(have.id);
+    if (readOnly) return;
+    const id = newId();
+    const r = run((d) => addGuides(d, compositionId, { [family]: id }));
+    if (r.ok) openMainEditor(id);
+  };
+}
 
 export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
-  const { readOnly, run, openMainEditor, doc, missingFonts } = useBoard();
+  const { readOnly, run, doc, missingFonts } = useBoard();
   const { compositionId } = data;
   const health = useMemo(() => compositionHealth(doc, compositionId, missingFonts), [doc, compositionId, missingFonts]);
   const [panel, setPanel] = useState<'preset' | 'layout' | null>(null);
@@ -48,15 +61,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
     return { groups, guides: guideRows(doc, compositionId), rules };
   }, [doc, compositionId]);
 
-  /** Opens a layout's editor; a missing layout is added first (then opened). */
-  const openLayout = (family: GuideFamily) => {
-    const have = guides.find((g) => g.family === family)?.composition;
-    if (have) return openMainEditor(have.id);
-    if (readOnly) return;
-    const id = newId();
-    const r = run((d) => addGuides(d, compositionId, { [family]: id }));
-    if (r.ok) openMainEditor(id);
-  };
+  const openLayout = useOpenLayout(compositionId);
   const dropGroup = (group: LayerGroup, to: number) => run((d) => ({ ok: true, doc: moveLayerGroup(d, group, to) }));
 
   return (

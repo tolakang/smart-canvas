@@ -1,23 +1,19 @@
 /**
  * The right inspector (T13.2): settings of the selected node, so node cards stay small (thumbnail, name, size,
  * health). An output: name, layout health (D35), size / preset / scale / bleed, connection, hand edits. An
- * input: name, behaviour, visibility, its content editor and its actions (duplicate, save to library, delete). A composition (master preview, T12.3): name, canvas
- * size, rows and health.
+ * input: name, behaviour, visibility, its content editor and its actions (duplicate, save to library, delete). The
+ * Layer Comp group (D49, N1): layer count, the three layout editors, health and the square layout's size.
  */
 import {
-  addGuides,
   deletePair,
   LANGUAGE_LABEL,
   languagePairs,
   renamePair,
   setLanguage,
   assetStacks,
-  detachGuide,
-  familyOfShape,
+  STACK_LABEL,
+  stackKind,
   GUIDE_FAMILIES,
-  GUIDE_LABEL,
-  guidesOf,
-  sizeInDesignPx,
   compositionById,
   deleteStack,
   renameStack,
@@ -52,6 +48,7 @@ import { ProcessSettings } from './ProcessSettings';
 import { HealthIssues, healthSummary } from './HealthBadge';
 import { confirmDelete, Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
+import { FAMILY_LABEL, useOpenLayout } from './MainNode';
 import { OutputSettings } from './OutputSettings';
 
 const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
@@ -91,7 +88,7 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
         <CompositionInspector key={composition} compositionId={composition} />
       ) : (
         <Section title="Nothing selected">
-          <p className="sc-muted sc-inspector-panel__hint">Click a node to see its settings here. Drag a wire out of any port, or right-click a port, to add a node that fits; right-click the canvas to add inputs.</p>
+          <p className="sc-muted sc-inspector-panel__hint">Click a node to see its settings here. Use + Add or right-click the canvas to add asset and Preset nodes; drag a wire out of the Layer Comp group to add a Preset node.</p>
         </Section>
       )}
     </aside>
@@ -142,8 +139,8 @@ function OutputInspector({ output }: { output: OutputNode }) {
   const health = useMemo(() => (layoutDeps ? outputHealth(doc, output.id, computeLayout(doc, output.id, layoutDeps), missingFonts) : null), [doc, output.id, layoutDeps, missingFonts]);
   return (
     <>
-      <Section title="Output" aside={<button type="button" className="sc-btn" onClick={() => openOutputEditor(output.id)}>{readOnly ? 'View' : 'Edit'}</button>}>
-        <NameField label="Output name" value={output.label} onCommit={(label) => run((d) => updateOutput(d, output.id, { label }))} />
+      <Section title="Preview" aside={<button type="button" className="sc-btn" onClick={() => openOutputEditor(output.id)}>{readOnly ? 'View' : 'Edit'}</button>}>
+        <NameField label="Preview name" value={output.label} onCommit={(label) => run((d) => updateOutput(d, output.id, { label }))} />
       </Section>
       {health && <HealthSection health={health} />}
       <Section title="Size and export">
@@ -240,7 +237,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
   const focused = doc.sources.find((s) => s.id === focusId);
   return (
     <>
-      <Section title="Headline">
+      <Section title="Headline node">
         <NameField label="Headline name" value={pair.label} onCommit={(label) => run((d) => renamePair(d, pair.id, label))} />
         <div className="sc-seg" role="radiogroup" aria-label="Language every output uses">
           {(['km', 'en'] as const).map((lang) => (
@@ -253,7 +250,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
         <p className="sc-inspector-panel__hint">Every output draws the language in use. Each language keeps its own position and size.</p>
         {!readOnly && (
           <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and output overrides go with them.`) && run((d) => deletePair(d, pair.id))}>
-            <Icon name="trash" /> Delete card
+            <Icon name="trash" /> Delete node
           </button>
         )}
       </Section>
@@ -267,17 +264,18 @@ function AssetsInspector({ stackId }: { stackId: string }) {
   const { doc, run, readOnly, stackFocus, setStackFocus, teamId } = useBoard();
   const stack = assetStacks(doc).find((st) => st.id === stackId);
   if (!stack) return null;
+  const kind = stackKind(stack);
   const items = stack.items.flatMap((id) => doc.sources.find((s) => s.id === id) ?? []);
   const focused = items.find((s) => s.id === stackFocus) ?? items[0];
   return (
     <>
-      <Section title="Assets">
-        <NameField label="Assets name" value={stack.label} onCommit={(label) => run((d) => renameStack(d, stack.id, label))} />
+      <Section title={`${STACK_LABEL[kind]} node`}>
+        <NameField label={`${STACK_LABEL[kind]} node name`} value={stack.label} onCommit={(label) => run((d) => renameStack(d, stack.id, label))} />
         <p className="sc-inspector-panel__hint">
-          {items.length} {items.length === 1 ? 'picture' : 'pictures'}, each its own layer. Drop more files on the card.
+          {items.length} {kind === 'text' ? (items.length === 1 ? 'text slot' : 'text slots') : items.length === 1 ? 'picture' : 'pictures'}, each its own layer.{kind === 'text' ? ' Add slots on the node.' : ' Drop more files on the node.'}
         </p>
         {items.length > 0 && (
-          <div className="sc-assets sc-assets--inspector" role="list" aria-label="Pictures">
+          <div className="sc-assets sc-assets--inspector" role="list" aria-label={kind === 'text' ? 'Text slots' : 'Pictures'}>
             {items.map((s) => {
               const asset = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null;
               return (
@@ -289,8 +287,8 @@ function AssetsInspector({ stackId }: { stackId: string }) {
           </div>
         )}
         {!readOnly && (
-          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${stack.label}`} onClick={() => window.confirm(`Delete “${stack.label}” and its ${items.length} pictures? Their wires and output overrides go with them.`) && run((d) => deleteStack(d, stack.id))}>
-            <Icon name="trash" /> Delete card
+          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${stack.label}`} onClick={() => window.confirm(`Delete “${stack.label}” and its ${items.length} ${kind === 'text' ? 'text slots' : 'pictures'}? Their wires and output overrides go with them.`) && run((d) => deleteStack(d, stack.id))}>
+            <Icon name="trash" /> Delete node
           </button>
         )}
       </Section>
@@ -299,59 +297,9 @@ function AssetsInspector({ stackId }: { stackId: string }) {
   );
 }
 
-/**
- * D42: a master preview's layout guides — Square, Vertical, Horizontal artboards; each output uses the one
- * closest to its shape. On a guide: what it is a guide of, and a way to make it an ordinary master again.
- */
-function GuidesSection({ compositionId }: { compositionId: string }) {
-  const { doc, run, readOnly, openMainEditor } = useBoard();
-  const comp = compositionById(doc, compositionId);
-  if (!comp) return null;
-  if (comp.guide) {
-    const master = compositionById(doc, comp.guide.of);
-    return (
-      <Section title="Layout guide">
-        <p className="sc-inspector-panel__hint">
-          {GUIDE_LABEL[comp.guide.family]} of “{master?.label}”: outputs of that master shaped closest to this artboard take their layout from it. Arrange the layers here for that shape.
-        </p>
-        {!readOnly && (
-          <button type="button" className="sc-btn" onClick={() => window.confirm('Make this an ordinary master preview? Outputs stop taking their layout from it.') && run((d) => detachGuide(d, comp.id))}>
-            Stop using as a guide
-          </button>
-        )}
-      </Section>
-    );
-  }
-  const guides = guidesOf(doc, comp.id);
-  const own = familyOfShape(sizeInDesignPx(comp.size));
-  const missing = GUIDE_FAMILIES.filter((f) => f !== own && !guides.some((g) => g.guide?.family === f));
-  return (
-    <Section title="Layout guides">
-      <p className="sc-inspector-panel__hint">
-        This artboard is the {GUIDE_LABEL[own].toLowerCase().replace(' guide', '')} layout. {guides.length ? 'Each output uses the closest of these to its shape:' : 'Add a vertical and a horizontal guide to arrange the layers for those shapes; each output then uses the closest one.'}
-      </p>
-      {guides.map((g) => (
-        <div key={g.id} className="sc-output__row">
-          <span>{g.label}</span>
-          <span className="sc-muted">
-            {g.size.width} × {g.size.height}
-          </span>
-          <button type="button" className="sc-btn" onClick={() => openMainEditor(g.id)}>
-            {readOnly ? 'View' : 'Edit'}
-          </button>
-        </div>
-      ))}
-      {!readOnly && missing.length > 0 && (
-        <button type="button" className="sc-btn" onClick={() => run((d) => addGuides(d, comp.id, Object.fromEntries(missing.map((f) => [f, newId()]))))}>
-          Add {missing.map((f) => GUIDE_LABEL[f].toLowerCase()).join(' and ')}
-        </button>
-      )}
-    </Section>
-  );
-}
-
 function CompositionInspector({ compositionId }: { compositionId: string }) {
-  const { doc, run, missingFonts, openMainEditor, readOnly } = useBoard();
+  const { doc, run, missingFonts, readOnly } = useBoard();
+  const openLayout = useOpenLayout(compositionId);
   const comp = compositionById(doc, compositionId);
   if (!comp) return null;
   const health = compositionHealth(doc, compositionId, missingFonts);
@@ -360,19 +308,22 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
   const setSize = (patch: Partial<typeof comp.size>) => run((d) => setCompositionSize(d, comp.id, { ...comp.size, ...patch }));
   return (
     <>
-      <Section title="Master preview" aside={<button type="button" className="sc-btn" onClick={() => openMainEditor(comp.id)}>{readOnly ? 'View' : 'Edit'}</button>}>
-        {comp.id === MAIN_ID ? (
-          <p className="sc-inspector-panel__hint">{comp.label}</p>
-        ) : (
-          <NameField label="Master preview name" value={comp.label} onCommit={(label) => run((d) => renameComposition(d, comp.id, label))} />
-        )}
+      <Section title="Layer Comp">
+        {comp.id === MAIN_ID ? null : <NameField label="Layer comp name" value={comp.label} onCommit={(label) => run((d) => renameComposition(d, comp.id, label))} />}
         <p className="sc-inspector-panel__hint">
-          {wired.size} of {comp.layers.length} layers wired · {outputs} {outputs === 1 ? 'output follows' : 'outputs follow'} it
+          {wired.size} of {comp.layers.length} layers wired · {outputs} {outputs === 1 ? 'size follows' : 'sizes follow'} it
         </p>
+        <div className="sc-inspector-panel__actions" role="group" aria-label="Layouts">
+          {GUIDE_FAMILIES.map((f) => (
+            <button key={f} type="button" className="sc-btn" onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
+              {FAMILY_LABEL[f]}
+            </button>
+          ))}
+        </div>
+        <p className="sc-muted sc-inspector-panel__hint">Each size uses the layout closest to its shape; change that in the Core Preset Guide.</p>
       </Section>
       <HealthSection health={health} />
-      <GuidesSection compositionId={comp.id} />
-      <Section title="Canvas">
+      <Section title="Square layout size">
         <div className="sc-output__row">
           <NumberField label="Width" value={comp.size.width} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ width: n })} />
           <NumberField label="Height" value={comp.size.height} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ height: n })} />
