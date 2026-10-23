@@ -54,6 +54,11 @@ Picture frames hug their visible pixels, and stretching distorts the picture.
 2. **DONE (D39) — No limit on layers in the master preview.** `LIMITS.maxSources = 10` (`packages/core/src/model.ts:19`, enforced in `sources.ts` `canAddSource`, shown in UI and likely the API schema `maxItems`). Remove the cap (owner decision; note it in DECISIONS).
 3. **DONE (D39) — Rename "Main preview" → "Master preview"** in UI copy: `MainNode.tsx`, `MainEditor.tsx` ("Master preview editor" dialog label — e2e tests use `/Master preview editor/`), `Inspector.tsx`, `Board.tsx`, `palette.ts`, `NodeLibrary.tsx`, defaults in `core/project.ts`, `compositions.ts`, `graph.ts` (migration label). Update tests and docs that match the text.
 
+## The page-3 board (D48, D49) — owner's PDF page 3, plan approved 2026-10-22
+- Board = asset nodes (Logo, Headline, Text, Image, Background) → the Layer Comp + Core Rule group (`MainNode.tsx`) → Preset nodes (`PresetNode.tsx`) → Previews (`OutputNode.tsx`). Text slots: `TextNode.tsx` (`addTextToStack`). Cards: `AssetStack.kind`. Conversion on open: `boardStructure` (`packages/core/src/board-structure.ts`, applied once in `Board.tsx`). New projects: `createBoardProject` (API `POST /projects`).
+- Wires: `flow.ts` `docToEdges` draws one wire per asset node into the group's `layers` handle (`cardEdgeId` for cards) and the Preset wiring of D46; nothing else is drawn. The group's out port, dragged onto empty canvas, offers the Preset nodes (`openPresets`).
+- PR 2 (agreed, NOT STARTED): the Square / Vertical / Horizontal editors get a layers panel with re-order, lock / unlock, hide / unhide and delete (order, lock, hide and delete apply in all three layouts; position and size per layout); the Core Preset Guide gets three sections listing outputs by best match, and dragging an output into another section assigns it that layout (model note D50: a per-output layout choice). PDF uploads later.
+
 ## Layout guides (D42) — PDF "Core Preset Guide"
 - `packages/core/src/guides.ts` (`familyOfShape`, `guideFor`, `addGuides`, `detachGuide`); `computeLayout` takes positions from `guideFor` (falls back to the master per layer).
 - UI: Inspector "Layout guides" section (`GuidesSection`), guide chip on `MainNode`, "· Vertical guide" on `OutputNode`.

@@ -212,7 +212,9 @@ export interface ProjectDoc {
   // D46: Preset nodes — each lists output ids (its sizes, in row order).
   presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[] }[];
   // D47: Core Rule nodes — one master preview each; what they show is derived.
-  coreRules?: { id: string; composition: string; board: { x: number; y: number } }[];
+  coreRules?: { id: string; composition: string; board: { x: number; y: number } }[]; // no longer drawn (D49)
+  // D48: the layer comp's group order, front first; absent = logo, headline, elements, background.
+  layerOrder?: ('logo' | 'headline' | 'elements' | 'background')[];
 }
 
 /** D40: an Assets card. Each picture is its own input (layer); the card only draws them together, `items` in card order. */
@@ -221,6 +223,7 @@ export interface AssetStack {
   label: string;
   board: { x: number; y: number };
   items: string[];
+  kind?: 'image' | 'logo' | 'text'; // D49: the Image (default), Logo or Text node
 }
 
 // ---------- team-level records ----------
