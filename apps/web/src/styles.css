@@ -197,6 +197,10 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-presets h2 { margin: 12px 0 4px; font-size: 14px; }
 .sc-presets .sc-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .sc-presets form label { display: grid; gap: 2px; font-size: 13px; }
+.sc-presets .sc-families > li { align-items: flex-start; }
+.sc-family { flex: 1; min-width: 0; }
+.sc-family summary { display: flex; gap: 8px; align-items: baseline; cursor: pointer; padding: 2px 0; }
+.sc-family__sizes { list-style: none; margin: 4px 0 2px 16px; padding: 0; display: grid; gap: 2px; font-size: 13px; }
 .sc-output__frozen { color: #8a5a00; }
 .sc-props__note { margin: 0; font-size: 12px; }
 

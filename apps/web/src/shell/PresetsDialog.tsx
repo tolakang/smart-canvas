@@ -1,10 +1,12 @@
 /**
  * Preset manager (T4.8, screen 7): built-in print/social sizes plus the team's own.
  * Everyone sees the list; admins add, edit and delete team presets. Built-ins are read-only.
+ * M4: "Preset node families" lists every family with its sizes; admins rename or delete a team family as a whole.
  */
 import type { PresetGroup, SizePreset, Unit } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
+import { AskDialog, type AskSpec } from '../ui/AskDialog';
 
 interface Draft {
   id: string | null;
@@ -20,6 +22,26 @@ interface Draft {
 }
 const EMPTY: Draft = { id: null, group: 'social', name: '', family: '', width: '1080', height: '1080', unit: 'px', dpi: '', bleedMm: '' };
 
+/** M4: the families in the list, in list order, with their sizes; built-in when any size is built-in. */
+export function familiesOf(list: readonly SizePreset[]): { name: string; builtIn: boolean; sizes: SizePreset[] }[] {
+  const out = new Map<string, { name: string; builtIn: boolean; sizes: SizePreset[] }>();
+  for (const p of list) {
+    if (!p.family) continue;
+    const f = out.get(p.family) ?? { name: p.family, builtIn: false, sizes: [] };
+    f.sizes.push(p);
+    if (p.teamId === null) f.builtIn = true;
+    out.set(p.family, f);
+  }
+  return [...out.values()];
+}
+
+const familyError = (err: unknown) => {
+  const code = err instanceof ApiError ? (err.body as { error?: string } | null)?.error : undefined;
+  if (code === 'builtin_family') return 'That is a built-in family’s name; pick another.';
+  if (code === 'family_exists') return 'The team already has a family with that name.';
+  return 'Could not change the family.';
+};
+
 const sizeText = (p: SizePreset) =>
   `${p.family ? `${p.family} family · ` : ''}${p.size.width} × ${p.size.height} ${p.size.unit}${p.dpi ? ` · ${p.dpi} dpi` : ''}${p.bleedMm ? ` · bleed ${p.bleedMm} mm` : ''}`;
 
@@ -30,6 +52,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
+  const [ask, setAsk] = useState<(AskSpec & { done: (v: string | null) => void }) | null>(null);
 
   useEffect(() => {
     ref.current?.showModal();
@@ -90,11 +113,86 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
     }
   }
 
+  const familyUrl = (name: string) => `/teams/${props.teamId}/preset-families/${encodeURIComponent(name)}`;
+  const renameFamily = (name: string) =>
+    setAsk({
+      title: 'Rename family',
+      message: 'New Preset nodes use the new name; Preset nodes already on boards keep theirs.',
+      input: { label: 'Family name', value: name },
+      confirm: 'Rename',
+      done: (to) => {
+        if (!to || to === name) return;
+        setError(null);
+        api('PUT', familyUrl(name), { name: to }).then(
+          () => setReload((n) => n + 1),
+          (err: unknown) => setError(familyError(err)),
+        );
+      },
+    });
+  const deleteFamily = (name: string, count: number) =>
+    setAsk({
+      title: `Delete “${name}”?`,
+      message: `Its ${count} ${count === 1 ? 'size' : 'sizes'} will be deleted for the whole team. Preset nodes already on boards stay.`,
+      confirm: 'Delete family',
+      danger: true,
+      done: (ok) => {
+        if (ok === null) return;
+        setError(null);
+        api('DELETE', familyUrl(name)).then(
+          () => {
+            if (draft.family.trim() === name) setDraft(EMPTY);
+            setReload((n) => n + 1);
+          },
+          (err: unknown) => setError(familyError(err)),
+        );
+      },
+    });
+
   return (
     <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="presets-title">
       <div className="sc-card sc-presets">
         <h1 id="presets-title">Size presets</h1>
         <p className="sc-muted sc-lede">Sizes for new outputs. Built-in ones are fixed{props.isAdmin ? '; add your team’s own below.' : '; admins can add the team’s own.'}</p>
+        {list !== null && familiesOf(list).length > 0 && (
+          <section aria-label="Preset node families">
+            <h2>Preset node families</h2>
+            <ul className="sc-list sc-rows sc-families">
+              {familiesOf(list).map((f) => (
+                <li key={f.name} data-family={f.name}>
+                  <details className="sc-family">
+                    <summary aria-label={`${f.name}: ${f.sizes.length} ${f.sizes.length === 1 ? 'size' : 'sizes'}`}>
+                      <span className="sc-rows__name">{f.name}</span>
+                      <span className="sc-rows__meta">
+                        {f.sizes.length} {f.sizes.length === 1 ? 'size' : 'sizes'}
+                      </span>
+                    </summary>
+                    <ul className="sc-family__sizes" aria-label={`${f.name} sizes`}>
+                      {f.sizes.map((p) => (
+                        <li key={p.id}>
+                          {p.name} <span className="sc-muted">{`${p.size.width} × ${p.size.height} ${p.size.unit}`}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                  {f.builtIn ? (
+                    <span className="sc-badge">Built-in</span>
+                  ) : (
+                    props.isAdmin && (
+                      <span className="sc-rows__actions">
+                        <button type="button" className="sc-btn sc-btn--ghost" onClick={() => renameFamily(f.name)} aria-label={`Rename family ${f.name}`}>
+                          Rename
+                        </button>
+                        <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => deleteFamily(f.name, f.sizes.length)} aria-label={`Delete family ${f.name}`}>
+                          Delete
+                        </button>
+                      </span>
+                    )
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {list === null ? (
           <p className="sc-muted">Loading…</p>
         ) : (
@@ -189,6 +287,15 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           <p className="sc-error" role="alert">
             {error}
           </p>
+        )}
+        {ask && (
+          <AskDialog
+            ask={ask}
+            onDone={(v) => {
+              setAsk(null);
+              ask.done(v);
+            }}
+          />
         )}
         <div className="sc-dialog__foot">
           <button type="button" className="sc-btn" onClick={() => ref.current?.close()}>
