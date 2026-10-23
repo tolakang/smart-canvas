@@ -59,8 +59,8 @@ describe.skipIf(!adminUrl)('board look (T10.2)', () => {
 
   it('renamed in the inspector; a typed name then stays when the size changes', async () => {
     const panel = await settings();
-    await panel.getByLabel('Output name').fill('Facebook ad');
-    await panel.getByLabel('Output name').press('Enter');
+    await panel.getByLabel('Preview name').fill('Facebook ad');
+    await panel.getByLabel('Preview name').press('Enter');
     await expect.poll(() => title.innerText()).toBe('Facebook ad');
     await panel.getByLabel('Width').fill('1080');
     await panel.getByLabel('Width').press('Enter');
@@ -72,7 +72,7 @@ describe.skipIf(!adminUrl)('board look (T10.2)', () => {
   it('the card stays small: its settings are in the inspector (T13.2)', async () => {
     expect(await node().getByLabel('Preset').count()).toBe(0);
     const panel = await settings();
-    expect(await panel.getByLabel('Output name').inputValue()).toBe('Facebook ad');
+    expect(await panel.getByLabel('Preview name').inputValue()).toBe('Facebook ad');
     expect(await panel.getByLabel('Preset').count()).toBe(1);
     if (process.env.T102_SHOT) await page.screenshot({ path: process.env.T102_SHOT });
     // Clicking the empty canvas clears the selection.
@@ -101,6 +101,19 @@ describe.skipIf(!adminUrl)('board look (T10.2)', () => {
     await saved();
     const d = (await (await page.request.get(url)).json()).doc as { sources: { id: string; label: string; content: { text?: string } }[] };
     expect(d.sources.find((s) => s.id === 'headline')).toMatchObject({ label: 'Title', content: { text: 'From the inspector' } });
+  }, 30_000);
+
+  it('N1: the inspector names the page-3 nodes — Layer Comp with its three layouts (no "Layout guides"), Text node, Preview', async () => {
+    const panel = page.getByRole('complementary', { name: 'Inspector' });
+    await page.locator('.sc-node--main .sc-node__title').click();
+    await panel.getByText('Layer Comp', { exact: true }).waitFor();
+    for (const f of ['Square', 'Vertical', 'Horizontal']) expect(await panel.getByRole('button', { name: `Edit ${f} layout` }).count()).toBe(1);
+    expect(await panel.getByText('Layout guides').count()).toBe(0);
+    expect(await panel.getByText('Master preview').count()).toBe(0);
+    await boardNode(page, 'Text').locator('.sc-node__title').click();
+    await panel.getByText('Text node', { exact: true }).waitFor();
+    await node().locator('.sc-node__title').click();
+    await panel.getByText('Preview', { exact: true }).waitFor();
   }, 30_000);
 
   it('dark theme toggle (T13.3, D34): switches the tokens, is remembered, and leaves the artwork alone', async () => {

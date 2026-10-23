@@ -75,4 +75,4 @@ export const boardNode = (page: Page, title: string) =>
 /** D49: a file put into a named picture of an Image or Logo node (its Replace input; the layer keeps its place). */
 export const putPicture = (page: Page, label: string, file: { name: string; mimeType: string; buffer: Buffer }) => page.getByLabel(`Replace ${label}`, { exact: true }).setInputFiles(file);
 /** D49: opens one of the Layer Comp's layout editors (Square is the master). */
-export const openLayout = (page: Page, family: 'Square' | 'Vertical' | 'Horizontal' = 'Square') => page.getByRole('button', { name: new RegExp(`^(Edit|View) ${family} layout$`) }).click();
+export const openLayout = (page: Page, family: 'Square' | 'Vertical' | 'Horizontal' = 'Square') => page.locator('.react-flow__node-mainNode').getByRole('button', { name: new RegExp(`^(Edit|View) ${family} layout$`) }).click();
