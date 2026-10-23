@@ -106,4 +106,57 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     const masterX = (await doc()).compositions[0]?.board.x;
     await expect.poll(async () => (await doc()).sources.find((s) => s.id === source.id)?.board.x, { timeout: 15_000 }).toBe(masterX);
   }, 60_000);
+
+  it('every tool has a tooltip on hover: its name, what it does, its shortcut', async () => {
+    const select = bar().getByRole('button', { name: 'Select (V)' });
+    await select.hover();
+    const tip = page.locator('.sc-tip--show');
+    await tip.waitFor();
+    expect(await tip.innerText()).toMatch(/Select\s*V[\s\S]*drag on empty canvas to select several/);
+    expect(await select.getAttribute('aria-describedby')).toBe(await tip.getAttribute('id'));
+    if (process.env.SC_SHOTS) await page.screenshot({ path: `${process.env.SC_SHOTS}/toolbar-tip.png`, clip: await bar().boundingBox().then((b) => ({ x: (b?.x ?? 0) - 40, y: (b?.y ?? 0) - 120, width: (b?.width ?? 0) + 80, height: (b?.height ?? 0) + 130 })) });
+    await bar().getByRole('button', { name: 'Tidy board' }).hover();
+    await expect.poll(() => tip.innerText()).toContain('Arrange all panels');
+    await page.mouse.move(5, 5);
+    await tip.waitFor({ state: 'detached' });
+  }, 30_000);
+
+  it('Hand moves the board only: dragging a panel pans, the panel stays where it was in the doc', async () => {
+    await page.keyboard.press('h');
+    const before = (await doc()).compositions.find((c) => c.id === 'main')?.board;
+    const head = page.locator('.react-flow__node-mainNode .sc-node__title').first();
+    const b = await head.boundingBox();
+    if (!b) throw new Error('no group');
+    const t0 = await transform();
+    await page.mouse.move(b.x + 10, b.y + 5);
+    await page.mouse.down();
+    await page.mouse.move(b.x + 80, b.y + 60, { steps: 6 });
+    await page.mouse.up();
+    await expect.poll(transform).not.toBe(t0);
+    await page.waitForTimeout(1200);
+    expect((await doc()).compositions.find((c) => c.id === 'main')?.board).toEqual(before);
+    expect(await page.locator('.react-flow__node-mainNode.selected').count()).toBe(0);
+    await page.keyboard.press('v');
+  }, 30_000);
+
+  it('Select: a drag on empty canvas selects several panels; the selection bar groups them', async () => {
+    await bar().getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
+    await page.locator('.react-flow__pane').click({ position: { x: 5, y: 5 } }); // nothing selected to start
+    const boxes = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.react-flow__node')].map((n) => ({ id: n.dataset.id ?? '', r: n.getBoundingClientRect().toJSON() as { x: number; y: number; width: number; height: number } })));
+    const row = boxes.filter((b) => b.id.startsWith('stk:') || b.id.startsWith('hl:')).sort((a, b) => a.r.x - b.r.x).slice(0, 2);
+    const from = { x: Math.max(...row.map((b) => b.r.x + b.r.width)) + 4, y: Math.max(...row.map((b) => b.r.y + b.r.height)) + 30 };
+    const to = { x: Math.min(...row.map((b) => b.r.x)) - 4, y: Math.min(...row.map((b) => b.r.y)) - 4 };
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(to.x, to.y, { steps: 10 });
+    await page.mouse.up();
+    const selbar = page.getByRole('toolbar', { name: 'Selection' });
+    await selbar.getByText('2 selected').waitFor();
+    if (process.env.SC_SHOTS) await page.screenshot({ path: `${process.env.SC_SHOTS}/selection.png` });
+    await selbar.getByRole('button', { name: 'Group' }).click();
+    await expect.poll(async () => (await doc()).groups?.[0]?.nodes.sort(), { timeout: 15_000 }).toEqual(row.map((b) => b.id.replace(/^(stk|hl):/, '')).sort());
+    await selbar.getByRole('button', { name: 'Clear selection' }).click();
+    await selbar.waitFor({ state: 'detached' });
+  }, 30_000);
 });

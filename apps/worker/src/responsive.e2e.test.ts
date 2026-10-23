@@ -1,7 +1,7 @@
 /**
  * T13.6 end to end (D33): the workspace on a phone and a tablet. Phone: condensed top bar with a More menu,
- * library and inspector as bottom sheets, Hand tool by default, long-press for the canvas menu, tap a port then a
- * target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
+ * library and inspector as bottom sheets, the Select tool by default (a finger drag on empty canvas selects several
+ * panels, then Group / Delete), long-press for the canvas menu, tap a port then a target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addSource, connectSource, type ProjectDoc } from '@smart-canvas/core';
@@ -29,12 +29,12 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
   const doc = async (): Promise<ProjectDoc> => (await (await phone.request.get(url)).json()).doc;
   const bar = (p: Page) => p.getByRole('toolbar', { name: 'Canvas tools' });
 
-  it('phone: condensed top bar, More menu, no docked panels, Hand tool', async () => {
+  it('phone: condensed top bar, More menu, no docked panels, Select tool', async () => {
     await bar(phone).waitFor();
     expect(await phone.getByRole('button', { name: '+ Add' }).count()).toBe(0);
     expect(await phone.getByRole('complementary', { name: 'Node library' }).count()).toBe(0);
     expect(await phone.getByRole('complementary', { name: 'Inspector' }).count()).toBe(0);
-    expect(await bar(phone).getByRole('button', { name: /^Hand/ }).getAttribute('aria-pressed')).toBe('true');
+    expect(await bar(phone).getByRole('button', { name: 'Select (V)' }).getAttribute('aria-pressed')).toBe('true');
     expect(await phone.locator('.react-flow__minimap').count()).toBe(0);
     // The board fills exactly the visible height (dvh) and the page never scrolls, so the top bar and the
     // canvas toolbar both stay on screen — also when the browser's own bars shrink the visible area.
@@ -90,6 +90,45 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     await phone.locator('.react-flow__node[data-id="src:bg2"] .react-flow__handle.source').tap();
     await phone.locator('.react-flow__node[data-id="main"] .react-flow__handle[data-handleid="layers"]').tap();
     await expect.poll(async () => (await doc()).edges.some((e) => e.kind === 'layer' && e.from === 'bg2' && e.to === 'main'), { timeout: 15_000 }).toBe(true);
+  }, 60_000);
+
+  it('phone: a finger drag on empty canvas draws a selection box; two panels selected show Group / Delete; a long press on a tool shows its tooltip', async () => {
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(400);
+    // A box around the top row's first two asset nodes, from empty canvas above-left of them.
+    const boxes = await phone.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.react-flow__node')].map((n) => ({ id: n.dataset.id ?? '', ...n.getBoundingClientRect().toJSON() as { x: number; y: number; width: number; height: number } })),
+    );
+    const row = boxes.filter((b) => b.id.startsWith('stk:') || b.id.startsWith('hl:')).sort((a, b) => a.x - b.x).slice(0, 2);
+    if (row.length < 2) throw new Error('no asset row');
+    // From empty canvas below-right of them (a touch close to a panel is moved onto it by the browser), up-left
+    // past their corner.
+    const from = { x: Math.max(...row.map((b) => b.x + b.width)) + 4, y: Math.max(...row.map((b) => b.y + b.height)) + 40 };
+    const to = { x: Math.min(...row.map((b) => b.x)) - 2, y: Math.min(...row.map((b) => b.y)) - 2 };
+    expect(await phone.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.classList.contains('react-flow__pane'), from)).toBe(true);
+    const cdp = await phone.context().newCDPSession(phone);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
+    for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from.x + ((to.x - from.x) * i) / 8, y: from.y + ((to.y - from.y) * i) / 8 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    const selbar = phone.getByRole('toolbar', { name: 'Selection' });
+    await selbar.waitFor();
+    expect(await selbar.getByText(/^\d+ selected$/).innerText()).toMatch(/^[2-9] selected$/);
+    // (The first tap right after a scripted touch drag is taken as part of it: wait like a person would.)
+    await phone.waitForTimeout(600);
+    await selbar.getByRole('button', { name: 'Group' }).tap();
+    await expect.poll(async () => (await doc()).groups?.length, { timeout: 15_000 }).toBe(1);
+    await selbar.getByRole('button', { name: 'Clear selection' }).tap();
+    await selbar.waitFor({ state: 'detached' });
+    // A long press on a tool shows its tooltip and doesn't press it.
+    const hand = bar(phone).getByRole('button', { name: /^Hand/ });
+    const hb = await hand.boundingBox();
+    if (!hb) throw new Error('no hand button');
+    const at = [{ x: hb.x + hb.width / 2, y: hb.y + hb.height / 2 }];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at });
+    await phone.waitForTimeout(700);
+    expect(await phone.locator('.sc-tip--show').innerText()).toContain('Drag anywhere to move the board');
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    expect(await hand.getAttribute('aria-pressed')).toBe('false');
   }, 60_000);
 
   it('phone: long-press on the canvas opens the canvas menu', async () => {

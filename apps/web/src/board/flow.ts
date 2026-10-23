@@ -91,7 +91,8 @@ export function withGroupFrames(nodes: BoardNode[], groups: readonly BoardGroup[
       selected: selected.has(groupNodeId(g.id)),
       deletable: false,
       dragHandle: '.sc-group__head',
-      data: { group: g, outputs: doc.outputs.filter((o) => g.nodes.includes(o.id)).map((o) => o.id) },
+      // Exporting a group exports its Previews, and the sizes of its Preset nodes.
+      data: { group: g, outputs: doc.outputs.filter((o) => g.nodes.includes(o.id) || presetSets(doc).some((set) => g.nodes.includes(set.id) && set.outputs.includes(o.id))).map((o) => o.id) },
     });
   }
   const collapsed = new Set(groups.filter((g) => g.collapsed).flatMap((g) => g.nodes));

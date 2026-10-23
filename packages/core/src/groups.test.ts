@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { boardGroups, createGroup, groupOf, ungroup, updateGroup } from './groups';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
+import { addLanguagePair } from './languages';
+import { addPresetSet } from './preset-sets';
 import { deleteSource } from './sources';
+import { addStack } from './stacks';
 import type { SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -36,5 +39,14 @@ describe('board groups (T13.7)', () => {
     const none = ok(ungroup(d, 'g1'));
     expect(none.groups).toBeUndefined();
     expect(none.outputs).toHaveLength(2);
+  });
+
+  it('page-3 panels can be grouped: asset and Headline nodes, Preset nodes (their ids, not their items)', () => {
+    let d = ok(addStack(doc(), { id: 'imgs', kind: 'image', board: { x: 0, y: 0 } }));
+    d = ok(addLanguagePair(d, { id: 'hl', km: 'hk', en: 'he', board: { x: 0, y: 0 } }));
+    d = ok(addPresetSet(d, { id: 'gdn', label: 'GDN', board: { x: 0, y: 0 }, sizes: [{ id: 'g1', label: 'GDN 300×250', size: { width: 300, height: 250, unit: 'px' } }] }));
+    d = ok(createGroup(d, { id: 'g', label: 'Top row', nodes: ['imgs', 'hl', 'gdn'] }));
+    expect(boardGroups(d)[0]?.nodes).toEqual(['imgs', 'hl', 'gdn']);
+    expect(groupOf(d, 'gdn')?.id).toBe('g');
   });
 });
