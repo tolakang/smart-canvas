@@ -862,7 +862,8 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-preset__rows .sc-port { padding-right: 18px; }
 .sc-preset__size { flex: none; min-width: 84px; font-variant-numeric: tabular-nums; font-weight: 600; }
 .sc-port--frozen { color: var(--muted); }
-.sc-preset__remove { margin-left: auto; }
+.sc-preset__eye { margin-left: auto; }
+.sc-preset__eye[aria-pressed='true'] { color: var(--muted); }
 .sc-preset__add { margin-top: 8px; width: 100%; }
 
 /* D47: Core Rule node — layer comp, preset guides and auto layout of a master preview. */

@@ -4,7 +4,7 @@
  * disconnects that size (its layout freezes). Rows are dragged into another order, added from the team's presets
  * or as a custom W × H, or removed.
  */
-import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, renameSet } from '@smart-canvas/core';
+import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, renameSet, setPreviewHidden } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState } from 'react';
 import { useBoard } from './context';
@@ -29,6 +29,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
     if (name && name !== set.label) run((d) => renameSet(d, set.id, name));
   };
   const used = new Set(rows.map((r) => r.output.presetId));
+  const hidden = new Set(set.hidden ?? []);
   const [dropAt, setDropAt] = useState<number | null>(null);
   const [custom, setCustom] = useState<{ w: string; h: string } | null>(null);
   const addCustom = () => {
@@ -113,6 +114,18 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             <span className="sc-port__label" title={output.label}>
               {connected ? output.label : `${output.label} · disconnected`}
             </span>
+            {/* D51: the eye shows / hides this size's Preview on the board (it still exports); the trash removes the size. */}
+            <button
+              type="button"
+              className={`sc-icon-btn sc-preset__eye ${NO_CANVAS}`}
+              aria-label={`${hidden.has(output.id) ? 'Show' : 'Hide'} preview ${output.label}`}
+              aria-pressed={hidden.has(output.id)}
+              disabled={readOnly}
+              title={hidden.has(output.id) ? 'Show its preview on the board' : 'Hide its preview from the board (it still exports)'}
+              onClick={() => run((d) => setPreviewHidden(d, set.id, output.id, !hidden.has(output.id)))}
+            >
+              <Icon name={hidden.has(output.id) ? 'eye-off' : 'eye'} />
+            </button>
             {!readOnly && (
               <button
                 type="button"
@@ -121,7 +134,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
                 title="Remove this size (deletes its preview)"
                 onClick={() => window.confirm(`Remove “${output.label}”? Its preview is deleted.`) && run((d) => deleteOutput(d, output.id))}
               >
-                <Icon name="close" />
+                <Icon name="trash" />
               </button>
             )}
             <Handle type="source" position={Position.Right} id={setRowHandle(output.id)} isConnectable={!readOnly && !connected} className="sc-handle--composition" title={connected ? 'Wired to its preview: cut the wire to disconnect' : 'Wire back into its preview to reconnect'} />

@@ -212,7 +212,7 @@ export interface ProjectDoc {
   /** D44: Headline cards (a Khmer and an English input, one in use). */
   headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en' }[];
   // D46: Preset nodes — each lists output ids (its sizes, in row order).
-  presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[] }[];
+  presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[]; hidden?: string[] }[]; // hidden: D51
   // D47: Core Rule nodes — one master preview each; what they show is derived.
   coreRules?: { id: string; composition: string; board: { x: number; y: number } }[]; // no longer drawn (D49)
   // D48: the layer comp's group order, front first; absent = logo, headline, elements, background.

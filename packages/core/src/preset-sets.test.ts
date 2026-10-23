@@ -4,7 +4,7 @@ import { outputComposition } from './graph';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { deleteOutput, disconnectOutput, isOutputConnected } from './outputs';
-import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setOf } from './preset-sets';
+import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setOf, setPreviewHidden } from './preset-sets';
 import type { SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -63,5 +63,16 @@ describe('Preset nodes (D46)', () => {
   it('families from preset names: "GDN 300×250" → GDN', () => {
     const fams = presetFamilies([{ name: 'GDN 1200×628' }, { name: 'GDN 728×90' }, { name: 'Website 1600×385' }, { name: 'Instagram square' }]);
     expect(fams.map((f) => [f.label, f.presets.length])).toEqual([['GDN', 2], ['Website', 1]]);
+  });
+});
+
+describe('Preview visibility (D51)', () => {
+  it('hides and shows a size’s Preview; nothing stored when all show', () => {
+    const doc = withSet();
+    const hidden = ok(setPreviewHidden(doc, 'gdn', 'g2', true));
+    expect(presetSets(hidden)[0]?.hidden).toEqual(['g2']);
+    expect(ok(setPreviewHidden(hidden, 'gdn', 'g2', false)).presetSets?.[0]).not.toHaveProperty('hidden');
+    // Not one of its sizes: unchanged.
+    expect(presetSets(ok(setPreviewHidden(doc, 'gdn', 'nope', true)))[0]).not.toHaveProperty('hidden');
   });
 });

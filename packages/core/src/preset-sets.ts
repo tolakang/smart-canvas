@@ -69,6 +69,18 @@ export function addSizeToSet(doc: ProjectDoc, setId: string, size: { id: string;
   return r.ok ? editSet(r.doc, setId, (s) => ({ ...s, outputs: [...s.outputs, size.id] })) : r;
 }
 
+/** D51: shows / hides a size's Preview on the board (the size still lays out and exports). */
+export function setPreviewHidden(doc: ProjectDoc, setId: string, outputId: string, hidden: boolean): SourceResult {
+  return editSet(doc, setId, (s) => {
+    if (!s.outputs.includes(outputId)) return s;
+    const rest = (s.hidden ?? []).filter((o) => o !== outputId);
+    const next = hidden ? [...rest, outputId] : rest;
+    const { hidden: _old, ...base } = s;
+    void _old;
+    return next.length ? { ...base, hidden: next } : base;
+  });
+}
+
 /** Moves a row within its set (row order only). */
 export function moveSetRow(doc: ProjectDoc, setId: string, outputId: string, to: number): SourceResult {
   return editSet(doc, setId, (s) => {

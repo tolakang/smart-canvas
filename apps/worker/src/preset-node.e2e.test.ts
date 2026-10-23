@@ -96,6 +96,21 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await expect.poll(compositionWires).toContain(id);
   }, 60_000);
 
+  it('D51: a row’s eye hides its Preview from the board (and its wire); its wire has no ✂ badge', async () => {
+    const id = (await doc()).presetSets?.[0]?.outputs[1] ?? '';
+    const wire = (await doc()).edges.find((e) => e.kind === 'composition' && e.to === id)?.id ?? '';
+    expect(await page.locator(`.react-flow__edgelabel-renderer [data-edge="${wire}"]`).count()).toBe(0);
+    const out = page.locator(`.react-flow__node-outputNode[data-id="out:${id}"]`);
+    await out.waitFor();
+    await preset().locator(`[data-output="${id}"]`).getByRole('button', { name: /^Hide preview / }).click();
+    await out.waitFor({ state: 'hidden' });
+    expect(await page.locator(`.react-flow__edge[data-id="${wire}"]`).count()).toBe(0);
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toEqual([id]);
+    await preset().locator(`[data-output="${id}"]`).getByRole('button', { name: /^Show preview / }).click();
+    await out.waitFor();
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toBeUndefined();
+  }, 60_000);
+
   it('a Preview exports itself; Delete removes the node with its sizes', async () => {
     const before = await doc();
     const id = before.presetSets?.[0]?.outputs[0] ?? '';

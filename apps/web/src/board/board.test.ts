@@ -322,6 +322,14 @@ describe('Preset nodes on the board (D46)', () => {
 
   });
 
+  it('D51: a row’s wire has no ✂ badge; a hidden Preview is off the board', () => {
+    const doc = withSet();
+    expect(docToEdges(doc).filter((e) => e.source === setNodeId('gdn')).every((e) => (e.data as { noCut?: boolean }).noCut)).toBe(true);
+    const hidden = { ...doc, presetSets: doc.presetSets?.map((s) => ({ ...s, hidden: ['g2'] })) };
+    expect(docToNodes(hidden).find((n) => n.id === 'out:g2')?.hidden).toBe(true);
+    expect(docToNodes(hidden).find((n) => n.id === 'out:g1')?.hidden).toBeUndefined();
+  });
+
   it('a disconnected row draws no wire; with none left, no wire goes in', () => {
     const doc = { ...withSet(), edges: withSet().edges.filter((e) => e.to !== 'g1') };
     expect(docToEdges(doc).filter((e) => e.source === setNodeId('gdn')).map((e) => e.target)).toEqual(['out:g2']);

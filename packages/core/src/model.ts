@@ -265,6 +265,8 @@ export interface PresetSet {
   label: string;
   board: { x: number; y: number };
   outputs: string[];
+  /** D51: sizes whose Preview is hidden on the board (board only: they still lay out and export). */
+  hidden?: string[];
 }
 
 /**

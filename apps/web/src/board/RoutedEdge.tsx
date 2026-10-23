@@ -12,7 +12,8 @@ import { useBoard } from './context';
 import { routePath } from './wires';
 
 type XY = { x: number; y: number };
-export type RoutedEdgeData = { points?: XY[] };
+/** `noCut` (D51): no idle ✂ badge on this wire (it still shows the Disconnect button when selected). */
+export type RoutedEdgeData = { points?: XY[]; noCut?: boolean };
 export type RoutedFlowEdge = Edge<RoutedEdgeData, 'routed'>;
 
 export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
@@ -48,7 +49,7 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
   return (
     <>
       <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} interactionWidth={interactionWidth} />
-      {!readOnly && (
+      {!readOnly && (selected || !data?.noCut) && (
         <EdgeLabelRenderer>
           <button
             type="button"
