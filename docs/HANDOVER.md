@@ -77,6 +77,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies`) |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
 | Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `LAYERS_HANDLE`, `cardEdgeId`, `connectionRefusal`) |
+| Board placement | `apps/web/src/board/tidy.ts`: `clearSpot` (a new Preset node and its Previews land clear of other nodes), `tidyPositions` (**Tidy board** in the canvas toolbar and the canvas menu, one undo step) |
 | Board UI | `Inspector.tsx` (Layer Comp: its three layouts via `useOpenLayout` from `MainNode.tsx`; Preview; asset nodes by kind), `Board.tsx` (wiring, menus, `+ Add`, preset popup, conversion on open), `MainNode.tsx` (Layer Comp + Core Rule group), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
 | Editors | `apps/web/src/editor/` (`MainEditor` lists the master's layers in every layout; `CanvasEditor` skips locked layers; `LayersPanel`, `board/LayerRow.tsx` `LayerActions` incl. lock) |
 | API schema | `apps/api/src/routes/project-doc.schema.ts` (every new doc field must be added: `additionalProperties: false`) |
@@ -95,4 +96,3 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - PDF uploads keep only the first page, as pixels (D52).
 - `output.family` is computed but no longer changes placement (D38).
 - Resizes don't snap; only moves do.
-- A Preset node added by right‑click lands where you clicked. Its Previews can then overlap other nodes until moved. "+ Add" places it under the group.

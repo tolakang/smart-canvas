@@ -98,6 +98,7 @@ import {
 import { useTheme } from '../ui/theme';
 import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
+import { boxOf, clearSpot, presetBlock, tidyPositions } from './tidy';
 import { CanvasToolbar, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
@@ -807,10 +808,13 @@ function BoardCanvas(props: {
     [duplicateInputs, readOnly, run, onSelectionContextMenu],
   );
 
+  /** N4: where a Preset node of `rows` sizes goes near `at` — its node and its Previews clear of every other node. */
+  const clearAt = (at: { x: number; y: number }, rows: number) => clearSpot(nodesRef.current.filter((n) => !n.hidden).map(boxOf), presetBlock(rows), at);
+
   /** D46 / D49: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to the Layer Comp. */
   const addSet = (family: string, at: { x: number; y: number }) => {
     const sizes = presetFamilies(presets).find((f) => f.label === family)?.presets ?? [];
-    run((d) => addPresetSet(d, { id: newId(), label: family, board: at, sizes: sizes.map((p) => ({ id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } })) }));
+    run((d) => addPresetSet(d, { id: newId(), label: family, board: clearAt(at, sizes.length), sizes: sizes.map((p) => ({ id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } })) }));
   };
 
   /** D49: the Preset nodes on offer — every preset family, then a custom one (the user's own sizes). */
@@ -822,7 +826,7 @@ function BoardCanvas(props: {
         disabled: doc.outputs.length + f.presets.length > LIMITS.maxOutputs,
         onSelect: () => addSet(f.label, at),
       })),
-      { label: 'Custom preset…', separated: true, onSelect: () => run((d) => addPresetSet(d, { id: newId(), label: window.prompt('Preset name', 'Custom')?.trim() || 'Custom', board: at, sizes: [] })) },
+      { label: 'Custom preset…', separated: true, onSelect: () => run((d) => addPresetSet(d, { id: newId(), label: window.prompt('Preset name', 'Custom')?.trim() || 'Custom', board: clearAt(at, 1), sizes: [] })) },
     ];
   };
 
@@ -913,7 +917,16 @@ function BoardCanvas(props: {
     if (readOnly || !flow.current) return;
     e.preventDefault();
     const at = flow.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
-    setMenu({ x: e.clientX, y: e.clientY, title: 'Add here', items: addItems(at) });
+    setMenu({ x: e.clientX, y: e.clientY, title: 'Add here', items: [...addItems(at), { label: 'Tidy board', separated: true, onSelect: tidy }] });
+  };
+
+  /** N4: lays the whole board out again (one undo step), then fits it on screen. */
+  const tidy = () => {
+    if (readOnly) return;
+    history.current.record(docRef.current);
+    syncHistory();
+    show(withPositions(docRef.current, tidyPositions(docRef.current, nodesRef.current)), true);
+    requestAnimationFrame(() => void flow.current?.fitView({ ...FIT_OPTIONS, duration: 200 }));
   };
 
   const onNodeDragStop = useCallback(
@@ -1110,6 +1123,7 @@ function BoardCanvas(props: {
               panels={floating && { open: panel, onOpen: setPanel, library: false }}
               compact={screen === 'phone'}
               minimapToggle={screen === 'desktop'}
+              onTidy={readOnly ? undefined : tidy}
             />
             <ViewportPortal>
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
