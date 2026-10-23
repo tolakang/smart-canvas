@@ -104,3 +104,33 @@ export function tidyPositions(doc: ProjectDoc, nodes: readonly BoardBox[]): { id
   }
   return out.map((m) => ({ id: m.id, position: { x: Math.round(m.position.x), y: Math.round(m.position.y) } }));
 }
+
+/** Rounds a position to the board grid (`step` px) when grid snap is on. */
+export const onGrid = (p: { x: number; y: number }, step: number): { x: number; y: number } => ({ x: Math.round(p.x / step) * step, y: Math.round(p.y / step) * step });
+
+/**
+ * D57 "Tidy selection": the selected panels in an even grid, in reading order (top to bottom, then left to right;
+ * panels whose tops are within half a panel of each other count as one row), starting where the selection's
+ * top-left corner was. About as many columns as rows; each row is as tall as its tallest panel, each column as wide
+ * as its widest; GAP between them.
+ */
+export function tidySelectionPositions(nodes: readonly BoardBox[]): { id: string; position: { x: number; y: number } }[] {
+  const boxes = nodes.filter((n) => !n.hidden).map((n) => ({ id: n.id, ...boxOf(n) }));
+  if (boxes.length < 2) return [];
+  const rowTol = Math.min(...boxes.map((b) => b.h)) / 2;
+  const sorted = [...boxes].sort((a, b) => (Math.abs(a.y - b.y) <= rowTol ? a.x - b.x : a.y - b.y));
+  const cols = Math.ceil(Math.sqrt(sorted.length));
+  const colW = Array.from({ length: cols }, (_, c) => Math.max(0, ...sorted.filter((_, i) => i % cols === c).map((b) => b.w)));
+  const rows = Math.ceil(sorted.length / cols);
+  const rowH = Array.from({ length: rows }, (_, r) => Math.max(0, ...sorted.slice(r * cols, r * cols + cols).map((b) => b.h)));
+  const x0 = Math.min(...boxes.map((b) => b.x));
+  const y0 = Math.min(...boxes.map((b) => b.y));
+  return sorted.map((b, i) => {
+    const c = i % cols;
+    const r = Math.floor(i / cols);
+    const x = x0 + colW.slice(0, c).reduce((s, w) => s + w + GAP, 0);
+    const y = y0 + rowH.slice(0, r).reduce((s, h) => s + h + GAP, 0);
+    return { id: b.id, position: { x: Math.round(x), y: Math.round(y) } };
+  });
+}
+

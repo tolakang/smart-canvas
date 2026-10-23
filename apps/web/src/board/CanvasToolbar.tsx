@@ -25,13 +25,14 @@ const TIPS: Record<string, string> = {
   'Zoom in': 'Zoom in (Ctrl/⌘ + wheel, or pinch)',
   'Fit to screen (Shift+1)': 'Show every panel',
   'Tidy board': 'Arrange all panels: asset nodes in a row, the Layer Comp under them, Preset nodes and their Previews below',
-  'Snap to grid': 'Panels snap to a 16 px grid when moved',
+  'Tidy selection': 'Arrange the selected panels in an even grid',
+  'Snap to grid': 'Panels snap to the 16 px grid when moved (hold Alt to place one freely)',
   Minimap: 'Show a small map of the whole board',
 };
 /** The tooltip's title: the button's name without the shortcut in brackets; the shortcut on its own. */
 function tipParts(label: string): { name: string; key?: string } {
   if (label.startsWith('Hand')) return { name: 'Hand', key: 'H, or hold Space' };
-  if (label === 'Tidy board') return { name: label, key: 'Shift+T' };
+  if (label === 'Tidy board' || label === 'Tidy selection') return { name: label, key: 'Shift+T' };
   const m = /^(.*?) \((.+)\)$/.exec(label);
   return m ? { name: m[1] as string, key: m[2] } : { name: label };
 }
@@ -121,6 +122,8 @@ export function CanvasToolbar(props: {
   minimapToggle?: boolean;
   /** N4: lays the board out again (absent when read-only). */
   onTidy?: () => void;
+  /** Two or more panels selected: Tidy arranges just those (D57). */
+  tidySelection?: boolean;
 }) {
   const { panels, compact } = props;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -144,11 +147,11 @@ export function CanvasToolbar(props: {
       </span>
       {!compact && btn('Zoom in', undefined, () => void zoomIn({ duration: 150 }), <Icon name="plus" />)}
       {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ ...FIT_OPTIONS, duration: 200 }), <Icon name="fit" />)}
-      {props.onTidy && btn('Tidy board', undefined, props.onTidy, <Icon name="arrange" />)}
+      {props.onTidy && btn(props.tidySelection ? 'Tidy selection' : 'Tidy board', undefined, props.onTidy, <Icon name="arrange" />)}
+      <span className="sc-canvasbar__sep" aria-hidden="true" />
+      {btn('Snap to grid', props.grid, () => props.onGrid(!props.grid), <Icon name="grid" />)}
       {!compact && (
         <>
-          <span className="sc-canvasbar__sep" aria-hidden="true" />
-          {btn('Snap to grid', props.grid, () => props.onGrid(!props.grid), <Icon name="grid" />)}
           {props.minimapToggle !== false && btn('Minimap', props.minimap, () => props.onMinimap(!props.minimap), <Icon name="map" />)}
         </>
       )}
