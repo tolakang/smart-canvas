@@ -8,7 +8,7 @@ import { useBoard } from './context';
 const NO_CANVAS = 'nodrag nopan nowheel';
 
 const ACCEPT: Record<'image' | 'vector', string> = {
-  image: 'image/png,image/jpeg,image/webp',
+  image: 'image/png,image/jpeg,image/webp,application/pdf,.pdf',
   vector: 'image/svg+xml,.svg',
 };
 
@@ -16,7 +16,7 @@ function uploadMessage(err: unknown, kind: 'image' | 'vector'): string {
   if (!(err instanceof ApiError)) return 'Upload failed. Check your connection and try again.';
   const body = err.body as { error?: string; reason?: string } | null;
   if (err.status === 413) return `File is larger than ${LIMITS.maxUploadMB} MB.`;
-  if (err.status === 415) return kind === 'image' ? 'Use a PNG, JPEG or WebP image.' : 'Use an SVG file.';
+  if (err.status === 415) return kind === 'image' ? 'Use a PNG, JPEG, WebP or PDF file.' : 'Use an SVG file.';
   if (body?.error === 'svg_rejected') return `This SVG can't be used (${body.reason ?? 'invalid'}).`;
   if (err.status === 403) return 'You can only view this project.';
   return 'Upload failed. Try again.';
@@ -49,7 +49,7 @@ export function useAssetUpload(source: InputSource) {
     setBusy(true);
     try {
       const asset = await uploadAsset(teamId, file);
-      if (asset.kind !== kind) setError(kind === 'image' ? 'This input takes PNG, JPEG or WebP.' : 'This input takes SVG files.');
+      if (asset.kind !== kind) setError(kind === 'image' ? 'This input takes PNG, JPEG, WebP or PDF.' : 'This input takes SVG files.');
       else {
         rememberAsset(asset);
         // D37: the old picture's frames stop hugging it; once the new one is measured, it's fitted into them.
@@ -250,7 +250,7 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
     setBusy(family);
     try {
       const asset = await uploadAsset(teamId, file);
-      if (asset.kind !== 'image') setError('Use a PNG, JPEG or WebP image.');
+      if (asset.kind !== 'image') setError('Use a PNG, JPEG, WebP or PDF file.');
       else {
         rememberAsset(asset);
         run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, asset.id)) }));

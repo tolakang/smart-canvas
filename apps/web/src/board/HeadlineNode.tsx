@@ -1,13 +1,14 @@
 /**
  * D44: a Headline card (PDF page 3, "Headline asset Node") — the headline as a Khmer picture and an English
  * picture, each its own layer that keeps its own placement. "Use" picks the one every output draws. Drop or pick a
- * file on a slot (PNG, JPEG, WebP or SVG); click a slot to set that language in the inspector.
+ * file on a slot (PNG, JPEG, WebP, SVG or PDF); click a slot to set that language in the inspector.
  */
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { deletePair, LANGUAGE_LABEL, layersOfPicture, LIMITS, mainComposition, setLanguage, unfitPictures, withComposition, type InputSource, type ProjectDoc } from '@smart-canvas/core';
 import { useState, type DragEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
 import { setPicture, withSource } from './content';
+import { PICTURE_ACCEPT } from './stack-upload';
 import { useBoard } from './context';
 import type { PairFlowNode } from './flow';
 import { confirmDelete, Icon } from './LayerRow';
@@ -47,12 +48,12 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
     setBusy(lang);
     try {
       const asset = await uploadAsset(teamId, file);
-      if (asset.kind !== 'image' && asset.kind !== 'vector') return setError(`${file.name}: use a PNG, JPEG, WebP or SVG file.`);
+      if (asset.kind !== 'image' && asset.kind !== 'vector') return setError(`${file.name}: use a PNG, JPEG, WebP, SVG or PDF file.`);
       rememberAsset(asset);
       const kind = asset.kind;
       run((d) => ({ ok: true, doc: pictureIntoSlot(d, s, inputOf(lang === 'km' ? 'en' : 'km'), asset.id, kind) }));
     } catch (err) {
-      setError(err instanceof ApiError && err.status === 415 ? `${file.name}: use a PNG, JPEG, WebP or SVG file.` : `${file.name}: upload failed.`);
+      setError(err instanceof ApiError && err.status === 415 ? `${file.name}: use a PNG, JPEG, WebP, SVG or PDF file.` : `${file.name}: upload failed.`);
     } finally {
       setBusy(null);
     }
@@ -92,7 +93,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
             {asset ? 'Replace…' : 'Add…'}
             <input
               type="file"
-              accept="image/png,image/jpeg,image/webp,image/svg+xml,.svg"
+              accept={PICTURE_ACCEPT}
               aria-label={`${LANGUAGE_LABEL[lang]} headline picture`}
               hidden
               disabled={busy !== null}

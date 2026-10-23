@@ -1,6 +1,6 @@
 /**
  * D40: many files at once into an Assets card (or a new card where they were dropped on the canvas). Every file
- * is uploaded (the API checks the bytes); pictures (PNG, JPEG, WebP, SVG) become the card's items in one undo
+ * is uploaded (the API checks the bytes); pictures (PNG, JPEG, WebP, SVG; a PDF as its first page, N2) become the card's items in one undo
  * step; the rest are listed as errors.
  */
 import { addPicturesToStack, addStack, LIMITS, type ProjectDoc, type SourceResult, type StackPicture } from '@smart-canvas/core';
@@ -9,12 +9,12 @@ import { ApiError, uploadAsset, type AssetMeta } from '../api';
 import { useBoard } from './context';
 import { newId } from './ids';
 
-export const PICTURE_ACCEPT = 'image/png,image/jpeg,image/webp,image/svg+xml,.svg';
+export const PICTURE_ACCEPT = 'image/png,image/jpeg,image/webp,image/svg+xml,.svg,application/pdf,.pdf';
 
 const labelOf = (name: string) => name.replace(/\.[^.]+$/, '').trim() || 'Picture';
 
 function reason(file: File, err: unknown): string {
-  if (err instanceof ApiError && err.status === 415) return `${file.name}: use a PNG, JPEG, WebP or SVG file.`;
+  if (err instanceof ApiError && err.status === 415) return `${file.name}: use a PNG, JPEG, WebP, SVG or PDF file.`;
   if (err instanceof ApiError && err.status === 413) return `${file.name}: larger than ${LIMITS.maxUploadMB} MB.`;
   if (err instanceof ApiError && err.status === 403) return 'You can only view this project.';
   return `${file.name}: upload failed.`;

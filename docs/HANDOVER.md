@@ -1,6 +1,6 @@
 # Handover — 2026-10-23 (after #106)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D51**), `docs/BACKLOG.md` (P14 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D52**), `docs/BACKLOG.md` (P14 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -31,7 +31,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
            each size row  ── eye · trash ──→ Preview (Edit = its overrides, Export)
 ```
 
-**Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG.
+**Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG; a PDF goes up as its first page, a PNG (D52, `apps/web/src/pdf.ts`, called from `uploadAsset`).
 - **Logo, Image and Text** are `AssetStack`s with `kind: 'logo' | 'image' | 'text'`. Logo items behave as logos (they get a minimum size).
 - **Text** slots are each their own text layer. You type on the card, and the slot grows with its text. `addTextToStack` adds one.
 - **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch.
@@ -87,11 +87,12 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - **Draggable rows:** a draggable row (HTML5 `draggable`) swallows wire drags that start on a handle inside it. Make only the grip draggable.
 - **Shared ports:** many wires meet at the Layer Comp's `layers` port. Grab a wire by its node end (`edgeupdater-source`).
 - **Hidden buttons:** buttons shown only on hover aren't in the accessibility tree. Use a CSS locator plus `dispatchEvent('click')`.
+- **Lazy deps in e2e:** the e2e tests run the Vite dev server. A dependency imported lazily must be listed in `optimizeDeps.include` (`apps/web/vite.config.ts`), or Vite finds it mid‑test and reloads the page. pdf.js 6+ needs `Map.getOrInsertComputed`, which the test Chromium lacks; stay on 5.4.
 - **Presets load late:** team presets load after the board. Re‑open a menu until a preset family is listed.
 - **Default project:** a new project wires every asset node. Tests that need fewer layers filter the layer edges in a PUT doc.
 
 ## Known limits
-- PDF uploads aren't supported yet. The owner deferred them.
+- PDF uploads keep only the first page, as pixels (D52).
 - One Khmer/English pair per Headline node; add another Headline node for more.
 - `output.family` is computed but no longer changes placement (D38).
 - Resizes don't snap; only moves do.
