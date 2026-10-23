@@ -73,7 +73,7 @@
   - **≥ 1280 px:** the left library and right inspector are docked, with a floating canvas toolbar and a minimap.
   - **768–1279 px:** the sidebars become overlays, one at a time.
   - **< 768 px (phone):** the canvas is full screen, the library and inspector are bottom sheets, and the top bar is condensed into an overflow menu.
-  - **Touch:** pinch to zoom, two fingers to pan, long-press for the context menu, tap a port then tap a target to wire, and hit targets of at least 44 px.
+  - **Touch:** pinch to zoom, two fingers to pan, long-press for the context menu (**on a board panel: D57**), tap a port then tap a target to wire, and hit targets of at least 44 px.
   - **Editors on a phone:** the canvas, with the Design panel as a bottom sheet.
 - D34 Theme: light and dark with a toggle in the top bar. The default follows the system setting; the choice is remembered per browser. All colours are tokens (DESIGN-SYSTEM.md), so both themes come from one set of rules.
 - D35 Node status = layout health. Nodes show how their layout is doing; export progress stays in the export dialog.
@@ -140,3 +140,7 @@
   - **Removed from the model:** `ProjectDoc.processes` (`ProcessNode`, `ProcessOp`, `LIMITS.maxProcesses`), `OutputNode.layers`, `ProjectDoc.coreRules`, master previews other than 'main' and its layouts, and rows that aren't inputs. The Core Rule panel beside the Layer Comp stays (it is derived, `core-rules.ts`).
   - **Migration (`migrateProjectDoc`, v2 → v3):** all of the above leave the document with their wires, rows, placements, overrides, frozen frames and transform histories; an output of a dropped master preview follows 'main'. Opening a v2 project already dropped most of it (D49), so nothing on the board changes. The API serves stored documents migrated and accepts v3, or v2 / v1 from a client that hasn't reloaded (picked by `schema`), storing v3.
   - **Removed from the engine and renderer:** layer effects (crop, mirror, quarter turns, colour adjustments, recolor masks), nested scenes, output-only layout, and the board's composition-as-layer port. `layerSources` is the inputs (a Headline card's unused language hidden, D44).
+- D57 Board tools behave like the standard design tools (owner, 2026-10-23: plan approved "go ahead", after the interaction-design audit). Amends D33's touch long-press for panels.
+  - **Select:** click / tap selects a panel; **Shift-click** (or Ctrl / ⌘-click) adds or removes one; a drag on empty canvas draws a box (Shift-drag adds to the selection); **Esc** clears the selection; **Ctrl / ⌘ + A** selects every panel. On touch, a **long-press on a panel** adds it to the selection or takes it out (with a short vibration where supported); a long-press on empty canvas, a port or a control inside a panel still opens its menu (D33). The selection bar stays the visible alternative.
+  - **Hand:** a drag anywhere pans the board, panels included; the cursor is a grab hand. **Holding Space** is the Hand tool while held, from any tool, and the toolbar shows Hand pressed meanwhile.
+  - **Arrow keys** move the selected panels (and the members of selected groups) 1 board px, Shift 10, or one 16 px grid step with grid snap on. Nudges are saved like a drag; a run of presses less than 0.8 s apart is one undo step. (React Flow's own arrow nudge moved panels without saving them; it no longer sees the keys.)

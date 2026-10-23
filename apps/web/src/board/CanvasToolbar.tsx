@@ -18,8 +18,9 @@ export const FIT_OPTIONS = { maxZoom: 1, padding: { top: '24px', left: '24px', r
 const TIPS: Record<string, string> = {
   'Add nodes': 'Add asset and Preset nodes',
   Inspector: 'Settings of the selected node',
-  'Select (V)': 'Click a panel to select it, drag it to move it; drag on empty canvas to select several',
-  'Hand: drag to pan (H, or hold Space)': 'Drag anywhere to move the board; panels stay put',
+  'Select (V)':
+    'Click a panel to select it, drag to move it; Shift-click adds one; drag on empty canvas to select several. Arrows nudge, Esc clears, Ctrl/⌘ + A selects all. On touch, long-press adds a panel',
+  'Hand: drag to pan (H, or hold Space)': 'Drag anywhere to move the board; panels stay put. Hold Space to pan from any tool',
   'Zoom out': 'Zoom out (Ctrl/⌘ + wheel, or pinch)',
   'Zoom in': 'Zoom in (Ctrl/⌘ + wheel, or pinch)',
   'Fit to screen (Shift+1)': 'Show every panel',
@@ -30,6 +31,7 @@ const TIPS: Record<string, string> = {
 /** The tooltip's title: the button's name without the shortcut in brackets; the shortcut on its own. */
 function tipParts(label: string): { name: string; key?: string } {
   if (label.startsWith('Hand')) return { name: 'Hand', key: 'H, or hold Space' };
+  if (label === 'Tidy board') return { name: label, key: 'Shift+T' };
   const m = /^(.*?) \((.+)\)$/.exec(label);
   return m ? { name: m[1] as string, key: m[2] } : { name: label };
 }

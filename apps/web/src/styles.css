@@ -466,6 +466,9 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 /* T13.2 right inspector: the selected node's settings; the canvas takes the rest */
 .sc-board__canvas { display: flex; min-height: 0; }
 .sc-board__flow { flex: 1; min-width: 0; position: relative; }
+/* Hand (or Space held): the board pans from anywhere, panels included; the cursor says so. */
+.sc-board__flow--hand .react-flow__pane, .sc-board__flow--hand .react-flow__node { cursor: grab; }
+.sc-board__flow--hand .react-flow__pane.dragging, .sc-board__flow--hand:active .react-flow__node { cursor: grabbing; }
 .sc-inspector-panel { width: 300px; flex: none; overflow: auto; background: var(--surface); border-left: 1px solid var(--line); font-size: var(--fs-sm); }
 .sc-inspector-panel__section { display: grid; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
 .sc-inspector-panel__title { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: var(--field-h); font-size: var(--fs-sm); font-weight: 600; }
