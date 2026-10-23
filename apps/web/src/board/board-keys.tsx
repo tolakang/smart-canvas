@@ -97,8 +97,9 @@ export function BoardKeys({ disabled, ...actions }: BoardKeyActions & { disabled
       else if ((e.key === 'Delete' || e.key === 'Backspace') && on.onDelete) on.onDelete();
       else return;
       e.preventDefault();
-      // A focused panel's own key handling (React Flow re-selects it on Esc, selects text on Ctrl+A) stays out.
-      e.stopPropagation();
+      // A focused panel's own key handling (React Flow re-selects it on Esc) stays out; menus and popovers still
+      // hear the key.
+      if (e.target instanceof Element && e.target.classList.contains('react-flow__node')) e.stopPropagation();
     };
     const onUp = (e: KeyboardEvent) => {
       if (e.code === 'Space') release();
