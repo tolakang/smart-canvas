@@ -810,7 +810,7 @@ function BoardCanvas(props: {
     const doc = docRef.current;
     return [
       ...presetFamilies(presets).map((f) => ({
-        label: `${f.label} (${f.presets.length} ${f.presets.length === 1 ? 'size' : 'sizes'})`,
+        label: `${f.label} preset (${f.presets.length} ${f.presets.length === 1 ? 'size' : 'sizes'})`,
         disabled: doc.outputs.length + f.presets.length > LIMITS.maxOutputs,
         onSelect: () => addSet(f.label, at),
       })),
@@ -849,7 +849,7 @@ function BoardCanvas(props: {
             return r.ok ? connectSource(r.doc, id) : r;
           }),
       },
-      ...presetItems(at).map((item, i) => ({ ...item, label: `${item.label.replace(/…$/, '')}${item.label.endsWith('…') ? '…' : ' preset'}`, separated: i === 0 })),
+      ...presetItems(at).map((item, i) => ({ ...item, separated: i === 0 })),
     ];
   };
   /**

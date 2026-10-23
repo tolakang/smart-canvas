@@ -25,7 +25,6 @@ describe.skipIf(!adminUrl)('background pictures for vertical / horizontal output
     page = await stack.env.browser.newPage({ viewport: { width: 1600, height: 1000 } });
     const ids = await setupAndCreateProject(page, stack.env.webUrl, 'Backgrounds');
     url = `${stack.env.webUrl}api/teams/${ids.teamId}/projects/${ids.projectId}`;
-    await page.getByRole('button', { name: 'Connect Background', exact: true }).click();
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
     const cur = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
     let doc = ok(addOutput(cur.doc, { id: 'story', label: 'Story', size: { width: 1080, height: 1920, unit: 'px' } }));
@@ -42,6 +41,8 @@ describe.skipIf(!adminUrl)('background pictures for vertical / horizontal output
 
   it('a vertical picture added in the inspector is drawn by the story only', async () => {
     const tall = await sharp({ create: { width: 400, height: 800, channels: 3, background: { r: 20, g: 160, b: 90 } } }).png().toBuffer();
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
     await page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: /^Background$/ }) }).locator('.sc-node__title').click();
     const inspector = page.getByRole('complementary', { name: 'Inspector' });
     await inspector.getByLabel('Vertical background picture').setInputFiles({ name: 'tall.png', mimeType: 'image/png', buffer: tall });

@@ -39,7 +39,7 @@ export function addStack(doc: ProjectDoc, spec: { id: string; label?: string; bo
   if ((doc.stacks ?? []).some((st) => st.id === spec.id) || doc.sources.some((s) => s.id === spec.id)) return { ok: false, error: 'invalid' };
   const stack: AssetStack = {
     id: spec.id,
-    label: spec.label?.trim() || (spec.kind ? STACK_LABEL[spec.kind] : 'Assets'),
+    label: spec.label?.trim() || STACK_LABEL[spec.kind ?? 'image'],
     board: { x: Math.round(spec.board.x), y: Math.round(spec.board.y) },
     items: [],
     ...(spec.kind && spec.kind !== 'image' ? { kind: spec.kind } : {}),

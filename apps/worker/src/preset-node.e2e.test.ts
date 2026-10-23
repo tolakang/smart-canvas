@@ -56,14 +56,13 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
   };
   const compositionWires = async () => (await doc()).edges.filter((e) => e.kind === 'composition').map((e) => e.to);
 
-  it('the canvas menu adds a GDN Preset node: 7 sizes, each a preview wired from its row', async () => {
-    // The team's presets load after the board: reopen the menu until the family is listed.
+  it('+ Add adds a GDN Preset node: 7 sizes, each a preview wired from its row', async () => {
+    // The team's presets load after the board: reopen + Add until the family is listed. (+ Add puts the node under the Layer Comp.)
     const item = page.getByRole('menu').getByRole('menuitem', { name: 'GDN preset (7 sizes)' });
     await expect
       .poll(async () => {
         if (await page.getByRole('menu').count()) await page.keyboard.press('Escape');
-        const at = await emptySpot();
-        await page.mouse.click(at.x, at.y, { button: 'right' });
+        await page.getByRole('button', { name: '+ Add' }).click();
         await page.getByRole('menu').waitFor();
         return item.count();
       }, { timeout: 20_000 })

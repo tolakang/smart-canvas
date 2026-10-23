@@ -1,14 +1,14 @@
 /**
  * T7.5 end to end, through the real stack: the web app in Chromium → the API on Postgres → the export
  * worker (in process, same runExportJob as production) → the file store → download.
- * Create project → 4 inputs → 3 outputs → override → export.
+ * Create project → its asset nodes (D49) → a Preset node with 3 sizes → override → export.
  */
 import { readFileSync } from 'node:fs';
 import type { ProjectDoc } from '@smart-canvas/core';
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+import { boardNode, putPicture, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
 const tinyPng = readFileSync(new URL('../../api/src/assets/fixtures/tiny.png', import.meta.url));
 const logoSvg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100" fill="#0a7"/></svg>');
@@ -34,28 +34,27 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     const [, team, project] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];
     return (await (await page.request.get(`${env.webUrl}api/teams/${team}/projects/${project}`)).json()).doc;
   };
-  const inNode = (label: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${label}$`) }) });
 
-  it('creates a project with 4 inputs and 3 outputs', async () => {
+  it('creates a project: pictures and text in its asset nodes, a Preset node with 3 sizes', async () => {
     await setupAndCreateProject(page, env.webUrl, 'Grand opening');
 
-    await inNode('Subject').locator('input[type=file]').setInputFiles({ name: 'subject.png', mimeType: 'image/png', buffer: tinyPng });
-    await inNode('Subject').locator('img.sc-thumb').waitFor();
-    await inNode('Logo').locator('input[type=file]').setInputFiles({ name: 'logo.svg', mimeType: 'image/svg+xml', buffer: logoSvg });
-    await inNode('Logo').locator('img.sc-thumb').waitFor();
-    // The card shows a preview; its text is edited in the inspector.
-    await inNode('Headline').locator('.sc-node__title').click();
-    await page.getByRole('complementary', { name: 'Inspector' }).getByLabel('Headline text').fill('Grand opening សួស្តី');
-    for (const l of ['Background', 'Subject', 'Headline', 'Logo']) await page.getByRole('button', { name: `Connect ${l}` }).click();
-    for (const preset of ['Instagram portrait 4:5 · 1080×1350 px', 'Instagram square · 1080×1080 px', 'A5 flyer · 148×210 mm']) {
-      await page.getByRole('button', { name: '+ Add output' }).click();
-      await page.getByRole('dialog').getByLabel('Preset').selectOption({ label: preset });
-      await page.getByRole('dialog').getByRole('button', { name: 'Add' }).click();
-    }
+    await putPicture(page, 'Subject', { name: 'subject.png', mimeType: 'image/png', buffer: tinyPng });
+    await boardNode(page, 'Image').locator('img[alt="Subject preview"]').waitFor();
+    await putPicture(page, 'Logo', { name: 'logo.svg', mimeType: 'image/svg+xml', buffer: logoSvg });
+    await boardNode(page, 'Logo').locator('img[alt="Logo preview"]').waitFor();
+    // D49: text is typed into its slot on the Text node.
+    await boardNode(page, 'Text').getByLabel('Headline text').fill('Grand opening សួស្តី');
+    // A custom Preset node with three sizes.
+    page.once('dialog', (d) => void d.accept('Social'));
+    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('menuitem', { name: 'Custom preset…' }).click();
+    const set = boardNode(page, 'Social Preset');
+    await set.waitFor();
+    for (const name of ['Instagram portrait 4:5', 'Instagram square', 'A5 flyer']) await set.getByLabel('Add a size to Social').selectOption({ label: name });
     await saved();
 
     const d = await doc();
-    expect(d.edges.filter((e) => e.kind === 'layer' && e.to === 'main').map((e) => e.from).sort()).toEqual(['background', 'headline', 'logo', 'subject']);
+    for (const id of ['background', 'headline', 'logo', 'subject']) expect(d.edges.some((e) => e.kind === 'layer' && e.to === 'main' && e.from === id)).toBe(true);
     expect(d.outputs.map((o) => o.label)).toEqual(['Instagram portrait 4:5', 'Instagram square', 'A5 flyer']);
     expect(d.edges.filter((e) => e.kind === 'composition')).toHaveLength(3);
     await page.getByLabel('Output Instagram square', { exact: true }).locator('.sc-render [data-source-id=headline]').waitFor();

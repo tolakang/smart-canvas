@@ -17,6 +17,7 @@ import { orderLayers } from './layer-order';
 import type { ProjectDoc } from './model';
 import { deleteComposition } from './compositions';
 import { deleteProcess } from './processes';
+import { PREVIEW_OFFSET } from './preset-sets';
 import { createProjectDoc } from './project';
 import { connectSource } from './ports';
 import { addSource } from './sources';
@@ -88,7 +89,15 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
   // 3. Outputs outside a Preset node join a "Sizes" preset node.
   const inSets = new Set((next.presetSets ?? []).flatMap((s) => s.outputs));
   const loose2 = next.outputs.filter((o) => !inSets.has(o.id)).map((o) => o.id);
-  if (loose2.length) next = { ...next, presetSets: [...(next.presetSets ?? []), { id: uniqueId(next, 'sizes'), label: 'Sizes', board: { ...BOARD_LAYOUT.preset }, outputs: loose2 }] };
+  if (loose2.length) {
+    // Its Previews in a column to its right (as a new Preset node's).
+    const at = new Map(loose2.map((id, i) => [id, { x: BOARD_LAYOUT.preset.x + PREVIEW_OFFSET.x, y: BOARD_LAYOUT.preset.y + i * PREVIEW_OFFSET.rowGap }]));
+    next = {
+      ...next,
+      outputs: next.outputs.map((o) => (at.has(o.id) ? { ...o, board: at.get(o.id) ?? o.board } : o)),
+      presetSets: [...(next.presetSets ?? []), { id: uniqueId(next, 'sizes'), label: 'Sizes', board: { ...BOARD_LAYOUT.preset }, outputs: loose2 }],
+    };
+  }
 
   next = orderLayers(next);
   return next === doc ? doc : next;

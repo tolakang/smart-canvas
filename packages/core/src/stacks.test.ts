@@ -16,7 +16,7 @@ const withCard = () => ok(addStack(createProjectDoc('P'), { id: 'st', board: { x
 describe('Assets cards (D40)', () => {
   it('a new card is empty, named Assets, and feeds the master preview', () => {
     const doc = withCard();
-    expect(assetStacks(doc)).toEqual([{ id: 'st', label: 'Assets', board: { x: -500, y: 0 }, items: [] }]);
+    expect(assetStacks(doc)).toEqual([{ id: 'st', label: 'Image', board: { x: -500, y: 0 }, items: [] }]);
     expect(stackCompositions(doc, 'st')).toEqual(['main']);
   });
 

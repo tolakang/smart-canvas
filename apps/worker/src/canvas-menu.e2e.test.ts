@@ -1,6 +1,6 @@
 /**
- * T8.4 end to end: right-click the empty canvas to add an input (quick kinds or the full dialog) or an output,
- * and the new node appears where the canvas was clicked.
+ * T8.4 / D49 end to end: right-click the empty canvas to add an asset node or a Preset node; the new node
+ * appears where the canvas was clicked.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -50,7 +50,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
     return !!b && Math.abs(b.x - at.x) < 3 && Math.abs(b.y - at.y) < 3;
   };
 
-  it('offers the quick inputs, the input dialog and the output dialog', async () => {
+  it('offers the asset nodes, a Preset node per preset family, and a custom preset', async () => {
     // The team's presets (the Preset node items) load after the board: reopen until they are listed.
     await expect
       .poll(async () => {
@@ -59,54 +59,43 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
         return menu().getByRole('menuitem', { name: 'GDN preset (7 sizes)' }).count();
       }, { timeout: 20_000 })
       .toBe(1);
-    expect(await menu().getByRole('menuitem').allInnerTexts()).toEqual([
-      'Assets (many pictures)',
-      'Headline (Khmer / English)',
-      'Image (subject)',
-      'Logo / SVG',
-      'Text',
-      'Background colour / gradient',
-      'Input…',
-      'Master preview', // T12.3
-      'Core rules', // D47
-      'GDN preset (7 sizes)', // D46
-      'Website preset (4 sizes)',
-      'Output…',
-    ]);
+    const items = await menu().getByRole('menuitem').allInnerTexts();
+    // D49: the asset nodes, then a Preset node per preset family, then a custom one.
+    expect(items.slice(0, 5)).toEqual(['Logo node', 'Headline node (Khmer / English)', 'Text node', 'Image node', 'Background node']);
+    for (const p of ['FB preset (1 size)', 'GDN preset (7 sizes)', 'Website preset (4 sizes)', 'App banner preset (2 sizes)']) expect(items).toContain(p);
+    expect(items.at(-1)).toBe('Custom preset…');
     await page.keyboard.press('Escape');
   }, 30_000);
 
-  it('Text adds a text input whose node sits at the click', async () => {
+  it('Text node adds a Text node with one slot, at the click', async () => {
     const at = await rightClickEmpty();
-    await menu().getByRole('menuitem', { name: 'Text', exact: true }).click();
-    const node = page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: /^Text$/ }) });
+    const before = (await doc()).stacks?.length ?? 0;
+    await menu().getByRole('menuitem', { name: 'Text node', exact: true }).click();
+    const node = page.locator('.react-flow__node-textNode').nth(1);
     await node.waitFor();
     expect(await near(node, at)).toBe(true);
     await saved();
-    expect((await doc()).sources.find((s) => s.label === 'Text')).toMatchObject({ kind: 'text', behavesLike: 'text' });
+    const d = await doc();
+    expect(d.stacks).toHaveLength(before + 1);
+    const card = d.stacks?.at(-1);
+    expect(card).toMatchObject({ kind: 'text', label: 'Text' });
+    expect(d.sources.find((s) => s.id === card?.items[0])).toMatchObject({ kind: 'text', behavesLike: 'text', label: 'Text 1' });
+    // + Add text adds another slot, its own layer.
+    await node.getByRole('button', { name: 'Add text' }).click();
+    await saved();
+    expect((await doc()).stacks?.at(-1)?.items).toHaveLength(2);
   }, 60_000);
 
-  it('Output… opens the output dialog and places the output at the click', async () => {
+  it('a preset family adds its Preset node at the click, wired from the Layer Comp, a Preview per size', async () => {
     const at = await rightClickEmpty();
-    await menu().getByRole('menuitem', { name: 'Output…' }).click();
-    const dialog = page.getByRole('dialog');
-    await dialog.getByLabel('Preset').selectOption({ label: 'Instagram square · 1080×1080 px' });
-    await dialog.getByRole('button', { name: 'Add' }).click();
-    const out = page.getByLabel('Output Instagram square', { exact: true });
-    await out.waitFor();
-    expect(await near(page.locator('.react-flow__node-outputNode').first(), at)).toBe(true);
+    await menu().getByRole('menuitem', { name: 'Website preset (4 sizes)' }).click();
+    const set = page.locator('.react-flow__node-presetNode');
+    await set.waitFor();
+    expect(await near(set, at)).toBe(true);
     await saved();
     const d = await doc();
-    expect(d.edges.some((e) => e.kind === 'composition' && e.to === d.outputs[0]?.id)).toBe(true);
-  }, 60_000);
-
-  it('the toolbar "+ Add input" still uses the default column, not the last click', async () => {
-    await page.getByRole('button', { name: '+ Add input' }).click();
-    const dialog = page.getByRole('dialog');
-    await dialog.getByLabel('Name').fill('Band');
-    await dialog.getByRole('button', { name: 'Add' }).click();
-    await saved();
-    const band = (await doc()).sources.find((s) => s.label === 'Band');
-    expect(band?.board.x).toBe(-460);
+    expect(d.presetSets?.[0]).toMatchObject({ label: 'Website' });
+    expect(d.presetSets?.[0]?.outputs).toHaveLength(4);
+    for (const o of d.presetSets?.[0]?.outputs ?? []) expect(d.edges.some((e) => e.kind === 'composition' && e.from === 'main' && e.to === o)).toBe(true);
   }, 60_000);
 });

@@ -38,7 +38,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
     if (!(w > 0 && h > 0 && w <= 20000 && h <= 20000)) return;
     run((d) => addSizeToSet(d, set.id, { id: newId(), label: `${set.label} ${w}×${h}`, size: { width: w, height: h, unit: 'px' } }));
   };
-  const addable = presets.filter((p) => p.size.unit === 'px' && !used.has(p.id));
+  const addable = presets.filter((p) => !used.has(p.id));
 
   return (
     <div className="sc-node sc-node--preset" aria-label={`Preset ${set.label}`}>
@@ -87,8 +87,6 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             key={output.id}
             className={`sc-port${connected ? ' sc-port--wired' : ' sc-port--frozen'}${dropAt === i ? ' sc-port--drop' : ''}`}
             data-output={output.id}
-            draggable={!readOnly}
-            onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)}
             onDragOver={(e) => {
               if (!e.dataTransfer.types.includes(ROW_DRAG)) return;
               e.preventDefault();
@@ -103,8 +101,9 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
               run((d) => moveSetRow(d, set.id, id, i));
             }}
           >
+            {/* Only the grip drags the row (the row's handle starts a wire). */}
             {!readOnly && (
-              <span className="sc-port__grip" aria-hidden="true">
+              <span className="sc-port__grip" aria-hidden="true" draggable onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)} title="Drag to re-order">
                 <Icon name="grip" />
               </span>
             )}
