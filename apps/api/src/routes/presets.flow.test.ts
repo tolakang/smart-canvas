@@ -68,6 +68,17 @@ describe.skipIf(!adminUrl)('presets API (Postgres)', () => {
     expect((await call('DELETE', `${base()}/${p.id}`, admin)).statusCode).toBe(404);
   });
 
+  it('N5: built-in campaign sizes carry their family; a team preset keeps the family it is given (blank = none)', async () => {
+    const list = (await call('GET', base(), viewer)).json<SizePreset[]>();
+    expect(list.filter((p) => p.family === 'GDN')).toHaveLength(7);
+    expect(list.find((p) => p.name === 'A4')).not.toHaveProperty('family');
+    const promo = (await call('POST', base(), admin, { group: 'social', name: 'Promo 300×250', family: ' Promo ', size: { width: 300, height: 250, unit: 'px' } })).json<SizePreset>();
+    expect(promo.family).toBe('Promo');
+    const single = (await call('PUT', `${base()}/${promo.id}`, admin, { group: 'social', name: 'Promo 300×250', family: '  ', size: { width: 300, height: 250, unit: 'px' } })).json<SizePreset>();
+    expect(single).not.toHaveProperty('family');
+    expect((await call('POST', base(), admin, { ...poster, family: 'x'.repeat(61) })).statusCode).toBe(400);
+  });
+
   it('built-ins are read-only and bad input is rejected', async () => {
     const a4 = builtIns.find((p) => p.name === 'A4');
     expect((await call('PUT', `${base()}/${a4?.id}`, admin, poster)).statusCode).toBe(404);

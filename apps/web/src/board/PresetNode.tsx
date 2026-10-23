@@ -2,9 +2,11 @@
  * D46: a Preset node (PDF page 3, "GDN Preset Node") — a list of media sizes fed by one wire from a master
  * preview. Each row is an output wired out to its own Preview node (Edit / Export there); cutting a row's wire
  * disconnects that size (its layout freezes). Rows are dragged into another order, added from the team's presets
- * or as a custom W × H, or removed.
+ * or as a custom W × H, or removed. N5: "Save as team preset" saves the node's sizes as a team preset family, so
+ * it is offered as a Preset node from then on.
  */
-import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, renameSet, setPreviewHidden } from '@smart-canvas/core';
+import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, presetFamilies, renameSet, setPreviewHidden } from '@smart-canvas/core';
+import { api, ApiError } from '../api';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState } from 'react';
 import { useBoard } from './context';
@@ -18,7 +20,7 @@ const ROW_DRAG = 'application/x-sc-preset-row';
 
 export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   const { set, rows } = data;
-  const { readOnly, run, presets, exportOutputs } = useBoard();
+  const { readOnly, run, presets, reloadPresets, exportOutputs, teamId } = useBoard();
   const updateInternals = useUpdateNodeInternals();
   const rowKey = rows.map((r) => r.output.id).join(',');
   useEffect(() => updateInternals(id), [id, rowKey, updateInternals]);
@@ -40,6 +42,26 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
     run((d) => addSizeToSet(d, set.id, { id: newId(), label: `${set.label} ${w}×${h}`, size: { width: w, height: h, unit: 'px' } }));
   };
   const addable = presets.filter((p) => !used.has(p.id));
+
+  /** N5: saves the node's sizes as the team's preset family `name` (sizes the family already has are skipped). */
+  const [savedNote, setSavedNote] = useState<string | null>(null);
+  async function saveAsFamily() {
+    const name = window.prompt('Save these sizes as a team preset family named', set.label)?.trim();
+    if (!name) return;
+    const family = presetFamilies(presets).find((f) => f.label === name);
+    if (family?.presets.some((p) => p.teamId === null)) return setSavedNote(`“${name}” is a built-in preset; pick another name.`);
+    const has = new Set(family?.presets.map((p) => `${p.size.width}×${p.size.height}${p.size.unit}`));
+    const todo = rows.filter(({ output: o }) => !has.has(`${o.size.width}×${o.size.height}${o.size.unit}`));
+    try {
+      for (const { output: o } of todo)
+        await api('POST', `/teams/${teamId}/presets`, { group: o.size.unit === 'mm' ? 'print' : 'social', name: `${name} ${o.size.width}×${o.size.height}`, family: name, size: { ...o.size } });
+      setSavedNote(`Saved as team preset “${name}” (${(family?.presets.length ?? 0) + todo.length} sizes).`);
+      reloadPresets();
+    } catch (err) {
+      setSavedNote(err instanceof ApiError && err.status === 403 ? 'Only team admins can save presets.' : 'Could not save the preset.');
+      reloadPresets();
+    }
+  }
 
   return (
     <div className="sc-node sc-node--preset" aria-label={`Preset ${set.label}`}>
@@ -164,6 +186,16 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         <button type="button" className={`sc-btn sc-preset__add-custom ${NO_CANVAS}`} onClick={() => setCustom({ w: '', h: '' })}>
           <Icon name="plus" /> Custom size
         </button>
+      )}
+      {!readOnly && rows.length > 0 && (
+        <button type="button" className={`sc-btn sc-preset__save ${NO_CANVAS}`} onClick={() => void saveAsFamily()}>
+          <Icon name="library" /> Save as team preset
+        </button>
+      )}
+      {savedNote && (
+        <p className="sc-muted sc-preset__note" role="status">
+          {savedNote}
+        </p>
       )}
       {!readOnly && addable.length > 0 && (
         <select

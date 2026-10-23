@@ -433,6 +433,8 @@ function BoardCanvas(props: {
   );
 
   const [presets, setPresets] = useState<SizePreset[]>([]);
+  const [presetsRev, setPresetsRev] = useState(0);
+  const reloadPresets = useCallback(() => setPresetsRev((n) => n + 1), []);
   useEffect(() => {
     let live = true;
     api<SizePreset[]>('GET', `/teams/${teamId}/presets`).then(
@@ -442,7 +444,7 @@ function BoardCanvas(props: {
     return () => {
       live = false;
     };
-  }, [teamId]);
+  }, [teamId, presetsRev]);
   const { sizes, remember } = useAssetSizes(teamId, usedAssetsKey(doc));
   const { deps: layoutDeps, missingFonts } = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
 
@@ -499,6 +501,7 @@ function BoardCanvas(props: {
       layoutDeps,
       missingFonts,
       presets,
+      reloadPresets,
       rememberAsset: remember,
       disconnectOutput: disconnect,
       reconnectOutput: reconnect,
@@ -506,7 +509,7 @@ function BoardCanvas(props: {
       setStackFocus,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
+    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );
 
   // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.

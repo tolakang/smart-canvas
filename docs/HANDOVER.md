@@ -1,6 +1,6 @@
 # Handover — 2026-10-23 (after #106)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D53**), `docs/BACKLOG.md` (P14 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D54**), `docs/BACKLOG.md` (P14 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -74,7 +74,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
 | Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`), `render.ts` (`masterScene`) |
 | Core Rule data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`, `layerRule`) |
-| Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies`) |
+| Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies` by `SizePreset.family`, D54); built-in families in `packages/presets`; a Preset node's **Save as team preset** in `PresetNode.tsx` |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
 | Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `LAYERS_HANDLE`, `cardEdgeId`, `connectionRefusal`) |
 | Board placement | `apps/web/src/board/tidy.ts`: `clearSpot` (a new Preset node and its Previews land clear of other nodes), `tidyPositions` (**Tidy board** in the canvas toolbar and the canvas menu, one undo step) |
