@@ -150,6 +150,10 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T18.1 (M1) — Snap to the layer's spot in the other layouts — [#124](https://github.com/tolakang/smart-canvas/pull/124)
 - [x] T18.2 (M5) — Retire engine features the board no longer offers, schema 3 (D56) — [#125](https://github.com/tolakang/smart-canvas/pull/125)
 
+## P19 Board tools to standard (D57)
+- [ ] T19.1 — Select, Hand and keys
+- [ ] T19.2 — Grid snap and Tidy
+
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] Q1 — Pick the page of a multi-page PDF
 - [ ] Q2 — Preset nodes follow a renamed team family

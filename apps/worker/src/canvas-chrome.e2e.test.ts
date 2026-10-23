@@ -159,4 +159,70 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     await selbar.getByRole('button', { name: 'Clear selection' }).click();
     await selbar.waitFor({ state: 'detached' });
   }, 30_000);
+
+  const panelsSelected = () => page.locator('.react-flow__node.selected').count();
+  const comp = () => page.locator('.react-flow__node-mainNode .sc-node__title').first();
+
+  it('Select: Shift-click adds a panel, Esc clears the selection, Ctrl/⌘ + A selects every panel', async () => {
+    await page.locator('.react-flow__pane').click({ position: { x: 5, y: 5 } });
+    await comp().click();
+    expect(await panelsSelected()).toBe(1);
+    const other = page.locator('.react-flow__node[data-id^="stk:"] .sc-node__title').last();
+    await other.click({ modifiers: ['Shift'] });
+    const selbar = page.getByRole('toolbar', { name: 'Selection' });
+    await selbar.getByText('2 selected').waitFor();
+    // Shift-click again takes it out.
+    await other.click({ modifiers: ['Shift'] });
+    await selbar.waitFor({ state: 'detached' });
+    await page.keyboard.press('Escape');
+    await expect.poll(panelsSelected).toBe(0);
+    await page.keyboard.press('ControlOrMeta+a');
+    const all = await page.locator('.react-flow__node[data-id]:not([data-id^="grp:"])').count();
+    await selbar.getByText(`${all} selected`).waitFor();
+    await page.keyboard.press('Escape');
+    await selbar.waitFor({ state: 'detached' });
+  }, 30_000);
+
+  it('arrow keys nudge the selected panel: saved, kept after a reload, one undo step per run of presses', async () => {
+    const grid = bar().getByRole('button', { name: 'Snap to grid' });
+    if ((await grid.getAttribute('aria-pressed')) === 'true') await grid.click();
+    await page.locator('.react-flow__pane').click({ position: { x: 5, y: 5 } });
+    await comp().click();
+    const start = (await doc()).compositions.find((c) => c.id === 'main')?.board ?? { x: 0, y: 0 };
+    for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(900);
+    await page.keyboard.press('Shift+ArrowDown');
+    const board = async () => (await doc()).compositions.find((c) => c.id === 'main')?.board;
+    await expect.poll(board, { timeout: 15_000 }).toEqual({ x: start.x + 3, y: start.y + 10 });
+    // Undo: the Shift step, then the run of three.
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(board, { timeout: 15_000 }).toEqual({ x: start.x + 3, y: start.y });
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(board, { timeout: 15_000 }).toEqual(start);
+    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await expect.poll(board, { timeout: 15_000 }).toEqual({ x: start.x + 3, y: start.y });
+    await page.reload();
+    await bar().waitFor();
+    expect(await board()).toEqual({ x: start.x + 3, y: start.y });
+  }, 60_000);
+
+  it('holding Space is the Hand tool while held: the button shows it, a drag pans and selects nothing', async () => {
+    const select = bar().getByRole('button', { name: 'Select (V)' });
+    const hand = bar().getByRole('button', { name: /^Hand/ });
+    await page.locator('.react-flow__pane').click({ position: { x: 5, y: 5 } });
+    await page.keyboard.down('Space');
+    await expect.poll(() => hand.getAttribute('aria-pressed')).toBe('true');
+    expect(await page.locator('.sc-board__flow--hand').count()).toBe(1);
+    const pane = await page.locator('.react-flow__pane').boundingBox();
+    if (!pane) throw new Error('no pane');
+    const t0 = await transform();
+    await page.mouse.move(pane.x + 40, pane.y + pane.height - 40);
+    await page.mouse.down();
+    await page.mouse.move(pane.x + 240, pane.y + pane.height - 140, { steps: 6 });
+    await page.mouse.up();
+    await expect.poll(transform).not.toBe(t0);
+    expect(await panelsSelected()).toBe(0);
+    await page.keyboard.up('Space');
+    await expect.poll(() => select.getAttribute('aria-pressed')).toBe('true');
+  }, 30_000);
 });

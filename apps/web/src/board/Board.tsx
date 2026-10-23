@@ -46,7 +46,7 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Autosave, type SaveState } from './autosave';
 import { FontsDialog } from '../fonts/FontsDialog';
@@ -162,6 +162,9 @@ export function Board(props: { teamId: string; projectId: string; userId: string
   );
 }
 
+/** Shift-click adds a panel to the selection or takes it out, like Figma; Ctrl / ⌘ too (React Flow's default). */
+const MULTI_SELECT_KEYS = ['Shift', 'Meta', 'Control'];
+
 /** T13.8: every wire can carry reroute points. */
 const edgeTypes = { routed: RoutedEdge };
 
@@ -264,6 +267,10 @@ function BoardCanvas(props: {
   const [selectedGroups, setSelectedGroups] = useState<ReadonlySet<string>>(new Set());
   const displayNodes = useMemo((): FlowNode[] => withGroupFrames(nodes, boardGroups(doc), doc, selectedGroups), [nodes, doc, selectedGroups]);
   const displayNodesRef = useRef(displayNodes);
+  const selectedGroupsRef = useRef(selectedGroups);
+  useLayoutEffect(() => {
+    selectedGroupsRef.current = selectedGroups;
+  }, [selectedGroups]);
   useEffect(() => {
     displayNodesRef.current = displayNodes;
   }, [displayNodes]);
@@ -333,13 +340,32 @@ function BoardCanvas(props: {
   // Every screen starts with Select (owner, 2026-10-23): one finger / the mouse selects and moves panels, a drag on
   // empty canvas selects several; Hand (or two fingers, pinch, wheel, Space) moves the board.
   const [tool, setTool] = useState<CanvasTool>('select');
+  /** Space held: the Hand tool for as long as it is held (spring-loaded); the toolbar shows it. */
+  const [spaceHeld, setSpaceHeld] = useState(false);
+  const activeTool: CanvasTool = spaceHeld ? 'hand' : tool;
+  const activeToolRef = useRef(activeTool);
+  useLayoutEffect(() => {
+    activeToolRef.current = activeTool;
+  }, [activeTool]);
   const screen = useScreen();
   const floating = screen === 'phone' ? 'sheet' : screen === 'tablet' ? 'overlay' : undefined;
   /** Tablet / phone: the one floating panel that is open. */
   const [panel, setPanel] = useState<'library' | 'inspector' | null>(null);
   const flowEl = useRef<HTMLDivElement>(null);
-  useLongPress(flowEl);
+  // D57: on touch, a long-press on a panel adds it to the selection or takes it out (Shift-click's stand-in).
+  useLongPress(flowEl, 500, (panel) => {
+    const id = panel.dataset.id;
+    if (!id || activeToolRef.current !== 'select') return false;
+    const current = displayNodesRef.current.find((n) => n.id === id);
+    if (!current) return false;
+    onNodesChange([{ type: 'select', id, selected: !current.selected }]);
+    return true;
+  });
   const [grid, setGrid] = useStoredFlag('sc-board-grid', false);
+  const gridRef = useRef(grid);
+  useLayoutEffect(() => {
+    gridRef.current = grid;
+  }, [grid]);
   const [minimap, setMinimap] = useStoredFlag('sc-board-minimap', true);
 
   // Undo / redo (T7.2): snapshots of the doc, per session.
@@ -921,6 +947,30 @@ function BoardCanvas(props: {
     requestAnimationFrame(() => void flow.current?.fitView({ ...FIT_OPTIONS, duration: 200 }));
   };
 
+  /**
+   * Writes panel positions into the doc and saves them (one undo step; `coalesce` merges a quick run of the same
+   * kind of move, e.g. held arrow keys, into one).
+   */
+  const lastMove = useRef<{ kind: string; at: number } | null>(null);
+  const savePositions = useCallback(
+    (moves: { id: string; position: { x: number; y: number } }[], coalesce?: string) => {
+      const doc = withPositions(docRef.current, moves);
+      if (doc === docRef.current || readOnly) return;
+      const now = Date.now();
+      const merge = !!coalesce && lastMove.current?.kind === coalesce && now - lastMove.current.at < 800;
+      lastMove.current = coalesce ? { kind: coalesce, at: now } : null;
+      // Recorded for undo; React Flow already shows the new positions.
+      if (!merge) {
+        history.current.record(docRef.current);
+        syncHistory();
+      }
+      docRef.current = doc;
+      setDoc(doc);
+      autosave.change(doc);
+    },
+    [autosave, readOnly, syncHistory],
+  );
+
   const onNodeDragStop = useCallback(
     (_e: unknown, _node: Node, dragged: Node[]) => {
       // The shown positions, not React Flow's drag positions: alignment guides may have snapped them (T13.5).
@@ -934,17 +984,44 @@ function BoardCanvas(props: {
           return members ? nodesRef.current.filter((m) => members.includes(docIdOfNode(m.id) ?? '')).map((m) => m.id) : [n.id];
         }),
       );
-      const doc = withPositions(docRef.current, [...ids].map((id) => ({ id, position: shown.get(id) ?? { x: 0, y: 0 } })).filter((m) => shown.has(m.id)));
-      if (doc === docRef.current || readOnly) return;
-      // Recorded for undo; React Flow already shows the new positions.
-      history.current.record(docRef.current);
-      syncHistory();
-      docRef.current = doc;
-      setDoc(doc);
-      autosave.change(doc);
+      savePositions([...ids].map((id) => ({ id, position: shown.get(id) ?? { x: 0, y: 0 } })).filter((m) => shown.has(m.id)));
     },
-    [autosave, readOnly, syncHistory],
+    [savePositions],
   );
+
+  /** Clears the selection: panels and group frames (Esc, the selection bar's ×). */
+  const clearSelection = useCallback(() => {
+    const picked = displayNodesRef.current.filter((n) => n.selected);
+    if (picked.length) onNodesChange(picked.map((n) => ({ type: 'select' as const, id: n.id, selected: false })));
+  }, [onNodesChange]);
+
+  /** Ctrl / ⌘ + A: every panel (with the Select tool). */
+  const selectAll = useCallback(() => {
+    if (activeToolRef.current !== 'select') return;
+    setNodes((ns) => ns.map((n) => (n.selected ? n : { ...n, selected: true })));
+  }, []);
+
+  /**
+   * Arrow keys move the selected panels (and the members of selected groups): 1 board px, Shift 10, or one grid
+   * step (16) with grid snap on. Saved like a drag; a run of presses close together is one undo step.
+   */
+  const nudge = useCallback(
+    (dx: number, dy: number, big: boolean) => {
+      if (readOnly || activeToolRef.current !== 'select') return false;
+      const groups = boardGroups(docRef.current);
+      const members = new Set([...selectedGroupsRef.current].flatMap((g) => groups.find((x) => x.id === groupIdOfNode(g))?.nodes ?? []));
+      const picked = nodesRef.current.filter((n) => n.selected || members.has(docIdOfNode(n.id) ?? ''));
+      if (picked.length === 0) return false;
+      const step = gridRef.current ? 16 : big ? 10 : 1;
+      const moved = picked.map((n) => ({ id: n.id, position: { x: n.position.x + dx * step, y: n.position.y + dy * step } }));
+      const at = new Map(moved.map((m) => [m.id, m.position]));
+      setNodes((ns) => ns.map((n) => (at.has(n.id) ? { ...n, position: at.get(n.id) as { x: number; y: number } } : n)));
+      savePositions(moved, 'nudge');
+      return true;
+    },
+    [readOnly, savePositions],
+  );
+
 
   return (
     <div className="sc-board">
@@ -1057,7 +1134,7 @@ function BoardCanvas(props: {
         }}
       >
         <BoardContext.Provider value={actions}>
-          <div className="sc-board__flow" ref={flowEl} onContextMenuCapture={onPortContextMenu}>
+          <div className={`sc-board__flow${activeTool === 'hand' ? ' sc-board__flow--hand' : ''}`} ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
             nodes={displayNodes}
             edges={displayEdges}
@@ -1086,8 +1163,10 @@ function BoardCanvas(props: {
             reconnectRadius={16}
             connectionRadius={36}
             // Hand moves the board only: panels don't move or get selected, a drag anywhere pans.
-            nodesDraggable={!readOnly && tool === 'select'}
-            elementsSelectable={tool === 'select'}
+            nodesDraggable={!readOnly && activeTool === 'select'}
+            elementsSelectable={activeTool === 'select'}
+            // Shift-click (or Ctrl / ⌘-click) adds a panel to the selection or takes it out; Shift-drag adds a box.
+            multiSelectionKeyCode={MULTI_SELECT_KEYS}
             nodesConnectable={!readOnly}
             edgesFocusable={!readOnly}
             deleteKeyCode={null}
@@ -1096,10 +1175,10 @@ function BoardCanvas(props: {
             // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
             panOnScroll
             zoomOnScroll={false}
-            selectionOnDrag={tool === 'select' && !readOnly}
+            selectionOnDrag={activeTool === 'select' && !readOnly}
             // Select: the middle mouse button pans; on touch, one finger selects (React Flow starts a touch selection
             // box only when finger panning is off) and two fingers pan and pinch-zoom.
-            panOnDrag={tool === 'hand' || readOnly ? true : coarse ? false : [1]}
+            panOnDrag={activeTool === 'hand' || readOnly ? true : coarse ? false : [1]}
             snapToGrid={grid}
             snapGrid={[16, 16]}
             minZoom={0.1}
@@ -1110,7 +1189,7 @@ function BoardCanvas(props: {
             {/* The minimap needs a desktop-sized canvas; on tablets and phones it would cover the work. */}
             {minimap && screen === 'desktop' && <MiniMap pannable zoomable position="bottom-right" />}
             <CanvasToolbar
-              tool={tool}
+              tool={activeTool}
               onTool={setTool}
               grid={grid}
               onGrid={setGrid}
@@ -1121,7 +1200,7 @@ function BoardCanvas(props: {
               minimapToggle={screen === 'desktop'}
               onTidy={readOnly ? undefined : tidy}
             />
-            {!readOnly && tool === 'select' && selectedCount >= 2 && (
+            {!readOnly && activeTool === 'select' && selectedCount >= 2 && (
               <Panel position="top-center" className="sc-selbar nodrag nopan nowheel" aria-label="Selection" role="toolbar">
                 <span className="sc-selbar__count">{selectedCount} selected</span>
                 <button type="button" className="sc-btn" onClick={groupSelection} title="Group the selected panels (Ctrl/⌘ + G)">
@@ -1130,7 +1209,7 @@ function BoardCanvas(props: {
                 <button type="button" className="sc-btn sc-btn--danger" onClick={deleteSelection} title="Delete the selected panels (Delete)">
                   <Icon name="trash" /> Delete
                 </button>
-                <button type="button" className="sc-icon-btn" aria-label="Clear selection" title="Clear selection (click empty canvas)" onClick={() => setNodes((ns) => ns.map((n) => (n.selected ? { ...n, selected: false } : n)))}>
+                <button type="button" className="sc-icon-btn" aria-label="Clear selection" title="Clear selection (Esc)" onClick={clearSelection}>
                   <Icon name="close" />
                 </button>
               </Panel>
@@ -1139,7 +1218,16 @@ function BoardCanvas(props: {
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
               {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}
             </ViewportPortal>
-            <BoardKeys onTool={setTool} onDelete={readOnly ? undefined : deleteSelection} disabled={Boolean(editingMain || editingOutput)} />
+            <BoardKeys
+              onTool={setTool}
+              onDelete={readOnly ? undefined : deleteSelection}
+              onClear={clearSelection}
+              onSelectAll={selectAll}
+              onNudge={nudge}
+              onSpace={setSpaceHeld}
+              onTidy={readOnly ? undefined : tidy}
+              disabled={Boolean(editingMain || editingOutput)}
+            />
           </ReactFlow>
           </div>
           {(!floating || panel === 'inspector') && <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} />}

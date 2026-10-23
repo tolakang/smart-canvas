@@ -145,6 +145,31 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     await phone.keyboard.press('Escape');
   }, 60_000);
 
+  it('phone: a long-press on a panel adds it to the selection, and again takes it out (D57)', async () => {
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(400);
+    const cdp = await phone.context().newCDPSession(phone);
+    const hold = async (sel: string) => {
+      const b = await phone.locator(sel).first().boundingBox();
+      if (!b) throw new Error(`no ${sel}`);
+      const at = [{ x: b.x + Math.min(30, b.width / 2), y: b.y + b.height / 2 }];
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at });
+      await phone.waitForTimeout(700);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await phone.waitForTimeout(600);
+    };
+    await phone.locator('.react-flow__node-mainNode .sc-node__title').first().tap();
+    await expect.poll(() => phone.locator('.react-flow__node.selected').count()).toBe(1);
+    const other = '.react-flow__node[data-id^="stk:"] .sc-node__title';
+    await hold(other);
+    const selbar = phone.getByRole('toolbar', { name: 'Selection' });
+    await selbar.getByText('2 selected').waitFor();
+    expect(await phone.getByRole('menu').count()).toBe(0); // a selection toggle, not a menu
+    await hold(other);
+    await selbar.waitFor({ state: 'detached' });
+    expect(await phone.locator('.react-flow__node.selected').count()).toBe(1);
+  }, 60_000);
+
   it('phone: editors show the canvas with the Design panel as a sheet', async () => {
     // A wired layer to select in the editor.
     const cur = (await (await phone.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
