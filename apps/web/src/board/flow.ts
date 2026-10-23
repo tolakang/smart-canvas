@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { assetStacks, compositionById, coreRules, type CoreRuleNode, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, resolveProcess, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { stackKind, assetStacks, compositionById, type CoreRuleNode, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -35,7 +35,7 @@ export const compositionIdOfNode = (nodeId: string | null | undefined): string |
 // Not 'input'/'output': React Flow has built-in node types (and CSS) under those names.
 export type InputFlowNode = Node<{ source: InputSource }, 'inputNode'>;
 /** D40: an Assets card and its pictures (inputs drawn inside it), in card order. */
-export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode'>;
+export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'assetsNode' | 'textNode'>;
 /** D46: a Preset node and its rows (sizes, in order), each with whether it is wired. */
 export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
 /** D47: a Core Rule node (what it shows is derived from the doc). */
@@ -190,7 +190,8 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
     ...stacks.map(
       (stack): StackFlowNode => ({
         id: stackNodeId(stack.id),
-        type: 'assetsNode',
+        // D49: a Text node's slots are typed into on the card; Image and Logo nodes hold pictures.
+        type: stackKind(stack) === 'text' ? 'textNode' : 'assetsNode',
         position: stack.board,
         data: { stack, items: stack.items.flatMap((id) => byId.get(id) ?? []) },
         deletable: false,
@@ -214,16 +215,8 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         deletable: false,
       }),
     ),
-    ...doc.processes.map(
-      (process): ProcessFlowNode => ({
-        id: processNodeId(process.id),
-        type: 'processNode',
-        position: process.board,
-        data: { process, layer: resolveProcess(doc, process.id) },
-        deletable: false,
-      }),
-    ),
-    ...doc.compositions.map(compositionNode),
+    // D49 (page 3): one Layer Comp — the master; its square / vertical / horizontal layouts open from it.
+    ...doc.compositions.filter((c) => c.id === MAIN).map(compositionNode),
     ...presetSets(doc).map(
       (set): SetFlowNode => ({
         id: setNodeId(set.id),
@@ -233,7 +226,6 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         deletable: false,
       }),
     ),
-    ...coreRules(doc).map((rule): RuleFlowNode => ({ id: ruleNodeId(rule.id), type: 'ruleNode', position: rule.board, data: { rule }, deletable: false })),
     ...doc.outputs.map(
       (output): OutputFlowNode => ({
         id: outputNodeId(output.id),
@@ -251,6 +243,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
   // D46: a Preset node's sizes are fed by one wire into the node, then one wire from each row to its Preview.
   const setOfOutput = new Map(presetSets(doc).flatMap((set) => set.outputs.map((o) => [o, set] as const)));
   const setIn = new Map<string, Edge>();
+  const drawn = new Set<string>();
   return doc.edges.flatMap((e: DocEdge): Edge[] => {
     const set = e.kind === 'composition' ? setOfOutput.get(e.to) : undefined;
     if (set) {
@@ -262,26 +255,33 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
       setIn.set(set.id, into);
       return [into, row];
     }
+    // D49: only asset nodes → the Layer Comp (one wire per asset node, into its top), the Layer Comp → Preset
+    // nodes → Previews are drawn; the master's layouts and an output's own layers are not on the board.
+    if (e.kind !== 'layer' || e.to !== MAIN) return [];
     const source = endpoint(doc, e.from);
-    const target = endpoint(doc, e.to);
-    if (!source || !target) return [];
-    const rows = e.kind === 'layer' ? (compositionById(doc, e.to)?.layers ?? doc.outputs.find((o) => o.id === e.to)?.layers) : undefined;
-    const port = rows ? rows.indexOf(e.from) : -1;
+    if (!source) return [];
+    const card = isCardNode(source);
+    if (card && drawn.has(source)) return [];
+    drawn.add(source);
     return [
       {
-        id: e.id,
+        id: card ? cardEdgeId(source) : e.id,
         type: 'routed',
-        data: { points: e.points ?? [] },
+        data: { points: card ? [] : (e.points ?? []) },
         source,
-        target,
-        ...(port >= 0 ? { targetHandle: portHandleId(port) } : {}),
-        ...(e.kind === 'composition' ? { sourceHandle: OUTPUT_HANDLE } : compositionById(doc, e.from) ? { sourceHandle: LAYER_OUT_HANDLE } : {}),
-        className: `sc-edge--${e.kind}`,
+        target: MAIN_ID,
+        targetHandle: LAYERS_HANDLE,
+        className: 'sc-edge--layer',
         deletable: true,
       },
     ];
   });
 }
+
+/** D49: the Layer Comp's one layer port (top): every asset node wires in there. */
+export const LAYERS_HANDLE = 'layers';
+/** D49: the one wire drawn from a card (Image, Headline) into the Layer Comp; it stands for all its pictures' wires. */
+export const cardEdgeId = (cardNodeId: string) => `card:${cardNodeId}`;
 
 type Conn = { source: string | null; target: string | null; sourceHandle?: string | null };
 
@@ -305,9 +305,9 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
  * an output the right port (T12.4: layer rows vs the master preview port). Without `targetHandle` the port isn't checked.
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
-  if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'A card wires into a master preview.';
-  // D46: a master preview wires into a Preset node; a Preset node's row wires into its own Preview.
-  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? null : 'A master preview wires into a Preset node.';
+  if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'An asset node wires into the Layer Comp.';
+  // D46 / D49: the Layer Comp group wires into a Preset node; a Preset node's row wires into its own Preview.
+  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? null : 'Only the Layer Comp group wires into a Preset node.';
   if (setIdOfNode(c.source)) return outputOfSetRow(c.sourceHandle) && c.target === outputNodeId(outputOfSetRow(c.sourceHandle) ?? '') ? null : 'A size row wires into its own preview.';
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';

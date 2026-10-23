@@ -8,7 +8,7 @@ import { addOutput, setPlacement, type ProjectDoc, type SourceResult } from '@sm
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+import { boardNode, putPicture, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
 const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);
@@ -26,10 +26,8 @@ describe.skipIf(!adminUrl)('content fit in outputs (T9.1)', () => {
     const { teamId, projectId } = await setupAndCreateProject(page, stack.env.webUrl, 'Fit');
     url = `${stack.env.webUrl}api/teams/${teamId}/projects/${projectId}`;
     const badge = await sharp({ create: { width: 400, height: 400, channels: 4, background: { r: 220, g: 40, b: 40, alpha: 1 } } }).png().toBuffer();
-    const node = (l: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${l}$`) }) });
-    await node('Subject').locator('input[type=file]').setInputFiles({ name: 'badge.png', mimeType: 'image/png', buffer: badge });
-    await node('Subject').locator('img.sc-thumb').waitFor();
-    for (const l of ['Background', 'Subject']) await page.getByRole('button', { name: `Connect ${l}`, exact: true }).click();
+    await putPicture(page, 'Subject', { name: 'badge.png', mimeType: 'image/png', buffer: badge });
+    await boardNode(page, 'Image').locator('img[alt="Subject preview"]').waitFor();
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
     // The badge in the top-left third of the master, like the screenshot; three outputs.
     const p = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };

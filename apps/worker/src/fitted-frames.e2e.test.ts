@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+import { boardNode, openLayout, putPicture, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
 /** 400×300, transparent except a red 100×150 block at (200, 50). */
 async function badge(): Promise<Buffer> {
@@ -26,7 +26,6 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
   let page: Page;
   let url = '';
   let teamId = '';
-  const inNode = (l: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${l}$`) }) });
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
   const placement = async () => mainComposition(await doc()).placements.subject as NFrame;
   const saved = async () => {
@@ -40,7 +39,6 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
     const ids = await setupAndCreateProject(page, stack.env.webUrl, 'Fitted');
     url = `${stack.env.webUrl}api/teams/${ids.teamId}/projects/${ids.projectId}`;
     teamId = ids.teamId;
-    await page.getByRole('button', { name: 'Connect Subject', exact: true }).click();
     await saved();
   }, 120_000);
   afterAll(async () => {
@@ -48,7 +46,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
   });
 
   it('after upload the frame hugs the badge: fitted, with the badge’s shape (1:1.5), not the default box', async () => {
-    await inNode('Subject').locator('input[type=file]').setInputFiles({ name: 'badge.png', mimeType: 'image/png', buffer: await badge() });
+    await putPicture(page, 'Subject', { name: 'badge.png', mimeType: 'image/png', buffer: await badge() });
     await expect.poll(async () => (await placement()).fitted ?? false, { timeout: 15_000 }).toBe(true);
     const p = await placement();
     const { width: W, height: H } = mainComposition(await doc()).size;
@@ -56,7 +54,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
   }, 60_000);
 
   it('the editor frame is the badge; stretching the right edge stretches the picture', async () => {
-    await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit' }).click();
+    await openLayout(page);
     const editor = page.getByRole('dialog', { name: /Master preview editor/ });
     const layer = editor.locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
     const lb = await layer.boundingBox();
@@ -150,7 +148,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
       await saved();
     };
     const open = async () => {
-      await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit' }).click();
+      await openLayout(page);
       const lb = await layer.boundingBox();
       if (!lb) throw new Error('no layer');
       await page.mouse.click(lb.x + lb.width / 2, lb.y + lb.height / 2);
@@ -185,7 +183,9 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
   it('replacing the picture fits the new one into the old frame', async () => {
     const before = await placement();
     const wide = await sharp({ create: { width: 300, height: 100, channels: 4, background: { r: 30, g: 30, b: 220, alpha: 1 } } }).png().toBuffer();
-    await inNode('Subject').locator('.sc-node__title').click();
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
+    await boardNode(page, 'Image').getByRole('button', { name: 'Select Subject' }).click();
     await page.getByRole('complementary', { name: 'Inspector' }).locator('input[type=file]').setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer: wide });
     await expect
       .poll(async () => {

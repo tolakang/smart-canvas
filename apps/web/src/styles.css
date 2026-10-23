@@ -436,7 +436,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 /* T10.4: an output's input handle sits on its title row (where a dropped wire creates it), not mid-card */
 /* Side ports sit level with the title (where the node palette puts a new node's port: under the drop point). */
-.sc-node--output > .react-flow__handle, .sc-node--input > .react-flow__handle, .sc-node--process > .react-flow__handle { top: 26px; }
+.sc-node--output > .react-flow__handle, .sc-node--process > .react-flow__handle { top: 26px; }
 
 /* T13.1 layout health (D35): status dot + count on nodes, issue list on click */
 .sc-health { position: relative; display: inline-flex; flex: none; }
@@ -673,7 +673,11 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 /* A selected wire's Disconnect button (touch screens have no Delete key). */
 .sc-wire-cut { position: absolute; top: 0; left: 0; z-index: 10; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--danger); font-size: 18px; line-height: 1; box-shadow: var(--shadow-2); cursor: pointer; pointer-events: all; }
 .sc-wire-cut:hover { background: var(--danger-soft); }
+/* Page 3: every wire carries a small cut badge; the selected one shows it full size. */
+.sc-wire-cut--idle { width: 18px; height: 18px; font-size: 11px; color: var(--muted); box-shadow: none; opacity: 0.75; }
+.sc-wire-cut--idle:hover { opacity: 1; color: var(--danger); }
 @media (pointer: coarse) { .sc-wire-cut { width: 40px; height: 40px; font-size: 22px; } }
+@media (pointer: coarse) { .sc-wire-cut--idle { width: 24px; height: 24px; font-size: 13px; } }
 
 /* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
    One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider
@@ -830,7 +834,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-assets__add { width: 100%; height: 100%; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: var(--r-md, 6px); color: var(--muted); cursor: pointer; }
 .sc-assets__add:hover { color: var(--fg); border-color: var(--accent); }
 .sc-assets__hint { margin: 6px 0 0; font-size: 12px; }
-.sc-node--assets > .react-flow__handle { top: 26px; }
 
 /* D43: a background's vertical / horizontal slots. */
 .sc-bg-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -848,7 +851,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-hl-slot__title { font-size: 11px; color: var(--muted); }
 .sc-hl-slot .sc-assets__pick { height: 72px; aspect-ratio: auto; }
 .sc-hl-use { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
-.sc-node--headline > .react-flow__handle { top: 26px; }
 
 /* D45: where each layer comp group starts in a master preview's rows. */
 .sc-port--group-start { position: relative; margin-top: 14px; }
@@ -857,8 +859,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 
 /* D46: Preset node — a list of media sizes, each row wired out to its own preview. */
 .sc-node--preset { width: 280px; }
-.sc-node--preset > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 8px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; background: color-mix(in srgb, #2e9d5b 18%, var(--surface)); }
-.sc-node--preset > .react-flow__handle { top: 22px; }
 .sc-preset__rows .sc-port { padding-right: 18px; }
 .sc-preset__size { flex: none; min-width: 84px; font-variant-numeric: tabular-nums; font-weight: 600; }
 .sc-port--frozen { color: var(--muted); }
@@ -867,7 +867,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 
 /* D47: Core Rule node — layer comp, preset guides and auto layout of a master preview. */
 .sc-node--rule { width: 300px; }
-.sc-node--rule > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 8px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; background: color-mix(in srgb, #3f7fdc 18%, var(--surface)); }
 .sc-rule__for select { max-width: 200px; }
 .sc-rule__section { display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
 .sc-rule__title { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
@@ -878,3 +877,65 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-rule__guides li { display: flex; align-items: center; gap: 6px; }
 .sc-rule__guides li > :first-child { min-width: 84px; font-weight: 600; }
 .sc-rule__guides .sc-open-editor { margin-left: auto; }
+
+/* Page 3: node headers by role — assets purple, master preview and core rules blue, previews mint, presets green. */
+:root { --head-asset: #8b5cf6; --head-master: #3f7fdc; --head-preview: #14b8a6; --head-preset: #2e9d5b; }
+.sc-node > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 6px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; border-bottom: 1px solid var(--line); }
+.sc-node--input > .sc-node__head { background: color-mix(in srgb, var(--head-asset) 16%, var(--surface)); }
+.sc-node--main > .sc-node__head, .sc-node--rule > .sc-node__head { background: color-mix(in srgb, var(--head-master) 16%, var(--surface)); }
+.sc-node--output > .sc-node__head { background: color-mix(in srgb, var(--head-preview) 16%, var(--surface)); }
+.sc-node--preset > .sc-node__head { background: color-mix(in srgb, var(--head-preset) 18%, var(--surface)); }
+.sc-node .sc-bg-slot .sc-thumb { height: 52px; object-fit: contain; }
+/* Page 3: the Assets card's list view (one row per picture). */
+.sc-assets__view { margin-left: auto; }
+.sc-assets__view button { padding: 0 6px; min-height: 22px; font-size: 12px; }
+.sc-assets--list { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.sc-assets--list .sc-assets__item { aspect-ratio: auto; display: flex; align-items: center; gap: 8px; }
+.sc-assets--list .sc-assets__pick { width: 40px; height: 40px; flex: none; }
+.sc-assets--list .sc-assets__label { flex: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-assets--list .sc-assets__remove { position: static; display: grid; }
+.sc-assets--list .sc-assets__add { height: 40px; display: flex; gap: 6px; justify-content: center; font-size: 12px; }
+
+/* D49 (page 3): the Layer Comp + Core Rule group — two cards in one dashed frame; asset wires land on its top,
+   Preset nodes wire out of its bottom. */
+.sc-comp-group { position: relative; display: flex; gap: 16px; align-items: flex-start; padding: 22px 18px 18px; border: 2px dashed color-mix(in srgb, var(--fg) 22%, transparent); border-radius: 22px; background: color-mix(in srgb, var(--surface) 40%, transparent); }
+.sc-comp-group > .sc-node { width: 250px; }
+.sc-comp-group > .react-flow__handle-top, .sc-comp-group > .react-flow__handle-bottom { width: 14px; height: 14px; }
+.sc-node--rule > .sc-node__head { background: color-mix(in srgb, #2bb5a0 18%, var(--surface)); }
+.sc-comp__label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.sc-comp__groups { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sc-comp__group { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 13px; cursor: grab; }
+.sc-comp__group--drop { box-shadow: inset 0 2px 0 var(--accent); }
+.sc-comp__group-name { flex: 1; }
+.sc-comp__count { font-size: 11px; }
+.sc-comp__moves { display: none; gap: 2px; }
+.sc-comp__group:hover .sc-comp__moves, .sc-comp__group:focus-within .sc-comp__moves { display: inline-flex; }
+@media (pointer: coarse) { .sc-comp__moves { display: inline-flex; } }
+.sc-comp__moves .sc-icon-btn { width: 20px; height: 20px; font-size: 11px; }
+.sc-comp__layouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.sc-comp__layouts .sc-btn, .sc-rule__buttons .sc-btn { justify-content: center; }
+.sc-rule__buttons { display: grid; gap: 8px; }
+.sc-rule__buttons .sc-btn[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+
+/* D49: Text node — its slots grow with their text. */
+.sc-node--text-node { width: 280px; }
+.sc-text-slots { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sc-text-slot { position: relative; display: grid; gap: 2px; padding: 4px; border-radius: 8px; }
+.sc-text-slot__label { font-size: 11px; color: var(--muted); }
+.sc-text-slot__input { width: 100%; min-height: 34px; resize: none; field-sizing: content; padding: 6px 26px 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font-size: 13px; line-height: 1.4; overflow: hidden; }
+.sc-text-slot__remove { position: absolute; top: 20px; right: 6px; width: 20px; height: 20px; }
+.sc-text-slots__add { justify-content: center; }
+
+/* D49: asset node replace control, Preview header and Export pill, preset custom size. */
+.sc-assets__replace { position: absolute; left: -6px; top: -6px; width: 20px; height: 20px; display: none; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.sc-assets__item:hover .sc-assets__replace, .sc-assets__item:focus-within .sc-assets__replace { display: grid; }
+@media (pointer: coarse) { .sc-assets__replace { display: grid; } }
+.sc-assets--list .sc-assets__replace { position: static; display: grid; }
+.sc-preview__size { flex: 1; min-width: 0; font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-node--output > .sc-node__head { background: color-mix(in srgb, #4caf50 18%, var(--surface)); }
+.sc-preview__export { justify-self: center; padding: 4px 18px; border: 0; border-radius: 999px; background: color-mix(in srgb, #4caf50 22%, var(--surface)); color: var(--fg); font-weight: 600; cursor: pointer; }
+.sc-preview__export:hover { background: color-mix(in srgb, #4caf50 35%, var(--surface)); }
+.sc-preset__custom { display: flex; gap: 4px; align-items: center; margin-top: 8px; }
+.sc-preset__custom input { width: 64px; }
+.sc-preset__add-custom { margin-top: 8px; width: 100%; justify-content: center; }
+.sc-node--preset .sc-port { cursor: grab; }

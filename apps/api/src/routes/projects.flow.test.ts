@@ -1,5 +1,5 @@
 import type { ProjectDoc } from '@smart-canvas/core';
-import { createProjectDoc, LIMITS } from '@smart-canvas/core';
+import { createBoardProject, createProjectDoc, LIMITS } from '@smart-canvas/core';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
@@ -37,10 +37,10 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     return res.json<{ id: string; rev: number; doc: ProjectDoc }>();
   }
 
-  it('creates a project with an empty document at rev 0', async () => {
+  it('creates a project with the page-3 board (D49) at rev 0', async () => {
     const p = await create('Launch poster');
     expect(p.rev).toBe(0);
-    expect(p.doc).toEqual(createProjectDoc('Launch poster'));
+    expect(p.doc).toEqual(createBoardProject('Launch poster'));
 
     const list = (await call('GET', base(), viewer)).json<{ id: string; name: string; rev: number }[]>();
     expect(list.find((x) => x.id === p.id)).toMatchObject({ name: 'Launch poster', rev: 0 });
@@ -116,7 +116,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
       rev: 0,
       name: 'Old client',
       master: { size: { width: 2000, height: 1000, unit: 'px' }, placements: { subject: { x: 0.1, y: 0.1, w: 0.5, h: 0.5 } }, board: { x: 0, y: 0 } },
-      sources: p.doc.sources.map((s, i) => ({ ...s, port: 3 - i })),
+      sources: createProjectDoc('Old client').sources.map((s, i) => ({ ...s, port: 3 - i })),
       outputs: [],
       wires: [{ id: 'in:subject', from: 'subject', to: 'main', port: 2 }],
     };
@@ -151,13 +151,13 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
 
   it('duplicates a project as a full detached copy (T7.3)', async () => {
     const p = await create('Spring');
-    const doc = { ...p.doc, sources: p.doc.sources.map((x) => (x.id === 'headline' ? { ...x, label: 'Title' } : x)) };
+    const doc = { ...p.doc, sources: p.doc.sources.map((x) => (x.id === 'subject' ? { ...x, label: 'Title' } : x)) };
     expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: p.rev, doc })).statusCode).toBe(200);
     const res = await call('POST', `${base()}/${p.id}/duplicate`, editor, {});
     expect(res.statusCode).toBe(201);
     const copy = res.json<{ id: string; rev: number; doc: ProjectDoc; isTemplate: boolean }>();
     expect(copy).toMatchObject({ rev: 0, isTemplate: false, doc: { name: 'Spring (copy)', rev: 0 } });
-    expect(copy.doc.sources.find((x) => x.id === 'headline')?.label).toBe('Title');
+    expect(copy.doc.sources.find((x) => x.id === 'subject')?.label).toBe('Title');
     expect(copy.id).not.toBe(p.id);
     expect((await call('POST', `${base()}/${p.id}/duplicate`, viewer, {})).statusCode).toBe(403);
   });

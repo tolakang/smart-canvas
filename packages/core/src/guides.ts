@@ -114,7 +114,8 @@ export function detachGuide(doc: ProjectDoc, id: string): SourceResult {
 export function pictureForShape(content: SourceContent, trim: { w: number; h: number }): string | null {
   if (content.kind !== 'image' && content.kind !== 'vector') return null;
   const family = familyOfShape({ width: trim.w, height: trim.h });
-  return (family !== 'square' ? content.variants?.[family] : undefined) ?? content.assetId;
+  // Page 3: a background may have only its vertical and horizontal pictures; a square output uses either.
+  return (family !== 'square' ? content.variants?.[family] : undefined) ?? content.assetId ?? content.variants?.horizontal ?? content.variants?.vertical ?? null;
 }
 
 /** A source with its picture for this output's shape in place of the main one (itself when that's the same). */

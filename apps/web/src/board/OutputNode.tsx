@@ -11,26 +11,22 @@ import {
   computeLayout,
   outputHealth,
   convertSize,
-  deleteOutput,
-  disconnectOutputLayer,
   layerSources,
   outputDefaults,
   outputScene,
   resetOutputOverrides,
-  updateOutput,
   type OutputNode,
   type OutputSettings,
   type SizePreset,
   type Unit,
 } from '@smart-canvas/core';
-import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { useDeferredValue, useMemo } from 'react';
 import { assetUrl } from '../api';
 import { RenderThumbnail } from '../render/OutputRenderer';
 import { useBoard } from './context';
-import { portHandleId, type OutputFlowNode } from './flow';
+import type { OutputFlowNode } from './flow';
 import { HealthBadge } from './HealthBadge';
-import { Icon, LayerThumb } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
@@ -63,18 +59,9 @@ export function unitSettings(o: OutputNode, unit: Unit): OutputSettings {
   return { size: convertSize(o.size, unit), ...(unit === 'mm' && o.dpi === undefined ? { dpi: outputDefaults('mm').dpi } : {}) };
 }
 
-export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
-  const { output, connected, layers } = data;
-  const updateInternals = useUpdateNodeInternals();
-  const handleKey = layers.map((l) => l.sourceId).join(',');
-  useEffect(() => updateInternals(id), [id, handleKey, updateInternals]);
+export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
+  const { output, connected } = data;
   const { doc, readOnly, run, teamId, layoutDeps, missingFonts, openOutputEditor, exportOutputs } = useBoard();
-  const [renaming, setRenaming] = useState<string | null>(null);
-  const rename = () => {
-    const name = renaming?.trim();
-    setRenaming(null);
-    if (name && name !== output.label) run((d) => updateOutput(d, output.id, { label: name }));
-  };
   // T7.4: thumbnails lag behind edits (deferred) so typing and dragging stay responsive with 10 outputs.
   const shownDoc = useDeferredValue(doc);
   // The node can outlive its output by a render (React Flow syncs nodes after the doc changes).
@@ -94,53 +81,25 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
   }, [shownDoc, output, connected]);
 
   return (
+    // D49 (page 3): a Preview — one size of a Preset node, its live layout, Edit (its own overrides) and Export.
     <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`} aria-label={`Output ${output.label}`}>
-      <Handle type="target" position={Position.Left} isConnectable={!readOnly && !connected} className="sc-handle--composition" title="Master preview in" />
+      <Handle type="target" position={Position.Left} isConnectable={!readOnly && !connected} className="sc-handle--composition" title="From its Preset node row" />
       <div className="sc-node__head">
-        {renaming !== null ? (
-          <input
-            className={`sc-rename ${NO_CANVAS}`}
-            aria-label="Output name"
-            value={renaming}
-            autoFocus
-            maxLength={200}
-            onChange={(e) => setRenaming(e.target.value)}
-            onBlur={rename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') rename();
-              if (e.key === 'Escape') setRenaming(null);
-            }}
-          />
-        ) : (
-          <div className="sc-node__title" title={`${output.label}${readOnly ? '' : ' — double-click to rename'}`} onDoubleClick={() => !readOnly && setRenaming(output.label)}>
-            {output.label}
-          </div>
-        )}
+        <div className="sc-node__title">Preview</div>
+        <span className="sc-preview__size" title={output.label}>
+          {output.label.replace(/\s*\d+\s*[×x]\s*\d+$/, '') || output.label} ({output.size.width} × {output.size.height})
+        </span>
         {health && <HealthBadge health={health} />}
         <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} output ${output.label}`}>
           {readOnly ? 'View' : 'Edit'}
         </button>
-        {/* D46: a Preview exports itself. */}
-        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export output ${output.label}`}>
-          Export
-        </button>
-        {!readOnly && (
-          <button
-            type="button"
-            className={`sc-icon-btn ${NO_CANVAS}`}
-            aria-label={`Delete output ${output.label}`}
-            title="Delete output"
-            onClick={() => window.confirm(`Delete output “${output.label}”?`) && run((d) => deleteOutput(d, output.id))}
-          >
-            <Icon name="trash" />
-          </button>
-        )}
       </div>
-      <div className="sc-node__meta">
-        {output.size.width} × {output.size.height} {output.size.unit}
-        {bleed > 0 && ` · bleed ${bleed} mm`}
-        {guide && <span title="Its layout comes from this guide, the closest to its shape (D42)"> · {guide}</span>}
-      </div>
+      {(guide || bleed > 0) && (
+        <div className="sc-node__meta">
+          {bleed > 0 && `bleed ${bleed} mm`}
+          {guide && <span title="Its layout comes from this layout of the Layer Comp, the closest to its shape (D42)">{guide}</span>}
+        </div>
+      )}
       {output.overrides.length > 0 && (
         <div className="sc-node__overrides">
           <span className="sc-chip" title="Layers changed by hand on this output" aria-label={`${output.overrides.length} overridden layers`}>
@@ -157,11 +116,7 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
           )}
         </div>
       )}
-      {!connected && (
-        <div className="sc-node__meta sc-output__frozen">
-          Disconnected — layout frozen{output.overrides.length > 0 && ` · ${output.overrides.length} override${output.overrides.length === 1 ? '' : 's'}`}
-        </div>
-      )}
+      {!connected && <div className="sc-node__meta sc-output__frozen">Disconnected — layout frozen</div>}
       <div className="sc-main-thumb" aria-label={`${output.label} preview`}>
         {scene ? (
           <RenderThumbnail scene={scene} sources={shownLayers} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={236} maxHeight={180} />
@@ -169,31 +124,9 @@ export function OutputNodeView({ id, data }: NodeProps<OutputFlowNode>) {
           <span className="sc-muted">Loading fonts…</span>
         )}
       </div>
-      {(layers.length > 0 || !readOnly) && (
-        <ol className="sc-ports sc-ports--output" aria-label={`${output.label} own layers (front first)`}>
-          {layers.map((l) => {
-            const source = shownDoc.sources.find((s) => s.id === l.sourceId) ?? doc.sources.find((s) => s.id === l.sourceId);
-            return (
-              <li key={l.sourceId} className={`sc-port sc-port--wired${l.visible ? '' : ' sc-port--hidden'}`} data-port={l.port}>
-                <Handle type="target" position={Position.Left} id={portHandleId(l.port)} isConnectable={!readOnly} className="sc-handle--layer" title="Output-only layer in" />
-                {source && <LayerThumb source={source} />}
-                <span className="sc-port__label">{l.label}</span>
-                {!readOnly && (
-                  <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Remove ${l.label} from ${output.label}`} title="Remove from this output" onClick={() => run((d) => disconnectOutputLayer(d, output.id, l.sourceId))}>
-                    <Icon name="close" />
-                  </button>
-                )}
-              </li>
-            );
-          })}
-          {!readOnly && (
-            <li className="sc-port sc-port--add" data-port={layers.length}>
-              <Handle type="target" position={Position.Left} id={portHandleId(layers.length)} isConnectable className="sc-handle--layer" title="Output-only layer in: wire an input here" />
-              <span className="sc-port__hint">Add a layer only this output gets</span>
-            </li>
-          )}
-        </ol>
-      )}
+      <button type="button" className={`sc-preview__export ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export output ${output.label}`}>
+        Export
+      </button>
     </div>
   );
 }

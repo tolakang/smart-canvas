@@ -1,5 +1,7 @@
 import {
-  addCoreRule,
+  assetStacks,
+  addTextToStack,
+  boardStructure,
   addPresetSet,
   connectSet,
   presetFamilies,
@@ -11,15 +13,10 @@ import {
   connectStack,
   fitFrames,
   orderLayers,
-  addComposition,
-  addSourceFromLibrary,
-  addOutput,
-  canAddComposition,
   addSource,
   connectOutputLayer,
   connectProcessInput,
   disconnectProcessInput,
-  addProcess,
   boardGroups,
   setEdgePoints,
   createGroup,
@@ -58,8 +55,6 @@ import { FontsDialog } from '../fonts/FontsDialog';
 import { registerTeamFonts, type TeamFont } from '../fonts/loader';
 import { MainEditor } from '../editor/MainEditor';
 import { OutputEditor } from '../editor/OutputEditor';
-import { AddInputDialog, type NewInput } from './AddInputDialog';
-import { AddOutputDialog, type NewOutput } from './AddOutputDialog';
 import { ContextMenu, type MenuItem, type MenuState } from './ContextMenu';
 import { ExportDialog } from './ExportDialog';
 import { confirmDelete, Icon } from './LayerRow';
@@ -84,6 +79,7 @@ import {
   sourceIdOfNode,
   layerOfConnection,
   LAYER_OUT_HANDLE,
+  OUTPUT_HANDLE,
   processIdOfNode,
   syncNodes,
   withPositions,
@@ -105,10 +101,8 @@ import { CanvasToolbar, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
-import { paletteItems, type PalettePort } from './palette';
 import { COARSE_QUERY, useCoarsePointer, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
-import { ADD_DRAG_TYPE, NodeLibrary, type AddSpec } from './NodeLibrary';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
@@ -206,6 +200,10 @@ function BoardCanvas(props: {
 }) {
   const { teamId, projectId, url, initial, readOnly } = props;
   const docRef = useRef(initial.doc);
+  /** D49: the Preset node menu items (set each render; read by the group's out port callbacks). */
+  /** D49: the page-3 shape is applied once, when the project opens. */
+  const structured = useRef(false);
+  const presetItemsRef = useRef<(at: { x: number; y: number }) => MenuItem[]>(() => []);
   const [doc, setDoc] = useState(initial.doc);
   /** The composition open in the master preview editor (T12.3: any composition). */
   const [editingMain, setEditingMain] = useState<string | null>(null);
@@ -218,15 +216,11 @@ function BoardCanvas(props: {
   const [menu, setMenu] = useState<MenuState | null>(null);
   const [edges, setEdges] = useState(() => docToEdges(initial.doc));
   const [sourceCount, setSourceCount] = useState(initial.doc.sources.length);
-  const [adding, setAdding] = useState(false);
-  const [addingOutput, setAddingOutput] = useState(false);
-  /** Where a node added from the canvas menu goes (flow coordinates); null = the default column (T8.4). */
   const [theme, toggleTheme] = useTheme();
   /** T13.2: the one selected node (React Flow id), shown in the inspector. */
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   /** D40: the picture of the selected Assets card shown in the inspector. */
   const [stackFocus, setStackFocus] = useState<string | null>(null);
-  const [placeAt, setPlaceAt] = useState<{ x: number; y: number } | null>(null);
   const flow = useRef<ReactFlowInstance<FlowNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [reconnecting, setReconnecting] = useState<{ outputId: string; compositionId: string } | null>(null);
@@ -454,9 +448,15 @@ function BoardCanvas(props: {
   // screen). Not an undo step — it's how the doc is shown; undoing to an unfitted doc just fits it again.
   useEffect(() => {
     if (readOnly) return;
-    // D45 too: a project saved before the fixed order gets it here, also without an undo step.
-    const fitted = orderLayers(fitFrames(docRef.current, sizes));
-    if (fitted !== docRef.current) show(fitted);
+    // D45 too: a project saved before the fixed order gets it here, also without an undo step; and D49: on open, a
+    // project made before the page-3 board is brought into its shape (asset nodes, one Layer Comp, Preset nodes) —
+    // once, so a node deleted afterwards stays deleted.
+    const first = !structured.current;
+    const base = first ? boardStructure(docRef.current) : docRef.current;
+    structured.current = true;
+    const fitted = orderLayers(fitFrames(base, sizes));
+    // On open the structure may place nodes (a Sizes preset's Previews): the board takes those positions.
+    if (fitted !== docRef.current) show(fitted, first && base !== docRef.current);
   }, [doc, sizes, readOnly, show]);
 
   const disconnect = useCallback(
@@ -594,6 +594,22 @@ function BoardCanvas(props: {
           disconnect(row);
           continue;
         }
+        // D49: a card's one wire into the Layer Comp stands for all its items' wires.
+        if (e.id.startsWith('card:')) {
+          const d0 = docRef.current;
+          const stack = assetStacks(d0).find((st) => st.id === stackIdOfNode(e.source));
+          const pair = languagePairs(d0).find((p) => p.id === pairIdOfNode(e.source));
+          const items = stack?.items ?? (pair ? [pair.km, pair.en] : []);
+          run((doc) => {
+            let next = doc;
+            for (const id of items) {
+              const r = disconnectSource(next, id, MAIN_ID);
+              if (r.ok) next = r.doc;
+            }
+            return { ok: true, doc: next };
+          });
+          continue;
+        }
         // D40: a wire drawn from an Assets card is one picture's wire.
         const sourceId = layerOfConnection(e) ?? (isCardNode(e.source) ? docRef.current.edges.find((x) => x.id === e.id)?.from : undefined);
         const outputId = compositionIdOfNode(e.source) && e.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(e.target) : undefined;
@@ -665,33 +681,22 @@ function BoardCanvas(props: {
     [onEdgesDelete],
   );
 
-  /**
-   * T12.7 node palette (generalising T10.4): a wire dragged out of any port and released on empty canvas — or a
-   * right-click on a port — lists the nodes that fit that port; the one chosen is added there, already wired.
-   */
-  const openPalette = useCallback(
-    (port: PalettePort, client: { x: number; y: number }) => {
+  /** D49: a wire dragged out of the Layer Comp group onto empty canvas (or a right-click on its out port) offers the Preset nodes. */
+  const openPresets = useCallback(
+    (client: { x: number; y: number }) => {
       if (readOnly || !flow.current) return;
-      const items = paletteItems(docRef.current, port, presets);
-      if (items.length === 0) return;
       const at = flow.current.screenToFlowPosition(client);
-      setMenu({
-        x: client.x,
-        y: client.y,
-        title: 'Add & connect',
-        items: items.map((item) => ({ label: item.label, disabled: item.disabled, separated: item.separated, onSelect: () => run((doc) => item.add(doc, newId, at)) })),
-      });
+      setMenu({ x: client.x, y: client.y, title: 'Add a Preset node', items: presetItemsRef.current(at) });
     },
-    [readOnly, presets, run],
+    [readOnly],
   );
-  /** Right-click on a port: its palette (before the node's own menu). */
+  /** Right-click on the group's out port: the Preset nodes (before the node's own menu). */
   const onPortContextMenu = (e: React.MouseEvent) => {
     const handle = (e.target as Element).closest?.('.react-flow__handle');
-    const nodeId = handle?.getAttribute('data-nodeid');
-    if (!handle || !nodeId) return;
+    if (!handle || handle.getAttribute('data-nodeid') !== MAIN_ID || handle.getAttribute('data-handleid') !== OUTPUT_HANDLE) return;
     e.preventDefault();
     e.stopPropagation();
-    openPalette({ nodeId, handleId: handle.getAttribute('data-handleid') || null, handleType: handle.classList.contains('source') ? 'source' : 'target' }, { x: e.clientX, y: e.clientY });
+    openPresets({ x: e.clientX, y: e.clientY });
   };
   const onConnectEnd = useCallback(
     (e: MouseEvent | TouchEvent, state: FinalConnectionState) => {
@@ -705,10 +710,10 @@ function BoardCanvas(props: {
       if (r.active || performance.now() - r.endedAt < 100) return;
       const from = state.fromHandle;
       const point = 'changedTouches' in e ? e.changedTouches[0] : e;
-      if (!from || !point) return;
-      openPalette({ nodeId: from.nodeId, handleId: from.id ?? null, handleType: from.type }, { x: point.clientX, y: point.clientY });
+      if (!from || !point || from.nodeId !== MAIN_ID || from.id !== OUTPUT_HANDLE) return;
+      openPresets({ x: point.clientX, y: point.clientY });
     },
-    [readOnly, openPalette],
+    [readOnly, openPresets],
   );
 
   /** Duplicates inputs (each copy right next to its original), as one undo step. */
@@ -796,67 +801,84 @@ function BoardCanvas(props: {
     [duplicateInputs, readOnly, run, onSelectionContextMenu],
   );
 
-  const addInput = (input: NewInput, at = placeAt) => {
-    const result = run((doc) => addSource(doc, { id: newId(), ...input, ...(at ? { board: at } : {}) }));
-    if (result.ok) setAdding(false);
-  };
-
-  const addOutputNode = (o: NewOutput) => {
-    const result = run((doc) => addOutput(doc, { id: newId(), ...o, ...(placeAt ? { board: placeAt } : {}) }));
-    if (result.ok) setAddingOutput(false);
-  };
-
-  /** D46: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to the master preview. */
+  /** D46 / D49: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to the Layer Comp. */
   const addSet = (family: string, at: { x: number; y: number }) => {
     const sizes = presetFamilies(presets).find((f) => f.label === family)?.presets ?? [];
     run((d) => addPresetSet(d, { id: newId(), label: family, board: at, sizes: sizes.map((p) => ({ id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } })) }));
   };
 
-  /** T13.4: add from the node library at `at` (a drop point), or in the middle of the view (a click). */
-  const addFromLibrary = (spec: AddSpec, drop?: { x: number; y: number }) => {
-    if (readOnly || !flow.current) return;
-    const pane = document.querySelector('.sc-board__flow')?.getBoundingClientRect();
-    const screen = drop ?? (pane ? { x: pane.left + pane.width / 2, y: pane.top + pane.height / 2 } : { x: 0, y: 0 });
-    const at = flow.current.screenToFlowPosition(screen);
-    switch (spec.type) {
-      case 'input':
-        addInput(spec.input, at);
-        return;
-      case 'process':
-        run((d) => addProcess(d, { id: newId(), op: spec.op, board: at }));
-        return;
-      case 'composition':
-        run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at }));
-        return;
-      case 'assets':
-        run((d) => addStack(d, { id: newId(), board: at }));
-        return;
-      case 'headline':
-        run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at }));
-        return;
-      case 'coreRule':
-        run((d) => addCoreRule(d, { id: newId(), board: at }));
-        return;
-      case 'presetSet':
-        addSet(spec.family, at);
-        return;
-      case 'library':
-        run((d) => addSourceFromLibrary(d, spec.item, newId(), at));
-        return;
-      case 'output':
-        if (!spec.preset) {
-          setPlaceAt(at);
-          setAddingOutput(true);
-          return;
-        }
-        {
-          const p = spec.preset;
-          run((d) => addOutput(d, { id: newId(), label: p.name, size: { ...p.size }, ...presetSettings(p), board: at }));
-        }
-    }
+  /** D49: the Preset nodes on offer — every preset family, then a custom one (the user's own sizes). */
+  const presetItems = (at: { x: number; y: number }): MenuItem[] => {
+    const doc = docRef.current;
+    return [
+      ...presetFamilies(presets).map((f) => ({
+        label: `${f.label} preset (${f.presets.length} ${f.presets.length === 1 ? 'size' : 'sizes'})`,
+        disabled: doc.outputs.length + f.presets.length > LIMITS.maxOutputs,
+        onSelect: () => addSet(f.label, at),
+      })),
+      { label: 'Custom preset…', separated: true, onSelect: () => run((d) => addPresetSet(d, { id: newId(), label: window.prompt('Preset name', 'Custom')?.trim() || 'Custom', board: at, sizes: [] })) },
+    ];
   };
 
-  // T8.4: right-click the empty canvas → add an input or an output right there.
+  useEffect(() => {
+    presetItemsRef.current = presetItems;
+  });
+
+  /** D49 (page 3): what can be added on the board — the asset nodes, then the Preset nodes. */
+  const addItems = (at: { x: number; y: number }): MenuItem[] => {
+    const full = docRef.current.sources.length >= LIMITS.maxSources;
+    return [
+      { label: 'Logo node', disabled: full, onSelect: () => run((d) => addStack(d, { id: newId(), kind: 'logo', board: at })) },
+      { label: 'Headline node (Khmer / English)', disabled: full, onSelect: () => run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at })) },
+      {
+        label: 'Text node',
+        disabled: full,
+        onSelect: () =>
+          run((d) => {
+            const id = newId();
+            const r = addStack(d, { id, kind: 'text', board: at });
+            return r.ok ? addTextToStack(r.doc, id, { id: newId(), label: 'Text 1' }) : r;
+          }),
+      },
+      { label: 'Image node', disabled: full, onSelect: () => run((d) => addStack(d, { id: newId(), label: 'Image', board: at })) },
+      {
+        label: 'Background node',
+        disabled: full,
+        onSelect: () =>
+          run((d) => {
+            const id = newId();
+            const r = addSource(d, { id, kind: 'image', label: 'Background', behavesLike: 'background', board: at });
+            return r.ok ? connectSource(r.doc, id) : r;
+          }),
+      },
+      ...presetItems(at).map((item, i) => ({ ...item, separated: i === 0 })),
+    ];
+  };
+  /**
+   * D49: where + Add puts a node: asset nodes at the end of the top row, Preset nodes in a column under the Layer
+   * Comp group (each below the last), so nothing lands on top of the group.
+   */
+  const nextSpot = (): { asset: { x: number; y: number }; preset: { x: number; y: number } } => {
+    const d = docRef.current;
+    const main = d.compositions.find((c) => c.id === MAIN_ID);
+    const ns = flow.current?.getNodes() ?? [];
+    const right = (n: { position: { x: number }; measured?: { width?: number } }) => n.position.x + (n.measured?.width ?? 280);
+    const top = ns.filter((n) => n.type === 'assetsNode' || n.type === 'textNode' || n.type === 'headlineNode' || n.type === 'inputNode');
+    const sets = ns.filter((n) => n.type === 'presetNode');
+    const below = (n: { position: { y: number }; measured?: { height?: number } }) => n.position.y + (n.measured?.height ?? 400);
+    return {
+      asset: { x: top.length ? Math.max(...top.map(right)) + 40 : 0, y: top.length ? Math.min(...top.map((n) => n.position.y)) : 0 },
+      preset: { x: main?.board.x ?? 0, y: sets.length ? Math.max(...sets.map(below)) + 60 : (main?.board.y ?? 0) + 560 },
+    };
+  };
+  const openAdd = (button: HTMLElement) => {
+    const r = button.getBoundingClientRect();
+    const spot = nextSpot();
+    const assets = addItems(spot.asset);
+    const presets = presetItems(spot.preset);
+    setMenu({ x: r.left, y: r.bottom + 4, title: 'Add', items: [...assets.slice(0, assets.length - presets.length), ...addItems(spot.preset).slice(assets.length - presets.length)] });
+  };
+
   /** Phone top bar (T13.6): what doesn't fit goes in a "More" menu under the button. */
   const openMore = (button: HTMLElement) => {
     const r = button.getBoundingClientRect();
@@ -865,8 +887,7 @@ function BoardCanvas(props: {
       : [
           { label: 'Undo', disabled: !canStep.undo, onSelect: undo },
           { label: 'Redo', disabled: !canStep.redo, onSelect: redo },
-          { label: 'Add input', disabled: sourceCount >= LIMITS.maxSources, separated: true, onSelect: () => (setPlaceAt(null), setAdding(true)) },
-          { label: `Add output (${outputCount})`, disabled: outputCount >= LIMITS.maxOutputs, onSelect: () => (setPlaceAt(null), setAddingOutput(true)) },
+          ...addItems(nextSpot().asset).map((item, i) => ({ ...item, separated: i === 0 })),
         ];
     setMenu({
       x: r.right - 220,
@@ -881,59 +902,12 @@ function BoardCanvas(props: {
     });
   };
 
+  // T8.4 / D49: right-click the empty canvas → add an asset node or a Preset node right there.
   const onPaneContextMenu = (e: MouseEvent | React.MouseEvent) => {
     if (readOnly || !flow.current) return;
     e.preventDefault();
     const at = flow.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
-    const doc = docRef.current;
-    const inputsFull = doc.sources.length >= LIMITS.maxSources;
-    const outputsFull = doc.outputs.length >= LIMITS.maxOutputs;
-    const quick = (label: string, input: NewInput) => ({ label, disabled: inputsFull, onSelect: () => addInput(input, at) });
-    setMenu({
-      x: e.clientX,
-      y: e.clientY,
-      title: inputsFull ? `Add (${LIMITS.maxSources} inputs max)` : 'Add here',
-      items: [
-        // T8.7: each with the behaviour that adapts the way people expect (changeable on the node).
-        // D40: one card for many pictures.
-        { label: 'Assets (many pictures)', onSelect: () => run((d) => addStack(d, { id: newId(), board: at })) },
-        // D44: a headline as a Khmer and an English picture.
-        { label: 'Headline (Khmer / English)', onSelect: () => run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at })) },
-        quick('Image (subject)', { kind: 'image', label: 'Image', behavesLike: 'subject' }),
-        quick('Logo / SVG', { kind: 'vector', label: 'Logo', behavesLike: 'logo' }),
-        quick('Text', { kind: 'text', label: 'Text', behavesLike: 'text' }),
-        quick('Background colour / gradient', { kind: 'fill', label: 'Background', behavesLike: 'background' }),
-        {
-          label: 'Input…',
-          disabled: inputsFull,
-          onSelect: () => {
-            setPlaceAt(at);
-            setAdding(true);
-          },
-        },
-        {
-          // T12.3: another master preview (e.g. a campaign variant); wire inputs into it and outputs out of it.
-          label: canAddComposition(doc) ? 'Master preview' : `Master preview (${LIMITS.maxCompositions} max)`,
-          disabled: !canAddComposition(doc),
-          separated: true,
-          onSelect: () => run((d) => addComposition(d, { id: newId(), label: `Master preview ${d.compositions.length + 1}`, board: at })),
-        },
-        // D47: how the master preview adapts (layer comp, preset guides, auto layout).
-        { label: 'Core rules', onSelect: () => run((d) => addCoreRule(d, { id: newId(), board: at })) },
-        // D46: a Preset node per family of preset sizes.
-        ...presetFamilies(presets)
-          .filter((f) => f.presets.length > 1)
-          .map((f, i) => ({ label: `${f.label} preset (${f.presets.length} sizes)`, separated: i === 0, disabled: doc.outputs.length + f.presets.length > LIMITS.maxOutputs, onSelect: () => addSet(f.label, at) })),
-        {
-          label: outputsFull ? `Output… (${LIMITS.maxOutputs} max)` : 'Output…',
-          disabled: outputsFull,
-          onSelect: () => {
-            setPlaceAt(at);
-            setAddingOutput(true);
-          },
-        },
-      ],
-    });
+    setMenu({ x: e.clientX, y: e.clientY, title: 'Add here', items: addItems(at) });
   };
 
   const onNodeDragStop = useCallback(
@@ -986,29 +960,9 @@ function BoardCanvas(props: {
         </div>
         {!readOnly && screen !== 'phone' && (
           <div className="sc-topbar__group sc-topbar__add" role="group" aria-label="Add">
-            <button
-              type="button"
-              aria-label="+ Add input"
-              onClick={() => {
-                setPlaceAt(null);
-                setAdding(true);
-              }}
-              disabled={sourceCount >= LIMITS.maxSources}
-              title={sourceCount >= LIMITS.maxSources ? `${LIMITS.maxSources} inputs max` : 'Add an input (or right-click the canvas)'}
-            >
-              <Icon name="plus" /> Input <span className="sc-count">{sourceCount}</span>
-            </button>
-            <button
-              type="button"
-              aria-label="+ Add output"
-              onClick={() => {
-                setPlaceAt(null);
-                setAddingOutput(true);
-              }}
-              disabled={outputCount >= LIMITS.maxOutputs}
-              title={outputCount >= LIMITS.maxOutputs ? `${LIMITS.maxOutputs} outputs max` : 'Add an output size (or drag a wire out of the master preview)'}
-            >
-              <Icon name="plus" /> Output <span className="sc-count">{outputCount}</span>
+            {/* D49: one menu for every node — the asset nodes and the Preset nodes (as right-click on the canvas). */}
+            <button type="button" aria-label="+ Add" aria-haspopup="menu" onClick={(e) => openAdd(e.currentTarget)} title="Add a node (or right-click the canvas)">
+              <Icon name="plus" /> Add
             </button>
           </div>
         )}
@@ -1074,16 +1028,9 @@ function BoardCanvas(props: {
       <div
         className="sc-board__canvas"
         // A file dropped outside an input must not make the browser open it (and leave the board).
-        onDragOver={(e) => (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes(ADD_DRAG_TYPE)) && e.preventDefault()}
+        onDragOver={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
         onDrop={(e) => {
-          if (e.dataTransfer.types.includes(ADD_DRAG_TYPE)) {
-            e.preventDefault();
-            try {
-              addFromLibrary(JSON.parse(e.dataTransfer.getData(ADD_DRAG_TYPE)) as AddSpec, { x: e.clientX, y: e.clientY });
-            } catch {
-              // not ours
-            }
-          } else if (e.dataTransfer.types.includes('Files')) {
+          if (e.dataTransfer.types.includes('Files')) {
             e.preventDefault();
             // D40: pictures dropped on the empty canvas make an Assets card there.
             if (!readOnly && flow.current && (e.target as HTMLElement).closest('.react-flow__pane')) {
@@ -1099,16 +1046,6 @@ function BoardCanvas(props: {
         }}
       >
         <BoardContext.Provider value={actions}>
-          {(!floating || panel === 'library') && (
-            <NodeLibrary
-              floating={floating}
-              onClose={() => setPanel(null)}
-              onAdd={(spec) => {
-                addFromLibrary(spec);
-                if (floating) setPanel(null);
-              }}
-            />
-          )}
           <div className="sc-board__flow" ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
             nodes={displayNodes}
@@ -1164,7 +1101,7 @@ function BoardCanvas(props: {
               onGrid={setGrid}
               minimap={minimap}
               onMinimap={setMinimap}
-              panels={floating && { open: panel, onOpen: setPanel, library: !readOnly }}
+              panels={floating && { open: panel, onOpen: setPanel, library: false }}
               compact={screen === 'phone'}
               minimapToggle={screen === 'desktop'}
             />
@@ -1181,7 +1118,6 @@ function BoardCanvas(props: {
           {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}
         </BoardContext.Provider>
       </div>
-      {adding && <AddInputDialog onAdd={(input) => addInput(input)} onClose={() => setAdding(false)} />}
       {reconnecting && (
         <ReconnectDialog
           label={doc.outputs.find((o) => o.id === reconnecting.outputId)?.label ?? 'output'}
@@ -1195,7 +1131,6 @@ function BoardCanvas(props: {
       )}
       {showLibrary && <LibraryDialog teamId={teamId} readOnly={readOnly} sourceCount={sourceCount} run={run} onClose={() => setShowLibrary(false)} />}
       {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} initialOutputs={exporting.outputs} onClose={() => setExporting(false)} />}
-      {addingOutput && <AddOutputDialog presets={presets} onAdd={addOutputNode} onClose={() => setAddingOutput(false)} />}
       {showFonts && (
         <FontsDialog
           teamId={teamId}

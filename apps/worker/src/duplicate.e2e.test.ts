@@ -28,53 +28,48 @@ describe.skipIf(!adminUrl)('duplicate inputs from the canvas (T8.2)', () => {
   const node = (label: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${label}$`) }) });
   const menu = () => page.getByRole('menu');
 
-  it('right-click an input → Duplicate', async () => {
-    await node('Headline').locator('.sc-node__title').click({ button: 'right' });
+  // D49: on the page-3 board the standalone input is the Background node; pictures and text live in their nodes.
+  const copies = async () => (await labels()).filter((l) => l === 'Background copy').length;
+
+  it('right-click the Background node → Duplicate', async () => {
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
+    await node('Background').locator('.sc-node__title').click({ button: 'right' });
     await expect.poll(() => menu().getByRole('menuitem').allInnerTexts()).toEqual(['Duplicate', 'Hide', 'Delete']);
     await menu().getByRole('menuitem', { name: 'Duplicate' }).click();
     expect(await menu().count()).toBe(0);
-    await node('Headline copy').waitFor();
+    await node('Background copy').waitFor();
     await saved();
-    expect(await labels()).toEqual(['Background', 'Headline', 'Headline copy', 'Logo', 'Subject']);
+    expect(await copies()).toBe(1);
   }, 60_000);
 
   it('Escape or a click elsewhere closes the menu', async () => {
-    await node('Logo').locator('.sc-node__title').click({ button: 'right' });
+    await node('Background').locator('.sc-node__title').click({ button: 'right' });
     await menu().waitFor();
     await page.keyboard.press('Escape');
     expect(await menu().count()).toBe(0);
-    await node('Logo').locator('.sc-node__title').click({ button: 'right' });
+    await node('Background').locator('.sc-node__title').click({ button: 'right' });
     await menu().waitFor();
     await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
     expect(await menu().count()).toBe(0);
   }, 30_000);
 
-  it('Ctrl+D duplicates the selected inputs, and one undo removes them all', async () => {
-    await node('Logo').locator('.sc-node__title').click();
-    await page.keyboard.down('Control');
-    await node('Subject').locator('.sc-node__title').click();
-    await page.keyboard.up('Control');
-    expect(await page.locator('.react-flow__node-inputNode.selected').count()).toBe(2);
+  it('Ctrl+D duplicates the selected node, and one undo removes it', async () => {
+    await node('Background').locator('.sc-node__title').click();
     await page.keyboard.press('Control+d');
-    await node('Logo copy').waitFor();
-    await node('Subject copy').waitFor();
-    await saved();
-    expect(await labels()).toEqual(['Background', 'Headline', 'Headline copy', 'Logo', 'Logo copy', 'Subject', 'Subject copy']);
-
+    await expect.poll(copies).toBe(2);
     await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
     await page.keyboard.press('Control+z');
-    await expect.poll(() => node('Logo copy').count()).toBe(0);
-    expect(await node('Subject copy').count()).toBe(0);
     await saved();
-    expect(await labels()).toEqual(['Background', 'Headline', 'Headline copy', 'Logo', 'Subject']);
+    await expect.poll(copies).toBe(1);
   }, 60_000);
 
   it('the menu deletes after a confirm', async () => {
-    await node('Headline copy').locator('.sc-node__title').click({ button: 'right' });
+    await node('Background copy').first().locator('.sc-node__title').click({ button: 'right' });
     page.once('dialog', (d) => void d.accept());
     await menu().getByRole('menuitem', { name: 'Delete' }).click();
-    await expect.poll(() => node('Headline copy').count()).toBe(0);
+    await expect.poll(() => node('Background copy').count()).toBe(0);
     await saved();
-    expect(await labels()).toEqual(['Background', 'Headline', 'Logo', 'Subject']);
+    expect(await copies()).toBe(0);
   }, 60_000);
 });

@@ -31,6 +31,9 @@ describe.skipIf(!adminUrl)('board groups (T13.7)', () => {
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     await page.reload();
     await page.locator('.react-flow__node-outputNode[data-id="out:c"]').waitFor();
+    // D49: they join a Sizes preset node, their Previews in its column.
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
   }, 120_000);
   afterAll(async () => {
     await stack?.close();

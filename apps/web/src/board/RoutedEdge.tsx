@@ -1,8 +1,8 @@
 /**
  * A wire with reroute points (T13.8). Without points it is React Flow's usual curve; with points it curves
  * through each of them. Points can be dragged (one undo step when let go) and double-clicked away; a
- * double-click on the wire adds one (Board). A selected wire shows a "Disconnect" button at its middle — the
- * way to take a wire off on a touch screen (no Delete key; its ends are small to grab). Removing it goes
+ * double-click on the wire adds one (Board). Every wire has a small ✂ badge at its middle (PDF page 3), larger
+ * while the wire is selected — the way to take a wire off on a touch screen (no Delete key; its ends are small to grab). Removing it goes
  * through the board's edge deletion, like Delete (an output's wire freezes it).
  */
 import { setEdgePoints } from '@smart-canvas/core';
@@ -48,21 +48,22 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
   return (
     <>
       <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} interactionWidth={interactionWidth} />
-      {selected && !readOnly && (
+      {!readOnly && (
         <EdgeLabelRenderer>
           <button
             type="button"
-            className="sc-wire-cut nodrag nopan"
+            className={`sc-wire-cut${selected ? '' : ' sc-wire-cut--idle'} nodrag nopan`}
             // Just above the wire, never on it: a double-click there (adding a reroute point) must not hit it.
-            style={{ transform: `translate(-50%, calc(-100% - 12px)) translate(${mid.x}px, ${mid.y}px)` }}
-            aria-label="Disconnect wire"
-            title="Disconnect (or press Delete)"
+            style={{ transform: `translate(-50%, calc(-100% - ${selected ? 12 : 6}px)) translate(${mid.x}px, ${mid.y}px)` }}
+            aria-label={selected ? 'Disconnect wire' : 'Cut wire'}
+            data-edge={id}
+            title="Cut this wire (or select it and press Delete)"
             onClick={(e) => {
               e.stopPropagation();
               void deleteElements({ edges: [{ id }] });
             }}
           >
-            ×
+            ✂
           </button>
         </EdgeLabelRenderer>
       )}

@@ -1,162 +1,161 @@
-import { canvasMetrics, compositionHealth, LAYER_GROUP_LABEL, languagePairs, layerGroup, connectSource, deleteComposition, disconnectSource, guideFor, outputComposition, renameComposition } from '@smart-canvas/core';
-import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
-import { useEffect, useMemo, useState } from 'react';
-import { assetUrl } from '../api';
-import { RenderThumbnail } from '../render/OutputRenderer';
+/**
+ * D49 (PDF page 3): the Layer Comp and the Core Rule, side by side in one dashed group — the master.
+ * - Layer Comp: the layer order as its four groups (logo, headline, elements, background), dragged into another
+ *   order (D48); Square / Vertical / Horizontal open the editor of each of the master's layouts (D42).
+ * - Core Rule: Core Preset Guide (which layout each output uses) and Core Auto Layout Guide (each layer's rule).
+ * Every asset node wires into the group's top; a wire dragged out of its bottom offers the Preset nodes.
+ */
+import {
+  addGuides,
+  compositionHealth,
+  GUIDE_FAMILIES,
+  GUIDE_LABEL,
+  guideRows,
+  LAYER_GROUP_LABEL,
+  layerComp,
+  layerRule,
+  layerRuleText,
+  moveLayerGroup,
+  wiredLayers,
+  type GuideFamily,
+  type LayerGroup,
+} from '@smart-canvas/core';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { useMemo, useState } from 'react';
 import { useBoard } from './context';
-import { LAYER_OUT_HANDLE, MAIN_ID, OUTPUT_HANDLE, portHandleId, type MainFlowNode } from './flow';
+import { LAYERS_HANDLE, OUTPUT_HANDLE, type MainFlowNode } from './flow';
 import { HealthBadge } from './HealthBadge';
-import { Icon, LayerActions, LayerThumb, useLayerReorder } from './LayerRow';
+import { newId } from './ids';
+import { Icon } from './LayerRow';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
+const GROUP_DRAG = 'application/x-sc-layer-group';
+const FAMILY_LABEL: Record<GuideFamily, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
 
-/**
- * A composition ("master preview") node: a layer list, one row per port (port 0 = front = top, D11). Wire an input
- * onto a row to connect it there; drag a row to re-order (T8.1); the dot connects / disconnects; + duplicates.
- * T12.3: any number of them. Others than 'main' can be renamed (double-click) and deleted, list only the inputs
- * wired into them, and end with a drop row that takes a new input.
- */
-export function MainNodeView({ id, data }: NodeProps<MainFlowNode>) {
-  const { readOnly, run, teamId, openMainEditor, doc, missingFonts, layoutDeps } = useBoard();
+export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
+  const { readOnly, run, openMainEditor, doc, missingFonts } = useBoard();
   const { compositionId } = data;
-  const isMain = compositionId === MAIN_ID;
   const health = useMemo(() => compositionHealth(doc, compositionId, missingFonts), [doc, compositionId, missingFonts]);
-  // D42: a guide names its master and counts the outputs whose shape picks it.
-  const comp = doc.compositions.find((c) => c.id === compositionId);
-  const guideOf = comp?.guide ? (doc.compositions.find((c) => c.id === comp.guide?.of)?.label ?? null) : null;
-  const usedBy = useMemo(() => {
-    const master = comp?.guide?.of;
-    return master ? doc.outputs.filter((o) => outputComposition(doc, o.id) === master && guideFor(doc, master, canvasMetrics(o).trim)?.id === comp?.id).length : 0;
-  }, [doc, comp]);
-  const updateInternals = useUpdateNodeInternals();
-  const { dropAt, rowProps } = useLayerReorder(compositionId);
-  const [renaming, setRenaming] = useState<string | null>(null);
-  const rename = () => {
-    const name = renaming?.trim();
-    setRenaming(null);
-    if (name && name !== data.label) run((d) => renameComposition(d, compositionId, name));
-  };
-  const handleKey = `${data.ports.map((p) => p.port).join(',')}|${data.ports.length}`;
-  const sourceOf = new Map(data.sources.map((s) => [s.id, s]));
-  const headlinePictures = useMemo(() => new Set(languagePairs(doc).flatMap((p) => [p.km, p.en])), [doc]);
+  const [panel, setPanel] = useState<'preset' | 'layout' | null>(null);
+  const [dropAt, setDropAt] = useState<number | null>(null);
+  const { groups, guides, rules } = useMemo(() => {
+    const wired = wiredLayers(doc, compositionId);
+    const groups = layerComp(doc, compositionId).map((g) => ({ ...g, layers: g.layers.filter((l) => wired.has(l.id)) }));
+    const placements = doc.compositions.find((c) => c.id === compositionId)?.placements ?? {};
+    const rules = groups.flatMap((g) => g.layers.filter((l) => l.visible).map((l) => ({ id: l.id, label: l.label, text: layerRuleText(layerRule(l, placements[l.id])) })));
+    return { groups, guides: guideRows(doc, compositionId), rules };
+  }, [doc, compositionId]);
 
-  // Handles are added/removed with the port list; React Flow must re-measure them.
-  useEffect(() => updateInternals(id), [id, handleKey, updateInternals]);
+  /** Opens a layout's editor; a missing layout is added first (then opened). */
+  const openLayout = (family: GuideFamily) => {
+    const have = guides.find((g) => g.family === family)?.composition;
+    if (have) return openMainEditor(have.id);
+    if (readOnly) return;
+    const id = newId();
+    const r = run((d) => addGuides(d, compositionId, { [family]: id }));
+    if (r.ok) openMainEditor(id);
+  };
+  const dropGroup = (group: LayerGroup, to: number) => run((d) => ({ ok: true, doc: moveLayerGroup(d, group, to) }));
 
   return (
-    <div className="sc-node sc-node--main">
-      <div className="sc-node__head">
-        {renaming !== null ? (
-          <input
-            className={`sc-rename ${NO_CANVAS}`}
-            aria-label="Master preview name"
-            value={renaming}
-            autoFocus
-            maxLength={200}
-            onChange={(e) => setRenaming(e.target.value)}
-            onBlur={rename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') rename();
-              if (e.key === 'Escape') setRenaming(null);
-            }}
-          />
-        ) : (
-          <div className="sc-node__title" title={isMain || readOnly ? data.label : `${data.label} — double-click to rename`} onDoubleClick={() => !isMain && !readOnly && setRenaming(data.label)}>
-            {data.label}
-          </div>
-        )}
-        <HealthBadge health={health} />
-        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openMainEditor(compositionId)} aria-label={`${readOnly ? 'View' : 'Edit'} ${data.label}`}>
-          {readOnly ? 'View' : 'Edit'}
-        </button>
-        {!isMain && !readOnly && (
-          <button
-            type="button"
-            className={`sc-icon-btn ${NO_CANVAS}`}
-            aria-label={`Delete ${data.label}`}
-            title="Delete this master preview (its outputs keep their current layout, disconnected)"
-            onClick={() => window.confirm(`Delete “${data.label}”? Outputs wired to it are disconnected and keep their current layout.`) && run((d) => deleteComposition(d, compositionId, layoutDeps ?? undefined))}
-          >
-            <Icon name="trash" />
-          </button>
-        )}
-      </div>
-      <div className="sc-node__meta">
-        {guideOf ? (
-          <>
-            <span className="sc-chip" title={`Outputs of “${guideOf}” shaped like this take their layout from it (D42)`}>Guide</span> {data.size.width} × {data.size.height} {data.size.unit} · {usedBy} {usedBy === 1 ? 'output uses' : 'outputs use'} it
-          </>
-        ) : (
-          <>
-            {data.size.width} × {data.size.height} {data.size.unit} · {data.ports.length} layers · {data.outputs} outputs
-          </>
-        )}
-      </div>
-      <div className="sc-main-thumb" aria-label={isMain ? 'Master preview' : `${data.label} preview`}>
-        <RenderThumbnail
-          scene={data.scene}
-          sources={data.sources}
-          assetSizes={layoutDeps?.assets}
-          assetUrl={(assetId) => assetUrl(teamId, assetId)}
-          maxWidth={236}
-          maxHeight={180}
-        />
-      </div>
-      <ol className="sc-ports" aria-label="Layers (front first)">
-        {data.ports.map((p, i) => {
-          const source = sourceOf.get(p.sourceId);
-          // D45: a small label where each layer comp group (logo, headline, elements, background) starts.
-          const group = source ? layerGroup(source, headlinePictures) : 'elements';
-          const prev = i > 0 ? sourceOf.get(data.ports[i - 1]?.sourceId ?? '') : undefined;
-          const starts = i === 0 || !prev || layerGroup(prev, headlinePictures) !== group;
-          return (
+    <div className="sc-comp-group" aria-label="Layer comp and core rule">
+      <Handle type="target" position={Position.Top} id={LAYERS_HANDLE} isConnectable={!readOnly} className="sc-handle--layer" title="Asset nodes wire in here" />
+      <section className="sc-node sc-node--main" aria-label="Layer comp">
+        <div className="sc-node__head">
+          <div className="sc-node__title">Layer Comp</div>
+          <HealthBadge health={health} />
+        </div>
+        <div className="sc-comp__label">Layer order</div>
+        <ol className={`sc-comp__groups ${NO_CANVAS}`} aria-label="Layer order (front first)">
+          {groups.map((g, i) => (
             <li
-              key={p.sourceId}
-              data-group={group}
-              {...(starts ? { 'data-group-label': LAYER_GROUP_LABEL[group] } : {})}
-              className={`sc-port${starts ? ' sc-port--group-start' : ''}${p.connected ? ' sc-port--wired' : ''}${p.visible ? '' : ' sc-port--hidden'}${dropAt === p.port ? ' sc-port--drop' : ''} ${readOnly ? '' : NO_CANVAS}`}
-              data-port={p.port}
-              {...rowProps({ id: p.sourceId, port: p.port })}
+              key={g.group}
+              data-group={g.group}
+              className={`sc-comp__group${dropAt === i ? ' sc-comp__group--drop' : ''}`}
+              draggable={!readOnly}
+              onDragStart={(e) => e.dataTransfer.setData(GROUP_DRAG, g.group)}
+              onDragOver={(e) => {
+                if (!e.dataTransfer.types.includes(GROUP_DRAG)) return;
+                e.preventDefault();
+                setDropAt(i);
+              }}
+              onDragLeave={() => setDropAt(null)}
+              onDrop={(e) => {
+                const group = e.dataTransfer.getData(GROUP_DRAG) as LayerGroup;
+                setDropAt(null);
+                if (!group) return;
+                e.preventDefault();
+                dropGroup(group, i);
+              }}
             >
-              <Handle type="target" position={Position.Left} id={portHandleId(p.port)} isConnectable={!readOnly} className="sc-handle--layer" title="Layer in" />
               {!readOnly && (
-                <span className="sc-port__grip" title="Drag to re-order">
+                <span className="sc-port__grip" aria-hidden="true">
                   <Icon name="grip" />
                 </span>
               )}
-              {source && <LayerThumb source={source} />}
-              <button
-                type="button"
-                className="sc-port__dot"
-                disabled={readOnly}
-                aria-label={`${p.connected ? 'Disconnect' : 'Connect'} ${p.label}`}
-                title={p.connected ? 'Wired: click to disconnect' : 'Not wired: click to connect'}
-                onClick={() => run((doc) => (p.connected ? disconnectSource(doc, p.sourceId, compositionId) : connectSource(doc, p.sourceId, undefined, compositionId)))}
-              >
-                {p.connected ? '●' : '○'}
-              </button>
-              <span className="sc-port__label">{p.label}</span>
-              {!readOnly && source && (
-                <span className="sc-port__actions">
-                  <LayerActions source={source} compositionId={compositionId} />
+              <span className="sc-comp__group-name">{LAYER_GROUP_LABEL[g.group]}</span>
+              <span className="sc-muted sc-comp__count" title={g.layers.map((l) => l.label).join(', ')}>
+                {g.layers.length}
+              </span>
+              {!readOnly && (
+                <span className="sc-comp__moves">
+                  <button type="button" className="sc-icon-btn" aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} up`} disabled={i === 0} onClick={() => dropGroup(g.group, i - 1)}>
+                    ↑
+                  </button>
+                  <button type="button" className="sc-icon-btn" aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} down`} disabled={i === groups.length - 1} onClick={() => dropGroup(g.group, i + 1)}>
+                    ↓
+                  </button>
                 </span>
               )}
             </li>
-          );
-        })}
-      </ol>
-      {!readOnly && (
-        // A row past the last one: an input (or a process, T12.5) wired here becomes this preview's back row.
-        <div className="sc-port sc-port--add" data-port={data.ports.length}>
-          <Handle type="target" position={Position.Left} id={portHandleId(data.ports.length)} isConnectable className="sc-handle--layer" title="Layer in: wire an input or a process here" />
-          <span className="sc-port__hint">{isMain ? 'Wire a process here' : 'Wire an input here'}</span>
+          ))}
+        </ol>
+        <div className="sc-comp__label">Layouts</div>
+        <div className={`sc-comp__layouts ${NO_CANVAS}`} role="group" aria-label="Layouts">
+          {GUIDE_FAMILIES.map((f) => (
+            <button key={f} type="button" className="sc-btn" onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
+              {FAMILY_LABEL[f]}
+            </button>
+          ))}
         </div>
-      )}
-      {data.ports.length === 0 && isMain && <p className="sc-node__meta">No inputs yet.</p>}
-      <div className="sc-node__meta sc-ports__hint">Top = front · drag to re-order</div>
-      <Handle type="source" position={Position.Right} id={OUTPUT_HANDLE} isConnectable={!readOnly} className="sc-handle--composition" title="Master preview out: wire into outputs" />
-      {/* T12.8: this preview as a layer of another master preview (or an output's own layer). */}
-      <Handle type="source" position={Position.Right} id={LAYER_OUT_HANDLE} isConnectable={!readOnly} className="sc-handle--layer sc-handle--nest" title="Use as a layer: wire into a row of another master preview or an output" />
+      </section>
+
+      <section className="sc-node sc-node--rule" aria-label="Core rule">
+        <div className="sc-node__head">
+          <div className="sc-node__title">Core Rule</div>
+        </div>
+        <div className={`sc-rule__buttons ${NO_CANVAS}`}>
+          <button type="button" className="sc-btn" aria-pressed={panel === 'preset'} onClick={() => setPanel(panel === 'preset' ? null : 'preset')}>
+            Core Preset Guide
+          </button>
+          <button type="button" className="sc-btn" aria-pressed={panel === 'layout'} onClick={() => setPanel(panel === 'layout' ? null : 'layout')}>
+            Core Auto Layout Guide
+          </button>
+        </div>
+        {panel === 'preset' && (
+          <ul className={`sc-rule__guides ${NO_CANVAS}`} aria-label="Core preset guide">
+            {guides.map((g) => (
+              <li key={g.family} data-family={g.family}>
+                <span>{GUIDE_LABEL[g.family].replace(' guide', '')}</span>
+                <span className="sc-muted">{g.composition ? `${g.outputs} ${g.outputs === 1 ? 'output' : 'outputs'}` : 'not added'}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {panel === 'layout' && (
+          <ul className={`sc-rule__layers ${NO_CANVAS}`} aria-label="Core auto layout guide">
+            {rules.map((r) => (
+              <li key={r.id} data-layer={r.id}>
+                <span className="sc-rule__layer">{r.label}</span>
+                <span className="sc-muted">{r.text}</span>
+              </li>
+            ))}
+            {rules.length === 0 && <li className="sc-muted">No layers wired yet.</li>}
+          </ul>
+        )}
+      </section>
+      <Handle type="source" position={Position.Bottom} id={OUTPUT_HANDLE} isConnectable={!readOnly} className="sc-handle--composition" title="Drag out to add a Preset node (FB, GDN, Website…)" />
     </div>
   );
 }
+

@@ -4,7 +4,7 @@
  * on its node, re-flowing the outputs.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import { portOf, type ProjectDoc } from '@smart-canvas/core';
+import { addOutput, type ProjectDoc } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
@@ -41,39 +41,22 @@ describe.skipIf(!adminUrl)('input behaviours (T8.7)', () => {
         return { w: b.width / r.width, h: b.height / r.height };
       }, id);
 
-  it('"Background colour / gradient" from the canvas menu fills a 9:16 story', async () => {
-    // A story output, and the default inputs out of the way.
-    await page.getByRole('button', { name: '+ Add output' }).click();
-    await page.getByRole('dialog').getByLabel('Preset').selectOption({ label: 'Story / Reel / TikTok 9:16 · 1080×1920 px' });
-    await page.getByRole('dialog').getByLabel('Name').fill('Story');
-    await page.getByRole('dialog').getByRole('button', { name: 'Add' }).click();
-
-    const pane = await page.locator('.react-flow__pane').boundingBox();
-    if (!pane) throw new Error('no canvas');
-    const spot = await page.evaluate(() => {
-      const p = document.querySelector('.react-flow__pane')?.getBoundingClientRect();
-      if (!p) return null;
-      for (let y = p.bottom - 300; y > p.top; y -= 40)
-        for (let x = p.right - 320; x > p.left; x -= 40) if (document.elementFromPoint(x, y)?.classList.contains('react-flow__pane')) return { x, y };
-      return null;
-    });
-    if (!spot) throw new Error('no empty spot');
-    await page.mouse.click(spot.x, spot.y, { button: 'right' });
-    await page.getByRole('menu').getByRole('menuitem', { name: 'Background colour / gradient' }).click();
-    await saved();
-    const added = (await doc()).sources.find((s) => s.kind === 'fill' && s.id !== 'background');
-    expect(added).toMatchObject({ behavesLike: 'background' });
-    await page.locator(`.react-flow__node-mainNode .sc-port[data-port="${portOf(await doc(), added?.id ?? '')}"] .sc-port__dot`).click();
-    await saved();
-    await expect.poll(() => coverage(added?.id ?? '')).toEqual({ w: 1, h: 1 });
+  it('the Background node (a colour by default) fills a 9:16 story', async () => {
+    // A story output (D49: it joins a Sizes preset node on the board).
+    const cur = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
+    const r = addOutput(cur.doc, { id: 'story', label: 'Story', size: { width: 1080, height: 1920, unit: 'px' } });
+    if (!r.ok) throw new Error(r.error);
+    expect((await page.request.put(url, { data: { rev: cur.rev, doc: r.doc } })).status()).toBe(200);
+    await page.reload();
+    await story().waitFor();
+    await expect.poll(() => coverage('background')).toEqual({ w: 1, h: 1 });
   }, 90_000);
 
   it('changing "behaves like" (inspector) re-flows the outputs', async () => {
-    const id = (await doc()).sources.find((s) => s.kind === 'fill' && s.id !== 'background')?.id ?? '';
+    const id = 'background';
     const label = (await doc()).sources.find((s) => s.id === id)?.label ?? '';
     await page.getByRole('button', { name: 'Fit to screen (Shift+1)' }).click(); // nodes added since the first fit
     await page.waitForTimeout(300);
-    // Added where the canvas menu opened, partly under the master preview: select it without a pointer.
     await page.locator(`.react-flow__node[data-id="src:${id}"] .sc-node__title`).dispatchEvent('click');
     const picker = page.getByRole('complementary', { name: 'Inspector' }).getByLabel(`${label} behaves like`);
     expect(await picker.locator('option').allInnerTexts()).toEqual(['Background', 'Decoration']);

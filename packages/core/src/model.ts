@@ -241,6 +241,8 @@ export interface ProjectDoc {
   presetSets?: PresetSet[];
   /** D47: Core Rule nodes — each shows how one master preview adapts (layer comp, guides, auto layout). */
   coreRules?: CoreRuleNode[];
+  /** D48: the layer comp's group order, front first ('logo' | 'headline' | 'elements' | 'background'); absent = default. */
+  layerOrder?: ('logo' | 'headline' | 'elements' | 'background')[];
 }
 
 /** D47: a Core Rule node on the board, for one master preview. Its contents are derived, never stored. */
@@ -284,6 +286,8 @@ export interface AssetStack {
   label: string;
   board: { x: number; y: number };
   items: string[];
+  /** D49: what the card holds — pictures (default, the Image node), logos (the Logo node) or text slots (the Text node). */
+  kind?: 'image' | 'logo' | 'text';
 }
 
 // ---------- team-level records ----------

@@ -1,4 +1,4 @@
-import { addCoreRule, addPresetSet, addPicturesToStack, addStack, createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
+import { addPresetSet, addPicturesToStack, addStack, createProjectDoc, mainComposition, type ProjectDoc } from '@smart-canvas/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Autosave, type SaveFn, type SaveState } from './autosave';
 import {
@@ -15,7 +15,7 @@ import {
   sourceIdOfNode,
   stackNodeId,
   setNodeId,
-  ruleNodeId,
+  cardEdgeId,
   setInEdgeId,
   setRowHandle,
   syncNodes,
@@ -58,11 +58,10 @@ describe('docToNodes / docToEdges', () => {
     ]);
   });
 
-  it('maps wires to edges: inputs land on their port handle; all wires are deletable', () => {
+  it('maps wires to edges: asset nodes into the Layer Comp top (D49); an output outside a Preset node has no wire', () => {
     expect(docToEdges(sampleDoc())).toEqual([
       // T13.8: every wire is a 'routed' edge carrying its reroute points.
-      { id: 'w1', type: 'routed', data: { points: [] }, source: 'src:bg', target: 'main', targetHandle: 'p0', className: 'sc-edge--layer', deletable: true },
-      { id: 'w2', type: 'routed', data: { points: [] }, source: 'main', target: 'out:ig', sourceHandle: 'out', className: 'sc-edge--composition', deletable: true },
+      { id: 'w1', type: 'routed', data: { points: [] }, source: 'src:bg', target: 'main', targetHandle: 'layers', className: 'sc-edge--layer', deletable: true },
     ]);
   });
 
@@ -280,7 +279,7 @@ describe('Assets cards on the board (D40)', () => {
     return filled.doc;
   };
 
-  it('draws one card for its pictures (not a node each), and their wires from the card to their rows', () => {
+  it('draws one card for its pictures (not a node each), and one wire from the card into the Layer Comp (D49)', () => {
     const doc = withCard();
     const nodes = docToNodes(doc);
     const card = nodes.find((n) => n.id === stackNodeId('st'));
@@ -288,13 +287,13 @@ describe('Assets cards on the board (D40)', () => {
     expect((card?.data as { items: { id: string }[] }).items.map((s) => s.id)).toEqual(['a', 'b']);
     expect(nodes.some((n) => n.id === 'src:a' || n.id === 'src:b')).toBe(false);
     const edges = docToEdges(doc).filter((e) => e.source === stackNodeId('st'));
-    expect(edges.map((e) => e.targetHandle).sort()).toEqual(['p0', 'p1']); // a in front (p0), b behind it
+    expect(edges.map((e) => [e.id, e.target, e.targetHandle])).toEqual([[cardEdgeId(stackNodeId('st')), MAIN_ID, 'layers']]);
   });
 
   it('a card wires into a master preview only; moving it writes its position', () => {
     const doc = withCard();
     expect(connectionRefusal(doc, { source: stackNodeId('st'), target: MAIN_ID })).toBeNull();
-    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/master preview/);
+    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/Layer Comp/);
     expect(withPositions(doc, [{ id: stackNodeId('st'), position: { x: 10.4, y: 20.6 } }]).stacks?.[0]?.board).toEqual({ x: 10, y: 21 });
   });
 });
@@ -320,8 +319,7 @@ describe('Preset nodes on the board (D46)', () => {
       [doc.edges.find((e) => e.to === 'g1')?.id, setNodeId('gdn'), setRowHandle('g1'), 'out:g1'],
       [doc.edges.find((e) => e.to === 'g2')?.id, setNodeId('gdn'), setRowHandle('g2'), 'out:g2'],
     ]);
-    // A plain output keeps its own wire from the master preview.
-    expect(docToEdges(doc).some((e) => e.source === MAIN_ID && e.target === 'out:ig')).toBe(true);
+
   });
 
   it('a disconnected row draws no wire; with none left, no wire goes in', () => {
@@ -342,15 +340,5 @@ describe('Preset nodes on the board (D46)', () => {
   it('moving the node writes its board position', () => {
     const doc = withPositions(withSet(), [{ id: setNodeId('gdn'), position: { x: 10.4, y: 20.6 } }]);
     expect(doc.presetSets?.[0]?.board).toEqual({ x: 10, y: 21 });
-  });
-});
-
-describe('Core Rule nodes on the board (D47)', () => {
-  it('one node per Core Rule, at its position; moving it writes the position back', () => {
-    const r = addCoreRule(sampleDoc(), { id: 'r1', board: { x: -400, y: 300 } });
-    if (!r.ok) throw new Error(r.error);
-    const node = docToNodes(r.doc).find((n) => n.id === ruleNodeId('r1'));
-    expect([node?.type, node?.position]).toEqual(['ruleNode', { x: -400, y: 300 }]);
-    expect(withPositions(r.doc, [{ id: ruleNodeId('r1'), position: { x: 1.2, y: 2.7 } }]).coreRules?.[0]?.board).toEqual({ x: 1, y: 3 });
   });
 });

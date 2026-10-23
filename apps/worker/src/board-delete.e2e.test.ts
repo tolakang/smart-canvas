@@ -1,6 +1,6 @@
 /**
- * Board cards and the Delete key. Input cards show only a name and a preview (settings live in the inspector),
- * fit their content (no thumbnail wider than the card), and Delete / Backspace deletes the selected nodes —
+ * Board nodes and the Delete key (D49 board). A picture's settings live in the inspector, its thumbnail fits
+ * the node, and Delete / Backspace deletes the selected nodes —
  * one confirm, one undo step. In the master preview editor Delete removes the selected layer like its row's
  * trash button; in an output editor it hides the layer on that output.
  */
@@ -9,7 +9,7 @@ import type { ProjectDoc } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+import { boardNode, openLayout, putPicture, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
 describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
   let stack: Stack;
@@ -23,44 +23,41 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
     url = `${stack.env.webUrl}api/teams/${teamId}/projects/${projectId}`;
     // A wide picture: its thumbnail must still fit the card.
     const png = await sharp({ create: { width: 1600, height: 300, channels: 4, background: { r: 200, g: 40, b: 40, alpha: 1 } } }).png().toBuffer();
-    await inNode('Subject').locator('input[type=file]').setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer: png });
-    await inNode('Subject').locator('img.sc-thumb').waitFor();
-    for (const l of ['Background', 'Subject', 'Headline']) await page.getByRole('button', { name: `Connect ${l}`, exact: true }).click();
+    await putPicture(page, 'Subject', { name: 'wide.png', mimeType: 'image/png', buffer: png });
+    await boardNode(page, 'Image').locator('img[alt="Subject preview"]').waitFor();
     await saved();
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
   });
 
-  const inNode = (l: string) => page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${l}$`) }) });
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
   const saved = () => page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
 
-  it('an input card is a name and a preview; its settings are in the inspector', async () => {
-    const card = inNode('Subject');
-    for (const sel of ['select', 'textarea', '.sc-actions', '.sc-node__meta']) expect(await card.locator(sel).count()).toBe(0);
-    expect(await card.getByRole('button').count()).toBe(0);
-    const [cardBox, thumbBox] = await Promise.all([card.boundingBox(), card.locator('img.sc-thumb').boundingBox()]);
+  it('a picture in the Image node fits it; its settings are in the inspector', async () => {
+    const card = boardNode(page, 'Image');
+    const [cardBox, thumbBox] = await Promise.all([card.boundingBox(), card.locator('img[alt="Subject preview"]').boundingBox()]);
     expect((thumbBox?.x ?? 0) + (thumbBox?.width ?? 0)).toBeLessThanOrEqual((cardBox?.x ?? 0) + (cardBox?.width ?? 0));
     await card.locator('.sc-node__title').click();
+    await card.getByRole('button', { name: 'Select Subject' }).click();
     if (process.env.SC_SHOTS) await page.screenshot({ path: `${process.env.SC_SHOTS}/board-cards.png` });
     const inspector = page.getByRole('complementary', { name: 'Inspector' });
     for (const name of ['Duplicate Subject', 'Save Subject to library', 'Delete Subject']) expect(await inspector.getByRole('button', { name }).count()).toBe(1);
     expect(await inspector.getByLabel('Subject behaves like').count()).toBe(1);
   }, 30_000);
 
-  it('Delete deletes the selected input (after a confirm); the first master preview stays', async () => {
+  it('Delete deletes the selected node (after a confirm); the Layer Comp stays', async () => {
     page.once('dialog', (d) => void d.accept());
-    await inNode('Logo').locator('.sc-node__title').click();
+    await boardNode(page, 'Logo').locator('.sc-node__title').click();
     await page.keyboard.press('Delete');
-    await inNode('Logo').waitFor({ state: 'detached' });
+    await boardNode(page, 'Logo').waitFor({ state: 'detached' });
     await saved();
     expect((await doc()).sources.some((s) => s.id === 'logo')).toBe(false);
     // Undo brings it back (one step).
     await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
     await page.keyboard.press('Control+z');
-    await inNode('Logo').waitFor();
-    // The master preview can't be deleted: nothing is asked, nothing changes.
+    await boardNode(page, 'Logo').waitFor();
+    // The Layer Comp can't be deleted: nothing is asked, nothing changes.
     let asked = false;
     const ask = (d: { dismiss: () => Promise<void> }) => ((asked = true), void d.dismiss());
     page.once('dialog', ask);
@@ -74,14 +71,14 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
 
   it('Cancel in the confirm keeps the node', async () => {
     page.once('dialog', (d) => void d.dismiss());
-    await inNode('Logo').locator('.sc-node__title').click();
+    await boardNode(page, 'Logo').locator('.sc-node__title').click();
     await page.keyboard.press('Delete');
     await page.waitForTimeout(300);
-    expect(await inNode('Logo').count()).toBe(1);
+    expect(await boardNode(page, 'Logo').count()).toBe(1);
   }, 30_000);
 
   it('master preview editor: Delete removes the selected layer (as its row trash button)', async () => {
-    await page.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit' }).click();
+    await openLayout(page);
     const editor = page.getByRole('dialog', { name: /Master preview editor/ });
     await editor.getByRole('complementary', { name: 'Layers' }).getByText('Headline', { exact: true }).click();
     page.once('dialog', (d) => void d.accept());
