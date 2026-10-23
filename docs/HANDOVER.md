@@ -1,6 +1,6 @@
 # Handover — 2026-10-23 (after #106)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D52**), `docs/BACKLOG.md` (P14 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D53**), `docs/BACKLOG.md` (P14 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -34,7 +34,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 **Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG; a PDF goes up as its first page, a PNG (D52, `apps/web/src/pdf.ts`, called from `uploadAsset`).
 - **Logo, Image and Text** are `AssetStack`s with `kind: 'logo' | 'image' | 'text'`. Logo items behave as logos (they get a minimum size).
 - **Text** slots are each their own text layer. You type on the card, and the slot grows with its text. `addTextToStack` adds one.
-- **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch.
+- **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch. **Add headline** adds more pairs to the same node (D53: `more`, `addPairRow`, `deletePairRow`, `pairInputs`); **Use** switches them all.
 - **Background** is one input with vertical and horizontal slots (D43). A square output uses either slot.
 
 **Layer Comp.**
@@ -70,7 +70,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Area | Files |
 |---|---|
 | Board structure / conversion | `packages/core/src/board-structure.ts` |
-| Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` |
+| Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` (`addLanguagePair`, `addPairRow`, `deletePairRow`, `pairRows`, `pairInputs`) |
 | Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
 | Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`), `render.ts` (`masterScene`) |
 | Core Rule data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`, `layerRule`) |
@@ -93,7 +93,6 @@ New projects come from `createBoardProject` (API `POST /projects`).
 
 ## Known limits
 - PDF uploads keep only the first page, as pixels (D52).
-- One Khmer/English pair per Headline node; add another Headline node for more.
 - `output.family` is computed but no longer changes placement (D38).
 - Resizes don't snap; only moves do.
 - A Preset node added by right‑click lands where you clicked. Its Previews can then overlap other nodes until moved. "+ Add" places it under the group.

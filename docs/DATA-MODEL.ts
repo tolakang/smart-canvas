@@ -210,7 +210,7 @@ export interface ProjectDoc {
   /** Assets cards (D40): one board node holding many pictures; absent = none. Board only, no effect on layout. */
   stacks?: AssetStack[];
   /** D44: Headline cards (a Khmer and an English input, one in use). */
-  headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en' }[];
+  headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en'; more?: { km: string; en: string }[] }[]; // more: N3
   // D46: Preset nodes — each lists output ids (its sizes, in row order).
   presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[]; hidden?: string[] }[]; // hidden: D51
   // D47: Core Rule nodes — one master preview each; what they show is derived.

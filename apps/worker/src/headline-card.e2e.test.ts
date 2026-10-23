@@ -1,6 +1,7 @@
 /**
  * D44 end to end: a Headline card (Khmer / English). Added from the canvas menu, a picture dropped in each slot;
- * every output draws the language in use and switches with the card; each language keeps its own box.
+ * every output draws the language in use and switches with the card; each language keeps its own box. N3: more
+ * pairs in the same node.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addOutput, languagePairs, mainComposition, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
@@ -80,5 +81,30 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
       return (q[pair.en]?.w ?? 0) / (q[pair.en]?.h ?? 1) > (q[pair.km]?.w ?? 0) / (q[pair.km]?.h ?? 1);
     }).toBe(true);
     expect(ratio(pair.en)).toBeGreaterThan(0);
+  }, 60_000);
+
+  it('N3: "Add headline" adds a second Khmer / English pair to the node; "Use" covers both; it can be deleted', async () => {
+    await card().getByRole('button', { name: 'Add headline' }).dispatchEvent('click');
+    await card().getByRole('group', { name: 'Headline 2' }).waitFor();
+    await saved();
+    const second = languagePairs(await doc())[0]?.more?.[0];
+    if (!second) throw new Error('no second pair');
+    const pic = await sharp({ create: { width: 500, height: 100, channels: 3, background: { r: 30, g: 160, b: 60 } } }).png().toBuffer();
+    await card().getByLabel('English headline 2 picture').setInputFiles({ name: 'en2.png', mimeType: 'image/png', buffer: pic });
+    await card().getByRole('img', { name: 'English headline 2' }).waitFor();
+    await saved();
+    if (process.env.SC_SHOTS) await card().screenshot({ path: `${process.env.SC_SHOTS}/headline-two-pairs.png` });
+    // English is in use: the story draws both English pictures, no Khmer one.
+    const [pair] = languagePairs(await doc());
+    await expect.poll(drawnInStory).toContain(second.en);
+    expect(await drawnInStory()).toContain(pair?.en);
+    expect(await drawnInStory()).not.toContain(second.km);
+    page.once('dialog', (d) => void d.accept());
+    await card().getByRole('button', { name: 'Delete headline 2' }).dispatchEvent('click');
+    await card().getByRole('group', { name: 'Headline 2' }).waitFor({ state: 'detached' });
+    await saved();
+    const d = await doc();
+    expect(languagePairs(d)[0]?.more).toBeUndefined();
+    expect(d.sources.some((s) => s.id === second.km || s.id === second.en)).toBe(false);
   }, 60_000);
 });

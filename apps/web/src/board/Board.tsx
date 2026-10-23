@@ -10,6 +10,7 @@ import {
   addLanguagePair,
   addStack,
   languagePairs,
+  pairInputs,
   connectStack,
   fitFrames,
   orderLayers,
@@ -539,12 +540,17 @@ function BoardCanvas(props: {
         run((doc) => connectStack(doc, stackId, toComposition));
         return;
       }
-      // D44: a wire from a Headline card wires both languages.
+      // D44, N3: a wire from a Headline card wires both languages of every pair.
       const pair = languagePairs(docRef.current).find((p) => p.id === pairIdOfNode(c.source));
       if (pair && toComposition) {
         run((doc) => {
-          const km = connectSource(doc, pair.km, undefined, toComposition);
-          return km.ok ? connectSource(km.doc, pair.en, undefined, toComposition) : km;
+          let next = doc;
+          for (const id of pairInputs(pair)) {
+            const r = connectSource(next, id, undefined, toComposition);
+            if (!r.ok) return r;
+            next = r.doc;
+          }
+          return { ok: true, doc: next };
         });
         return;
       }
@@ -599,7 +605,7 @@ function BoardCanvas(props: {
           const d0 = docRef.current;
           const stack = assetStacks(d0).find((st) => st.id === stackIdOfNode(e.source));
           const pair = languagePairs(d0).find((p) => p.id === pairIdOfNode(e.source));
-          const items = stack?.items ?? (pair ? [pair.km, pair.en] : []);
+          const items = stack?.items ?? (pair ? pairInputs(pair) : []);
           run((doc) => {
             let next = doc;
             for (const id of items) {

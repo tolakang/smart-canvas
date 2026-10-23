@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * Every composition is a "master preview" node (T12.3): 'main' keeps the node id `main`, others are `comp:<id>`.
  */
-import { stackKind, assetStacks, compositionById, type CoreRuleNode, languagePairs, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
+import { stackKind, assetStacks, compositionById, type CoreRuleNode, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, layerSources, type BoardGroup, type LayerSource, type ProcessNode, isOutputConnected, masterScene, MAIN, outputComposition, wiredLayers, wiredOutputLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc, type RenderScene, type Size } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -41,7 +41,7 @@ export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; con
 /** D47: a Core Rule node (what it shows is derived from the doc). */
 export type RuleFlowNode = Node<{ rule: CoreRuleNode }, 'ruleNode'>;
 /** D44: a Headline card and its two inputs. */
-export type PairFlowNode = Node<{ pair: LanguagePair; km: InputSource | undefined; en: InputSource | undefined }, 'headlineNode'>;
+export type PairFlowNode = Node<{ pair: LanguagePair; rows: { km: InputSource | undefined; en: InputSource | undefined }[] }, 'headlineNode'>;
 /** One row per port on the master preview, front (port 0) first. */
 export interface PortRow {
   port: number;
@@ -135,7 +135,7 @@ function endpoint(doc: ProjectDoc, id: string): string | null {
     // D40: a picture in an Assets card is drawn by the card, so are its wires.
     const st = assetStacks(doc).find((x) => x.items.includes(id));
     if (st) return stackNodeId(st.id);
-    const pair = languagePairs(doc).find((p) => p.km === id || p.en === id);
+    const pair = languagePairs(doc).find((p) => pairInputs(p).includes(id));
     return pair ? pairNodeId(pair.id) : inputNodeId(id);
   }
   if (doc.outputs.some((o) => o.id === id)) return outputNodeId(id);
@@ -185,7 +185,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
   });
   const stacks = assetStacks(doc);
   const pairs = languagePairs(doc);
-  const inStack = new Set([...stacks.flatMap((st) => st.items), ...pairs.flatMap((p) => [p.km, p.en])]);
+  const inStack = new Set([...stacks.flatMap((st) => st.items), ...pairs.flatMap(pairInputs)]);
   const byId = new Map(doc.sources.map((s) => [s.id, s]));
   return [
     ...stacks.map(
@@ -203,7 +203,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         id: pairNodeId(pair.id),
         type: 'headlineNode',
         position: pair.board,
-        data: { pair, km: byId.get(pair.km), en: byId.get(pair.en) },
+        data: { pair, rows: pairRows(pair).map((r) => ({ km: byId.get(r.km), en: byId.get(r.en) })) },
         deletable: false,
       }),
     ),
