@@ -32,13 +32,6 @@ export async function frameToSvg(frame: HTMLElement, outlines: readonly (string 
   clone.style.width = `${width}px`;
   clone.style.height = `${height}px`;
   for (const img of clone.querySelectorAll('img')) img.setAttribute('src', await toDataUrl(img.src));
-  // Recolored pictures (T12.6) are CSS masks: their files go inline too.
-  for (const el of clone.querySelectorAll<HTMLElement>('[data-mask-src]')) {
-    const mask = `url("${await toDataUrl(new URL(el.dataset.maskSrc ?? '', document.baseURI).href)}")`;
-    el.style.setProperty('mask-image', mask);
-    el.style.setProperty('-webkit-mask-image', mask);
-    el.removeAttribute('data-mask-src');
-  }
 
   // Outlined layers: their lines become the paths (same box, so order and rotation are kept).
   const cloneTexts = [...clone.querySelectorAll<HTMLElement>('[data-kind="text"]')];

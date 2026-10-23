@@ -1,5 +1,5 @@
 /**
- * JSON schema for ProjectDoc (docs/DATA-MODEL.ts) as accepted on save: schema 2 (D32), or schema 1 from a
+ * JSON schema for ProjectDoc (docs/DATA-MODEL.ts) as accepted on save: schema 3 (D56), or schema 2 / 1 from a
  * client that has not reloaded yet (the route migrates it with migrateProjectDoc before storing).
  * Checks the shape and the caps (LIMITS); deeper rules (rows, wiring) belong to the core helpers.
  */
@@ -74,12 +74,15 @@ const output = {
     family: { enum: ['auto', 'stack', 'side'] },
     overrides: { type: 'array', items: { type: 'object', required: ['sourceId'], properties: { sourceId: id } } },
     frozen: { type: 'object' },
-    layers: { type: 'array', maxItems: LIMITS.maxSources, items: id },
     transforms: layerTransforms,
     layout: { enum: ['square', 'vertical', 'horizontal'] }, // D50
     board: point,
   },
 } as const;
+
+/** v2 limits and shapes retired in D56, for documents saved by a client that hasn't reloaded yet. */
+const V2 = { maxProcesses: 20, maxCompositions: 5 } as const;
+const outputV2 = { ...output, properties: { ...output.properties, layers: { type: 'array', maxItems: LIMITS.maxSources, items: id } } } as const;
 
 const wire = { type: 'object', required: ['id', 'from', 'to'], properties: { id, from: id, to: id, port: { type: 'integer', minimum: 0 } } } as const;
 
@@ -91,13 +94,15 @@ const composition = {
     label: { type: 'string', maxLength: 200 },
     size,
     placements: { type: 'object', additionalProperties: frame },
-    layers: { type: 'array', maxItems: LIMITS.maxSources + LIMITS.maxProcesses, items: id },
+    layers: { type: 'array', maxItems: LIMITS.maxSources, items: id },
     transforms: layerTransforms,
     board: point,
     // D42: a layout guide of another composition.
     guide: { type: 'object', additionalProperties: false, required: ['of', 'family'], properties: { of: id, family: { enum: ['square', 'vertical', 'horizontal'] } } },
   },
 } as const;
+
+const compositionV2 = { ...composition, properties: { ...composition.properties, layers: { type: 'array', maxItems: LIMITS.maxSources + V2.maxProcesses, items: id } } } as const;
 
 const processNode = {
   type: 'object',
@@ -112,7 +117,7 @@ const processNode = {
 
 const edge = { type: 'object', required: ['id', 'from', 'to', 'kind'], properties: { id: { type: 'string', minLength: 1, maxLength: 210 }, from: id, to: id, kind: { enum: ['layer', 'composition'] }, points: { type: 'array', maxItems: 10, items: point } } } as const;
 
-const maxNodes = LIMITS.maxSources + LIMITS.maxProcesses + LIMITS.maxCompositions + LIMITS.maxOutputs;
+const maxNodes = LIMITS.maxSources + V2.maxProcesses + V2.maxCompositions + LIMITS.maxOutputs;
 
 /** T13.7: a board group (members by id; its box is computed on the board). */
 const group = {
@@ -175,6 +180,28 @@ const coreRule = {
   properties: { id, composition: id, board: point },
 } as const;
 
+/** The current document (D56): the master and its layouts, inputs, outputs, and the board's nodes. */
+export const projectDocV3Schema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['schema', 'rev', 'name', 'compositions', 'sources', 'outputs', 'edges'],
+  properties: {
+    schema: { const: 3 },
+    rev: { type: 'integer', minimum: 0 }, // ignored on save: the server owns rev
+    name: { type: 'string', minLength: 1, maxLength: 200 },
+    compositions: { type: 'array', minItems: 1, maxItems: LIMITS.maxCompositions, items: composition },
+    sources: { type: 'array', maxItems: LIMITS.maxSources, items: source },
+    outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: output },
+    edges: { type: 'array', maxItems: maxNodes * 4, items: edge },
+    groups: { type: 'array', maxItems: LIMITS.maxGroups, items: group },
+    stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
+    headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
+    presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
+    layerOrder: { type: 'array', minItems: 4, maxItems: 4, uniqueItems: true, items: { enum: ['logo', 'headline', 'elements', 'background'] } },
+  },
+} as const;
+
+/** D32–D55. */
 export const projectDocV2Schema = {
   type: 'object',
   additionalProperties: false,
@@ -183,16 +210,16 @@ export const projectDocV2Schema = {
     schema: { const: 2 },
     rev: { type: 'integer', minimum: 0 }, // ignored on save: the server owns rev
     name: { type: 'string', minLength: 1, maxLength: 200 },
-    compositions: { type: 'array', minItems: 1, maxItems: LIMITS.maxCompositions, items: composition },
+    compositions: { type: 'array', minItems: 1, maxItems: V2.maxCompositions, items: compositionV2 },
     sources: { type: 'array', maxItems: LIMITS.maxSources, items: source },
-    processes: { type: 'array', maxItems: LIMITS.maxProcesses, items: processNode },
-    outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: output },
+    processes: { type: 'array', maxItems: V2.maxProcesses, items: processNode },
+    outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: outputV2 },
     edges: { type: 'array', maxItems: maxNodes * 4, items: edge },
     groups: { type: 'array', maxItems: LIMITS.maxGroups, items: group },
     stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
     headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
     presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
-    coreRules: { type: 'array', maxItems: LIMITS.maxCompositions, items: coreRule },
+    coreRules: { type: 'array', maxItems: V2.maxCompositions, items: coreRule },
     layerOrder: { type: 'array', minItems: 4, maxItems: 4, uniqueItems: true, items: { enum: ['logo', 'headline', 'elements', 'background'] } },
   },
 } as const;
@@ -217,4 +244,15 @@ export const projectDocV1Schema = {
   },
 } as const;
 
-export const projectDocSchema = { anyOf: [projectDocV2Schema, projectDocV1Schema] } as const;
+/**
+ * Picked by `schema` (not anyOf: with additional properties removed, a failed branch would strip fields the next
+ * branch needs).
+ */
+export const projectDocSchema = {
+  type: 'object',
+  required: ['schema'],
+  properties: { schema: { enum: [1, 2, 3] } },
+  if: { properties: { schema: { const: 3 } } },
+  then: projectDocV3Schema,
+  else: { if: { properties: { schema: { const: 2 } } }, then: projectDocV2Schema, else: projectDocV1Schema },
+} as const;

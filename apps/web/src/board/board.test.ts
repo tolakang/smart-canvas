@@ -69,7 +69,7 @@ describe('docToNodes / docToEdges', () => {
     expect(portFromHandle('out')).toBeUndefined();
     expect(portFromHandle(null)).toBeUndefined();
     expect(inputToComposition({ source: 'src:logo', target: 'main' })).toBe('main');
-    expect(inputToComposition({ source: 'src:logo', target: 'comp:b' })).toBe('b'); // T12.3: any composition
+    expect(inputToComposition({ source: 'src:logo', target: 'comp:b' })).toBe('b'); // any composition
     expect(inputToComposition({ source: 'main', target: 'out:ig' })).toBeUndefined();
     expect(inputToComposition({ source: 'src:logo', target: 'src:bg' })).toBeUndefined();
     expect(compositionToOutput({ source: 'main', target: 'out:ig' })).toBe('main');
@@ -252,12 +252,8 @@ describe('typed connections (T12.2, D32)', () => {
     expect(connectionRefusal(doc, { source: 'src:bg', target: MAIN_ID })).toBeNull();
     expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4' })).toBeNull();
     expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:ig' })).toBe('This output already has a master preview: drag its wire off first.');
-    // T12.4 output-only layers: onto a layer row of an output, for an input the output's master preview doesn't draw.
-    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBe('This input is already a layer of the output’s master preview.');
-    const unwired = { ...doc, edges: doc.edges.filter((e) => e.from !== 'bg') };
-    expect(connectionRefusal(unwired, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBeNull();
-    expect(connectionRefusal(unwired, { source: 'src:bg', target: 'out:ig', targetHandle: null })).toBe('An input wires into a layer row of an output.');
-    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4', targetHandle: 'p0' })).toBe('A master preview wires into the output’s master preview port.');
+    // D56: no output-only layers.
+    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBe('An input wires into a row of a master preview.');
     expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of a master preview.');
   });
 });

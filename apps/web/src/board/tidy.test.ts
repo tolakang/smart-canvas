@@ -25,7 +25,7 @@ describe('clearSpot (N4)', () => {
 });
 
 describe('tidyPositions (N4)', () => {
-  const base: ProjectDoc = { schemaVersion: 1, sources: [], compositions: [], processes: [], outputs: [], edges: [] } as unknown as ProjectDoc;
+  const base: ProjectDoc = { schemaVersion: 1, sources: [], compositions: [], outputs: [], edges: [] } as unknown as ProjectDoc;
 
   it('asset nodes in a row on top (their order kept), the group under them, Preset nodes in a column under it with their Previews to the right, packed by height', () => {
     const r = addPresetSet({ ...base, compositions: [{ id: MAIN_ID, label: 'Main', size: { width: 1080, height: 1080, unit: 'px' }, layers: [], placements: {}, board: { x: 0, y: 0 } }] } as unknown as ProjectDoc, {

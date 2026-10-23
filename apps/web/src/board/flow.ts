@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * D49: the master ('main') is the Layer Comp group, node id `main`.
  */
-import { stackKind, assetStacks, compositionById, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, type BoardGroup, isOutputConnected, MAIN, outputComposition, wiredLayers, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc } from '@smart-canvas/core';
+import { stackKind, assetStacks, compositionById, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, type BoardGroup, isOutputConnected, MAIN, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -40,8 +40,6 @@ export type PairFlowNode = Node<{ pair: LanguagePair; rows: { km: InputSource | 
 export type MainFlowNode = Node<{ compositionId: string }, 'mainNode'>;
 
 export const OUTPUT_HANDLE = 'out';
-/** A composition's second out port (T12.8): itself as a layer of another composition or an output. */
-export const LAYER_OUT_HANDLE = 'layer';
 export function portFromHandle(handle: string | null | undefined): number | undefined {
   const m = handle ? /^p(\d+)$/.exec(handle) : null;
   return m?.[1] === undefined ? undefined : Number(m[1]);
@@ -201,7 +199,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
       return [into, row];
     }
     // D49: only asset nodes → the Layer Comp (one wire per asset node, into its top), the Layer Comp → Preset
-    // nodes → Previews are drawn; the master's layouts and an output's own layers are not on the board.
+    // nodes → Previews are drawn; the master's layouts are not on the board.
     if (e.kind !== 'layer' || e.to !== MAIN) return [];
     const source = endpoint(doc, e.from);
     if (!source) return [];
@@ -230,10 +228,9 @@ export const cardEdgeId = (cardNodeId: string) => `card:${cardNodeId}`;
 
 type Conn = { source: string | null; target: string | null; sourceHandle?: string | null };
 
-/** The layer a connection carries (an input, or a composition out of its layer port, T12.8). */
+/** The layer a connection carries (an input). */
 export function layerOfConnection(c: Conn): string | undefined {
-  if (!c.source) return undefined;
-  return c.sourceHandle === LAYER_OUT_HANDLE ? compositionIdOfNode(c.source) : sourceIdOfNode(c.source);
+  return c.source ? sourceIdOfNode(c.source) : undefined;
 }
 
 /** A board connection as a typed graph edge (D32): node ids → doc ids; out of a composition's main port = 'composition'. */
@@ -242,35 +239,23 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
   const from = id(c.source);
   const to = id(c.target);
   if (!from || !to) return null;
-  return { from, to, kind: compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? 'composition' : 'layer' };
+  return { from, to, kind: compositionIdOfNode(c.source) ? 'composition' : 'layer' };
 }
 
 /**
- * Why a wire may not go there (null = it may): port types and loops (core), one composition per output, and on
- * an output the right port (T12.4: layer rows vs the master preview port). Without `targetHandle` the port isn't checked.
+ * Why a wire may not go there (null = it may): port types (core: inputs feed master preview rows, master previews
+ * feed outputs, D56) and one master preview per output.
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
   if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'An asset node wires into the Layer Comp.';
   // D46 / D49: the Layer Comp group wires into a Preset node; a Preset node's row wires into its own Preview.
-  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) && c.sourceHandle !== LAYER_OUT_HANDLE ? null : 'Only the Layer Comp group wires into a Preset node.';
+  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) ? null : 'Only the Layer Comp group wires into a Preset node.';
   if (setIdOfNode(c.source)) return outputOfSetRow(c.sourceHandle) && c.target === outputNodeId(outputOfSetRow(c.sourceHandle) ?? '') ? null : 'A size row wires into its own preview.';
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
-  if (refusal === 'wrong_type')
-    return e.kind === 'composition' ? 'A master preview wires into an output.' : compositionById(doc, e.from) ? 'A master preview goes into a row of another master preview or an output.' : 'An input wires into a row of a master preview.';
-  if (refusal === 'cycle') return 'That would make a loop.';
+  if (refusal === 'wrong_type') return e.kind === 'composition' ? 'A master preview wires into an output.' : 'An input wires into a row of a master preview.';
   if (refusal) return 'Drop the wire on a port.';
-  const toOutput = doc.outputs.some((o) => o.id === e.to);
-  if (toOutput && 'targetHandle' in c) {
-    const onRow = portFromHandle(c.targetHandle) !== undefined;
-    if (e.kind === 'layer' && !onRow) return 'An input wires into a layer row of an output.';
-    if (e.kind === 'composition' && onRow) return 'A master preview wires into the output’s master preview port.';
-  }
-  if (e.kind === 'layer' && toOutput) {
-    const comp = outputComposition(doc, e.to);
-    if (comp && wiredLayers(doc, comp).has(e.from)) return 'This input is already a layer of the output’s master preview.';
-  }
   if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This output already has a master preview: drag its wire off first.';
   return null;
 }
@@ -280,14 +265,9 @@ export function inputToComposition(c: Conn): string | undefined {
   return layerOfConnection(c) ? compositionIdOfNode(c.target) : undefined;
 }
 
-/** Input → output connections (an output-only layer, T12.4); the output id, if so. */
-export function inputToOutput(c: Conn): string | undefined {
-  return layerOfConnection(c) && c.target?.startsWith('out:') ? c.target.slice(4) : undefined;
-}
-
 /** Composition → output connections (reconnecting a disconnected output); the composition id, if so. */
 export function compositionToOutput(c: Conn): string | undefined {
-  return c.target?.startsWith('out:') && c.sourceHandle !== LAYER_OUT_HANDLE ? compositionIdOfNode(c.source) : undefined;
+  return c.target?.startsWith('out:') ? compositionIdOfNode(c.source) : undefined;
 }
 
 export const outputIdOfNode = (nodeId: string) => (nodeId.startsWith('out:') ? nodeId.slice(4) : undefined);

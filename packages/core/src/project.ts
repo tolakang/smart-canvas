@@ -9,12 +9,11 @@ import { defaultSources } from './sources';
 export function createProjectDoc(name: string): ProjectDoc {
   const sources = defaultSources();
   return {
-    schema: 2,
+    schema: 3,
     rev: 0,
     name,
     compositions: [{ ...newComposition(MAIN, 'Master preview', { x: 0, y: 0 }), layers: ['logo', 'headline', 'subject', 'background'] }],
     sources,
-    processes: [],
     outputs: [],
     edges: [],
   };

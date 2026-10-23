@@ -1,4 +1,4 @@
-import { addProcess, createProjectDoc, updateProcess, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { createProjectDoc, setSourceVisible, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { describe, expect, it } from 'vitest';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges, routePath } from './wires';
 
@@ -19,12 +19,12 @@ describe('wire polish (T13.8)', () => {
   });
 
   it('a content change flows downstream; a move does not count', () => {
-    let doc = ok(addProcess(createProjectDoc('P'), { id: 'p', op: { type: 'adjust' }, board: { x: 0, y: 0 }, input: 'logo' }));
-    doc = { ...doc, edges: [...doc.edges, { id: 'pm', from: 'p', to: 'main', kind: 'layer' }] };
-    const edited = ok(updateProcess(doc, 'p', { op: { type: 'adjust', opacity: 0.5 } }));
-    expect([...changedNodes(doc, edited)]).toEqual(['p']);
-    expect([...downstreamEdges(edited, new Set(['logo']))].sort()).toEqual(['in:logo>p', 'pm']);
-    const moved = { ...doc, processes: doc.processes.map((p) => ({ ...p, board: { x: 99, y: 99 } })) };
+    const base = createProjectDoc('P');
+    const doc: ProjectDoc = { ...base, edges: [{ id: 'in:logo', from: 'logo', to: 'main', kind: 'layer' }, { id: 'out:o', from: 'main', to: 'o', kind: 'composition' }] };
+    const edited = ok(setSourceVisible(doc, 'logo', false));
+    expect([...changedNodes(doc, edited)]).toEqual(['logo']);
+    expect([...downstreamEdges(edited, new Set(['logo']))].sort()).toEqual(['in:logo', 'out:o']);
+    const moved = { ...doc, sources: doc.sources.map((s) => ({ ...s, board: { x: 99, y: 99 } })) };
     expect(changedNodes(doc, moved).size).toBe(0);
   });
 

@@ -4,19 +4,16 @@
  * Comp (the master, with its square / vertical / horizontal layouts, D42) beside its Core Rule, which feeds Preset
  * nodes, each size wired to its Preview. Nothing else is on the board.
  *
- * `boardStructure` brings any document into that shape, keeping what fits: process nodes, other master previews
- * and Core Rule nodes are removed (owner: "delete process nodes and extra master previews"), their wires and rows
- * with them; inputs outside a node join the node of their kind (logo, text, picture); an output outside a Preset
+ * `boardStructure` brings any document into that shape, keeping what fits (process nodes, other master previews
+ * and Core Rule nodes left the document in the v3 migration, D56): inputs outside a node join the node of their kind (logo, text, picture); an output outside a Preset
  * node joins a "Sizes" preset node; a missing Logo / Headline / Text / Image / Background node is added. (The Layer Comp's vertical and horizontal
  * layouts are added when first opened; until then outputs follow the master on the stretched grid.) It returns `doc` itself
  * when the document is already in shape. Pure; ids of what it adds are derived from the doc, so it is repeatable.
  */
-import { edgeId, MAIN } from './graph';
+import { MAIN } from './graph';
 import { addLanguagePair, languagePairs, pairInputs } from './languages';
 import { orderLayers } from './layer-order';
 import type { ProjectDoc } from './model';
-import { deleteComposition } from './compositions';
-import { deleteProcess } from './processes';
 import { PREVIEW_OFFSET } from './preset-sets';
 import { createProjectDoc } from './project';
 import { connectSource } from './ports';
@@ -45,21 +42,7 @@ const step = (doc: ProjectDoc, r: { ok: true; doc: ProjectDoc } | { ok: false })
 /** The document in the page-3 shape (see above); `doc` itself when nothing changes. */
 export function boardStructure(doc: ProjectDoc): ProjectDoc {
   let next = doc;
-  // 1. Off the board: process nodes, other master previews (not the master's own layouts), Core Rule nodes.
-  for (const p of next.processes) next = step(next, deleteProcess(next, p.id));
-  for (const c of next.compositions) {
-    if (c.id === MAIN || c.guide?.of === MAIN) continue;
-    // Its outputs follow the master instead.
-    const outs = next.edges.filter((e) => e.kind === 'composition' && e.from === c.id).map((e) => e.to);
-    next = step(next, deleteComposition(next, c.id));
-    next = { ...next, edges: [...next.edges, ...outs.filter((o) => !next.edges.some((e) => e.kind === 'composition' && e.to === o)).map((o) => ({ id: edgeId(MAIN, o, 'composition'), from: MAIN, to: o, kind: 'composition' as const }))] };
-  }
-  if (next.coreRules) {
-    next = { ...next };
-    delete next.coreRules;
-  }
-
-  // 2. The asset nodes. Inputs outside a node join the first node of their kind: logos the Logo node, text the
+  // 1. The asset nodes. Inputs outside a node join the first node of their kind: logos the Logo node, text the
   // Text node, other pictures the Image node (backgrounds are each their own Background node). Each kind of
   // node exists at least once.
   const inCards = new Set([...assetStacks(next).flatMap((s) => s.items), ...languagePairs(next).flatMap(pairInputs)]);
@@ -86,7 +69,7 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
     next = step(next, connectSource(next, id));
   }
 
-  // 3. Outputs outside a Preset node join a "Sizes" preset node.
+  // 2. Outputs outside a Preset node join a "Sizes" preset node.
   const inSets = new Set((next.presetSets ?? []).flatMap((s) => s.outputs));
   const loose2 = next.outputs.filter((o) => !inSets.has(o.id)).map((o) => o.id);
   if (loose2.length) {

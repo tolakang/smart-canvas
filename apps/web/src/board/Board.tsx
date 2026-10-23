@@ -15,14 +15,12 @@ import {
   fitFrames,
   orderLayers,
   addSource,
-  connectOutputLayer,
   boardGroups,
   setEdgePoints,
   createGroup,
   connectSource,
   deleteSource,
   disconnectOutput,
-  disconnectOutputLayer,
   disconnectSource,
   duplicateSource,
   LIMITS,
@@ -71,14 +69,12 @@ import {
   compositionIdOfNode,
   compositionToOutput,
   inputToComposition,
-  inputToOutput,
   connectionRefusal,
   MAIN_ID,
   outputIdOfNode,
   portFromHandle,
   sourceIdOfNode,
   layerOfConnection,
-  LAYER_OUT_HANDLE,
   OUTPUT_HANDLE,
   syncNodes,
   withPositions,
@@ -169,19 +165,15 @@ export function Board(props: { teamId: string; projectId: string; userId: string
 /** T13.8: every wire can carry reroute points. */
 const edgeTypes = { routed: RoutedEdge };
 
-/** A layer wire into a node (T12.4): a composition row or an output's own row; the node id from React Flow. */
+/** A layer wire into a composition row (D56: the only kind); the node id from React Flow. */
 function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, port: number | undefined): SourceResult {
   const composition = compositionIdOfNode(target);
-  if (composition) return connectSource(doc, sourceId, port, composition);
-  const outputId = target ? outputIdOfNode(target) : undefined;
-  return outputId ? connectOutputLayer(doc, outputId, sourceId, port) : { ok: false, error: 'not_found' };
+  return composition ? connectSource(doc, sourceId, port, composition) : { ok: false, error: 'not_found' };
 }
 
 function disconnectLayer(doc: ProjectDoc, sourceId: string, target: string): SourceResult {
   const composition = compositionIdOfNode(target);
-  if (composition) return disconnectSource(doc, sourceId, composition);
-  const outputId = outputIdOfNode(target);
-  return outputId ? disconnectOutputLayer(doc, outputId, sourceId) : { ok: false, error: 'not_found' };
+  return composition ? disconnectSource(doc, sourceId, composition) : { ok: false, error: 'not_found' };
 }
 
 function BoardCanvas(props: {
@@ -201,7 +193,7 @@ function BoardCanvas(props: {
   const structured = useRef(false);
   const presetItemsRef = useRef<(at: { x: number; y: number }) => MenuItem[]>(() => []);
   const [doc, setDoc] = useState(initial.doc);
-  /** The composition open in the master preview editor (T12.3: any composition). */
+  /** The composition open in the master preview editor (the master or one of its layouts). */
   const [editingMain, setEditingMain] = useState<string | null>(null);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
@@ -619,7 +611,7 @@ function BoardCanvas(props: {
         }
         // D40: a wire drawn from an Assets card is one picture's wire.
         const sourceId = layerOfConnection(e) ?? (isCardNode(e.source) ? docRef.current.edges.find((x) => x.id === e.id)?.from : undefined);
-        const outputId = compositionIdOfNode(e.source) && e.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(e.target) : undefined;
+        const outputId = compositionIdOfNode(e.source) ? outputIdOfNode(e.target) : undefined;
         if (sourceId) run((doc) => disconnectLayer(doc, sourceId, e.target));
         else if (outputId) disconnect(outputId);
       }
@@ -661,7 +653,7 @@ function BoardCanvas(props: {
       reconnectDone.current = true;
       const oldSource = layerOfConnection(old);
       const newSource = layerOfConnection(c);
-      if (oldSource && newSource && (inputToComposition(c) || inputToOutput(c))) {
+      if (oldSource && newSource && inputToComposition(c)) {
         // Same input to another row = move it to that row; another input onto this row = swap who feeds it.
         const port = portFromHandle(c.targetHandle);
         run((doc) => {
@@ -670,7 +662,7 @@ function BoardCanvas(props: {
         });
         return;
       }
-      const oldOutput = compositionIdOfNode(old.source) && old.sourceHandle !== LAYER_OUT_HANDLE ? outputIdOfNode(old.target) : undefined;
+      const oldOutput = compositionIdOfNode(old.source) ? outputIdOfNode(old.target) : undefined;
       const fromComposition = compositionToOutput(c);
       const newOutput = fromComposition ? outputIdOfNode(c.target) : undefined;
       if (oldOutput && newOutput && fromComposition && oldOutput !== newOutput) {

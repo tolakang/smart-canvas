@@ -5,7 +5,7 @@
  * file on a slot (PNG, JPEG, WebP, SVG or PDF); click a slot to set that language in the inspector.
  */
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { addPairRow, deletePair, deletePairRow, LANGUAGE_LABEL, layersOfPicture, LIMITS, mainComposition, setLanguage, unfitPictures, withComposition, type InputSource, type ProjectDoc } from '@smart-canvas/core';
+import { addPairRow, deletePair, deletePairRow, LANGUAGE_LABEL, LIMITS, mainComposition, setLanguage, unfitPictures, withComposition, type InputSource, type ProjectDoc } from '@smart-canvas/core';
 import { useState, type DragEvent } from 'react';
 import { ApiError, assetUrl, uploadAsset } from '../api';
 import { setPicture, withSource } from './content';
@@ -24,7 +24,7 @@ type Lang = 'km' | 'en';
  */
 export function pictureIntoSlot(doc: ProjectDoc, s: InputSource, other: InputSource | undefined, assetId: string, kind: 'image' | 'vector'): ProjectDoc {
   const hadPicture = (s.content.kind === 'image' || s.content.kind === 'vector') && !!s.content.assetId;
-  let next = withSource(unfitPictures(doc, layersOfPicture(doc, s.id)), s.id, (x) => setPicture(x, assetId, kind));
+  let next = withSource(unfitPictures(doc, new Set([s.id])), s.id, (x) => setPicture(x, assetId, kind));
   const from = other && !hadPicture ? mainComposition(next).placements[other.id] : undefined;
   if (from) {
     const { fitted: _fitted, ...box } = from;

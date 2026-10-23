@@ -15,59 +15,19 @@
  */
 import type { AssetSize } from './layout/types';
 import type { Frame, NFrame, ProjectDoc } from './model';
-import { layerSources, type LayerEffect, type LayerSource } from './processes';
+import { layerSources, type LayerSource } from './layers';
 import { sizeInDesignPx } from './render';
 
 type Box = { x: number; y: number; w: number; h: number };
 const FULL: Box = { x: 0, y: 0, w: 1, h: 1 };
 
 /** A picture layer that can be fitted: an image or vector with a file, not a background. */
-export const isFittable = (l: Pick<LayerSource, 'content' | 'behavesLike' | 'nested'>): boolean =>
-  !l.nested && (l.content.kind === 'image' || l.content.kind === 'vector') && !!l.content.assetId && l.behavesLike !== 'background';
+export const isFittable = (l: Pick<LayerSource, 'content' | 'behavesLike'>): boolean =>
+  (l.content.kind === 'image' || l.content.kind === 'vector') && !!l.content.assetId && l.behavesLike !== 'background';
 
-function intersect(a: Box, b: Box): Box | null {
-  const x = Math.max(a.x, b.x);
-  const y = Math.max(a.y, b.y);
-  const w = Math.min(a.x + a.w, b.x + b.w) - x;
-  const h = Math.min(a.y + a.h, b.y + b.h) - y;
-  return w > 1e-9 && h > 1e-9 ? { x, y, w, h } : null;
-}
-
-/**
- * The part of the picture a fitted frame shows, in picture coords (0..1): its trim, within the process crop
- * (the crop itself when they don't overlap).
- */
-export function visibleRect(trim: Box | undefined, effect?: Pick<LayerEffect, 'crop'>): Box {
-  const crop = effect?.crop ?? FULL;
-  return intersect(crop, trim ?? FULL) ?? crop;
-}
-
-/**
- * Where that part sits in the layer's *effective* content (after crop, mirror and quarter turn), 0..1. The
- * renderer mirrors first, then turns (`rotate(r) scaleX(-1)`), so this does the same.
- */
-export function effectiveTrim(trim: Box | undefined, effect?: Pick<LayerEffect, 'crop' | 'flipX' | 'rotate'>): Box {
-  const crop = effect?.crop ?? FULL;
-  const v = visibleRect(trim, effect);
-  let t: Box = { x: (v.x - crop.x) / crop.w, y: (v.y - crop.y) / crop.h, w: v.w / crop.w, h: v.h / crop.h };
-  if (effect?.flipX) t = { ...t, x: 1 - t.x - t.w };
-  switch (effect?.rotate ?? 0) {
-    case 90:
-      return { x: 1 - t.y - t.h, y: t.x, w: t.h, h: t.w };
-    case 180:
-      return { x: 1 - t.x - t.w, y: 1 - t.y - t.h, w: t.w, h: t.h };
-    case 270:
-      return { x: t.y, y: 1 - t.x - t.w, w: t.h, h: t.w };
-    default:
-      return t;
-  }
-}
-
-/** The layer's effective content size (crop and quarter turn applied), in picture px. */
-function effectiveSize(size: AssetSize, effect?: Pick<LayerEffect, 'crop' | 'rotate'>): { width: number; height: number } {
-  const w = size.width * (effect?.crop?.w ?? 1);
-  const h = size.height * (effect?.crop?.h ?? 1);
-  return effect && effect.rotate % 180 !== 0 ? { width: h, height: w } : { width: w, height: h };
+/** The part of the picture a fitted frame shows, in picture coords (0..1): its trim. */
+export function visibleRect(trim: Box | undefined): Box {
+  return trim ?? FULL;
 }
 
 /** A frame's turn and lean as a 2×2 map (CSS `rotate(r) skewX(s)` about the centre). */
@@ -83,11 +43,10 @@ function turnOf(f: Pick<Frame, 'rotation' | 'shear'>) {
  * effective content contained and centred in the frame), as a frame of its own — same turn and lean, its
  * centre moved along the turned frame so it lands on exactly the same pixels.
  */
-export function fittedFrame(frame: Frame, size: AssetSize, effect?: Pick<LayerEffect, 'crop' | 'flipX' | 'rotate'>): Frame {
-  const eff = effectiveSize(size, effect);
-  const s = Math.min(frame.w / eff.width, frame.h / eff.height);
-  const view = { w: eff.width * s, h: eff.height * s };
-  const t = effectiveTrim(size.trim, effect);
+export function fittedFrame(frame: Frame, size: AssetSize): Frame {
+  const s = Math.min(frame.w / size.width, frame.h / size.height);
+  const view = { w: size.width * s, h: size.height * s };
+  const t = visibleRect(size.trim);
   const w = view.w * t.w;
   const h = view.h * t.h;
   // Centre of the visible part relative to the frame centre, before the frame's turn.
@@ -100,41 +59,35 @@ export function fittedFrame(frame: Frame, size: AssetSize, effect?: Pick<LayerEf
 }
 
 /**
- * Where a fitted picture goes inside its frame (frame-local px): the view is the whole frame, the turned crop
- * window ("pane") fills it, and the picture is placed so its visible part fills the pane — stretched on
- * each axis to the frame. Same nesting as `effectBoxes` (view › pane turned › picture).
+ * Where a fitted picture goes inside its frame (frame-local px): placed so its visible part fills the frame,
+ * stretched on each axis with it.
  */
-export function fillBoxes(frame: Pick<Frame, 'w' | 'h'>, size: AssetSize, effect?: Pick<LayerEffect, 'crop' | 'rotate'>) {
-  const v = visibleRect(size.trim, effect);
-  const quarter = (effect?.rotate ?? 0) % 180 !== 0;
-  const view = { x: 0, y: 0, w: frame.w, h: frame.h };
-  const pane = { w: quarter ? frame.h : frame.w, h: quarter ? frame.w : frame.h };
-  const paneAt = { x: (frame.w - pane.w) / 2, y: (frame.h - pane.h) / 2 };
-  const kx = pane.w / (size.width * v.w);
-  const ky = pane.h / (size.height * v.h);
+export function fillBoxes(frame: Pick<Frame, 'w' | 'h'>, size: AssetSize) {
+  const v = visibleRect(size.trim);
+  const kx = frame.w / (size.width * v.w);
+  const ky = frame.h / (size.height * v.h);
   const img = { x: -v.x * size.width * kx + 0, y: -v.y * size.height * ky + 0, w: size.width * kx, h: size.height * ky }; // + 0: no -0
-  return { view, pane: { ...paneAt, ...pane }, img };
+  return { img };
 }
 
-/** The picture asset behind a layer (its file and effect), or null if the layer can't be fitted. */
+/** The picture asset behind a layer, or null if the layer can't be fitted. */
 function pictureOf(l: LayerSource, assets: Record<string, AssetSize>) {
   if (!isFittable(l) || (l.content.kind !== 'image' && l.content.kind !== 'vector') || !l.content.assetId) return null;
   const size = assets[l.content.assetId];
   // Only once the trim is known: fitting to the whole picture would be wrong for one with margins.
-  return size && size.width > 0 && size.height > 0 && size.trim ? { size, effect: l.effect } : null;
+  return size && size.width > 0 && size.height > 0 && size.trim ? { size } : null;
 }
 
 /**
- * A fitted picture's own proportions: width / height of its visible part (after crop and quarter turn), in
+ * A fitted picture's own proportions: width / height of its visible part, in
  * pixels; undefined until its trim is measured or for a layer that isn't a picture. A stretch changes the
  * frame, not this, so a reset can always bring the picture back to its shape.
  */
 export function pictureAspect(l: LayerSource, assets: Record<string, AssetSize>): number | undefined {
   const p = pictureOf(l, assets);
   if (!p) return undefined;
-  const eff = effectiveSize(p.size, p.effect);
-  const t = effectiveTrim(p.size.trim, p.effect);
-  return (eff.width * t.w) / (eff.height * t.h);
+  const t = visibleRect(p.size.trim);
+  return (p.size.width * t.w) / (p.size.height * t.h);
 }
 
 /**
@@ -157,7 +110,7 @@ export function fitFrames(doc: ProjectDoc, assets: Record<string, AssetSize>): P
     for (const [id, n] of Object.entries(c.placements)) {
       const p = pictures.get(id);
       if (!p || n.fitted) continue;
-      const f = fittedFrame({ ...n, x: n.x * W, y: n.y * H, w: n.w * W, h: n.h * H }, p.size, p.effect);
+      const f = fittedFrame({ ...n, x: n.x * W, y: n.y * H, w: n.w * W, h: n.h * H }, p.size);
       const next: NFrame = { ...n, x: f.x / W, y: f.y / H, w: f.w / W, h: f.h / H, fitted: true };
       placements = { ...placements, [id]: next };
       changed = true;
@@ -172,7 +125,7 @@ export function fitFrames(doc: ProjectDoc, assets: Record<string, AssetSize>): P
       const f = ov.frame;
       if (!p || !f || f.fitted || f.x === undefined || f.y === undefined || f.w === undefined || f.h === undefined) return ov;
       changed = true;
-      return { ...ov, frame: { ...f, ...fittedFrame({ ...f, x: f.x, y: f.y, w: f.w, h: f.h }, p.size, p.effect) } };
+      return { ...ov, frame: { ...f, ...fittedFrame({ ...f, x: f.x, y: f.y, w: f.w, h: f.h }, p.size) } };
     });
     if (overrides.some((ov, i) => ov !== o.overrides[i])) out = { ...out, overrides };
     if (o.frozen) {
@@ -180,7 +133,7 @@ export function fitFrames(doc: ProjectDoc, assets: Record<string, AssetSize>): P
         const p = pictures.get(it.sourceId);
         if (!p || it.frame.fitted) return it;
         changed = true;
-        return { ...it, frame: fittedFrame(it.frame, p.size, p.effect) };
+        return { ...it, frame: fittedFrame(it.frame, p.size) };
       });
       if (items.some((it, i) => it !== o.frozen?.items[i])) out = { ...out, frozen: { ...o.frozen, items } };
     }
@@ -191,7 +144,7 @@ export function fitFrames(doc: ProjectDoc, assets: Record<string, AssetSize>): P
 }
 
 /**
- * Before a layer's picture is replaced: its frames (and those of processes drawing the same picture) stop
+ * Before a layer's picture is replaced: its frames stop
  * being fitted, so `fitFrames` fits the new picture into the old frame. Returns `doc` when nothing changes.
  */
 export function unfitPictures(doc: ProjectDoc, layerIds: ReadonlySet<string>): ProjectDoc {
@@ -216,13 +169,4 @@ export function unfitPictures(doc: ProjectDoc, layerIds: ReadonlySet<string>): P
     return { ...o, overrides, ...(o.frozen && items ? { frozen: { ...o.frozen, items } } : {}) };
   });
   return changed ? { ...doc, compositions, outputs } : doc;
-}
-
-/** The layers that draw a source's picture: the source and the processes built on it. */
-export function layersOfPicture(doc: ProjectDoc, sourceId: string): Set<string> {
-  const source = doc.sources.find((s) => s.id === sourceId);
-  const assetId = source && (source.content.kind === 'image' || source.content.kind === 'vector') ? source.content.assetId : null;
-  const ids = new Set([sourceId]);
-  if (assetId) for (const l of layerSources(doc)) if ((l.content.kind === 'image' || l.content.kind === 'vector') && l.content.assetId === assetId && doc.processes.some((p) => p.id === l.id)) ids.add(l.id);
-  return ids;
 }

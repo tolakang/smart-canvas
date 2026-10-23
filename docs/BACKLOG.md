@@ -145,6 +145,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P18 — The last two picks (owner, 2026-10-23: "Go M1 and M5")
 - T18.1 (M1) — Snapping between layouts: in a layout editor or a Preview editor the selected layer also snaps to where it sits in the master's other layouts (relative position; owner picked "Same layer's spot"), with a dashed, labelled outline of each spot while dragging.
+- T18.2 (M5) — Retire process nodes, output-only layers, other master previews, compositions as layers and the stored Core Rule node from the model, engine, renderer, API schema and UI; schema 3 with a v2 → v3 migration (D56).
 
 ## Next — dev plan (proposed; the owner picks and orders)
-- M5 — Retire engine features the board no longer offers (process nodes, nested compositions, output-only layers; D49 kept them in the engine and export, `boardStructure` deletes process nodes on open): keep or remove them from the engine, export and API schema. Owner decision (changes D49).
+- Nothing proposed; the owner decides what comes next.

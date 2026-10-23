@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveTrim, fillBoxes, fitFrames, fittedFrame, layersOfPicture, pictureAspect, unfitPictures, visibleRect } from './fit';
+import { fillBoxes, fitFrames, fittedFrame, pictureAspect, unfitPictures, visibleRect } from './fit';
 import { mainComposition } from './graph';
 import { computeLayout } from './layout';
 import { mockMeasure, output, place, project } from './layout/test-doc';
 import type { Frame, ProjectDoc } from './model';
-import { addProcess, connectProcessInput } from './processes';
 import { setOverrideFrame } from './overrides';
 import { setPlacement } from './placement';
 import type { SourceResult } from './sources';
@@ -55,28 +54,14 @@ describe('fittedFrame: the visible part of the picture, exactly where it was dra
   });
 });
 
-describe('process effects (crop, mirror, quarter turn)', () => {
-  it('the crop cuts the trim; the visible part is the overlap', () => {
-    expect(visibleRect(BADGE.trim, { crop: { x: 0, y: 0, w: 0.5, h: 1 } })).toEqual({ x: 0.25, y: 0, w: 0.25, h: 2 / 3 });
-    expect(visibleRect(BADGE.trim, { crop: { x: 0.8, y: 0.8, w: 0.2, h: 0.2 } })).toEqual({ x: 0.8, y: 0.8, w: 0.2, h: 0.2 }); // no overlap: the crop
-  });
-  it('mirror then quarter turn, as the renderer draws them', () => {
-    const t = { x: 0.1, y: 0.2, w: 0.3, h: 0.4 };
-    expect(effectiveTrim(t, { flipX: true, rotate: 0 })).toMatchObject({ x: 0.6, y: 0.2 });
-    const near = (a: { x: number; y: number; w: number; h: number }, b: typeof a) => (['x', 'y', 'w', 'h'] as const).forEach((k) => close(a[k], b[k]));
-    near(effectiveTrim(t, { flipX: false, rotate: 90 }), { x: 0.4, y: 0.1, w: 0.4, h: 0.3 });
-    const r180 = effectiveTrim(t, { flipX: false, rotate: 180 });
-    close(r180.x, 0.6);
-    close(r180.y, 0.4);
-    near(effectiveTrim(t, { flipX: false, rotate: 270 }), { x: 0.2, y: 0.6, w: 0.4, h: 0.3 });
+describe('the visible part and how it fills its frame', () => {
+  it('the visible part is the trim (the whole picture until it is measured)', () => {
+    expect(visibleRect(BADGE.trim)).toEqual(BADGE.trim);
+    expect(visibleRect(undefined)).toEqual({ x: 0, y: 0, w: 1, h: 1 });
   });
   it('fillBoxes: the visible part fills the frame, stretched per axis', () => {
-    const b = fillBoxes({ w: 300, h: 100 }, BADGE);
     // visible 200×200 px of the picture → 300×100: k = 1.5 across, 0.5 down
-    expect(b.img).toEqual({ x: -0.25 * 400 * 1.5, y: 0, w: 600, h: 150 });
-    expect(b.pane).toEqual({ x: 0, y: 0, w: 300, h: 100 });
-    // A quarter turn swaps the pane's sides.
-    expect(fillBoxes({ w: 300, h: 100 }, BADGE, { rotate: 90 }).pane).toEqual({ x: 100, y: -100, w: 100, h: 300 });
+    expect(fillBoxes({ w: 300, h: 100 }, BADGE).img).toEqual({ x: -0.25 * 400 * 1.5, y: 0, w: 600, h: 150 });
   });
 });
 
@@ -113,14 +98,11 @@ describe('fitFrames / unfitPictures on a project', () => {
     expect(ov?.frame).toMatchObject({ x: 110, y: 70, w: 200, h: 200, fitted: true });
   });
 
-  it('moving or resizing keeps a frame fitted; replacing the picture unfits it (and its processes)', () => {
+  it('moving or resizing keeps a frame fitted; replacing the picture unfits it', () => {
     let f = fitFrames(doc0(), assets);
     f = ok(setPlacement(f, 'subject', { x: 0.1, y: 0.1, w: 0.3, h: 0.2 }));
     expect(mainComposition(f).placements.subject?.fitted).toBe(true);
-    f = ok(addProcess(f, { id: 'p1', op: { type: 'flip', x: true, y: false }, board: { x: 0, y: 0 } }));
-    f = ok(connectProcessInput(f, 'p1', 'subject'));
-    expect([...layersOfPicture(f, 'subject')].sort()).toEqual(['p1', 'subject']);
-    const un = unfitPictures(f, layersOfPicture(f, 'subject'));
+    const un = unfitPictures(f, new Set(['subject']));
     expect(mainComposition(un).placements.subject?.fitted).toBeUndefined();
     expect(unfitPictures(un, new Set(['subject']))).toBe(un);
   });
@@ -138,13 +120,8 @@ describe('editing fitted frames', () => {
 });
 
 describe('pictureAspect: a fitted picture\'s own shape, whatever its frame was stretched to', () => {
-  const layer = (effect?: { crop?: { x: number; y: number; w: number; h: number }; rotate?: 0 | 90 | 180 | 270 }) =>
-    ({ id: 'p', label: 'p', kind: 'image', behavesLike: 'subject', visible: true, content: { kind: 'image', assetId: 'badge', focal: { x: 0.5, y: 0.5 } }, board: { x: 0, y: 0 }, ...(effect ? { effect: { flipX: false, rotate: 0, ...effect } } : {}) }) as Parameters<typeof pictureAspect>[0];
+  const layer = () =>
+    ({ id: 'p', label: 'p', kind: 'image', behavesLike: 'subject', visible: true, content: { kind: 'image', assetId: 'badge', focal: { x: 0.5, y: 0.5 } }, board: { x: 0, y: 0 } }) as Parameters<typeof pictureAspect>[0];
   it('the visible part in pixels: 200×200 of the 400×300 badge', () => close(pictureAspect(layer(), { badge: BADGE }) ?? 0, 1));
-  it('after a crop and a quarter turn', () => {
-    // crop the left half: visible 100×200 → 1:2; turned → 2:1
-    close(pictureAspect(layer({ crop: { x: 0, y: 0, w: 0.5, h: 1 } }), { badge: BADGE }) ?? 0, 0.5);
-    close(pictureAspect(layer({ crop: { x: 0, y: 0, w: 0.5, h: 1 }, rotate: 90 }), { badge: BADGE }) ?? 0, 2);
-  });
   it('unknown until the trim is measured', () => expect(pictureAspect(layer(), { badge: { width: 400, height: 300 } })).toBeUndefined());
 });

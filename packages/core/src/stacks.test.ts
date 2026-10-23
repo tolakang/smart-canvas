@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { addComposition } from './compositions';
 import { mainComposition, wiredLayers } from './graph';
 import type { ProjectDoc } from './model';
 import { createProjectDoc } from './project';
-import { addPicturesToStack, addStack, assetStacks, connectStack, deleteStack, dropGrid, moveStackItem, stackCompositions } from './stacks';
+import { addPicturesToStack, addStack, assetStacks, deleteStack, dropGrid, moveStackItem, stackCompositions } from './stacks';
 import { deleteSource, duplicateSource, type SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -39,16 +38,6 @@ describe('Assets cards (D40)', () => {
     expect(cells.map((c) => [c.x, c.y].map((v) => Math.round(v * 100) / 100))).toEqual([[0.12, 0.12], [0.52, 0.12], [0.12, 0.52]]);
     const doc = ok(addPicturesToStack(withCard(), 'st', pics('a', 'b', 'c')));
     expect(mainComposition(doc).placements.b).toEqual(cells[1]);
-  });
-
-  it('later drops follow the card into the master previews it feeds', () => {
-    let doc = ok(addPicturesToStack(withCard(), 'st', pics('a')));
-    doc = ok(addComposition(doc, { id: 'v2', label: 'Variant' }));
-    doc = ok(connectStack(doc, 'st', 'v2'));
-    expect(stackCompositions(doc, 'st').sort()).toEqual(['main', 'v2']);
-    doc = ok(addPicturesToStack(doc, 'st', pics('b')));
-    expect(wiredLayers(doc, 'v2').has('b')).toBe(true);
-    expect(wiredLayers(doc, 'main').has('b')).toBe(true);
   });
 
   it('reorders inside the card; deleting or duplicating a picture keeps the card in step', () => {

@@ -6,7 +6,7 @@
  */
 import { languagePairs, pairInputs } from './languages';
 import type { ProjectDoc } from './model';
-import { layerSources, type LayerSource } from './processes';
+import { layerSources, type LayerSource } from './layers';
 
 export type LayerGroup = 'logo' | 'headline' | 'elements' | 'background';
 export const LAYER_GROUPS: readonly LayerGroup[] = ['logo', 'headline', 'elements', 'background'];
@@ -60,12 +60,5 @@ export function orderLayers(doc: ProjectDoc): ProjectDoc {
     changed = true;
     return { ...c, layers };
   });
-  const outputs = doc.outputs.map((o) => {
-    if (!o.layers) return o;
-    const layers = sortRows(o.layers, groupOf, order);
-    if (same(layers, o.layers)) return o;
-    changed = true;
-    return { ...o, layers };
-  });
-  return changed ? { ...doc, compositions, outputs } : doc;
+  return changed ? { ...doc, compositions } : doc;
 }

@@ -41,8 +41,4 @@ describe('layer comp order: logo, headline, elements, background (D45)', () => {
     expect(rows(orderLayers(doc))).toEqual(['logo', 'hk', 'he', 'headline', 'subject', 'background']);
   });
 
-  it('output-only rows are ordered too', () => {
-    const doc = project(output({ layers: ['background', 'logo'] }));
-    expect(orderLayers(doc).outputs[0]?.layers).toEqual(['logo', 'background']);
-  });
 });

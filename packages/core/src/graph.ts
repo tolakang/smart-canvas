@@ -1,9 +1,9 @@
 /**
- * The board graph (D32): compositions, typed edges, and the v1 → v2 migration.
+ * The board graph (D32, D56): compositions, typed edges, and the migrations (v1 → v2 → v3).
  * - A composition's `layers` are its rows, front first; row index = port (D11). A row draws while a `layer`
  *   edge feeds it.
- * - `layer` edges come out of inputs and processes; `composition` edges out of compositions into outputs.
- * - Each in-port takes one edge (a composition row, a process input, an output's composition port); no cycles.
+ * - `layer` edges come out of inputs into compositions; `composition` edges out of compositions into outputs.
+ * - Each in-port takes one edge (a composition row, an output's composition port).
  */
 import { DEFAULTS, type Composition, type Edge, type EdgeKind, type NFrame, type ProjectDoc, type Size } from './model';
 
@@ -54,11 +54,10 @@ export function outputComposition(doc: ProjectDoc, outputId: string): string | u
   return doc.edges.find((e) => e.kind === 'composition' && e.to === outputId)?.from;
 }
 
-export type NodeType = 'source' | 'process' | 'composition' | 'output';
+export type NodeType = 'source' | 'composition' | 'output';
 
 export function nodeType(doc: ProjectDoc, id: string): NodeType | undefined {
   if (doc.sources.some((s) => s.id === id)) return 'source';
-  if (doc.processes.some((p) => p.id === id)) return 'process';
   if (doc.compositions.some((c) => c.id === id)) return 'composition';
   if (doc.outputs.some((o) => o.id === id)) return 'output';
   return undefined;
@@ -66,23 +65,9 @@ export function nodeType(doc: ProjectDoc, id: string): NodeType | undefined {
 
 /** Which edge kinds may go from a node type to a node type (D32 port types). */
 const ALLOWED: Record<EdgeKind, { from: readonly NodeType[]; to: readonly NodeType[] }> = {
-  layer: { from: ['source', 'process', 'composition'], to: ['process', 'composition', 'output'] },
+  layer: { from: ['source'], to: ['composition'] },
   composition: { from: ['composition'], to: ['output'] },
 };
-
-/** Would `from → to` create a cycle? (Walks downstream from `to`.) */
-export function createsCycle(doc: ProjectDoc, from: string, to: string): boolean {
-  const seen = new Set<string>();
-  const stack = [to];
-  while (stack.length) {
-    const n = stack.pop() as string;
-    if (n === from) return true;
-    if (seen.has(n)) continue;
-    seen.add(n);
-    for (const e of doc.edges) if (e.from === n) stack.push(e.to);
-  }
-  return false;
-}
 
 /** Max reroute points on one wire (T13.8). */
 export const MAX_EDGE_POINTS = 10;
@@ -106,7 +91,7 @@ export function setEdgePoints(doc: ProjectDoc, edgeId: string, points: readonly 
   };
 }
 
-export type ConnectRefusal = 'unknown_node' | 'wrong_type' | 'cycle';
+export type ConnectRefusal = 'unknown_node' | 'wrong_type';
 
 /** Why an edge may not be added (null = it may). Single-input rules are applied by the connect helpers. */
 export function connectRefusal(doc: ProjectDoc, from: string, to: string, kind: EdgeKind): ConnectRefusal | null {
@@ -114,9 +99,6 @@ export function connectRefusal(doc: ProjectDoc, from: string, to: string, kind: 
   const b = nodeType(doc, to);
   if (!a || !b) return 'unknown_node';
   if (!ALLOWED[kind].from.includes(a) || !ALLOWED[kind].to.includes(b)) return 'wrong_type';
-  // T12.8: a composition is a layer of another composition or an output, not a process's input.
-  if (kind === 'layer' && a === 'composition' && b === 'process') return 'wrong_type';
-  if (from === to || createsCycle(doc, from, to)) return 'cycle';
   return null;
 }
 
@@ -125,7 +107,7 @@ export function newComposition(id: string, label: string, board: { x: number; y:
   return { id, label, size: { ...size }, placements: {}, layers: [], board: { ...board } };
 }
 
-// ---------- v1 → v2 ----------
+// ---------- migrations ----------
 
 interface WireV1 {
   id: string;
@@ -150,14 +132,71 @@ function renameDefaultLabels(doc: ProjectDoc): ProjectDoc {
   return { ...doc, compositions: doc.compositions.map((c) => (old.test(c.label) ? { ...c, label: c.label.replace('Main preview', 'Master preview') } : c)) };
 }
 
+/** v2 (D32–D55): process nodes, other master previews, compositions and processes as rows, output-only layers, Core Rule nodes. */
+type DocV2 = Omit<ProjectDoc, 'schema' | 'outputs'> & {
+  schema: 2;
+  processes?: { id: string }[];
+  outputs: (ProjectDoc['outputs'][number] & { layers?: string[] })[];
+  coreRules?: unknown[];
+};
+
+/**
+ * D56: v2 → v3. What the page-3 board can't show leaves the document (opening a v2 project already dropped
+ * most of it, D49): process nodes, master previews other than 'main' and its layouts (their outputs follow
+ * 'main'), rows that aren't inputs, output-only layers and Core Rule nodes — with their wires, placements,
+ * overrides, frozen frames and transform histories.
+ */
+function toV3(raw: DocV2): ProjectDoc {
+  const { processes: _p, coreRules: _c, ...rest } = raw;
+  void _p;
+  void _c;
+  const keep = new Set(raw.compositions.filter((c) => c.id === MAIN || c.guide?.of === MAIN).map((c) => c.id));
+  const dropped = new Set(raw.compositions.filter((c) => !keep.has(c.id)).map((c) => c.id));
+  const inputs = new Set(raw.sources.map((s) => s.id));
+  const outputs = new Set(raw.outputs.map((o) => o.id));
+  const onlyInputs = <T>(rec: Record<string, T>) => Object.fromEntries(Object.entries(rec).filter(([id]) => inputs.has(id)));
+  const edges = raw.edges.flatMap((e): Edge[] => {
+    if (e.kind === 'layer') return inputs.has(e.from) && keep.has(e.to) ? [e] : [];
+    if (!outputs.has(e.to)) return [];
+    if (keep.has(e.from)) return [e];
+    // An output of a dropped master preview follows 'main'.
+    return dropped.has(e.from) ? [{ ...e, from: MAIN }] : [];
+  });
+  const nodes = new Set([...inputs, ...keep, ...outputs, ...(raw.stacks ?? []).map((s) => s.id), ...(raw.headlines ?? []).map((h) => h.id), ...(raw.presetSets ?? []).map((s) => s.id)]);
+  return {
+    ...rest,
+    schema: 3,
+    compositions: raw.compositions
+      .filter((c) => keep.has(c.id))
+      .map((c) => ({
+        ...c,
+        layers: c.layers.filter((l) => inputs.has(l)),
+        placements: onlyInputs(c.placements),
+        ...(c.transforms ? { transforms: { ...c.transforms, layers: onlyInputs(c.transforms.layers) } } : {}),
+      })),
+    outputs: raw.outputs.map(({ layers: _l, ...o }) => {
+      void _l;
+      return {
+        ...o,
+        overrides: o.overrides.filter((ov) => inputs.has(ov.sourceId)),
+        ...(o.frozen ? { frozen: { items: o.frozen.items.filter((it) => inputs.has(it.sourceId)) } } : {}),
+        ...(o.transforms ? { transforms: { ...o.transforms, layers: onlyInputs(o.transforms.layers) } } : {}),
+      };
+    }),
+    edges,
+    ...(raw.groups ? { groups: raw.groups.map((g) => ({ ...g, nodes: g.nodes.filter((n) => nodes.has(n)) })) } : {}),
+  };
+}
+
 /**
  * A stored document in the current schema. v1 (one master preview, `wires`, a `port` on each source) becomes
  * v2: the master preview is composition 'main' with rows in port order; wires become typed edges with the
- * same ids; overrides and frozen frames are kept. v2 documents are returned as they are, apart from the
- * default composition names (D39).
+ * same ids; overrides and frozen frames are kept. v2 becomes v3 (D56, `toV3`). Default composition names
+ * read "Master preview" (D39).
  */
-export function migrateProjectDoc(raw: ProjectDoc | DocV1): ProjectDoc {
-  if (raw.schema === 2) return renameDefaultLabels(raw);
+export function migrateProjectDoc(raw: ProjectDoc | DocV2 | DocV1): ProjectDoc {
+  if (raw.schema === 3) return renameDefaultLabels(raw);
+  if (raw.schema === 2) return renameDefaultLabels(toV3(raw));
   const order = [...raw.sources].sort((a, b) => (a.port ?? 0) - (b.port ?? 0)).map((s) => s.id);
   const sources = raw.sources.map(({ port: _port, ...s }) => {
     void _port;
@@ -170,12 +209,11 @@ export function migrateProjectDoc(raw: ProjectDoc | DocV1): ProjectDoc {
     return [];
   });
   return {
-    schema: 2,
+    schema: 3,
     rev: raw.rev,
     name: raw.name,
     compositions: [{ id: MAIN, label: 'Master preview', size: { ...raw.master.size }, placements: { ...raw.master.placements }, layers: order, board: { ...raw.master.board } }],
     sources,
-    processes: [],
     outputs: raw.outputs,
     edges,
   };

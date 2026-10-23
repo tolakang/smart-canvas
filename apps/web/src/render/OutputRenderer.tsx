@@ -3,13 +3,9 @@
  * Draws a RenderScene on a W×H design-px canvas and scales the whole canvas, so the master preview,
  * output previews, thumbnails and the export page share every coordinate and differ only in `scale`.
  * Pure: no effects, no fetching. Waiting for fonts/images is the caller's job (see RenderPage).
- * Process nodes (T12.5) arrive as layers with an `effect`: crop / mirror / quarter turns are drawn by nesting
- * (core `effectBoxes`), colour adjustments as CSS `filter` and `opacity` — the same DOM in preview and export.
  */
 import {
   applyTransform,
-  effectBoxes,
-  effectFilter,
   fillBoxes,
   isFittable,
   fillToCss,
@@ -27,9 +23,9 @@ import { memo, type CSSProperties } from 'react';
 
 export interface OutputRendererProps {
   scene: RenderScene;
-  /** Layers by id: inputs and processes (core `layerSources`). */
+  /** Layers by id: the inputs (core `layerSources`). */
   sources: readonly LayerSource[];
-  /** Intrinsic asset sizes (layout deps), needed to draw a crop. */
+  /** Intrinsic asset sizes (layout deps), needed to draw a fitted picture (D37). */
   assetSizes?: Readonly<Record<string, AssetSize>>;
   assetUrl: (assetId: string) => string;
   /** Output pixels per design px. Export uses exportScaleOf(); previews fit a box. */
@@ -61,7 +57,7 @@ export const OutputRenderer = memo(function OutputRenderer({ scene, sources, ass
       >
         {scene.items.map((item) => {
           const source = byId.get(item.sourceId);
-          return source ? <Layer key={item.sourceId} item={item} source={source} lookup={byId} assetSizes={assetSizes} assetUrl={assetUrl} mode={mode} /> : null;
+          return source ? <Layer key={item.sourceId} item={item} source={source} assetSizes={assetSizes} assetUrl={assetUrl} mode={mode} /> : null;
         })}
       </div>
     </div>
@@ -71,20 +67,17 @@ export const OutputRenderer = memo(function OutputRenderer({ scene, sources, ass
 function Layer({
   item,
   source,
-  lookup,
   assetSizes,
   assetUrl,
   mode,
 }: {
   item: RenderItem;
   source: LayerSource;
-  lookup: ReadonlyMap<string, LayerSource>;
   assetSizes?: OutputRendererProps['assetSizes'];
   assetUrl: (id: string) => string;
   mode: 'preview' | 'export';
 }) {
   const { frame } = item;
-  const { effect } = source;
   const box: CSSProperties = {
     position: 'absolute',
     left: frame.x,
@@ -92,29 +85,10 @@ function Layer({
     width: frame.w,
     height: frame.h,
     ...(frame.rotation || frame.shear ? { transform: frameTransform(frame), transformOrigin: '50% 50%' } : {}),
-    ...(effect && effect.opacity !== 1 ? { opacity: effect.opacity } : {}),
-    ...(effect && effectFilter(effect) ? { filter: effectFilter(effect) } : {}),
   };
   const data = { 'data-source-id': source.id, 'data-kind': source.kind };
   // D43: this output's slot (a background's vertical / horizontal picture) in place of the main picture.
   const content = item.assetId && (source.content.kind === 'image' || source.content.kind === 'vector') ? { ...source.content, assetId: item.assetId } : source.content;
-
-  // T12.8: a composition used as a layer draws its own scene, contain-fitted (cover as a background) and centred.
-  if (source.nested) {
-    const inner = source.nested.scene;
-    const fit = source.behavesLike === 'background' ? Math.max : Math.min;
-    const s = fit(frame.w / inner.width, frame.h / inner.height);
-    return (
-      <div {...data} data-kind="nested" style={{ ...box, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', left: (frame.w - inner.width * s) / 2, top: (frame.h - inner.height * s) / 2, width: inner.width, height: inner.height, transform: `scale(${s})`, transformOrigin: '0 0' }}>
-          {inner.items.map((it) => {
-            const src = lookup.get(it.sourceId);
-            return src ? <Layer key={it.sourceId} item={it} source={src} lookup={lookup} assetSizes={assetSizes} assetUrl={assetUrl} mode={mode} /> : null;
-          })}
-        </div>
-      </div>
-    );
-  }
 
   switch (content.kind) {
     case 'fill':
@@ -135,36 +109,14 @@ function Layer({
       // D37: a fitted frame is the picture's visible part, which fills it (stretched with it). Until the
       // trim is measured, draw it the old way (contain) rather than stretch transparent margins in.
       if (frame.fitted && size?.trim && isFittable(source)) {
-        const b = fillBoxes(frame, size, effect);
-        const turn = effect ? `rotate(${effect.rotate}deg)${effect.flipX ? ' scaleX(-1)' : ''}` : undefined;
-        const at = (r: { x: number; y: number; w: number; h: number }): CSSProperties => ({ position: 'absolute', left: r.x, top: r.y, width: r.w, height: r.h });
+        const { img } = fillBoxes(frame, size);
         return (
           <div {...data} style={{ ...box, overflow: 'hidden' }}>
-            <div style={{ ...at(b.pane), overflow: 'hidden', ...(turn ? { transform: turn, transformOrigin: '50% 50%' } : {}) }}>
-              <Picture url={assetUrl(content.assetId)} tint={effect?.tint} fit="fill" style={{ ...at(b.img), maxWidth: 'none' }} />
-            </div>
+            <img src={assetUrl(content.assetId)} alt="" draggable={false} style={{ position: 'absolute', left: img.x, top: img.y, width: img.w, height: img.h, maxWidth: 'none', objectFit: 'fill' }} />
           </div>
         );
       }
-      if (effect && (effect.crop || effect.flipX || effect.rotate)) {
-        const turn = `rotate(${effect.rotate}deg)${effect.flipX ? ' scaleX(-1)' : ''}`;
-        if (!size) {
-          // Size not known yet: mirror / turn the whole picture (a crop needs the size).
-          return <Picture data={data} url={assetUrl(content.assetId)} tint={effect.tint} fit={cover ? 'cover' : 'contain'} style={{ ...box, transform: [box.transform, turn].filter(Boolean).join(' ') }} />;
-        }
-        const b = effectBoxes(frame, size, effect, cover, content.focal);
-        const at = (r: { x: number; y: number; w: number; h: number }): CSSProperties => ({ position: 'absolute', left: r.x, top: r.y, width: r.w, height: r.h });
-        return (
-          <div {...data} style={{ ...box, overflow: 'hidden' }}>
-            <div style={{ ...at(b.view), overflow: 'hidden' }}>
-              <div style={{ ...at(b.pane), overflow: 'hidden', transform: turn, transformOrigin: '50% 50%' }}>
-                <Picture url={assetUrl(content.assetId)} tint={effect.tint} fit="fill" style={{ ...at(b.img), maxWidth: 'none' }} />
-              </div>
-            </div>
-          </div>
-        );
-      }
-      return <Picture data={data} url={assetUrl(content.assetId)} tint={effect?.tint} fit={cover ? 'cover' : 'contain'} position={`${content.focal.x * 100}% ${content.focal.y * 100}%`} style={box} />;
+      return <img {...data} src={assetUrl(content.assetId)} alt="" draggable={false} style={{ ...box, objectFit: cover ? 'cover' : 'contain', objectPosition: `${content.focal.x * 100}% ${content.focal.y * 100}%` }} />;
     }
 
     case 'text': {
@@ -201,23 +153,6 @@ function Layer({
       );
     }
   }
-}
-
-/**
- * A picture: an <img>, or with a Recolor tint (T12.6) a box of that colour masked by the picture's shape (its
- * alpha), fitted the same way. `data-mask-src` lets export wait for (and inline) the mask's file.
- */
-function Picture({ url, tint, fit, position = '50% 50%', style, data }: { url: string; tint?: string; fit: 'contain' | 'cover' | 'fill'; position?: string; style: CSSProperties; data?: Record<string, string> }) {
-  if (!tint) return <img {...data} src={url} alt="" draggable={false} style={{ ...style, objectFit: fit, objectPosition: position }} />;
-  const size = fit === 'fill' ? '100% 100%' : fit;
-  const mask = `url("${url}")`;
-  return (
-    <div
-      {...data}
-      data-mask-src={url}
-      style={{ ...style, backgroundColor: tint, maskImage: mask, WebkitMaskImage: mask, maskSize: size, WebkitMaskSize: size, maskPosition: position, WebkitMaskPosition: position, maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat' }}
-    />
-  );
 }
 
 /** A scene scaled to fit a box (main node, output nodes, lists). */

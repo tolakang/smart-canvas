@@ -1,79 +1,13 @@
 /**
- * Several compositions (D32, T12.3): more "master previews", e.g. one per campaign variant. Each has its own size,
- * placements and rows; outputs wire to the one they follow. The first ('main') always exists and always lists
- * every input as a row; other compositions list only the inputs wired into them.
+ * The master preview ('main') and its layouts (D42, D50). D56: there are no other master previews, so the
+ * only composition edit left here is the size.
  */
-import { compositionById, MAIN, newComposition, withComposition } from './graph';
-import type { LayoutDeps } from './layout';
-import { LIMITS, type ProjectDoc, type Size } from './model';
-import { disconnectOutput } from './outputs';
+import { compositionById, withComposition } from './graph';
+import type { ProjectDoc, Size } from './model';
 import type { SourceResult } from './sources';
-
-/** Board placement for a new composition: below the lowest one. */
-export const COMPOSITION_ROW_GAP = 900;
-
-export function canAddComposition(doc: ProjectDoc): boolean {
-  return doc.compositions.length < LIMITS.maxCompositions;
-}
-
-export function addComposition(doc: ProjectDoc, spec: { id: string; label: string; board?: { x: number; y: number }; size?: Size }): SourceResult {
-  if (!canAddComposition(doc)) return { ok: false, error: 'limit' };
-  if (compositionById(doc, spec.id) || doc.sources.some((s) => s.id === spec.id) || doc.outputs.some((o) => o.id === spec.id)) return { ok: false, error: 'invalid' };
-  const lowest = Math.max(...doc.compositions.map((c) => c.board.y));
-  const x = doc.compositions[0]?.board.x ?? 0;
-  const board = spec.board ? { x: Math.round(spec.board.x), y: Math.round(spec.board.y) } : { x, y: lowest + COMPOSITION_ROW_GAP };
-  return { ok: true, doc: { ...doc, compositions: [...doc.compositions, newComposition(spec.id, spec.label.trim() || 'Master preview', board, spec.size)] } };
-}
 
 export function setCompositionSize(doc: ProjectDoc, id: string, size: Size): SourceResult {
   if (!compositionById(doc, id)) return { ok: false, error: 'not_found' };
   if (!(size.width > 0 && size.height > 0 && size.width <= 100_000 && size.height <= 100_000)) return { ok: false, error: 'invalid' };
   return { ok: true, doc: withComposition(doc, id, (c) => ({ ...c, size: { ...size } })) };
-}
-
-/** Takes a node out of a composition's rows (not an input from 'main', which lists every input); its wire and placement go too. */
-export function removeRow(doc: ProjectDoc, compositionId: string, nodeId: string): SourceResult {
-  if (compositionId === MAIN && doc.sources.some((s) => s.id === nodeId)) return { ok: false, error: 'invalid' };
-  const comp = compositionById(doc, compositionId);
-  if (!comp || !comp.layers.includes(nodeId)) return { ok: false, error: 'not_found' };
-  const placements = Object.fromEntries(Object.entries(comp.placements).filter(([id]) => id !== nodeId));
-  return {
-    ok: true,
-    doc: {
-      ...withComposition(doc, compositionId, (c) => ({ ...c, layers: c.layers.filter((l) => l !== nodeId), placements })),
-      edges: doc.edges.filter((e) => !(e.from === nodeId && e.to === compositionId)),
-    },
-  };
-}
-
-/**
- * Deletes a composition (never 'main'). Outputs wired to it are disconnected first: with `deps` they freeze
- * their current layout (D12), without they fall back to the master preview. Rows that used it as a layer go.
- */
-export function deleteComposition(doc: ProjectDoc, id: string, deps?: LayoutDeps): SourceResult {
-  if (id === MAIN) return { ok: false, error: 'invalid' };
-  if (!compositionById(doc, id)) return { ok: false, error: 'not_found' };
-  let next = doc;
-  for (const e of doc.edges.filter((x) => x.kind === 'composition' && x.from === id)) {
-    if (!deps) continue;
-    const r = disconnectOutput(next, e.to, deps);
-    if (r.ok) next = r.doc;
-  }
-  // T12.8: where it was a layer (a row of another composition, an output's own row), that row goes too.
-  return {
-    ok: true,
-    doc: {
-      ...next,
-      compositions: next.compositions
-        .filter((c) => c.id !== id)
-        .map((c) => (c.layers.includes(id) ? { ...c, layers: c.layers.filter((l) => l !== id), placements: Object.fromEntries(Object.entries(c.placements).filter(([k]) => k !== id)) } : c)),
-      outputs: next.outputs.map((o) => ({
-        ...o,
-        overrides: o.overrides.filter((ov) => ov.sourceId !== id),
-        ...(o.layers ? { layers: o.layers.filter((l) => l !== id) } : {}),
-        ...(o.frozen ? { frozen: { items: o.frozen.items.filter((it) => it.sourceId !== id) } } : {}),
-      })),
-      edges: next.edges.filter((e) => e.from !== id && e.to !== id),
-    },
-  };
 }

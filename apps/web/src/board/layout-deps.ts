@@ -10,7 +10,7 @@ import { prepareTextMeasure, type FontRequest } from '../fonts/loader';
 
 export type AssetSizes = LayoutDeps['assets'];
 
-/** The fonts every text layer needs (inputs and text variants, T12.6), as a stable string (effect key). */
+/** The fonts every text layer needs, as a stable string (effect key). */
 function fontRequestsJson(doc: ProjectDoc): string {
   const requests: FontRequest[] = layerSources(doc).flatMap((s) =>
     s.content.kind === 'text' ? [{ style: { fontFamily: s.content.style.fontFamily, fontWeight: s.content.style.fontWeight }, text: s.content.text }] : [],

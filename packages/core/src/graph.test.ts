@@ -29,7 +29,7 @@ const v1 = () => {
 describe('migrateProjectDoc (v1 → v2, D32)', () => {
   it('turns the master into composition main with rows in port order, and wires into typed edges', () => {
     const doc = migrateProjectDoc(v1());
-    expect(doc.schema).toBe(2);
+    expect(doc.schema).toBe(3); // and on to v3
     expect(doc.rev).toBe(7);
     expect(mainComposition(doc)).toEqual({
       id: 'main',
@@ -45,16 +45,64 @@ describe('migrateProjectDoc (v1 → v2, D32)', () => {
       { id: 'out:ig', from: 'main', to: 'ig', kind: 'composition' },
     ]);
     expect(doc.sources.every((s) => !('port' in s))).toBe(true);
-    expect(doc.processes).toEqual([]);
+    expect(doc.schema).toBe(3);
     expect(doc.outputs[0]?.overrides).toHaveLength(1); // overrides kept
     expect(doc.outputs[1]?.frozen).toEqual({ items: [] }); // frozen kept, still disconnected
     expect(outputComposition(doc, 'ig')).toBe('main');
     expect(outputComposition(doc, 'frozen')).toBeUndefined();
   });
 
-  it('leaves v2 documents as they are', () => {
+  it('leaves v3 documents as they are', () => {
     const doc = createProjectDoc('New');
     expect(migrateProjectDoc(doc)).toBe(doc);
+  });
+});
+
+describe('migrateProjectDoc (v2 → v3, D56)', () => {
+  it('drops processes, other master previews, non-input rows, output-only layers and Core Rule nodes; outputs of a dropped preview follow main', () => {
+    const base = createProjectDoc('Old');
+    const [main] = base.compositions;
+    if (!main) throw new Error('no composition');
+    const frame = { x: 0, y: 0, w: 0.5, h: 0.5 };
+    const v2 = {
+      ...base,
+      schema: 2 as const,
+      processes: [{ id: 'p1', label: 'Crop', op: { type: 'crop', rect: frame }, board: { x: 0, y: 0 } }],
+      coreRules: [{ id: 'cr', composition: 'main', board: { x: 0, y: 0 } }],
+      compositions: [
+        { ...main, layers: [...main.layers, 'p1', 'b'], placements: { ...main.placements, p1: frame, b: frame } },
+        { ...main, id: 'gv', label: 'Vertical guide', guide: { of: 'main', family: 'vertical' as const }, layers: [...main.layers] },
+        { ...main, id: 'b', label: 'Variant', layers: ['subject'] },
+      ],
+      outputs: [
+        { id: 'o1', label: 'O1', size: { width: 1, height: 1, unit: 'px' as const }, family: 'auto' as const, layers: ['logo', 'p1'], overrides: [{ sourceId: 'p1', hidden: true, updatedBy: 'u', updatedAt: 'x' }, { sourceId: 'logo', hidden: true, updatedBy: 'u', updatedAt: 'x' }], board: { x: 0, y: 0 } },
+        { id: 'o2', label: 'O2', size: { width: 1, height: 1, unit: 'px' as const }, family: 'auto' as const, overrides: [], frozen: { items: [{ sourceId: 'p1', frame: { x: 0, y: 0, w: 1, h: 1 } }] }, board: { x: 0, y: 0 } },
+      ],
+      edges: [
+        ...base.edges,
+        { id: 'in:subject>p1', from: 'subject', to: 'p1', kind: 'layer' as const },
+        { id: 'in:p1', from: 'p1', to: 'main', kind: 'layer' as const },
+        { id: 'in:b', from: 'b', to: 'main', kind: 'layer' as const },
+        { id: 'in:subject>b', from: 'subject', to: 'b', kind: 'layer' as const },
+        { id: 'in:logo>o1', from: 'logo', to: 'o1', kind: 'layer' as const },
+        { id: 'out:o1', from: 'b', to: 'o1', kind: 'composition' as const },
+      ],
+      groups: [{ id: 'g', label: 'G', color: 'grey' as const, nodes: ['p1', 'o1'] }],
+    };
+    const doc = migrateProjectDoc(v2 as unknown as ProjectDoc);
+    expect(doc.schema).toBe(3);
+    expect('processes' in doc).toBe(false);
+    expect('coreRules' in doc).toBe(false);
+    expect(doc.compositions.map((c) => c.id)).toEqual(['main', 'gv']);
+    expect(mainComposition(doc).layers).toEqual(main.layers);
+    expect(Object.keys(mainComposition(doc).placements).sort()).toEqual(Object.keys(main.placements).sort());
+    expect(doc.edges.filter((e) => e.kind === 'layer').every((e) => e.to === 'main' && doc.sources.some((s) => s.id === e.from))).toBe(true);
+    expect(outputComposition(doc, 'o1')).toBe('main');
+    const [o1, o2] = doc.outputs;
+    expect(o1 && 'layers' in o1).toBe(false);
+    expect(o1?.overrides.map((ov) => ov.sourceId)).toEqual(['logo']);
+    expect(o2?.frozen).toEqual({ items: [] });
+    expect(doc.groups?.[0]?.nodes).toEqual(['o1']);
   });
 
   it('renames the old default names to "Master preview" (D39); a name the user chose is kept', () => {
@@ -69,13 +117,11 @@ describe('migrateProjectDoc (v1 → v2, D32)', () => {
 describe('graph helpers', () => {
   const doc: ProjectDoc = {
     ...createProjectDoc('G'),
-    compositions: [...createProjectDoc('G').compositions, { id: 'c2', label: 'B', size: { width: 10, height: 10, unit: 'px' }, placements: {}, layers: ['subject'], board: { x: 0, y: 0 } }],
-    processes: [{ id: 'p1', label: 'Crop', op: { type: 'crop', rect: { x: 0, y: 0, w: 1, h: 1 } }, board: { x: 0, y: 0 } }],
+    compositions: [...createProjectDoc('G').compositions, { id: 'c2', label: 'Vertical guide', size: { width: 10, height: 16, unit: 'px' }, placements: {}, layers: ['subject'], board: { x: 0, y: 0 }, guide: { of: 'main', family: 'vertical' } }],
     outputs: [{ id: 'o', label: 'O', size: { width: 1, height: 1, unit: 'px' }, family: 'auto', overrides: [], board: { x: 0, y: 0 } }],
     edges: [
-      { id: 'a', from: 'subject', to: 'p1', kind: 'layer' },
-      { id: 'b', from: 'p1', to: 'c2', kind: 'layer' },
-      { id: 'c', from: 'c2', to: 'o', kind: 'composition' },
+      { id: 'b', from: 'subject', to: 'c2', kind: 'layer' },
+      { id: 'c', from: 'main', to: 'o', kind: 'composition' },
     ],
   };
 
@@ -83,8 +129,8 @@ describe('graph helpers', () => {
     expect(layerOrder(doc)).toEqual(['logo', 'headline', 'subject', 'background']);
     expect(portOf(doc, 'subject')).toBe(2);
     expect(portOf(doc, 'subject', 'c2')).toBe(0);
-    expect([...wiredLayers(doc, 'c2')]).toEqual(['p1']);
-    expect(outputComposition(doc, 'o')).toBe('c2');
+    expect([...wiredLayers(doc, 'c2')]).toEqual(['subject']);
+    expect(outputComposition(doc, 'o')).toBe('main');
   });
 
   it('edge ids keep the v1 wire ids for main and outputs', () => {
@@ -93,20 +139,15 @@ describe('graph helpers', () => {
     expect(edgeId('c2', 'o', 'composition')).toBe('out:o');
   });
 
-  it('refuses wrong port types, unknown nodes and cycles', () => {
+  it('refuses wrong port types and unknown nodes: inputs feed compositions, compositions feed outputs (D56)', () => {
     expect(connectRefusal(doc, 'logo', 'main', 'layer')).toBeNull();
-    expect(connectRefusal(doc, 'headline', 'p1', 'layer')).toBeNull();
     expect(connectRefusal(doc, 'main', 'o', 'composition')).toBeNull();
-    // T12.8: a composition is a layer of a composition or an output, never a process's input, never of itself.
-    expect(connectRefusal(doc, 'main', 'o', 'layer')).toBeNull();
-    expect(connectRefusal(doc, 'main', 'p1', 'layer')).toBe('wrong_type');
-    expect(connectRefusal(doc, 'main', 'main', 'layer')).toBe('cycle');
+    expect(connectRefusal(doc, 'main', 'o', 'layer')).toBe('wrong_type'); // no output-only layers
+    expect(connectRefusal(doc, 'logo', 'o', 'layer')).toBe('wrong_type');
+    expect(connectRefusal(doc, 'c2', 'main', 'layer')).toBe('wrong_type'); // no composition as a layer
     expect(connectRefusal(doc, 'logo', 'o', 'composition')).toBe('wrong_type');
     expect(connectRefusal(doc, 'o', 'main', 'layer')).toBe('wrong_type'); // outputs have no out-port
     expect(connectRefusal(doc, 'nope', 'main', 'layer')).toBe('unknown_node');
-    expect(connectRefusal(doc, 'p1', 'p1', 'layer')).toBe('cycle');
-    const chained: ProjectDoc = { ...doc, processes: [...doc.processes, { id: 'p2', label: 'Adjust', op: { type: 'adjust', opacity: 0.5 }, board: { x: 0, y: 0 } }], edges: [...doc.edges, { id: 'd', from: 'p1', to: 'p2', kind: 'layer' }] };
-    expect(connectRefusal(chained, 'p2', 'p1', 'layer')).toBe('cycle');
   });
 });
 

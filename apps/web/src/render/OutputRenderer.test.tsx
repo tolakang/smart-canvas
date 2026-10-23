@@ -1,4 +1,4 @@
-import { createProjectDoc, DEFAULT_TEXT_STYLE, NO_EFFECT, type InputSource, type RenderScene } from '@smart-canvas/core';
+import { createProjectDoc, DEFAULT_TEXT_STYLE, type InputSource, type RenderScene } from '@smart-canvas/core';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { OutputRenderer, RenderThumbnail } from './OutputRenderer';
@@ -80,37 +80,15 @@ describe('OutputRenderer', () => {
   });
 });
 
-describe('OutputRenderer: process effects (T12.5)', () => {
-  const effect = { ...NO_EFFECT, crop: { x: 0.5, y: 0, w: 0.5, h: 1 }, rotate: 90 as const, flipX: true, opacity: 0.5, brightness: 1.2 };
-  const layer = { ...src('subject', { content: { kind: 'image', assetId: 'img1', focal: { x: 0.5, y: 0.5 } } }), id: 'p1', effect };
-  const scene: RenderScene = { width: 200, height: 100, items: [{ sourceId: 'p1', frame: { x: 0, y: 0, w: 100, h: 50 } }] };
-
-  it('crop, mirror and quarter turn by nesting (effectBoxes); colour as opacity + filter', () => {
-    const out = renderToStaticMarkup(<OutputRenderer scene={scene} sources={[layer]} assetSizes={{ img1: { width: 400, height: 200 } }} assetUrl={assetUrl} scale={1} />);
-    expect(out).toContain('data-source-id="p1"');
-    expect(out).toContain('opacity:0.5;filter:brightness(1.2)');
-    expect(out).toContain('left:25px;top:0;width:50px;height:50px;overflow:hidden'); // the view
-    expect(out).toContain('transform:rotate(90deg) scaleX(-1)'); // the pane
-    expect(out).toContain('left:-50px;top:0;width:100px;height:50px;max-width:none'); // the full image, crop in place
-  });
-
-  it('without the asset size: mirror / turn the whole picture', () => {
-    const out = renderToStaticMarkup(<OutputRenderer scene={scene} sources={[layer]} assetUrl={assetUrl} scale={1} />);
-    expect(out).toContain('<img');
-    expect(out).toContain('rotate(90deg) scaleX(-1)');
-  });
-});
-
-describe('OutputRenderer: recolor (T12.6)', () => {
-  it('a tinted picture is a box of that colour masked by the picture (data-mask-src for export)', () => {
-    const layer = { ...src('logo', { content: { kind: 'vector', assetId: 'svg1', focal: { x: 0.5, y: 0.5 } } }), id: 'p2', effect: { ...NO_EFFECT, tint: '#ff00aa' } };
-    const scene: RenderScene = { width: 100, height: 100, items: [{ sourceId: 'p2', frame: { x: 0, y: 0, w: 50, h: 50 } }] };
-    const out = renderToStaticMarkup(<OutputRenderer scene={scene} sources={[layer]} assetUrl={assetUrl} scale={1} />);
-    expect(out).toContain('data-mask-src="/a/svg1"');
-    expect(out).toContain('background-color:#ff00aa');
-    expect(out).toContain('mask-image:url(&quot;/a/svg1&quot;)');
-    expect(out).toContain('mask-size:contain');
-    expect(out).not.toContain('<img');
+describe('OutputRenderer: fitted pictures (D37)', () => {
+  it('a fitted frame is the visible part of the picture, which fills it (stretched with it)', () => {
+    const layer = src('subject', { content: { kind: 'image', assetId: 'img1', focal: { x: 0.5, y: 0.5 } } });
+    const scene: RenderScene = { width: 400, height: 200, items: [{ sourceId: 'subject', frame: { x: 0, y: 0, w: 300, h: 100, fitted: true } }] };
+    // Visible part: the middle half across, the top two-thirds down, of a 400×300 picture → 300×100: ×1.5 across, ×0.5 down.
+    const sizes = { img1: { width: 400, height: 300, trim: { x: 0.25, y: 0, w: 0.5, h: 2 / 3 } } };
+    const out = renderToStaticMarkup(<OutputRenderer scene={scene} sources={[layer]} assetSizes={sizes} assetUrl={assetUrl} scale={1} />);
+    expect(out).toContain('overflow:hidden');
+    expect(out).toContain('left:-150px;top:0;width:600px;height:150px;max-width:none;object-fit:fill');
   });
 });
 

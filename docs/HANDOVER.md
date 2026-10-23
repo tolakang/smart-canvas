@@ -23,7 +23,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D5
 - **CI flakes seen:** e2e suites once timed out in `beforeAll` on a slow runner; a canvas test once read the doc before autosave (800 ms) had saved it — poll with a longer timeout rather than re-running.
 
 ## What changed in the last round (P15, #108–#116)
-- N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. M2 turned / leaned layers snap on resize too. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server. M1 a layer snaps to its spot in the other layouts.
+- N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. M2 turned / leaned layers snap on resize too. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server. M1 a layer snaps to its spot in the other layouts. M5 retired engine features (D56, schema 3).
 - #115 changed the reset buttons to replay the transform history; the owner said the earlier in-place reset was right, so #116 reverted it.
 - #117 removed code the page-3 board no longer reaches (process / Core Rule node UI, the process inspector, unused helpers) and tidied these docs.
 
@@ -65,14 +65,14 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 - Cutting its wire freezes its layout (D20).
 
 **Opening an old project** runs `boardStructure` once (`packages/core/src/board-structure.ts`, called in the fit effect in `Board.tsx`):
-- Process nodes and extra master previews are deleted (the owner approved this).
+- Process nodes and extra master previews are deleted (the owner approved this; since D56 the v2 → v3 migration does it).
 - Inputs join the node of their kind.
 - Loose outputs go into a "Sizes" preset.
 - A missing kind of asset node is added.
 
 New projects come from `createBoardProject` (API `POST /projects`).
 
-**Removed from the board:** process nodes, extra master previews, single outputs, the node library and palette, and the D47 Core Rule node (its UI code is gone too, #117). The **engine, export and API schema still support** processes, nested compositions, output-only layers and a stored `coreRules` field (old documents load; `boardStructure` drops what the board can't show). Whether to remove them is BACKLOG M5.
+**Removed from the board:** process nodes, extra master previews, single outputs, the node library and palette, and the D47 Core Rule node (its UI code is gone too, #117). **D56** retired them from the model, engine, renderer and API too: documents are schema 3 (the master and its layouts, inputs, outputs, board nodes), and `migrateProjectDoc` brings v1 / v2 documents up on load and on save.
 
 **Board extras:** **Tidy board** (canvas toolbar and right-click menu) lays everything out; a new Preset node lands clear of other nodes. Moves and resizes snap to the canvas and the other layers in the editors.
 
@@ -113,4 +113,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - `output.family` is computed but no longer changes placement (D38).
 
 ## Next
-P17 (M2, M3, M4, M6) is done. M1 needs the owner's definition and M5 is the owner's call. Proposals at the end of `docs/BACKLOG.md`.
+P17 (M2, M3, M4, M6) and P18 (M1, M5) are done. Nothing else is proposed; the owner picks what comes next.
