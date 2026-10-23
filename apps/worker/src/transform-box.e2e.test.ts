@@ -157,27 +157,6 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     near(await placement(), before);
   }, 90_000);
 
-  it('the Reset rotation / Reset transform buttons land exactly where the element was before those drags (no drift), and later handle resets still work', async () => {
-    const before = await placement();
-    await drag('n', 60, 0); // skew the top edge; the bottom edge stays put
-    await drag('rotate', 0, 80);
-    await drag('e', 40, 0); // stretch after the rotation
-    const reset = editor().getByRole('group', { name: 'Reset transform' });
-    await reset.getByRole('button', { name: 'Reset transform' }).click();
-    await settle();
-    // Rotation and skew gone, the stretch kept, as if the skew and rotation had never happened: the left edge
-    // where it was, nothing else moved.
-    const after = await placement();
-    expect(after.rotation ?? 0).toBeCloseTo(0, 6);
-    expect(after.shear ?? 0).toBeCloseTo(0, 6);
-    expect(after.y).toBeCloseTo(before.y, 5);
-    expect(after.h).toBeCloseTo(before.h, 5);
-    expect(after.x).toBeCloseTo(before.x, 5);
-    // The history survived the button: the stretch's own reset brings back the original placement.
-    await dbl('e');
-    near(await placement(), before);
-  }, 90_000);
-
   it('phone: a quick drag edits nothing; long-press then drag skews (a handle) and moves (the layer); a double-tap resets', async () => {
     // The same signed-in session, as a phone.
     const ctx = await stack.env.browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, storageState: await page.context().storageState() });

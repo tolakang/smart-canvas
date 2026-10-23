@@ -26,7 +26,7 @@
  */
 import {
   applyOp, classifyEdgeDrag, corners, derive, docFromState, HANDLE_UV, handleFrame, isCorner, moveOp, pointAt,
-  pushOp, resetForHandle, resetKinds, restoreAspect, rotateHandlePos, rotateOp, SCALE_HANDLES, scaleOp, skewOp, sub, len, toCssMatrix,
+  pushOp, resetForHandle, restoreAspect, rotateHandlePos, rotateOp, SCALE_HANDLES, scaleOp, skewOp, sub, len, toCssMatrix,
   type EdgeIntent, type HandleId, type ScaleHandle, type TransformDoc, type TransformOp, type TransformState, type Vec,
 } from './math';
 
@@ -235,14 +235,6 @@ export class TransformBox {
     this.state = derive(this.doc);
     this.scheduleRender();
     this.opts.onChange?.(this.getState(), { phase: 'reset', handle, doc: this.doc });
-  }
-
-  /** The selection's reset buttons: clear every rotation (and skew), keeping the rest of the history. */
-  resetKinds(kinds: readonly ('rotate' | 'shear')[]): void {
-    this.doc = resetKinds(this.doc, kinds);
-    this.state = derive(this.doc);
-    this.scheduleRender();
-    this.opts.onChange?.(this.getState(), { phase: 'reset', handle: 'rotate', doc: this.doc });
   }
 
   /** A gesture is running (or a touch is holding): outside changes wait until it ends. */
