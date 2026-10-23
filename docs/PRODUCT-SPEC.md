@@ -1,7 +1,7 @@
 # PRODUCT-SPEC (v1)
 
-## Concepts (board as of D49–D54)
-- **Asset nodes**: Logo (one or more logos), Headline (one or more Khmer / English picture pairs, one language in use), Text (text slots, each its own layer), Image (many pictures), Background (vertical and horizontal pictures, or a colour). Each holds items you add, replace or delete; pictures are PNG, JPEG, WebP or SVG, or a PDF's first page.
+## Concepts (board as of D49–D56)
+- **Asset nodes**: Logo (one or more logos), Headline (one or more Khmer / English picture pairs, one language in use), Text (text slots, each its own layer), Image (many pictures), Background (vertical and horizontal pictures, or a colour). Each holds items you add, replace or delete; pictures are PNG, JPEG, WebP or SVG, or a PDF's first page (kept as vector, D55; as a PNG in pixel-only slots).
 - **Layer Comp** (the master): the layer order as four groups (logo, headline, elements, background; drag to re-order) and three layouts — Square, Vertical, Horizontal — that share the layers but place them each their own way.
 - **Core Rule**: Core Preset Guide (which layout each output uses; drag to assign) and Core Auto Layout Guide (each layer's rule).
 - **Preset node**: a family of sizes (FB, IG, Story, GDN, App banner, Website, Gift, PR, a team family, or custom); one row per size, each wired to its **Preview** (shown or hidden with the row's eye). Export makes one ZIP of its sizes; Save as team preset makes it a team family.
@@ -13,11 +13,11 @@
 1. Login / accept invite
 2. Projects (team): templates as cards on top ("Start from a template"), the projects with search and sort, a ⋯ menu per project (Open, Open in new tab · Rename, Duplicate · Save as template, Copy link · Delete) and per template, "+ New project" (blank or from a template)
 3. **Board** (main screen): asset nodes in a row on top, the Layer Comp + Core Rule group below, Preset nodes under it with their Previews to the right. Inspector side panel. Top bar: + Add, Export, Fonts, Library. Canvas toolbar: tools, zoom, fit, Tidy board, grid snap, minimap.
-4. Layout editor (Square / Vertical / Horizontal from the Layer Comp): place/move/resize/rotate/skew (moves and resizes snap; double-click a handle or use the reset buttons to undo a transform without moving the layer), layers panel (re-order, lock, hide, delete), text panel.
+4. Layout editor (Square / Vertical / Horizontal from the Layer Comp): place/move/resize/rotate/skew (moves and resizes snap to the canvas, the other layers and the layer's spot in the other layouts; double-click a handle or use the reset buttons to undo a transform without moving the layer), layers panel (re-order, lock, hide, delete), text panel.
 5. Preview editor (Edit on a Preview): same tools; edits are overrides ("edited" tag), Reset layer / Reset output.
 6. Library panel (team assets)
-7. Preset manager (admin): sizes and their Preset node family
-8. Export dialog (formats, scale/dpi, crop marks, outline text, all or selected)
+7. Preset manager (admin): sizes and their Preset node family; the families with their sizes, renamed or deleted as a whole
+8. Export dialog (formats, scale/dpi, crop marks, outline text, all or selected; large multi-file exports are made and zipped on the server)
 9. Team settings (members, roles, invite links)
 
 ## Flows
@@ -51,4 +51,4 @@
 - Export worker runs one job per output; failures reported per output.
 
 ## Out of scope for v1
-AI layout, background removal, CMYK/PDF-X, PSD/AI/PDF import, real-time multi-user editing, Google/Telegram login, direct `.af` import (experimental later ticket).
+AI layout, background removal, CMYK/PDF-X, PSD/AI import, multi-page PDF import, real-time multi-user editing, Google/Telegram login, direct `.af` import (experimental later ticket).

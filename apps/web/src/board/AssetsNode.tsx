@@ -1,6 +1,6 @@
 /**
  * D40 / D49: an Image node (or a Logo node: its pictures behave as logos) — one board node holding many pictures. Drop several files on it (or pick them) and each
- * becomes its own layer, wired into the card's master previews. Click a picture to set it in the inspector,
+ * becomes its own layer, wired into the Layer Comp (and its layouts). Click a picture to set it in the inspector,
  * drag pictures to reorder the card, × deletes one. Page 3: a grid / list switch (remembered per card, in this browser).
  */
 import { Handle, Position, type NodeProps } from '@xyflow/react';
