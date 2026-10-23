@@ -1,71 +1,99 @@
-# Handover — 2026-10-21 (updated after #91)
+# Handover — 2026-10-23 (after #106)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest D38) and `TASKS.md`. All backlog tickets (P1–P13) are done and merged. The work since then has been owner-requested UI fixes, one PR each.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D51**), `docs/BACKLOG.md` (P14 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
 ## Workflow the owner expects
-- **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each new piece of work. A force-with-lease push is fine when the branch only holds merged history.
-- **Before pushing:** run `pnpm lint`, `pnpm typecheck`, `pnpm build`, then `TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres pnpm test`. Start Postgres first with `service postgresql start`. Build before the end-to-end tests, because they serve the built web app.
-- **PRs:** open a PR, wait for CI to be green, squash merge with `expectedHeadSha`, then unsubscribe from the PR. "Do not ask me for small things."
-- **Attribution:** commit trailers carry Co-Authored-By plus the Claude-Session link. PR bodies end with the "Generated with Claude Code" line. Never put a model name in commits or PRs.
+- **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
+- **One PR per piece of work.** Open it, wait for CI to be green, squash merge with the full 40‑character `expectedHeadSha`, then unsubscribe from the PR. Standing instructions from the owner:
+  - "Do not ask me for small things."
+  - "Merge all when green."
+- **Before pushing:**
+  1. `pnpm lint`
+  2. `pnpm typecheck`
+  3. `pnpm build`. The end‑to‑end tests serve the built web app, so build first.
+  4. `service postgresql start`, then `TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres pnpm test`.
+  
+  Don't edit files while the full suite runs. The last full run was 101 files and 561 tests, all green.
+- **Attribution:**
+  - Commit trailers: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and `Claude-Session: …`.
+  - PR bodies end with "🤖 Generated with [Claude Code](https://claude.com/claude-code)" plus the session link.
+  - No model names in commits or PRs.
+- **Big changes:** the owner wants **a full plan first** and approves it before work starts. They sent the page‑3 board design as a PDF and as screenshots. Follow the design; don't bolt new parts onto old structure.
+- **CI flake seen once:** two e2e suites timed out in `beforeAll` waiting for the first‑run page on a slow runner. One re‑run of the failed job passed.
 
-## Recently merged
-- **#83:** phone Export button; tap a wire, then the × button, to disconnect it.
-- **#84:** projects page, Size presets and Team dialogs restyled (design-system buttons, rows and forms).
-- **#85 (D36):** the editor's own transform box replaces react-moveable.
-  - Affinity-style skew: drag an edge along itself and the opposite edge stays put.
-  - On touch, hold before a handle drags.
-  - A double-click on a handle undoes that handle's operations exactly; history is kept for the editor session.
-  - Moves snap to edges and centres.
-  - Model: optional `Frame.shear` / `NFrame.shear`.
-  - Code: `apps/web/src/editor/transform/` (`math.ts` = operations, history and resets; `transform-box.ts` = DOM controller; `frame.ts` = frame bridge and snapping).
+## The product today (page‑3 board, D48–D51)
+```
+Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset nodes (purple), one ✂ wire each
+                     ↓ into the top of the dashed group
+        [ Layer Comp | Core Rule ]                              ← the master (blue / mint)
+                     ↓ drag out of the group's bottom port → preset popup
+        Preset node (FB, IG, Story, GDN, App banner, Website, Gift, PR, Custom)   ← green
+           each size row  ── eye · trash ──→ Preview (Edit = its overrides, Export)
+```
 
-## Merged #86: board cards + Delete key — owner issues 3, 4, 5
-- **Input cards** show only the name and a preview (`apps/web/src/board/nodes.tsx` `NodePreview`, slimmed `SourceHeader.tsx`). Settings and actions are in the Inspector (`Inspector.tsx` `InputActions`).
-- **Card sizing:** cards size their column `minmax(0, 1fr)`, so thumbnails never overflow. Side ports sit level with the title (26 px), as the node palette assumes.
-- **Delete / Backspace on the board** goes through `BoardKeys` to `deleteSelection` in `Board.tsx`, then the pure `board/delete-nodes.ts`, with one confirm and one undo step. It is not React Flow's `deleteKeyCode`: that one misses short key presses.
-- **Delete in the editors:** in the main editor it works like the layer row's trash button (`MainEditor` `onDelete`); in an output editor it hides the layer there.
-- **Tests:** new `apps/worker/src/board-delete.e2e.test.ts`. Tests that used node-level editors now use the Inspector, and a few board tests press "Fit to screen" before using nodes they just added. The full suite was green locally: 93 files, 490 tests.
+**Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG.
+- **Logo, Image and Text** are `AssetStack`s with `kind: 'logo' | 'image' | 'text'`. Logo items behave as logos (they get a minimum size).
+- **Text** slots are each their own text layer. You type on the card, and the slot grows with its text. `addTextToStack` adds one.
+- **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch.
+- **Background** is one input with vertical and horizontal slots (D43). A square output uses either slot.
 
-## Owner issues 1 + 2 — image frames (D37, done)
-Picture frames hug their visible pixels, and stretching distorts the picture.
-- **Core:** `packages/core/src/fit.ts` (`fitFrames`, `fittedFrame`, `fillBoxes`, `unfitPictures`); `Frame.fitted` / `NFrame.fitted`.
-- **Trim measurement:** `apps/web/src/render/trim.ts`, called by `useAssetSizes` (`board/layout-deps.ts`) and by `RenderPage.tsx`.
-- **Board:** a fit pass in `Board.tsx`, applied without an undo step; replacing a picture unfits its frames (`editors.tsx`).
-- **Renderer:** the fill mode in `OutputRenderer.tsx`.
-- **Tests:** `fit.test.ts`, `trim.test.ts`, and `fitted-frames.e2e.test.ts` (hug, stretch, browser and worker parity with margins, replace).
+**Layer Comp.**
+- The layer order is shown as four groups; drag them or use ↑ ↓ to reorder (D48: `ProjectDoc.layerOrder`, `moveLayerGroup`).
+- **Square, Vertical, Horizontal** each open that layout's editor. A missing layout is added the first time it's opened (D42 guides).
+- All three editors share the master's layers: order, wiring, show/hide, **lock** and delete apply everywhere. Position and size are per layout (D50: `masterScene` of a guide, `InputSource.locked`).
 
-## Merged #89: live stretch + touch without hold — owner issues 4, 5
-- A fitted picture stretches live while its edge is dragged (`CanvasEditor.tsx` keeps `fitted` on the live frame).
-- Touch: tap and drag at once; `longPressMs` defaults to 0. A double-tap on a handle resets it.
+**Core Rule.**
+- **Core Preset Guide** has three sections listing outputs by the closest shape. Dragging a chip into another section sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`).
+- **Core Auto Layout Guide** shows each layer's rule (`layerRule`).
 
-## Layout v3, the stretched grid (D38) — owner issues 1–3
-- **Scale:** `√(sx·sy)` capped by the room around the pin (merged after #90 as a follow-up), fill rules unchanged.
-- **Code:** `packages/core/src/layout/grid.ts` (`pinOf`, `fillsAxis`, `gridScale`, `gridFrame`), used by `index.ts` for subjects, decorations, logos (`logo.ts`, with the minimum width) and text boxes (`text.ts` `fitInFrame`).
-- **Removed:** the v2 content groups (`content.ts`), the side text column and the safe-area clamp.
-- **Spec:** `docs/ADAPTATION-RULES.md` v3 (examples A, C, D, E, J, K, L, I, F); unit tests in `grid.test.ts`, `logo.test.ts`, `text.test.ts`.
+**Preset node (D46, D51).**
+- Rows reorder by their grip. Add a size from presets or as a custom W×H.
+- The **eye** hides that size's Preview on the board (`PresetSet.hidden`; it still exports). The **trash** removes the size.
+- Row wires have no ✂ badge.
 
-## Merged #91: grid scale
-- Layers that don't fill the master scale by `√(sx·sy)` (their stretched grid box's area share), capped by the room around their pin so they stay inside the output, never below `k`. Spec examples A, D, E, J, L.
+**Preview.**
+- Header: "Preview" with the name and size, plus **Edit**.
+- A live thumbnail and an **Export** pill.
+- Cutting its wire freezes its layout (D20).
 
-## Next — owner request (2026-10-21, with a board screenshot), NOT STARTED
-1. **DONE (D40, PR after #92) — One Assets input slot, drag & drop many pictures at once.** Owner chose: **one Assets node, many layers.** A single input card holds all dropped pictures as a list (add, remove, reorder inside it). Each picture stays its own layer in the master preview (own placement, behaviour, processes/effects), wired automatically. The board shows one card and one wire instead of one card per picture (the screenshot had 8 "Subject copy copy…" cards).
-   - Likely shape: keep one `InputSource` per picture (layout, processes, overrides, fit all work per source) and add a grouping, e.g. `InputSource.bundle?: string` plus `ProjectDoc.bundles?: { id, label, board }[]`. Sources in a bundle are drawn inside the Assets card, not as their own nodes; their source→composition edges are drawn as one wire from the card. Needs a model change note in DECISIONS (new D39), the API schema (`additionalProperties: false`), migration not needed if optional.
-   - Code to read first: `packages/core/src/model.ts` (InputSource, LIMITS), `sources.ts`, `ports.ts` (`connectSource`), `apps/web/src/board/Board.tsx` + `nodes.tsx` (flow nodes/edges, `src:${id}` ids), `palette.ts` / `NodeLibrary.tsx` / canvas menu (add inputs), `Inspector.tsx` (`InputActions`), `board/delete-nodes.ts`, upload/drop handling and `apps/worker/src/drop.e2e.test.ts`.
-2. **DONE (D39) — No limit on layers in the master preview.** `LIMITS.maxSources = 10` (`packages/core/src/model.ts:19`, enforced in `sources.ts` `canAddSource`, shown in UI and likely the API schema `maxItems`). Remove the cap (owner decision; note it in DECISIONS).
-3. **DONE (D39) — Rename "Main preview" → "Master preview"** in UI copy: `MainNode.tsx`, `MainEditor.tsx` ("Master preview editor" dialog label — e2e tests use `/Master preview editor/`), `Inspector.tsx`, `Board.tsx`, `palette.ts`, `NodeLibrary.tsx`, defaults in `core/project.ts`, `compositions.ts`, `graph.ts` (migration label). Update tests and docs that match the text.
+**Opening an old project** runs `boardStructure` once (`packages/core/src/board-structure.ts`, called in the fit effect in `Board.tsx`):
+- Process nodes and extra master previews are deleted (the owner approved this).
+- Inputs join the node of their kind.
+- Loose outputs go into a "Sizes" preset.
+- A missing kind of asset node is added.
 
-## The page-3 board (D48, D49) — owner's PDF page 3, plan approved 2026-10-22
-- Board = asset nodes (Logo, Headline, Text, Image, Background) → the Layer Comp + Core Rule group (`MainNode.tsx`) → Preset nodes (`PresetNode.tsx`) → Previews (`OutputNode.tsx`). Text slots: `TextNode.tsx` (`addTextToStack`). Cards: `AssetStack.kind`. Conversion on open: `boardStructure` (`packages/core/src/board-structure.ts`, applied once in `Board.tsx`). New projects: `createBoardProject` (API `POST /projects`).
-- Wires: `flow.ts` `docToEdges` draws one wire per asset node into the group's `layers` handle (`cardEdgeId` for cards) and the Preset wiring of D46; nothing else is drawn. The group's out port, dragged onto empty canvas, offers the Preset nodes (`openPresets`).
-- PR 2 — **done (D50)**: the Square / Vertical / Horizontal editors get a layers panel with re-order, lock / unlock, hide / unhide and delete (order, lock, hide and delete apply in all three layouts; position and size per layout); the Core Preset Guide gets three sections listing outputs by best match, and dragging an output into another section assigns it that layout (model note D50: a per-output layout choice). PDF uploads later.
+New projects come from `createBoardProject` (API `POST /projects`).
 
-## Layout guides (D42) — PDF "Core Preset Guide"
-- `packages/core/src/guides.ts` (`familyOfShape`, `guideFor`, `addGuides`, `detachGuide`); `computeLayout` takes positions from `guideFor` (falls back to the master per layer).
-- UI: Inspector "Layout guides" section (`GuidesSection`), guide chip on `MainNode`, "· Vertical guide" on `OutputNode`.
-- Page 3 plan (one PR each): 1. Background V/H pictures — **done (D43)**; 2. Headline asset node with Khmer / English slots + "Use" switch — **done (D44)**; 3. Layer Comp fixed order (logo top → headline → elements → background) — **done (D45)**; 4. Preset group node (GDN: many sizes, one preview each) — **done (D46)**; 5. Core Rule node — **done (D47)**. Then the page-3 look: node headers by role (assets purple, master preview / core rules blue, previews mint, presets green), a ✂ cut badge on every wire, a background's vertical / horizontal slots on its card, and a grid / list switch on the Assets card — **done**. Logo and Image asset nodes already exist (logo input, Assets card).
+**Removed from the board:** process nodes, extra master previews, single outputs, the node library and palette, and the D47 Core Rule node. The **engine and export still support** text, processes and nested compositions; only the board no longer offers them.
 
-## Known limits / ideas
-- `output.family` is still computed and reported but no longer changes placement (D38).
+## Code map
+| Area | Files |
+|---|---|
+| Board structure / conversion | `packages/core/src/board-structure.ts` |
+| Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` |
+| Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
+| Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`), `render.ts` (`masterScene`) |
+| Core Rule data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`, `layerRule`) |
+| Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies`) |
+| Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
+| Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `LAYERS_HANDLE`, `cardEdgeId`, `connectionRefusal`) |
+| Board UI | `Board.tsx` (wiring, menus, `+ Add`, preset popup, conversion on open), `MainNode.tsx` (Layer Comp + Core Rule group), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
+| Editors | `apps/web/src/editor/` (`MainEditor` lists the master's layers in every layout; `CanvasEditor` skips locked layers; `LayersPanel`, `board/LayerRow.tsx` `LayerActions` incl. lock) |
+| API schema | `apps/api/src/routes/project-doc.schema.ts` (every new doc field must be added: `additionalProperties: false`) |
+| e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` |
+
+## Testing tips (learned the hard way)
+- **Off‑screen nodes:** press **Fit to screen** before clicking a node the test just added, or one placed by the conversion.
+- **Draggable rows:** a draggable row (HTML5 `draggable`) swallows wire drags that start on a handle inside it. Make only the grip draggable.
+- **Shared ports:** many wires meet at the Layer Comp's `layers` port. Grab a wire by its node end (`edgeupdater-source`).
+- **Hidden buttons:** buttons shown only on hover aren't in the accessibility tree. Use a CSS locator plus `dispatchEvent('click')`.
+- **Presets load late:** team presets load after the board. Re‑open a menu until a preset family is listed.
+- **Default project:** a new project wires every asset node. Tests that need fewer layers filter the layer edges in a PUT doc.
+
+## Known limits
+- The side Inspector still says "Master preview" and shows a "Layout guides" section when the group is selected.
+- PDF uploads aren't supported yet. The owner deferred them.
+- One Khmer/English pair per Headline node; add another Headline node for more.
+- `output.family` is computed but no longer changes placement (D38).
 - Resizes don't snap; only moves do.
-- Transform history isn't saved with the project (a reset after a reload only undoes edits since the editor opened). Pictures are the exception for stretches: their own proportions are known (`pictureAspect`), so a stretch / scale handle reset takes an old stretch out of the box the editor started from (`restoreAspect`).
-- Nodes added from the top bar can land off-screen; the board doesn't pan to show them.
+- A Preset node added by right‑click lands where you clicked. Its Previews can then overlap other nodes until moved. "+ Add" places it under the group.

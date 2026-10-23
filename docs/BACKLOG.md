@@ -93,19 +93,42 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 ## P12 — Node graph (D32, `docs/NODE-GRAPH.md`)
 - T12.1 — Model schema 2, v1 migration, core graph helpers (typed ports, cycle check, effective layers); API upgrades v1; no visible change.
 - T12.2 — Board on the typed graph: typed handles, invalid drops refused with a hint, generic re-route / detach.
-- T12.3 — Several compositions: add "Main preview" nodes; outputs wire to any composition; one editor per composition.
-- T12.4 — Output-only layers: layer ports on outputs; default placement by behaviour; overrides.
-- T12.5 — Process nodes I: Crop, Adjust, Flip/Rotate (renderer + parity test).
-- T12.6 — Process nodes II: Text variant, Recolor.
-- T12.7 — Node palette: drag a wire out of any port or right-click to add a compatible node.
-- T12.8 — Nested compositions.
+- ~~T12.3 — Several compositions~~ — retired from the board by D49 (one Layer Comp; its Square / Vertical / Horizontal layouts replace extra master previews).
+- ~~T12.4 — Output-only layers~~ — retired from the board by D49 (engine support kept).
+- ~~T12.5 — Process nodes I~~ — retired from the board by D49 (renderer support kept).
+- ~~T12.6 — Process nodes II~~ — retired from the board by D49.
+- ~~T12.7 — Node palette~~ — replaced by D49: a wire out of the Layer Comp group offers the Preset nodes.
+- ~~T12.8 — Nested compositions~~ — retired from the board by D49 (engine support kept).
 
 ## P13 — Workspace UX (D33, D34, D35)
 - T13.1 — Layout health (D35): core `layoutHealth` (level + issues per layer) from the layout result; a status dot + count on output and main nodes; the issue list on hover/tap.
 - T13.2 — Right inspector: selection-driven panel; output settings move off the cards (cards keep thumbnail, name, size, status); input content editing too.
 - T13.3 — Dark theme + toggle (D34): dark token set, system default, remembered per browser; the board, editors and dialogs.
-- T13.4 — Left node library: drag inputs, presets (as outputs), team-library items, and later process nodes onto the canvas; search.
+- ~~T13.4 — Left node library~~ — replaced by D49: "+ Add" and the canvas menu offer the asset nodes and Preset nodes.
 - T13.5 — Canvas chrome: floating glass toolbar (select / hand / fit / grid / minimap), minimap, optional 16 px grid snap and alignment guides; wheel pans, Ctrl/⌘ + wheel zooms at the pointer (as in the editor).
 - T13.6 — Responsive (D33): tablet overlays, phone bottom sheets and condensed top bar, touch gestures, tap-to-connect, 44 px targets; editors on phones.
 - T13.7 — Groups: frame nodes into a named, coloured, collapsible group; export a group.
 - T13.8 — Wire polish: wires dim unless related to the selection, a short pulse when a change flows, reroute points.
+
+## P14 — Page-3 board (owner's PDF, 2026-10-21 → 23; D39–D51)
+- T14.1 — No layer limit; "Master preview" naming (D39).
+- T14.2 — Assets card: many pictures in one card (D40).
+- T14.3 — Saved transform history; live numeric fields (D41).
+- T14.4 — Layout guides: Square / Vertical / Horizontal (D42).
+- T14.5 — Background vertical / horizontal pictures (D43).
+- T14.6 — Headline Khmer / English with a Use switch (D44).
+- T14.7 — Layer comp group order (D45; draggable D48).
+- T14.8 — Preset node: many sizes, one wire in, a Preview each (D46).
+- T14.9 — Page-3 board structure: asset nodes (Logo, Headline, Text, Image, Background) → Layer Comp + Core Rule → Preset → Preview; old projects converted (D49).
+- T14.10 — Layouts share the master's layers; lock; Core Preset Guide drag-to-assign (D50).
+- T14.11 — Preset rows: eye shows / hides a Preview; trash; no ✂ on row wires (D51).
+
+## Next — dev plan (proposed; the owner picks and orders)
+- N1 — Inspector clean-up: the group shows "Layer Comp" (not "Master preview"); drop the "Layout guides" section (the Layer Comp buttons and Core Preset Guide replace it); Preview and asset-node inspectors match the page-3 names.
+- N2 — PDF uploads in the Logo, Headline, Image and Background nodes (owner: "later"): first page rasterised or kept vector, magic-byte check, same 50 MB cap.
+- N3 — Several Khmer / English pairs in one Headline node (today: one pair per node; add another node).
+- N4 — Placement: a Preset node added by right-click lays its Previews out clear of other nodes (as + Add does under the group); "tidy board" action.
+- N5 — Preset families as data: a `family` field on presets (team presets join a family) instead of parsing names; save a custom Preset node as a team family.
+- N6 — Export from a Preset node: one ZIP named by the family; hidden Previews included by default, toggle to skip.
+- N7 — Resizes snap (moves already do); snapping between layouts' guides.
+
