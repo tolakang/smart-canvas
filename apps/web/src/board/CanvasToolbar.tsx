@@ -1,6 +1,6 @@
 /**
- * Floating canvas toolbar (T13.5): Select (V) / Hand (H) tools, zoom out / level / in, fit (Shift+1), grid snap
- * and minimap toggles. A glass panel over the bottom of the canvas; lives inside <ReactFlow> for its viewport.
+ * Floating canvas toolbar (T13.5): Select (V) / Hand (H) tools, zoom out / level / in, fit (Shift+1), tidy board
+ * (N4), grid snap and minimap toggles. A glass panel over the bottom of the canvas; lives inside <ReactFlow> for its viewport.
  * On tablets and phones (T13.6) it also opens the node library and the inspector; phones drop the zoom buttons
  * (pinch instead), grid and minimap.
  */
@@ -25,6 +25,8 @@ export function CanvasToolbar(props: {
   compact?: boolean;
   /** The minimap button (desktop only, where the minimap shows). */
   minimapToggle?: boolean;
+  /** N4: lays the board out again (absent when read-only). */
+  onTidy?: () => void;
 }) {
   const { panels, compact } = props;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -48,6 +50,7 @@ export function CanvasToolbar(props: {
       </span>
       {!compact && btn('Zoom in', undefined, () => void zoomIn({ duration: 150 }), <Icon name="plus" />)}
       {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ ...FIT_OPTIONS, duration: 200 }), <Icon name="fit" />)}
+      {props.onTidy && btn('Tidy board', undefined, props.onTidy, <Icon name="tidy" />)}
       {!compact && (
         <>
           <span className="sc-canvasbar__sep" aria-hidden="true" />
