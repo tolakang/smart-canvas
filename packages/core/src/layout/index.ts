@@ -42,7 +42,7 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   const ctx = contextOf(master);
   // D42: positions come from the master's guide closest to this output's shape (the master when it has none);
   // a layer that guide hasn't placed keeps the master's position.
-  const guide = guideFor(doc, comp.id, metrics.trim) ?? comp;
+  const guide = guideFor(doc, comp.id, metrics.trim, output.layout) ?? comp;
   const guideSize = sizeInDesignPx(guide.size);
   const guideCtx = contextOf({ w: guideSize.width, h: guideSize.height });
   const placed = (id: string): { f: Frame; ctx: RuleContext } | undefined => {

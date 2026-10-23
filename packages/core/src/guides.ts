@@ -30,13 +30,23 @@ export const masterOf = (doc: ProjectDoc, id: string): string => compositionById
 /** A master's guides (not the master itself). */
 export const guidesOf = (doc: ProjectDoc, masterId: string): Composition[] => doc.compositions.filter((c) => c.guide?.of === masterId);
 
-/**
- * The composition an output of `compositionId` takes its positions from: of the master and its guides, the one
- * whose shape is closest to `trim` (log of the ratio). Without guides, the master.
- */
-export function guideFor(doc: ProjectDoc, compositionId: string, trim: { w: number; h: number }): Composition | undefined {
+/** D50: the master's layout of a shape family — the master itself for its own shape, else its guide (if added). */
+export function layoutOf(doc: ProjectDoc, compositionId: string, family: GuideFamily): Composition | undefined {
   const master = compositionById(doc, masterOf(doc, compositionId));
   if (!master) return undefined;
+  return familyOfShape(sizeInDesignPx(master.size)) === family ? master : guidesOf(doc, master.id).find((g) => g.guide?.family === family);
+}
+
+/**
+ * The composition an output of `compositionId` takes its positions from: the layout chosen for it (D50, when
+ * added), else of the master and its guides the one whose shape is closest to `trim` (log of the ratio).
+ * Without guides, the master.
+ */
+export function guideFor(doc: ProjectDoc, compositionId: string, trim: { w: number; h: number }, chosen?: GuideFamily): Composition | undefined {
+  const master = compositionById(doc, masterOf(doc, compositionId));
+  if (!master) return undefined;
+  const picked = chosen ? layoutOf(doc, master.id, chosen) : undefined;
+  if (picked) return picked;
   const r = Math.log(trim.w / trim.h);
   const far = (c: Composition) => Math.abs(Math.log(ratioOf(sizeInDesignPx(c.size))) - r);
   return [master, ...guidesOf(doc, master.id)].reduce((best, c) => (far(c) < far(best) ? c : best));

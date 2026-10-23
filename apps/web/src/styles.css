@@ -939,3 +939,14 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-preset__custom input { width: 64px; }
 .sc-preset__add-custom { margin-top: 8px; width: 100%; justify-content: center; }
 .sc-node--preset .sc-port { cursor: grab; }
+
+/* D50: Core Preset Guide — outputs in their layout's section; drag a chip into another section. */
+.sc-node--rule:has(.sc-rule__sections) { width: 300px; }
+.sc-rule__sections { display: grid; gap: 6px; }
+.sc-rule__section-drop { padding: 6px; border: 1px dashed var(--line); border-radius: 8px; }
+.sc-rule__section-drop--over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.sc-rule__section-title { margin: 0 0 4px; font-size: 12px; font-weight: 600; }
+.sc-rule__chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; }
+.sc-rule__chip { cursor: grab; display: inline-flex; align-items: center; gap: 2px; }
+.sc-rule__chip--chosen { outline: 1px solid var(--accent); }
+.sc-rule__chip-reset { border: 0; background: none; padding: 0 2px; cursor: pointer; color: var(--muted); }

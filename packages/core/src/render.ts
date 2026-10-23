@@ -46,6 +46,12 @@ export function toDesignFrame(n: NFrame, canvas: { width: number; height: number
 export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): RenderScene {
   const comp = compositionById(doc, compositionId) ?? mainComposition(doc);
   const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
+  // D42 / D50: a layout of the master (a guide) draws the master's layers, in its order and wiring, at its own
+  // positions — a layer it hasn't placed yet at the master's.
+  const master = comp.guide ? compositionById(doc, comp.guide.of) : undefined;
+  if (master) {
+    return compositionScene(doc, { ...master, size: comp.size, placements: { ...master.placements, ...comp.placements } }, (id) => byId.get(id));
+  }
   return compositionScene(doc, comp, (id) => byId.get(id));
 }
 

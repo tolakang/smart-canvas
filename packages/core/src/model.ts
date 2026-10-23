@@ -121,6 +121,8 @@ export interface InputSource {
   kind: SourceKind;
   behavesLike: Behavior;
   visible: boolean;
+  /** D50: locked — not picked, moved or deleted on the editors' canvas (all three layouts); unlock in the Layers panel. */
+  locked?: true;
   content: SourceContent;
   libraryItemId?: string; // set when created from the team library
   board: { x: number; y: number }; // node position on the board
@@ -194,6 +196,8 @@ export interface OutputNode {
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };
   /** Editor transform histories (D41): per output, so resets survive a reload. Absent = none. */
   transforms?: LayerTransforms;
+  /** D50: the layout of its master this output uses, chosen in the Core Preset Guide; absent = the closest shape. */
+  layout?: GuideFamily;
   board: { x: number; y: number };
 }
 

@@ -4,6 +4,7 @@ import { LIMITS, type ProjectDoc } from './model';
 import { createProjectDoc } from './project';
 import { addOutput } from './outputs';
 import {
+  setSourceLocked,
   addSource,
   ALLOWED_BEHAVIORS,
   defaultSources,
@@ -202,5 +203,18 @@ describe('setBehavior (T8.7)', () => {
     const d2 = ok(setBehavior(doc, 'logo', 'decoration'));
     expect(d2.sources.find((s) => s.id === 'logo')).toMatchObject({ behavesLike: 'decoration' });
     expect(portOf(d2, 'logo')).toBe(0);
+  });
+});
+
+describe('lock (D50)', () => {
+  it('locks and unlocks a layer; unlocked stores nothing', () => {
+    const doc = createProjectDoc('P');
+    const locked = setSourceLocked(doc, 'subject', true);
+    if (!locked.ok) throw new Error(locked.error);
+    expect(locked.doc.sources.find((s) => s.id === 'subject')?.locked).toBe(true);
+    const open = setSourceLocked(locked.doc, 'subject', false);
+    if (!open.ok) throw new Error(open.error);
+    expect('locked' in (open.doc.sources.find((s) => s.id === 'subject') ?? {})).toBe(false);
+    expect(setSourceLocked(doc, 'nope', true).ok).toBe(false);
   });
 });

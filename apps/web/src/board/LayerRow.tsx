@@ -3,7 +3,7 @@
  * drag & drop re-ordering (the row dropped on takes that port, D11), and the row actions — show/hide,
  * duplicate (+) and delete (trash). Port 0 = front = top row.
  */
-import { deleteSource, duplicateSource, fillToCss, LIMITS, MAIN, moveSourceToPort, removeRow, setSourceVisible, type InputSource } from '@smart-canvas/core';
+import { deleteSource, duplicateSource, fillToCss, LIMITS, MAIN, moveSourceToPort, removeRow, setSourceLocked, setSourceVisible, type InputSource } from '@smart-canvas/core';
 import { useState, type DragEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from './context';
@@ -82,6 +82,16 @@ export function LayerActions({ source, compositionId = MAIN }: { source: InputSo
       >
         <Icon name={source.visible ? 'eye' : 'eye-off'} />
       </button>
+      {/* D50: locked layers can't be picked, moved or deleted on the canvas, in any of the three layouts. */}
+      <button
+        type="button"
+        aria-label={`${source.locked ? 'Unlock' : 'Lock'} layer ${source.label}`}
+        aria-pressed={!!source.locked}
+        title={source.locked ? 'Unlock' : 'Lock'}
+        onClick={() => run((d) => setSourceLocked(d, source.id, !source.locked))}
+      >
+        <Icon name={source.locked ? 'lock' : 'unlock'} />
+      </button>
       <button
         type="button"
         aria-label={`Duplicate ${source.label}`}
@@ -143,6 +153,8 @@ const PATHS = {
   adjust: 'M8 2a6 6 0 1 0 0 12zM8 2a6 6 0 0 1 0 12',
   flip: 'M8 1.5v13M6 4L2.5 12H6zM10 4l3.5 8H10z',
   moon: 'M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z',
+  lock: 'M4 7.5h8v6H4zM5.5 7.5V5a2.5 2.5 0 0 1 5 0v2.5',
+  unlock: 'M4 7.5h8v6H4zM5.5 7.5V5a2.5 2.5 0 0 1 5 0',
 } as const;
 
 export function Icon({ name }: { name: keyof typeof PATHS }) {

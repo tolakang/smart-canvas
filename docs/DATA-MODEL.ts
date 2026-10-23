@@ -98,6 +98,7 @@ export interface InputSource {
   kind: SourceKind;
   behavesLike: Behavior;
   visible: boolean;
+  locked?: true; // D50: not picked, moved or deleted on the editors' canvas
   content: SourceContent;
   libraryItemId?: string; // set when created from the team library
   board: { x: number; y: number }; // node position on the board
@@ -165,6 +166,7 @@ export interface OutputNode {
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };
   /** Editor transform histories (D41): per output, so resets survive a reload. Absent = none. */
   transforms?: LayerTransforms;
+  layout?: 'square' | 'vertical' | 'horizontal'; // D50: chosen in the Core Preset Guide; absent = closest shape
   board: { x: number; y: number };
 }
 

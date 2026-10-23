@@ -76,7 +76,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
   // D42: the guide this output's layout comes from (none shown when it is the master itself).
   const guide = useMemo(() => {
     const comp = outputComposition(shownDoc, output.id);
-    const g = comp && connected ? guideFor(shownDoc, comp, canvasMetrics(output).trim) : undefined;
+    const g = comp && connected ? guideFor(shownDoc, comp, canvasMetrics(output).trim, output.layout) : undefined;
     return g?.guide ? g.label : null;
   }, [shownDoc, output, connected]);
 
