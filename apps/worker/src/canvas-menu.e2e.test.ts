@@ -60,10 +60,10 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
       }, { timeout: 20_000 })
       .toBe(1);
     const items = await menu().getByRole('menuitem').allInnerTexts();
-    // D49: the asset nodes, then a Preset node per preset family, then a custom one.
+    // D49: the asset nodes, then a Preset node per preset family, then a custom one; N4: then Tidy board.
     expect(items.slice(0, 5)).toEqual(['Logo node', 'Headline node (Khmer / English)', 'Text node', 'Image node', 'Background node']);
     for (const p of ['FB preset (1 size)', 'GDN preset (7 sizes)', 'Website preset (4 sizes)', 'App banner preset (2 sizes)']) expect(items).toContain(p);
-    expect(items.at(-1)).toBe('Custom preset…');
+    expect(items.slice(-2)).toEqual(['Custom preset…', 'Tidy board']);
     await page.keyboard.press('Escape');
   }, 30_000);
 
@@ -86,12 +86,13 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
     expect((await doc()).stacks?.at(-1)?.items).toHaveLength(2);
   }, 60_000);
 
-  it('a preset family adds its Preset node at the click, wired from the Layer Comp, a Preview per size', async () => {
+  it('a preset family adds its Preset node at the click (or, N4, the nearest clear spot right of / below it), wired from the Layer Comp, a Preview per size', async () => {
     const at = await rightClickEmpty();
     await menu().getByRole('menuitem', { name: 'Website preset (4 sizes)' }).click();
     const set = page.locator('.react-flow__node-presetNode');
     await set.waitFor();
-    expect(await near(set, at)).toBe(true);
+    const b = await set.boundingBox();
+    expect(b && b.x >= at.x - 3 && b.y >= at.y - 3).toBe(true);
     await saved();
     const d = await doc();
     expect(d.presetSets?.[0]).toMatchObject({ label: 'Website' });
