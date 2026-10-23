@@ -41,16 +41,6 @@ export function nudge(f: NFrame, dx: number, dy: number, canvas: Canvas): NFrame
   return { ...f, x: f.x + dx / canvas.width, y: f.y + dy / canvas.height };
 }
 
-/** A frame with its rotation cleared, keeping shear, position and size. */
-export function resetRotation<T extends { rotation?: number }>(f: T): T {
-  return { ...f, rotation: 0 };
-}
-
-/** A frame with rotation and shear cleared, keeping position and size. */
-export function resetTransform<T extends { rotation?: number; shear?: number }>(f: T): T {
-  return { ...f, rotation: 0, shear: 0 };
-}
-
 export const NUDGE_STEP = { normal: 1, shift: 10 } as const;
 
 /** Largest scale that fits the canvas in the available area, with a margin. */
