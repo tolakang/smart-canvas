@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAIN, mainComposition, withComposition } from './graph';
-import { addGuides, familyOfShape, guideFor, guideSize, guidesOf } from './guides';
+import { addGuides, familyOfShape, guideFor, guideSize, guidesOf, layerSpots } from './guides';
 import { computeLayout } from './layout';
 import { expectFrame, mockMeasure, output, place, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
@@ -68,6 +68,25 @@ describe('layout guides (D42)', () => {
     // Without a placement on the guide, the master's position (through the grid) is used.
     doc = withComposition(doc, 'gv', (c) => ({ ...c, placements: Object.fromEntries(Object.entries(c.placements).filter(([k]) => k !== 'subject')) }));
     expectFrame(at(doc, 1080, 1920), at(place(project(), 'subject', subjectFrame), 1080, 1920) ?? { x: 0, y: 0, w: 0, h: 0 });
+  });
+});
+
+describe('a layer\'s spot in the other layouts (M1)', () => {
+  it('lists the layer\'s frame (fractions) in the master and each guide that places it, except the one edited', () => {
+    let doc = ok(addGuides(place(project(), 'subject', subjectFrame), MAIN, ids));
+    const gv = guidesOf(doc, MAIN).find((g) => g.id === 'gv');
+    if (!gv) throw new Error('no guide');
+    doc = withComposition(doc, 'gv', (c) => ({ ...c, placements: { ...c.placements, subject: { x: 0.1, y: 0.2, w: 0.5, h: 0.4 } } }));
+    const fromVertical = layerSpots(doc, 'gv', 'subject', 'gv');
+    expect(fromVertical[0]?.layout).toBe(MAIN);
+    expect(fromVertical.map((s) => s.layout)).not.toContain('gv');
+    expect(fromVertical[0]?.label).toBe('Square');
+    expect(fromVertical[0]?.frame).toEqual(mainComposition(doc).placements.subject);
+    const fromMaster = layerSpots(doc, MAIN, 'subject', MAIN);
+    expect(fromMaster.find((s) => s.layout === 'gv')).toEqual({ layout: 'gv', label: 'Vertical', frame: { x: 0.1, y: 0.2, w: 0.5, h: 0.4 } });
+    // From an output (nothing excluded): every layout that places it.
+    expect(layerSpots(doc, MAIN, 'subject').map((s) => s.layout)[0]).toBe(MAIN);
+    expect(layerSpots(doc, MAIN, 'nobody')).toEqual([]);
   });
 });
 

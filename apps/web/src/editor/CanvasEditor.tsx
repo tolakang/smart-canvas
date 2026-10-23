@@ -8,7 +8,7 @@
  * pointer (Ctrl/⌘ + wheel) and Figma's zoom keys, a size badge on the selection, and a Design panel with
  * X / Y / W / H / rotation.
  */
-import { frameTransform, layerSources, pictureAspect, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
+import { frameTransform, layerSources, pictureAspect, type Frame, type InputSource, type NFrame, type RenderScene } from '@smart-canvas/core';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
@@ -44,12 +44,14 @@ export interface CanvasEditorProps {
   onHistory?: (sourceId: string, history: TransformDoc) => void;
   /** Left side panel (layers). */
   layers: (selected: string | null, select: (id: string | null) => void) => ReactNode;
+  /** M1: where a layer sits in the other layouts (fractions of their canvases); it snaps to those spots too. */
+  spotsOf?: (layerId: string) => { label: string; frame: NFrame }[];
   /** Extra panels for the selected input, under its position and size in the Design panel (text style, overrides). */
   props?: (source: InputSource) => ReactNode;
   onClose: () => void;
 }
 
-export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, props: sidePanel, onClose }: CanvasEditorProps) {
+export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, spotsOf, props: sidePanel, onClose }: CanvasEditorProps) {
   const { doc, readOnly, teamId, layoutDeps } = useBoard();
   // T12.5: rows can be processes; they draw (and select) as their effective layer.
   const layerList = useMemo(() => layerSources(doc), [doc]);
@@ -244,8 +246,20 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     },
   };
 
-  // Moves and (N7) resizes snap to the canvas edges and centre lines and to the other layers' edges and centres.
-  const targets = useMemo(() => snapTargets(scene, scene.items.filter((i) => i.sourceId !== selected).map((i) => i.frame)), [scene, selected]);
+  // M1: the selected layer's spots in the other layouts, mapped onto this canvas by relative position.
+  const spots = useMemo(
+    () =>
+      selected && spotsOf
+        ? spotsOf(selected).map(({ label: from, frame: n }) => ({
+            from,
+            frame: { x: n.x * scene.width, y: n.y * scene.height, w: n.w * scene.width, h: n.h * scene.height, ...(n.rotation ? { rotation: n.rotation } : {}), ...(n.shear ? { shear: n.shear } : {}) } as Frame,
+          }))
+        : [],
+    [selected, spotsOf, scene],
+  );
+  // Moves and (N7) resizes snap to the canvas edges and centre lines, to the other layers' edges and centres,
+  // and (M1) to the selected layer's spots in the other layouts.
+  const targets = useMemo(() => snapTargets(scene, [...scene.items.filter((i) => i.sourceId !== selected).map((i) => i.frame), ...spots.map((g) => g.frame)]), [scene, selected, spots]);
   const lockRatio = ratioLock?.id === selected ? ratioLock.on : selectedSource?.kind === 'image' || selectedSource?.kind === 'vector';
 
   // What the transform box's callbacks read: always this render's values, without re-creating the box.
@@ -395,6 +409,18 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
                 }}
               />
             )}
+            {live &&
+              spots.map((g) => (
+                <div
+                  key={g.from}
+                  className="sc-editor__spot"
+                  data-testid="layout-spot"
+                  aria-hidden="true"
+                  style={{ width: g.frame.w * scale, height: g.frame.h * scale, transform: `translate(${g.frame.x * scale}px, ${g.frame.y * scale}px) ${frameTransform(g.frame)}` }}
+                >
+                  <span>{g.from}</span>
+                </div>
+              ))}
             {frameNow && editable && <div ref={control} className="sc-editor__target" data-testid="selection-box" />}
             {frameNow && !editable && (
               // View only: an outline, no handles.

@@ -3,7 +3,7 @@
  * override on that output (move/resize/rotate → frame, text panel → style, eye → hidden); the master
  * and the other outputs are untouched.
  */
-import { computeLayout, isOutputConnected, outputScene, resetOutputOverrides, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type OutputNode, type TransformHistory } from '@smart-canvas/core';
+import { computeLayout, isOutputConnected, layerSpots, outputComposition, outputScene, resetOutputOverrides, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type OutputNode, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
 import { CanvasEditor } from './CanvasEditor';
@@ -47,6 +47,10 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
     [run, outputId, size],
   );
 
+  // M1: a layer snaps to where it sits in each of its master's layouts.
+  const master = output ? outputComposition(doc, output.id) : undefined;
+  const spotsOf = useCallback((id: string) => (master ? layerSpots(doc, master, id) : []), [doc, master]);
+
   if (!output) return null;
   if (!scene) return <div className="sc-editor-screen sc-muted">Loading fonts…</div>;
   const connected = isOutputConnected(doc, output.id);
@@ -78,6 +82,7 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
       onHistory={onHistory}
       histories={layerHistories(output, scene ? { width: scene.width, height: scene.height } : null)}
       // Delete key: a layer can't be deleted from one output; it's hidden there (eye in the layers panel).
+      spotsOf={spotsOf}
       onDelete={readOnly ? undefined : (id) => run((d) => setOverrideHidden(d, output.id, id, true, author()))}
       layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} outputId={output.id} />}
       props={(s) => (

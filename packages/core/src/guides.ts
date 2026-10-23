@@ -52,6 +52,21 @@ export function guideFor(doc: ProjectDoc, compositionId: string, trim: { w: numb
   return [master, ...guidesOf(doc, master.id)].reduce((best, c) => (far(c) < far(best) ? c : best));
 }
 
+/**
+ * M1: where a layer sits in a master's layouts (the master and its guides), as fractions of each layout's
+ * canvas, skipping the layout `except` and layouts that don't place it. Editors map these onto their own canvas
+ * by relative position, so the layer can snap to "its spot in the Square layout" while another is edited.
+ */
+export function layerSpots(doc: ProjectDoc, compositionId: string, layerId: string, except?: string): { layout: string; label: string; frame: NFrame }[] {
+  const master = compositionById(doc, masterOf(doc, compositionId));
+  if (!master) return [];
+  return [master, ...guidesOf(doc, master.id)].flatMap((c) => {
+    const frame = c.id === except ? undefined : c.placements[layerId];
+    const family = c.guide?.family ?? familyOfShape(sizeInDesignPx(c.size));
+    return frame ? [{ layout: c.id, label: family[0]?.toUpperCase() + family.slice(1), frame }] : [];
+  });
+}
+
 /** A guide's artboard: the master's longer side, in the family's shape. */
 export function guideSize(master: Size, family: GuideFamily): Size {
   const long = Math.max(master.width, master.height);

@@ -143,6 +143,8 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T17.3 (M4) — Size presets dialog: "Preset node families" lists every family (built-in or the team's) with its sizes; admins rename or delete a team family as a whole (a built-in family's name, or another team family's, is refused). Preset nodes already on boards keep their name and sizes.
 - T17.4 (M6) — Large exports: over 40 million raster pixels in one multi-file export, every file is made and zipped on the server (the API's streamed ZIP, named by the Preset node's family).
 
+## P18 — The last two picks (owner, 2026-10-23: "Go M1 and M5")
+- T18.1 (M1) — Snapping between layouts: in a layout editor or a Preview editor the selected layer also snaps to where it sits in the master's other layouts (relative position; owner picked "Same layer's spot"), with a dashed, labelled outline of each spot while dragging.
+
 ## Next — dev plan (proposed; the owner picks and orders)
-- M1 — Snapping between layouts' guides (left from N7): needs the owner's definition first, e.g. "while editing the Vertical layout, a layer snaps to where it sits in the Square layout".
 - M5 — Retire engine features the board no longer offers (process nodes, nested compositions, output-only layers; D49 kept them in the engine and export, `boardStructure` deletes process nodes on open): keep or remove them from the engine, export and API schema. Owner decision (changes D49).
