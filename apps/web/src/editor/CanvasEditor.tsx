@@ -1,7 +1,7 @@
 /**
  * The canvas editor shared by the master preview (T3.2) and the output editors (T5.1): select, move, resize,
  * rotate and skew layers with the transform box (D36, Affinity-style: drag an edge along itself to skew;
- * touch: hold, then drag; double-click / double-tap a handle to undo what it changed), moves snapping to the
+ * touch: hold, then drag; double-click / double-tap a handle to undo what it changed), moves and (N7) resizes snapping to the
  * canvas edges, centre lines and other layers, arrow-key nudging (1 design px, Shift 10). Draws with the same OutputRenderer as export. What an edit
  * writes is the caller's: placements on the main composition, overrides for an output.
  * Figma-style workspace (T10.1): toolbar with Move / Hand tools, pan (Space or H + drag, wheel), zoom at the
@@ -15,11 +15,11 @@ import { useBoard } from '../board/context';
 import { OutputRenderer } from '../render/OutputRenderer';
 import { DesignPanel } from './DesignPanel';
 import { fitScale, NUDGE_STEP, resetRotation, resetTransform } from './geometry';
-import { frameOfState, sameFrame, snapMove, snapTargets, syncDoc } from './transform/frame';
+import { frameOfState, sameFrame, snapMove, snapResize, snapTargets, syncDoc } from './transform/frame';
 import type { TransformDoc } from './transform/math';
 import { TransformBox } from './transform/transform-box';
 
-/** Moves snap within this many screen px. */
+/** Moves and resizes snap within this many screen px. */
 const SNAP_PX = 6;
 const MIN_SCALE = 0.02;
 const MAX_SCALE = 64;
@@ -244,7 +244,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     },
   };
 
-  // Moves snap to the canvas edges and centre lines and to the other layers' edges and centres.
+  // Moves and (N7) resizes snap to the canvas edges and centre lines and to the other layers' edges and centres.
   const targets = useMemo(() => snapTargets(scene, scene.items.filter((i) => i.sourceId !== selected).map((i) => i.frame)), [scene, selected]);
   const lockRatio = ratioLock?.id === selected ? ratioLock.on : selectedSource?.kind === 'image' || selectedSource?.kind === 'vector';
 
@@ -272,6 +272,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
       proportional: (shift) => latest.current.lockRatio || shift,
       aspect: () => latest.current.aspect,
       snapMove: (moved) => snapMove(moved, latest.current.targets, SNAP_PX / latest.current.scale),
+      snapResize: (resize, at) => snapResize(resize, at, latest.current.targets, SNAP_PX / latest.current.scale),
       onChange: (state, info) => {
         // D37: the drawn frame stays fitted while it's dragged, so a stretch shows live (not only on release).
         const f = { ...frameOfState(state), ...(latest.current.frame?.fitted ? { fitted: true as const } : {}) };

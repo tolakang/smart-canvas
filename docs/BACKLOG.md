@@ -130,5 +130,5 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - N4 — **Done.** Placement: a Preset node added by right-click lays its Previews out clear of other nodes (as + Add does under the group); "tidy board" action.
 - N5 — **Done (D54).** Preset families as data: a `family` field on presets (team presets join a family) instead of parsing names; save a custom Preset node as a team family.
 - N6 — **Done.** Export from a Preset node: one ZIP named by the family; hidden Previews included by default, toggle to skip.
-- N7 — Resizes snap (moves already do); snapping between layouts' guides.
+- N7 — **Done (resizes).** Resizes snap (moves already do): the edges a resize moves land on the canvas edges / centre lines and the other layers' edges / centres (`snapResize`); rotated or skewed boxes don't snap. Left for later: snapping between layouts' guides (needs a definition from the owner).
 

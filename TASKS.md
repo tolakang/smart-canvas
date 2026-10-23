@@ -132,5 +132,5 @@ Legend: `[x]` done · `[ ]` to do
 - [x] N4 — Preset placement / tidy board — [#111](https://github.com/tolakang/smart-canvas/pull/111)
 - [x] N5 — Preset families as data (D54) — [#112](https://github.com/tolakang/smart-canvas/pull/112)
 - [x] N6 — Export from a Preset node — [#113](https://github.com/tolakang/smart-canvas/pull/113)
-- [ ] N7 — Resize snapping
+- [x] N7 — Resize snapping — [#114](https://github.com/tolakang/smart-canvas/pull/114)
 

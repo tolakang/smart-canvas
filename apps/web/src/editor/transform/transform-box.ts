@@ -67,6 +67,11 @@ export interface TransformBoxOptions {
    * lines to show (stage x / y in state units), or null for no snap.
    */
   snapMove?: (moved: TransformState) => { dx: number; dy: number; x: number[]; y: number[] } | null;
+  /**
+   * N7: resizes snap: given the box for a pointer position, return the pointer that lands its moving edges on the
+   * caller's guides and the lines to show, or null for no snap. Not called for rotated or skewed boxes.
+   */
+  snapResize?: (resize: (at: Vec) => TransformState, at: Vec) => { at: Vec; x: number[]; y: number[] } | null;
 }
 
 export interface ChangeInfo {
@@ -127,7 +132,7 @@ const RESIZE_CURSORS = ['ew-resize', 'nwse-resize', 'ns-resize', 'nesw-resize'];
 export class TransformBox {
   private state: TransformState;
   private doc: TransformDoc;
-  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'aspect'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'aspect'>;
+  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'snapResize' | 'aspect'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'snapResize' | 'aspect'>;
   private readonly guides: SVGGElement;
   private guideLines: { x: number[]; y: number[] } = { x: [], y: [] };
   private readonly overlay: HTMLDivElement;
@@ -445,7 +450,7 @@ export class TransformBox {
     }
     if (handle === 'rotate') return rotateOp(start, origin, at, mods.shift ? 15 : 0);
     const scaleOpts = { pivot: mods.alt ? ('center' as const) : ('opposite' as const), free: !this.opts.proportional(mods.shift), flip: this.opts.flip };
-    if (isCorner(handle)) return scaleOp(start, handle, origin, at, scaleOpts);
+    if (isCorner(handle)) return this.snappedScale(start, at, (p) => scaleOp(start, handle, origin, p, scaleOpts));
 
     const edge = handle as 'n' | 'e' | 's' | 'w';
     const forced = g.pointerType !== 'touch' && mods.ctrl;
@@ -457,7 +462,19 @@ export class TransformBox {
       this.overlay.dataset.intent = g.intent;
     }
     const skew = forced || (directional && g.intent === 'skew');
-    return skew ? skewOp(start, edge, origin, at, scaleOpts.pivot) : scaleOp(start, edge, origin, at, scaleOpts);
+    if (skew) {
+      this.setGuides({ x: [], y: [] });
+      return skewOp(start, edge, origin, at, scaleOpts.pivot);
+    }
+    return this.snappedScale(start, at, (p) => scaleOp(start, edge, origin, p, scaleOpts));
+  }
+
+  /** N7: a resize whose moving edges snap to the caller's guides (axis-aligned, unskewed boxes only). */
+  private snappedScale(start: TransformState, at: Vec, op: (p: Vec) => TransformOp): TransformOp {
+    const aligned = Math.abs(start.shear) < 1e-6 && Math.abs(((start.rotation % 90) + 90) % 90) < 1e-6;
+    const snap = aligned ? (this.opts.snapResize?.((p) => applyOp(start, op(p)), at) ?? null) : null;
+    this.setGuides(snap ?? { x: [], y: [] });
+    return op(snap?.at ?? at);
   }
 
   // ------------------------------------------------------------ rendering

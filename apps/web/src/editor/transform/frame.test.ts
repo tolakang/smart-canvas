@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { frameOfState, sameFrame, snapMove, snapTargets, stateOfFrame, syncDoc } from './frame';
-import { derive, pushOp, resetForHandle, scaleOp, skewOp, pointAt, HANDLE_UV } from './math';
+import { frameOfState, sameFrame, snapMove, snapResize, snapTargets, stateOfFrame, syncDoc } from './frame';
+import { applyOp, corners, derive, pushOp, resetForHandle, scaleOp, skewOp, pointAt, HANDLE_UV, type ScaleHandle, type Vec } from './math';
 
 const f = { x: 100, y: 50, w: 200, h: 80, rotation: 30, shear: -12 };
 
@@ -54,4 +54,49 @@ describe('move snapping', () => {
     expect(r?.dx).toBeCloseTo(0, 6);
   });
   it('nothing within reach → no snap', () => expect(snapMove(stateOfFrame({ x: 200, y: 150, w: 10, h: 10 }), targets, 2)).toBeNull());
+});
+
+describe('resize snapping (N7)', () => {
+  const start = stateOfFrame({ x: 100, y: 100, w: 200, h: 100 });
+  const targets = snapTargets({ width: 1000, height: 600 }, [{ x: 500, y: 300, w: 100, h: 100 }]);
+  const resizer = (h: ScaleHandle, free = true, pivot: 'opposite' | 'center' = 'opposite') => {
+    const p0 = pointAt(start, HANDLE_UV[h]);
+    return (at: Vec) => applyOp(start, scaleOp(start, h, p0, at, { pivot, free }));
+  };
+  const box = (s: ReturnType<ReturnType<typeof resizer>>) => {
+    const pts = corners(s);
+    return { x0: Math.min(...pts.map((p) => p.x)), x1: Math.max(...pts.map((p) => p.x)), y0: Math.min(...pts.map((p) => p.y)), y1: Math.max(...pts.map((p) => p.y)) };
+  };
+
+  it('the dragged edge lands on a line within reach; the other edges stay', () => {
+    const resize = resizer('e');
+    const r = snapResize(resize, { x: 497, y: 150 }, targets, 6); // right edge 3 px short of the layer's left edge
+    expect(r?.x).toEqual([500]);
+    const b = box(resize(r?.at ?? { x: 0, y: 0 }));
+    expect(b.x1).toBeCloseTo(500, 6);
+    expect(b.x0).toBeCloseTo(100, 6);
+  });
+
+  it('a free corner snaps both edges it moves', () => {
+    const resize = resizer('se');
+    const r = snapResize(resize, { x: 496, y: 303 }, targets, 6);
+    const b = box(resize(r?.at ?? { x: 0, y: 0 }));
+    expect([b.x1, b.y1].map((v) => Math.round(v * 1e6) / 1e6)).toEqual([500, 300]);
+  });
+
+  it('a ratio-locked corner keeps its ratio: the closer edge snaps', () => {
+    const resize = resizer('se', false);
+    const r = snapResize(resize, { x: 498, y: 305 }, targets, 6);
+    const b = box(resize(r?.at ?? { x: 0, y: 0 }));
+    expect(b.x1).toBeCloseTo(500, 6); // 2 px away, closer than any y line
+    expect((b.x1 - b.x0) / (b.y1 - b.y0)).toBeCloseTo(2, 6);
+  });
+
+  it('scaling about the centre snaps the moving edges too', () => {
+    const resize = resizer('e', true, 'center');
+    const r = snapResize(resize, { x: 497, y: 150 }, targets, 6);
+    expect(box(resize(r?.at ?? { x: 0, y: 0 })).x1).toBeCloseTo(500, 6);
+  });
+
+  it('nothing within reach → no snap', () => expect(snapResize(resizer('e'), { x: 420, y: 150 }, targets, 6)).toBeNull());
 });

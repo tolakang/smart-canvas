@@ -136,6 +136,27 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     expect(nudged.y).toBeCloseTo(before.y, 5);
   }, 90_000);
 
+  it('N7: a resize snaps too — the right edge dragged near the canvas edge lands on it (with a guide); the left edge stays', async () => {
+    const before = await placement();
+    const canvas = await editor().locator('.sc-editor__canvas').boundingBox();
+    const sel = await editor().getByTestId('selection-box').boundingBox();
+    if (!canvas || !sel) throw new Error('no canvas');
+    const c = await handle('e');
+    const dx = canvas.x + canvas.width - 3 - (sel.x + sel.width);
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    await page.mouse.move(c.x + dx / 2, c.y, { steps: 5 });
+    await page.mouse.move(c.x + dx, c.y, { steps: 5 });
+    expect(await editor().locator('.tb-guides line').count()).toBeGreaterThan(0);
+    await page.mouse.up();
+    await settle();
+    const after = await placement();
+    expect(after.x + after.w).toBeCloseTo(1, 5);
+    expect(after.x).toBeCloseTo(before.x, 5);
+    await dbl('e');
+    near(await placement(), before);
+  }, 90_000);
+
   it('phone: a quick drag edits nothing; long-press then drag skews (a handle) and moves (the layer); a double-tap resets', async () => {
     // The same signed-in session, as a phone.
     const ctx = await stack.env.browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, storageState: await page.context().storageState() });

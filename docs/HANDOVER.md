@@ -97,4 +97,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 ## Known limits
 - PDF uploads keep only the first page, as pixels (D52).
 - `output.family` is computed but no longer changes placement (D38).
-- Resizes don't snap; only moves do.
+- Rotated or skewed layers don't snap when resized (moves still snap). Snapping between layouts' guides is not done.
