@@ -1,6 +1,6 @@
 /**
  * T8.3 / D49 end to end: drop image files from the desktop onto the asset nodes. The Image and Logo nodes add
- * each file as its own layer (PNG, JPEG, WebP or SVG; a PDF as its first page, N2); a fill background takes a photo in a slot and becomes an
+ * each file as its own layer (PNG, JPEG, WebP or SVG; a PDF as its first page, in vector — M3 — or as pixels where a slot takes only pixels, N2); a fill background takes a photo in a slot and becomes an
  * image background (D9).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
@@ -86,22 +86,23 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
     expect(logos.map((s) => [s.kind, s.behavesLike]).sort()).toEqual([['image', 'logo'], ['vector', 'logo']]);
   }, 60_000);
 
-  it('N2: a PDF dropped on the Image node adds its first page as a PNG picture; an unreadable PDF says so', async () => {
+  it('M3: a PDF dropped on the Image node adds its first page in vector (an SVG); an unreadable PDF says so', async () => {
     await dropFile(boardNode(page, 'Image').locator('.sc-node__head'), { name: 'flyer.pdf', type: 'application/pdf', text: onePagePdf() });
     await expect.poll(() => boardNode(page, 'Image').locator('.sc-assets__pick img').count(), { timeout: 20_000 }).toBe(2);
     await saved();
     const added = (await doc()).sources.find((s) => s.label === 'flyer');
-    expect(added).toMatchObject({ kind: 'image', behavesLike: 'subject' });
-    const assetId = added?.content.kind === 'image' ? added.content.assetId : '';
+    expect(added).toMatchObject({ kind: 'vector', behavesLike: 'subject' });
+    const assetId = added?.content.kind === 'vector' ? added.content.assetId : '';
     const res = await page.request.get(url.replace(/projects\/.*$/, `assets/${assetId}/content`));
-    expect(res.headers()['content-type']).toBe('image/png');
-    const meta = await sharp(await res.body()).metadata();
-    expect([meta.width, meta.height]).toEqual([4000, 2000]);
-    // The page's rectangle is drawn; outside it the page is transparent.
-    const { data, info } = await sharp(await res.body()).raw().toBuffer({ resolveWithObject: true });
+    expect(res.headers()['content-type']).toBe('image/svg+xml');
+    const svg = await res.text();
+    expect(svg).toContain('width="200" height="100"');
+    expect(svg).toMatch(/<path [^>]*fill="rgb\(0%, 59\.9\d*%, 39\.9\d*%\)"/); // the page's rectangle, as a path
+    // It renders: the rectangle is drawn, outside it the page is transparent.
+    const { data, info } = await sharp(Buffer.from(svg)).resize(200, 100).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     const at = (x: number, y: number) => data[(y * info.width + x) * info.channels + 3];
-    expect(at(2000, 1000)).toBe(255);
-    expect(at(10, 10)).toBe(0);
+    expect(at(100, 50)).toBe(255);
+    expect(at(5, 5)).toBe(0);
 
     await dropFile(boardNode(page, 'Image').locator('.sc-node__head'), { name: 'broken.pdf', type: 'application/pdf', text: '%PDF-1.4 not really' });
     await expect.poll(() => boardNode(page, 'Image').getByRole('alert').innerText(), { timeout: 20_000 }).toContain('broken.pdf: use a PNG, JPEG, WebP, SVG or PDF file.');
@@ -130,4 +131,17 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
     expect(page.url()).toContain('#/t/');
     expect(await boardNode(page, 'Text').getByRole('alert').count()).toBe(0);
   }, 30_000);
+
+  it('N2: a slot that takes only pixels (a Background slot) gets the PDF’s first page as a PNG', async () => {
+    const bgNode = page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: /^Background$/ }) });
+    await dropFile(bgNode.locator('.sc-bg-slot--vertical'), { name: 'bg.pdf', type: 'application/pdf', text: onePagePdf() });
+    await bgNode.getByRole('img', { name: 'Vertical background' }).waitFor({ timeout: 20_000 });
+    await saved();
+    const bg = (await doc()).sources.find((s) => s.id === 'background');
+    const assetId = bg?.content.kind === 'image' ? bg.content.variants?.vertical : '';
+    const res = await page.request.get(url.replace(/projects\/.*$/, `assets/${assetId}/content`));
+    expect(res.headers()['content-type']).toBe('image/png');
+    const meta = await sharp(await res.body()).metadata();
+    expect([meta.width, meta.height]).toEqual([4000, 2000]);
+  }, 60_000);
 });

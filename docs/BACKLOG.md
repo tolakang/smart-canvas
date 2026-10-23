@@ -139,10 +139,10 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P17 — Dev plan picks (owner, 2026-10-23: "Start M2-M6 auto, skip M1 and M5")
 - T17.1 (M2) — Resizes of turned or leaned layers snap too: the moving edges of the drawn bounds land on the guides (the pointer is corrected through both axes; a handle that can land only one line lands the closer).
+- T17.2 (M3) — PDF pages kept as vector: the API draws the first page as a sanitized SVG (D55); pixel-only slots and servers without the converter keep the PNG (D52).
 
 ## Next — dev plan (proposed; the owner picks and orders)
 - M1 — Snapping between layouts' guides (left from N7): needs the owner's definition first, e.g. "while editing the Vertical layout, a layer snaps to where it sits in the Square layout".
-- M3 — PDF pages kept as vector (D52 rasterises the first page): needs a safe PDF → SVG path that keeps fonts and passes the SVG sanitiser.
 - M4 — Team preset families in the Presets dialog: rename or delete a whole family; see which sizes a family holds.
 - M5 — Retire engine features the board no longer offers (process nodes, nested compositions, output-only layers; D49 kept them in the engine and export, `boardStructure` deletes process nodes on open): keep or remove them from the engine, export and API schema. Owner decision (changes D49).
 - M6 — Large Preset exports: a family with many big sizes zips in the browser today; offer a server-side ZIP when it is large.

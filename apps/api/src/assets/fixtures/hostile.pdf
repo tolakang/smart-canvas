@@ -1,0 +1,36 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /OpenAction << /S /JavaScript /JS (app.alert\('x'\)) >> >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> /Annots [6 0 R] >>
+endobj
+4 0 obj
+<< /Length 67 >>
+stream
+0 0.5 1 rg 10 10 80 40 re f BT /F1 18 Tf 20 60 Td (Hello PDF) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Annot /Subtype /Link /Rect [10 10 90 50] /A << /S /URI /URI (https://evil.example/x) >> >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000114 00000 n 
+0000000171 00000 n 
+0000000313 00000 n 
+0000000430 00000 n 
+0000000500 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+616
+%%EOF

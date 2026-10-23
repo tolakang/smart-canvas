@@ -1,5 +1,6 @@
 /**
- * N2: PDF uploads. A PDF's first page is rasterised in the browser to a transparent PNG (longest side
+ * N2: PDF uploads, the pixel path (M3 / D55: a PDF normally goes up as is and the API keeps its first page in
+ * vector; this path serves slots that take only pixels and servers without the converter). A PDF's first page is rasterised in the browser to a transparent PNG (longest side
  * PDF_LONG_SIDE px) and that PNG is what gets uploaded, so the API's magic-byte check, the 50 MB cap, the
  * renderer and the export worker stay as they are. pdf.js loads only when a PDF is picked.
  */

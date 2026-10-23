@@ -77,9 +77,10 @@ describe.skipIf(!adminUrl)('asset upload (Postgres)', () => {
     expect(list.filter((a) => a.sha256 === first.json().sha256)).toHaveLength(1);
   });
 
-  it('rejects types other than PNG/JPEG/WebP/SVG regardless of the claimed type', async () => {
+  it('rejects types other than PNG/JPEG/WebP/SVG/PDF regardless of the claimed type', async () => {
     expect((await upload(fixture('tiny.gif'), 'x.png', 'image/png')).statusCode).toBe(415);
-    expect((await upload(Buffer.from('%PDF-1.7 ...'), 'x.svg', 'image/svg+xml')).statusCode).toBe(415);
+    // PDF bytes are a PDF whatever the name says, and this one can't be drawn.
+    expect((await upload(Buffer.from('%PDF-1.7 ...'), 'x.svg', 'image/svg+xml')).json()).toMatchObject({ error: 'unreadable_pdf' });
     expect((await upload(Buffer.from('<html><script>1</script></html>'), 'x.svg', 'image/svg+xml')).statusCode).toBe(415);
   });
 
@@ -96,6 +97,20 @@ describe.skipIf(!adminUrl)('asset upload (Postgres)', () => {
       '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><image></image><rect width="40" height="20"></rect></svg>',
     );
     expect(content.headers['content-security-policy']).toContain("default-src 'none'");
+  });
+
+  it('M3: a PDF is stored as its first page in vector — text as outlines, no links or scripts', async () => {
+    const res = await upload(fixture('page.pdf'), 'flyer.pdf', 'application/pdf');
+    expect(res.statusCode).toBe(201);
+    expect(res.json()).toMatchObject({ kind: 'vector', mime: 'image/svg+xml', width: 200, height: 100 });
+    const content = (await get(`/teams/${teamId}/assets/${res.json().id}/content`)).body;
+    expect(content.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true);
+    expect(content).toMatch(/<use href="#glyph/); // "Hello PDF", drawn from glyph outlines
+    expect(content).toContain('fill="rgb(0%, 50%, 100%)"');
+
+    const hostile = (await get(`/teams/${teamId}/assets/${(await upload(fixture('hostile.pdf'), 'h.pdf', 'application/pdf')).json().id}/content`)).body;
+    expect(hostile).not.toMatch(/script|evil\.example|alert/i);
+    expect(hostile).toMatch(/<use href="#glyph/);
   });
 
   it('rejects SVGs with entity declarations or references', async () => {
