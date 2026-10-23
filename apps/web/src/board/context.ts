@@ -12,8 +12,8 @@ export interface BoardActions {
   /** Opens the master preview editor on a composition (default: the master preview). */
   openMainEditor: (compositionId?: string) => void;
   openOutputEditor: (outputId: string) => void;
-  /** Opens the export dialog with these outputs chosen (T13.7: export a group). */
-  exportOutputs: (outputIds: string[]) => void;
+  /** Opens the export dialog with these outputs chosen (T13.7: export a group); N6: or a Preset node's sizes, as one ZIP. */
+  exportOutputs: (outputIds: string[], presetSetId?: string) => void;
   /** Stamp for override writes: the signed-in user, now. */
   author: () => OverrideAuthor;
   /** Uploaded team fonts (registered as @font-face rules), for font pickers. */

@@ -87,7 +87,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           </div>
         )}
         {rows.length > 0 && (
-          <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id))} aria-label={`Export all ${set.label} sizes`} title="Export every size">
+          <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id), set.id)} aria-label={`Export all ${set.label} sizes`} title="Export every size as one ZIP">
             Export
           </button>
         )}

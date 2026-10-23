@@ -227,7 +227,7 @@ function BoardCanvas(props: {
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [reconnecting, setReconnecting] = useState<{ outputId: string; compositionId: string } | null>(null);
   /** The export dialog: closed, or open with all outputs (no list) or the given ones chosen (T13.7). */
-  const [exporting, setExporting] = useState<false | { outputs?: string[] }>(false);
+  const [exporting, setExporting] = useState<false | { outputs?: string[]; set?: string }>(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showFonts, setShowFonts] = useState(false);
   const [teamFonts, setTeamFonts] = useState<TeamFont[]>([]);
@@ -492,7 +492,7 @@ function BoardCanvas(props: {
       doc,
       openMainEditor: (compositionId: string = MAIN_ID) => setEditingMain(compositionId),
       openOutputEditor: (id: string) => setEditingOutput(id),
-      exportOutputs: (ids: string[]) => void autosave.flush().then(() => setExporting({ outputs: ids })),
+      exportOutputs: (ids: string[], set?: string) => void autosave.flush().then(() => setExporting({ outputs: ids, ...(set ? { set } : {}) })),
       author,
       teamFonts,
       sourceCount,
@@ -1153,7 +1153,7 @@ function BoardCanvas(props: {
         />
       )}
       {showLibrary && <LibraryDialog teamId={teamId} readOnly={readOnly} sourceCount={sourceCount} run={run} onClose={() => setShowLibrary(false)} />}
-      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} initialOutputs={exporting.outputs} onClose={() => setExporting(false)} />}
+      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} initialOutputs={exporting.outputs} presetSet={exporting.set} onClose={() => setExporting(false)} />}
       {showFonts && (
         <FontsDialog
           teamId={teamId}
