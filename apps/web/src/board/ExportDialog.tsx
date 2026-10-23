@@ -5,11 +5,14 @@
  * passes the feature check, else by the export worker; a file that fails in the browser is made on the
  * server instead. "Download all" zips every finished file in the browser. N6: from a Preset node, its sizes only
  * (hidden Previews included unless unticked), downloaded as one ZIP named by its family once all are done.
+ * M6: a multi-file export too large to zip in the browser (zipOnServer) is made on the server, and when every
+ * finished file is a server file, "Download all" is the API's streamed ZIP instead of one built here.
  */
 import {
   EXPORT_FORMATS,
   exportCapError,
   exportFileName,
+  exportPixelTotal,
   exportRoute,
   exportZipName,
   LIMITS,
@@ -19,6 +22,7 @@ import {
   type ExportOptions,
   type LayoutDeps,
   type ProjectDoc,
+  zipOnServer,
 } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError, assetUrl } from '../api';
@@ -103,6 +107,8 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
   });
 
   // T6.7: raster exports over the edge cap are blocked here (the API refuses them too).
+  const chosen = doc.outputs.filter((o) => selected.includes(o.id));
+  const serverZip = zipOnServer(chosen, format, options());
   const tooLarge = doc.outputs.flatMap((o) => (selected.includes(o.id) ? [exportCapError(o, format, options())] : [])).filter((m): m is string => !!m);
 
   async function start(e: FormEvent) {
@@ -111,7 +117,7 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
     setBusy(true);
     const opts = options();
     const deps = props.layoutDeps;
-    const inBrowser = deps && browserExportSupported();
+    const inBrowser = deps && browserExportSupported() && !zipOnServer(chosen, format, opts);
     const where = (id: string) => {
       const o = doc.outputs.find((x) => x.id === id);
       return inBrowser && o && exportRoute(o, format, opts) === 'browser' ? 'browser' : 'server';
@@ -163,8 +169,15 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
   };
   const serverUrl = (r: Row) => `${API_BASE}/teams/${props.teamId}/exports/${r.jobId}/file`;
 
-  /** Every finished file (browser blobs, server files fetched) in one ZIP made here. */
+  /** Every finished file in one ZIP: the API's when all are server files (M6), else made here (browser blobs, server files fetched). */
   async function downloadAll(done: Row[]) {
+    if (done.every((r) => r.jobId)) {
+      const a = document.createElement('a');
+      a.href = `${API_BASE}${base}/zip?ids=${done.map((r) => r.jobId).join(',')}${set ? `&set=${encodeURIComponent(set.id)}` : ''}`;
+      a.download = exportZipName(doc.name, set?.label);
+      a.click();
+      return;
+    }
     setZipping(true);
     try {
       const entries = await Promise.all(
@@ -195,7 +208,7 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
     zipped.current = true;
     void downloadAll(done);
   });
-  const inBrowserNow = !!props.layoutDeps && browserExportSupported();
+  const inBrowserNow = !!props.layoutDeps && browserExportSupported() && !serverZip;
   const plan = inBrowserNow
     ? doc.outputs.filter((o) => selected.includes(o.id)).reduce((n, o) => n + (exportRoute(o, format, options()) === 'browser' ? 1 : 0), 0)
     : 0;
@@ -272,7 +285,9 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
             )}
             {selected.length > 0 && tooLarge.length === 0 && (
               <p className="sc-muted sc-export__where">
-                {plan === selected.length
+                {serverZip
+                  ? `Large export (${Math.round(exportPixelTotal(chosen, format, options()) / 1e6)} million pixels): made and zipped on the server.`
+                  : plan === selected.length
                   ? 'Made in your browser — fast, and no server time.'
                   : plan === 0
                     ? `Made on the server${format === 'pdf' ? ' (PDF)' : format === 'svg' && outlineText ? ' (outlined text)' : inBrowserNow ? ' (large files)' : ''}.`

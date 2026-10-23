@@ -10,7 +10,9 @@ import {
   exportCapError,
   exportFileName,
   exportStorageKey,
+  exportZipName,
   LIMITS,
+  presetSets,
   type ExportFormat,
   type ExportJob,
   type ExportOptions,
@@ -171,8 +173,11 @@ export const exportRoutes: FastifyPluginAsync<{ queue?: ExportQueue; store: Obje
     },
   );
 
-  /** ZIP of finished jobs: `?ids=a,b` (all done jobs of the request that belong to this project). */
-  app.get<{ Params: Params; Querystring: { ids?: string } }>(
+  /**
+   * ZIP of finished jobs: `?ids=a,b` (all done jobs of the request that belong to this project), streamed.
+   * M6: `&set=<preset set id>` names it by that Preset node's family, like the browser's ZIP.
+   */
+  app.get<{ Params: Params; Querystring: { ids?: string; set?: string } }>(
     '/teams/:teamId/projects/:projectId/exports/zip',
     { preHandler: member, schema: { params: projectParams } },
     async (req, reply) => {
@@ -190,10 +195,14 @@ export const exportRoutes: FastifyPluginAsync<{ queue?: ExportQueue; store: Obje
       }
       if (added === 0) return reply.code(404).send({ error: 'not_found' });
       zip.end();
-      const project = found[0]?.fileName.split('_')[0] ?? 'export';
+      const [project] = await db
+        .select({ doc: projects.doc, name: projects.name })
+        .from(projects)
+        .where(and(eq(projects.id, req.params.projectId), eq(projects.teamId, req.params.teamId)));
+      const family = req.query.set && project ? presetSets(project.doc as ProjectDoc).find((s) => s.id === req.query.set)?.label : undefined;
       return reply
         .header('content-type', 'application/zip')
-        .header('content-disposition', attachment(`${project}_exports.zip`))
+        .header('content-disposition', attachment(exportZipName(project?.name ?? 'export', family)))
         .header('cache-control', 'private, no-store')
         .send(zip.outputStream);
     },

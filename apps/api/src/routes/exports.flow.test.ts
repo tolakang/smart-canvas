@@ -123,4 +123,18 @@ describe.skipIf(!adminUrl)('exports API (Postgres)', () => {
     expect(zip.includes(Buffer.from('Poster_ផ្ទាំង_1080x1080px.svg'))).toBe(true);
     expect((await call('GET', `${base()}/zip?ids=`, viewer)).statusCode).toBe(404);
   });
+
+  it('M6: a server ZIP of a Preset node is named by its family', async () => {
+    const p = (await call('GET', `/teams/${teamId}/projects/${projectId}`, editor)).json<{ rev: number; doc: ProjectDoc }>();
+    const doc: ProjectDoc = { ...p.doc, presetSets: [{ id: 'fam', label: 'App banner', board: { x: 0, y: 0 }, outputs: ['ig', 'km'] }] };
+    expect((await call('PUT', `/teams/${teamId}/projects/${projectId}`, editor, { rev: p.rev, doc })).statusCode).toBe(200);
+    const jobs = (await call('POST', base(), editor, { outputIds: ['ig', 'km'], format: 'svg' })).json<ExportJob[]>();
+    for (const j of jobs) {
+      await store.put(exportStorageKey(teamId, j.id, 'svg'), new TextEncoder().encode('<svg/>'), 'image/svg+xml');
+      await db.update(exportJobs).set({ status: 'done', progress: 1 }).where(eq(exportJobs.id, j.id));
+    }
+    const ids = jobs.map((j) => j.id).join(',');
+    expect((await call('GET', `${base()}/zip?ids=${ids}&set=fam`, viewer)).headers['content-disposition']).toContain('Poster_App-banner.zip');
+    expect((await call('GET', `${base()}/zip?ids=${ids}&set=nope`, viewer)).headers['content-disposition']).toContain('Poster_exports.zip');
+  });
 });

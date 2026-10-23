@@ -141,8 +141,8 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T17.1 (M2) — Resizes of turned or leaned layers snap too: the moving edges of the drawn bounds land on the guides (the pointer is corrected through both axes; a handle that can land only one line lands the closer).
 - T17.2 (M3) — PDF pages kept as vector: the API draws the first page as a sanitized SVG (D55); pixel-only slots and servers without the converter keep the PNG (D52).
 - T17.3 (M4) — Size presets dialog: "Preset node families" lists every family (built-in or the team's) with its sizes; admins rename or delete a team family as a whole (a built-in family's name, or another team family's, is refused). Preset nodes already on boards keep their name and sizes.
+- T17.4 (M6) — Large exports: over 40 million raster pixels in one multi-file export, every file is made and zipped on the server (the API's streamed ZIP, named by the Preset node's family).
 
 ## Next — dev plan (proposed; the owner picks and orders)
 - M1 — Snapping between layouts' guides (left from N7): needs the owner's definition first, e.g. "while editing the Vertical layout, a layer snaps to where it sits in the Square layout".
 - M5 — Retire engine features the board no longer offers (process nodes, nested compositions, output-only layers; D49 kept them in the engine and export, `boardStructure` deletes process nodes on open): keep or remove them from the engine, export and API schema. Owner decision (changes D49).
-- M6 — Large Preset exports: a family with many big sizes zips in the browser today; offer a server-side ZIP when it is large.

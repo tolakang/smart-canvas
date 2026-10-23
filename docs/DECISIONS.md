@@ -58,6 +58,7 @@
   - **Browser:** SVG (live text), and PNG / JPG / WebP up to 4096 px on the long edge. The browser draws the same `OutputRenderer` DOM to a canvas, with fonts and images inlined; several files are zipped in the browser.
   - **Server worker (unchanged path):** PDF, SVG with text outlines, rasters over 4096 px, and Safari or any browser that fails a feature check. A browser export that throws retries on the server automatically.
   - The export dialog shows where each file is made ("in your browser" / "on the server"). Caps (O3) and options are unchanged.
+  - **Large multi-file exports (M6, 2026-10-23):** when the files of one export add up to more than 40 million raster pixels (`BROWSER_ZIP_MAX_PX`, `zipOnServer`), every file is made on the server, and "Download all" (a Preset node's automatic ZIP too) is the API's streamed ZIP, named by the family (`?set=`). Whenever every finished file is a server file, the ZIP comes from the API rather than being built in the browser.
 - D32 Node graph (supersedes D12 "no chaining"; D11 port order kept per composition). The board becomes a typed node graph; see `docs/NODE-GRAPH.md`.
   - Node types: inputs (as today), process nodes (layer → layer), compositions (several "main previews"), outputs.
   - Wires connect typed ports (layer, composition). Cycles are refused.
