@@ -133,6 +133,10 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T15.7 (N7) — Resizes snap like moves (axis-aligned layers).
 - Reset rule (owner, 2026-10-23): a reset never moves the element; the selection's Reset rotation / Reset transform buttons clear rotation / skew in place (a history-replay version, #115, was reverted in #116).
 
+## P16 — UI polish (owner, 2026-10-23, with screenshots; plan approved "go, templates as cards on top")
+- T16.1 — Canvas tools: every toolbar button has a tooltip (name, what it does, shortcut; hover, keyboard focus, long press on touch). Select is the default tool everywhere: click / tap selects, drag moves a panel, a drag on empty canvas (mouse or finger) selects several, and a selection bar offers Group / Delete. Hand moves the board only (panels don't move or get selected). Tidy board gets an "arrange" icon. Wire badges use the owner's scissor icon. Board groups accept every page-3 panel (asset, Headline and Preset nodes were refused).
+- T16.2 — Projects screen: templates as cards on top; search and sort; "+ New project" dialog (blank or from a template); a ⋯ menu per project (Open, Open in new tab · Rename, Duplicate · Save as template, Copy link · Delete) and per template; viewers see only the safe items.
+
 ## Next — dev plan (proposed; the owner picks and orders)
 - M1 — Snapping between layouts' guides (left from N7): needs the owner's definition first, e.g. "while editing the Vertical layout, a layer snaps to where it sits in the Square layout".
 - M2 — Resize snapping for rotated or skewed layers (snap their drawn bounds; today only axis-aligned layers snap when resized).

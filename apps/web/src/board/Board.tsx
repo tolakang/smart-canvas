@@ -34,6 +34,7 @@ import {
   applyNodeChanges,
   Background,
   MiniMap,
+  Panel,
   ReactFlow,
   ViewportPortal,
   type Connection,
@@ -100,7 +101,7 @@ import { CanvasToolbar, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
-import { COARSE_QUERY, useCoarsePointer, useScreen } from '../ui/responsive';
+import { useCoarsePointer, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
@@ -286,6 +287,8 @@ function BoardCanvas(props: {
     const t = setTimeout(() => setPulsing(new Set()), 700);
     return () => clearTimeout(t);
   }, [doc]);
+  /** Panels selected now (group frames aside): two or more show the selection bar (group / delete; works on touch too). */
+  const selectedCount = useMemo(() => displayNodes.filter((n) => n.selected && !n.id.startsWith('grp:')).length, [displayNodes]);
   const displayEdges = useMemo(() => {
     const selectedNodes = new Set(displayNodes.filter((n) => n.selected).map((n) => n.id));
     const selectedEdges = new Set(edges.filter((e) => e.selected).map((e) => e.id));
@@ -335,8 +338,9 @@ function BoardCanvas(props: {
     }
     setNodes((ns) => applyNodeChanges(changes, ns));
   }, []);
-  // T13.6 (D33): touch screens start with the Hand tool (one finger pans, pinch zooms).
-  const [tool, setTool] = useState<CanvasTool>(() => (window.matchMedia?.(COARSE_QUERY).matches ? 'hand' : 'select'));
+  // Every screen starts with Select (owner, 2026-10-23): one finger / the mouse selects and moves panels, a drag on
+  // empty canvas selects several; Hand (or two fingers, pinch, wheel, Space) moves the board.
+  const [tool, setTool] = useState<CanvasTool>('select');
   const screen = useScreen();
   const floating = screen === 'phone' ? 'sheet' : screen === 'tablet' ? 'overlay' : undefined;
   /** Tablet / phone: the one floating panel that is open. */
@@ -1089,7 +1093,9 @@ function BoardCanvas(props: {
             onConnectEnd={onConnectEnd}
             reconnectRadius={16}
             connectionRadius={36}
-            nodesDraggable={!readOnly}
+            // Hand moves the board only: panels don't move or get selected, a drag anywhere pans.
+            nodesDraggable={!readOnly && tool === 'select'}
+            elementsSelectable={tool === 'select'}
             nodesConnectable={!readOnly}
             edgesFocusable={!readOnly}
             deleteKeyCode={null}
@@ -1099,7 +1105,9 @@ function BoardCanvas(props: {
             panOnScroll
             zoomOnScroll={false}
             selectionOnDrag={tool === 'select' && !readOnly}
-            panOnDrag={tool === 'hand' || readOnly ? true : [1]}
+            // Select: the middle mouse button pans; on touch, one finger selects (React Flow starts a touch selection
+            // box only when finger panning is off) and two fingers pan and pinch-zoom.
+            panOnDrag={tool === 'hand' || readOnly ? true : coarse ? false : [1]}
             snapToGrid={grid}
             snapGrid={[16, 16]}
             minZoom={0.1}
@@ -1121,6 +1129,20 @@ function BoardCanvas(props: {
               minimapToggle={screen === 'desktop'}
               onTidy={readOnly ? undefined : tidy}
             />
+            {!readOnly && tool === 'select' && selectedCount >= 2 && (
+              <Panel position="top-center" className="sc-selbar nodrag nopan nowheel" aria-label="Selection" role="toolbar">
+                <span className="sc-selbar__count">{selectedCount} selected</span>
+                <button type="button" className="sc-btn" onClick={groupSelection} title="Group the selected panels (Ctrl/⌘ + G)">
+                  Group
+                </button>
+                <button type="button" className="sc-btn sc-btn--danger" onClick={deleteSelection} title="Delete the selected panels (Delete)">
+                  <Icon name="trash" /> Delete
+                </button>
+                <button type="button" className="sc-icon-btn" aria-label="Clear selection" title="Clear selection (click empty canvas)" onClick={() => setNodes((ns) => ns.map((n) => (n.selected ? { ...n, selected: false } : n)))}>
+                  <Icon name="close" />
+                </button>
+              </Panel>
+            )}
             <ViewportPortal>
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
               {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}

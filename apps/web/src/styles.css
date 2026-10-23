@@ -566,6 +566,21 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-canvasbar__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .sc-canvasbar__sep { width: 1px; height: 20px; margin: 0 var(--sp-1); background: var(--line); }
 .sc-canvasbar__zoom { min-width: 44px; text-align: center; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; color: var(--fg); }
+.sc-canvasbar__item { position: relative; display: inline-flex; }
+/* Two or more panels selected (Select tool, mouse or touch): group or delete them without shortcuts. */
+.sc-selbar { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
+.sc-selbar__count { font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+/* Toolbar tooltips: above the button (the bar sits at the bottom), quick to appear, never in the way of the pointer. */
+.sc-tip { position: absolute; bottom: calc(100% + 10px); left: 50%; z-index: 20; display: flex; flex-direction: column; gap: 2px; width: max-content; max-width: min(240px, 70vw); padding: 6px 8px; border-radius: var(--r-md); background: var(--fg); color: var(--surface); font-size: var(--fs-sm); line-height: 1.35; text-align: left; box-shadow: var(--shadow-2); pointer-events: none; opacity: 0; visibility: hidden; transform: translate(-50%, 4px); transition: opacity var(--t-fast), transform var(--t-fast), visibility 0s linear var(--t-fast); }
+.sc-tip--show { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity var(--t-fast), transform var(--t-fast); }
+.sc-canvasbar > .sc-canvasbar__item:first-of-type .sc-tip { left: 0; transform: translate(0, 4px); }
+.sc-canvasbar > .sc-canvasbar__item:first-of-type .sc-tip--show { transform: translate(0, 0); }
+.sc-canvasbar > .sc-canvasbar__item:last-of-type .sc-tip { left: auto; right: 0; transform: translate(0, 4px); }
+.sc-canvasbar > .sc-canvasbar__item:last-of-type .sc-tip--show { transform: translate(0, 0); }
+.sc-tip__name { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.sc-tip__key { padding: 0 4px; border-radius: 4px; background: color-mix(in srgb, var(--surface) 22%, transparent); font: inherit; font-size: 11px; font-weight: 500; }
+.sc-tip__text { opacity: 0.82; }
+@media (prefers-reduced-motion: reduce) { .sc-tip, .sc-tip--show { transition: none; transform: translate(-50%, 0); } }
 .sc-guide { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--danger); z-index: 1000; }
 .sc-guide--v { width: 1px; height: 100000px; margin-top: -50000px; }
 .sc-guide--h { height: 1px; width: 100000px; margin-left: -50000px; }
@@ -672,13 +687,15 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 }
 
 /* A selected wire's Disconnect button (touch screens have no Delete key). */
-.sc-wire-cut { position: absolute; top: 0; left: 0; z-index: 10; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--danger); font-size: 18px; line-height: 1; box-shadow: var(--shadow-2); cursor: pointer; pointer-events: all; }
-.sc-wire-cut:hover { background: var(--danger-soft); }
-/* Page 3: every wire carries a small cut badge; the selected one shows it full size. */
-.sc-wire-cut--idle { width: 18px; height: 18px; font-size: 11px; color: var(--muted); box-shadow: none; opacity: 0.75; }
-.sc-wire-cut--idle:hover { opacity: 1; color: var(--danger); }
-@media (pointer: coarse) { .sc-wire-cut { width: 40px; height: 40px; font-size: 22px; } }
-@media (pointer: coarse) { .sc-wire-cut--idle { width: 24px; height: 24px; font-size: 13px; } }
+.sc-wire-cut { position: absolute; top: 0; left: 0; z-index: 10; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 22%; background: transparent; box-shadow: var(--shadow-2); cursor: pointer; pointer-events: all; transition: transform var(--t-fast), opacity var(--t-fast); }
+.sc-wire-cut__icon { width: 100%; height: 100%; display: block; }
+.sc-wire-cut:hover { transform: scale(1.12); }
+.sc-wire-cut:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Idle (wire not selected): small and quiet until hovered; the selected wire's badge is the full-size one. */
+.sc-wire-cut--idle { width: 18px; height: 18px; box-shadow: none; opacity: 0.7; }
+.sc-wire-cut--idle:hover { opacity: 1; }
+@media (pointer: coarse) { .sc-wire-cut { width: 40px; height: 40px; } }
+@media (pointer: coarse) { .sc-wire-cut--idle { width: 24px; height: 24px; } }
 
 /* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
    One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider

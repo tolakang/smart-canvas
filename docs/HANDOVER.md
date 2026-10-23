@@ -76,6 +76,8 @@ New projects come from `createBoardProject` (API `POST /projects`).
 
 **Board extras:** **Tidy board** (canvas toolbar and right-click menu) lays everything out; a new Preset node lands clear of other nodes. Moves and resizes snap to the canvas and the other layers in the editors.
 
+**Canvas tools (T16.1).** Select is the default on every device: click / tap selects, drag moves a panel, a drag on empty canvas selects several (on touch, finger panning is off in Select so React Flow can draw the box; two fingers pan and pinch), and two or more selected show the selection bar (Group / Delete / clear). Hand moves the board only (`nodesDraggable` / `elementsSelectable` off). Toolbar buttons have tooltips (`ToolButton` in `CanvasToolbar.tsx`: hover 350 ms, keyboard focus, long press on touch). Wire badges use the owner's scissor icon (`ScissorIcon` in `RoutedEdge.tsx`). Groups take any panel id (`groups.ts` `exists`); a group's export includes its Preset nodes' sizes.
+
 ## Code map
 | Area | Files |
 |---|---|
@@ -101,6 +103,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - **Shared ports:** many wires meet at the Layer Comp's `layers` port. Grab a wire by its node end (`edgeupdater-source`).
 - **Hidden buttons:** buttons shown only on hover aren't in the accessibility tree. Use a CSS locator plus `dispatchEvent('click')`.
 - **Lazy deps in e2e:** the e2e tests run the Vite dev server. A dependency imported lazily must be listed in `optimizeDeps.include` (`apps/web/vite.config.ts`), or Vite finds it mid‑test and reloads the page. pdf.js 6+ needs `Map.getOrInsertComputed`, which the test Chromium lacks; stay on 5.4.
+- **Touch in e2e:** Chrome moves a touch that lands a few px from a panel onto the panel (touch adjustment): start a touch box-select well clear of panels. The first tap right after a CDP touch drag can be swallowed; wait ~600 ms.
 - **Presets load late:** team presets load after the board. Re‑open a menu until a preset family is listed.
 - **Default project:** a new project wires every asset node. Tests that need fewer layers filter the layer edges in a PUT doc.
 
