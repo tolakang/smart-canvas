@@ -83,38 +83,69 @@ const bounds = (s: TransformState): { x: [number, number]; y: [number, number] }
 };
 
 /**
- * N7: snap a resize. `resize(at)` is the box for the pointer at `at`; the edges of its drawn bounds that the
- * pointer moves (found by nudging it) snap to the nearest target within `tol`, per axis. Returns the pointer
- * that lands them exactly (edges move linearly with the pointer, so one correction per axis does) and the lines,
- * or null for no snap. With a locked ratio one axis moves the other: if both snapped and the pair can't hold,
- * only the closer one is kept.
+ * N7 / M2: snap a resize. `resize(at)` is the box for the pointer at `at`; the edges of its drawn bounds that the
+ * pointer moves (found by nudging it) snap to the nearest target within `tol`, per axis. Returns the pointer that
+ * lands them and the lines, or null for no snap.
+ *
+ * A turned or leaned box couples the axes (moving the pointer across moves its left edge and its top), so the
+ * pointer is corrected by the bounds' Jacobian: the smallest pointer shift that lands one edge, or the shift that
+ * lands both. Bounds are piecewise linear in the pointer (the corner that is leftmost can change), so the result
+ * is checked and refined a few times; a snap that can't be landed exactly is dropped. With a locked ratio one
+ * axis moves the other: if both snapped and the pair can't hold, only the closer one is kept.
  */
 export function snapResize(resize: (at: Vec) => TransformState, at: Vec, targets: SnapTargets, tol: number): { at: Vec; x: number[]; y: number[] } | null {
+  type Hit = { k: 'x' | 'y'; edge: 0 | 1; d: number; line: number };
+  const edgeAt = (p: Vec, h: Hit) => bounds(resize(p))[h.k][h.edge];
+  /** How an edge moves per pointer px in x and in y. */
+  const grad = (p: Vec, h: Hit): Vec => {
+    const e = edgeAt(p, h);
+    return { x: edgeAt({ x: p.x + 1, y: p.y }, h) - e, y: edgeAt({ x: p.x, y: p.y + 1 }, h) - e };
+  };
   const b0 = bounds(resize(at));
-  const nudged = { x: bounds(resize({ x: at.x + 1, y: at.y })), y: bounds(resize({ x: at.x, y: at.y + 1 })) };
-  const axis = (k: 'x' | 'y', lines: number[]) => {
-    let hit: { shift: number; d: number; line: number; edge: 0 | 1 } | null = null;
+  const axis = (k: 'x' | 'y', lines: number[]): Hit | null => {
+    let hit: Hit | null = null;
     for (const edge of [0, 1] as const) {
-      const rate = nudged[k][k][edge] - b0[k][edge];
-      if (Math.abs(rate) < 1e-6) continue;
+      const g = grad(at, { k, edge, d: 0, line: 0 });
+      if (Math.hypot(g.x, g.y) < 1e-6) continue;
       for (const line of lines) {
         const d = line - b0[k][edge];
-        if (Math.abs(d) <= tol && (!hit || Math.abs(d) < Math.abs(hit.d))) hit = { shift: d / rate, d, line, edge };
+        if (Math.abs(d) <= tol && (!hit || Math.abs(d) < Math.abs(hit.d))) hit = { k, edge, d, line };
       }
     }
     return hit;
   };
+  const landed = (p: Vec, hs: Hit[]) => hs.every((h) => Math.abs(edgeAt(p, h) - h.line) < 0.01);
+  /** Newton steps towards the pointer that lands every hit (one or two). */
+  const solve = (hs: Hit[]): Vec | null => {
+    let p = at;
+    for (let i = 0; i < 4; i++) {
+      if (landed(p, hs)) return p;
+      const [a, b] = hs.map((h) => ({ g: grad(p, h), r: h.line - edgeAt(p, h) }));
+      if (!a) return null;
+      if (!b) {
+        const n = a.g.x * a.g.x + a.g.y * a.g.y;
+        if (n < 1e-12) return null;
+        p = { x: p.x + (a.r * a.g.x) / n, y: p.y + (a.r * a.g.y) / n };
+        continue;
+      }
+      const det = a.g.x * b.g.y - a.g.y * b.g.x;
+      if (Math.abs(det) < 1e-9) return null;
+      p = { x: p.x + (a.r * b.g.y - b.r * a.g.y) / det, y: p.y + (b.r * a.g.x - a.r * b.g.x) / det };
+    }
+    return landed(p, hs) ? p : null;
+  };
   const hx = axis('x', targets.x);
   const hy = axis('y', targets.y);
-  if (!hx && !hy) return null;
-  const pick = (useX: boolean, useY: boolean) => ({ at: { x: at.x + (useX && hx ? hx.shift : 0), y: at.y + (useY && hy ? hy.shift : 0) }, x: useX && hx ? [hx.line] : [], y: useY && hy ? [hy.line] : [] });
+  const result = (hs: Hit[]) => {
+    const p = solve(hs);
+    return p ? { at: p, x: hs.filter((h) => h.k === 'x').map((h) => h.line), y: hs.filter((h) => h.k === 'y').map((h) => h.line) } : null;
+  };
   if (hx && hy) {
-    const both = pick(true, true);
-    const b = bounds(resize(both.at));
-    if (Math.abs(b.x[hx.edge] - hx.line) < 0.01 && Math.abs(b.y[hy.edge] - hy.line) < 0.01) return both;
-    return Math.abs(hx.d) <= Math.abs(hy.d) ? pick(true, false) : pick(false, true);
+    const [near, far] = Math.abs(hx.d) <= Math.abs(hy.d) ? [hx, hy] : [hy, hx];
+    return result([hx, hy]) ?? result([near]) ?? result([far]);
   }
-  return pick(!!hx, !!hy);
+  const one = hx ?? hy;
+  return one ? result([one]) : null;
 }
 
 /** Snap lines from the canvas (edges, centre) and the other layers' drawn bounds (edges, centre). */
