@@ -23,7 +23,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D5
 - **CI flakes seen:** e2e suites once timed out in `beforeAll` on a slow runner; a canvas test once read the doc before autosave (800 ms) had saved it — poll with a longer timeout rather than re-running.
 
 ## What changed in the last round (P15, #108–#116)
-- N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. M2 turned / leaned layers snap on resize too. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server.
+- N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. M2 turned / leaned layers snap on resize too. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server. M1 a layer snaps to its spot in the other layouts.
 - #115 changed the reset buttons to replay the transform history; the owner said the earlier in-place reset was right, so #116 reverted it.
 - #117 removed code the page-3 board no longer reaches (process / Core Rule node UI, the process inspector, unused helpers) and tidied these docs.
 
@@ -109,7 +109,6 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - **Default project:** a new project wires every asset node. Tests that need fewer layers filter the layer edges in a PUT doc.
 
 ## Known limits
-- Snapping between layouts' guides isn't built (BACKLOG M1, needs a definition).
 - PDF uploads keep only the first page (as vector, D55; as pixels in pixel-only slots, D52).
 - `output.family` is computed but no longer changes placement (D38).
 

@@ -289,6 +289,9 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-editor__resets button:focus-visible { outline: 2px solid var(--fig-blue); outline-offset: -2px; }
 @media (pointer: coarse) { .sc-editor__resets button { width: 36px; height: 36px; } }
 .sc-fig .sc-editor__hover { outline: 1.5px solid var(--fig-blue); outline-offset: 0; }
+/* M1: the dragged layer's spot in the other layouts. */
+.sc-editor__spot { position: absolute; left: 0; top: 0; outline: 1px dashed var(--fig-blue, var(--accent)); outline-offset: -1px; opacity: 0.7; pointer-events: none; transform-origin: center; }
+.sc-editor__spot span { position: absolute; left: 2px; top: 2px; font: 600 10px/1.2 system-ui, sans-serif; color: var(--fig-blue, var(--accent)); background: color-mix(in srgb, var(--surface, #fff) 80%, transparent); padding: 0 3px; border-radius: 2px; }
 
 /* Layers (left), Figma style */
 .sc-fig .sc-layers { width: 240px; border-right: 1px solid var(--fig-line); }
