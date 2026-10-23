@@ -1,8 +1,8 @@
 # smart-canvas
 
-Artwork adaptation web app: one master artwork → many sizes via a flow board (input sources → main preview → output nodes).
+Artwork adaptation web app: one master artwork → many sizes via a flow board (asset nodes → Layer Comp + Core Rule → Preset nodes → Previews).
 
-Status: monorepo scaffold (T1.1). Spec in `docs/` — start with `docs/00-READ-FIRST.md`, next ticket in `docs/BACKLOG.md`.
+Status: v1 built (backlog P1–P14 done). Spec in `docs/` — start with `docs/00-READ-FIRST.md`, then `docs/HANDOVER.md`; proposed next work at the end of `docs/BACKLOG.md`.
 
 ```
 pnpm i          # install (Node >= 22, pnpm 10)

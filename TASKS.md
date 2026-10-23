@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** BACKLOG P11–P13 are done; next work to be chosen by the owner.
+**Next:** BACKLOG P14 (page-3 board) is done; proposed next work is BACKLOG **Next** (N1–N7), to be chosen by the owner. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -110,3 +110,27 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T13.6 — Responsive: tablet + phone, touch — [#72](https://github.com/tolakang/smart-canvas/pull/72)
 - [x] T13.7 — Groups — [#78](https://github.com/tolakang/smart-canvas/pull/78)
 - [x] T13.8 — Wire polish — [#79](https://github.com/tolakang/smart-canvas/pull/79)
+
+## P14 — Page-3 board (D39–D51)
+- [x] T14.1 — No layer limit; "Master preview" (D39) — [#92](https://github.com/tolakang/smart-canvas/pull/92)
+- [x] T14.2 — Assets card (D40) — [#93](https://github.com/tolakang/smart-canvas/pull/93)
+- [x] T14.3 — Saved transform history (D41) — [#87](https://github.com/tolakang/smart-canvas/pull/87)
+- [x] T14.4 — Layout guides (D42) — [#98](https://github.com/tolakang/smart-canvas/pull/98)
+- [x] T14.5 — Background V/H (D43) — [#99](https://github.com/tolakang/smart-canvas/pull/99)
+- [x] T14.6 — Headline KH/EN (D44) — [#100](https://github.com/tolakang/smart-canvas/pull/100)
+- [x] T14.7 — Layer comp order (D45, D48) — [#101](https://github.com/tolakang/smart-canvas/pull/101), [#104](https://github.com/tolakang/smart-canvas/pull/104)
+- [x] T14.8 — Preset node (D46) — [#102](https://github.com/tolakang/smart-canvas/pull/102)
+- [x] T14.9 — Page-3 board structure (D49; D47 superseded, [#103](https://github.com/tolakang/smart-canvas/pull/103)) — [#104](https://github.com/tolakang/smart-canvas/pull/104)
+- [x] T14.10 — Shared layouts, lock, drag-to-assign (D50) — [#105](https://github.com/tolakang/smart-canvas/pull/105)
+- [x] T14.11 — Preset row eye / trash (D51) — [#106](https://github.com/tolakang/smart-canvas/pull/106)
+- Also merged: layout v3 (#90, #91, #97), editor fixes (#94, #95), JPG 4:4:4 + "edited" tag (#96).
+
+## Next (see BACKLOG)
+- [ ] N1 — Inspector clean-up
+- [ ] N2 — PDF uploads
+- [ ] N3 — Several KH/EN pairs per Headline node
+- [ ] N4 — Preset placement / tidy board
+- [ ] N5 — Preset families as data
+- [ ] N6 — Export from a Preset node
+- [ ] N7 — Resize snapping
+

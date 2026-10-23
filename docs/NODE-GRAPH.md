@@ -1,5 +1,7 @@
 # Node graph (D32)
 
+> **Board status (D49, 2026-10-22):** the board now shows only the page-3 structure (asset nodes → Layer Comp + Core Rule → Preset nodes → Previews). Process nodes, extra compositions, output-only layers and nesting below stay in the model, engine and export, but the board no longer offers them; opening an old project deletes its process nodes and extra master previews. See `HANDOVER.md`.
+
 The board becomes a typed node graph. It keeps what works today: inputs, a master preview with ordered layers,
 outputs that adapt automatically, overrides, and freezing. It also allows chaining, several compositions, and
 layers that only one output gets.

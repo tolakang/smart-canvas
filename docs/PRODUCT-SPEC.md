@@ -1,38 +1,40 @@
 # PRODUCT-SPEC (v1)
 
-## Concepts
-- **Input source**: one piece of content (background, subject, headline, logo, any added). Has kind, behaviour, content, port.
-- **Master preview**: the master artwork. Sources are placed on it (normalized frames). Single source of truth.
-- **Output node**: one target size with its own live preview/editor. Wired to main; can be disconnected.
-- **Override**: a manual change on an output; survives master changes.
-- **Preset / Library**: team-wide size presets (print, social) and reusable sources.
+## Concepts (board as of D49–D51)
+- **Asset nodes**: Logo (one or more logos), Headline (a Khmer and an English picture, one in use), Text (text slots, each its own layer), Image (many pictures), Background (vertical and horizontal pictures, or a colour). Each holds items you add, replace or delete; pictures are PNG, JPEG, WebP or SVG.
+- **Layer Comp** (the master): the layer order as four groups (logo, headline, elements, background; drag to re-order) and three layouts — Square, Vertical, Horizontal — that share the layers but place them each their own way.
+- **Core Rule**: Core Preset Guide (which layout each output uses; drag to assign) and Core Auto Layout Guide (each layer's rule).
+- **Preset node**: a family of sizes (FB, IG, Story, GDN, App banner, Website, Gift, PR, or custom); one row per size, each wired to its **Preview** (shown or hidden with the row's eye).
+- **Preview** (an output): one target size, laid out automatically from the closest (or chosen) layout; Edit stores overrides; Export.
+- **Override**: a manual change on a Preview; survives master changes.
+- **Preset / Library**: team-wide size presets and reusable sources.
 
 ## Screens
 1. Login / accept invite
 2. Projects list (team)
-3. **Board** (main screen): input nodes left, master preview centre, output nodes right, wires between. Inspector side panel. Toolbar: Add input, Add output, Export, Library.
-4. Master preview editor (open from the main node): place/move/resize/rotate, snap and guides, layers panel, text panel.
-5. Output editor (open from an output node): same tools, shows lock icons on overridden layers, "Reset layer" and "Reset output".
-6. Library panel (team assets: logos, fills, text presets, fonts)
+3. **Board** (main screen): asset nodes in a row on top, the Layer Comp + Core Rule group below, Preset nodes under it with their Previews to the right. Inspector side panel. Top bar: + Add, Export, Fonts, Library.
+4. Layout editor (Square / Vertical / Horizontal from the Layer Comp): place/move/resize/rotate, snap, layers panel (re-order, lock, hide, delete), text panel.
+5. Preview editor (Edit on a Preview): same tools; edits are overrides ("edited" tag), Reset layer / Reset output.
+6. Library panel (team assets)
 7. Preset manager (admin)
 8. Export dialog (formats, scale/dpi, crop marks, outline text, all or selected)
 9. Team settings (members, roles, invite links)
 
 ## Flows
-1. **Start**: create project → 4 default inputs and an empty master preview (3000×3000 px) appear.
-2. **Fill inputs**: upload/type content per input; pick or change behaviour; add more inputs (max 10).
-3. **Compose master**: sources auto-placed by behaviour on first wire; user adjusts in main editor.
-4. **Add output**: pick preset or type size (px/mm); node appears wired to main with live preview.
-5. **Adjust output**: open editor, move/resize/restyle layers → stored as overrides (lock icon).
-6. **Change master or an input**: all connected outputs re-flow; overridden layers keep their override.
-7. **Disconnect / reconnect**: frozen while disconnected; on reconnect, silent re-sync if no overrides, else ask (keep / reset all / cancel).
-8. **Export**: single output or all (ZIP); progress shown; files named `{project}_{output}_{WxH}.{ext}`.
+1. **Start**: create project → one of each asset node, wired into the Layer Comp (3000×3000 px square master).
+2. **Fill assets**: drop or pick pictures, type text; add more items or more nodes from + Add / right-click.
+3. **Compose**: open Square (and Vertical / Horizontal when needed) and arrange; drag the layer groups to re-order.
+4. **Add sizes**: drag a wire out of the group (or + Add) → pick a Preset family; each size gets a wired Preview.
+5. **Adjust a Preview**: Edit → move/resize/restyle → stored as overrides.
+6. **Change the master or an asset**: every connected Preview re-flows; overridden layers keep their override.
+7. **Disconnect / reconnect**: cut a size's wire → frozen; wire it back → re-sync (ask when it has overrides).
+8. **Export**: one Preview, a Preset node, or all (ZIP); files named `{project}_{output}_{WxH}.{ext}`.
 
 ## Features and acceptance (short; details in BACKLOG)
 | ID | Feature | Done when |
 |---|---|---|
-| F1 | Input sources incl. 4 defaults, add up to 10, behaviours | Add/rename/hide/duplicate/delete work; cap enforced |
-| F2 | Master preview with port order = z-order | Re-wire or drag changes stacking everywhere |
+| F1 | Asset nodes (D49): Logo, Headline, Text, Image, Background | Add/replace/delete items; more nodes from + Add; no layer cap (D39) |
+| F2 | Layer Comp: group order = z-order (D45, D48); three layouts (D42, D50) | Dragging a group changes stacking everywhere; layouts share layers |
 | F3 | Outputs with presets, px/mm, bleed, resolution | Size change re-flows preview instantly |
 | F4 | Auto adaptation (rules) | Worked examples in ADAPTATION-RULES pass as unit tests |
 | F5 | Manual override + lock + reset | Edit persists across master edits; reset restores auto |
