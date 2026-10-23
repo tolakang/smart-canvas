@@ -18,7 +18,7 @@ pnpm monorepo · `apps/web` (React, TS, Vite, @xyflow/react v12, own transform b
 - Every layout rule has a unit test from `docs/ADAPTATION-RULES.md` worked examples.
 - Units: design px (96/in). Use `toDesignPx`, `canvasMetrics`, `exportPixels`; never hand-convert.
 - Khmer: break words with `Intl.Segmenter('km')`; wait for `document.fonts.load` before measuring; same fonts in worker.
-- Uploads: validate magic bytes; sanitize SVG (no scripts, no external refs); 50 MB cap.
+- Uploads: validate magic bytes; sanitize SVG (no scripts, no external refs); a PDF becomes a sanitized SVG (D55); 50 MB cap.
 - Auth checks live in API middleware; viewer = read-only.
 - No new dependency without saying why in the PR description.
 

@@ -1,7 +1,7 @@
 /**
  * Headline cards (D44, PDF page 3 "Headline asset Node"): the same headline as a Khmer picture and an English
  * picture. Each is its own input — its own placement, fit and output overrides, so each keeps its adjusted
- * transform — and only the one in use is drawn (master previews, outputs, exports): switching the card swaps
+ * transform — and only the one in use is drawn (the master and its layouts, outputs, exports): switching the card swaps
  * every output. N3: a card can hold more pairs (`more`, each its own two layers); "Use" applies to all of them.
  * Pure; ids are passed in.
  */

@@ -141,11 +141,6 @@ export function toCssMatrix(s: TransformState): string {
   return `matrix(${n6(m.a)}, ${n6(m.b)}, ${n6(m.c)}, ${n6(m.d)}, ${n6(t.x)}, ${n6(t.y)})`;
 }
 
-/** The same transform as readable functions, for `transform-origin: 50% 50%` and left/top = centre − size/2. */
-export function toCssFunctions(s: TransformState): string {
-  return `rotate(${n6(s.rotation)}deg) skewX(${n6(s.shear)}deg) scale(${n6(s.scaleX)}, ${n6(s.scaleY)})`;
-}
-
 /** Stage position of a local point given in unit coords (u, v ∈ −1…1). */
 export function pointAt(s: TransformState, uv: Vec): Vec {
   return add({ x: s.x, y: s.y }, apply(linear(s), { x: (uv.x * s.width) / 2, y: (uv.y * s.height) / 2 }));
@@ -185,7 +180,7 @@ export function edgeLean(m: Mat2): number {
 
 // ---------------------------------------------------------------- drags (start state + pointer → state)
 
-/** Never 0; with `flip` false, never negative either (a frame has no mirror: that's the Flip process). */
+/** Never 0; with `flip` false, never negative either (a frame has no mirror). */
 const clampScale = (v: number, flip = true) => (!flip ? Math.max(v, MIN_SCALE) : Math.abs(v) < MIN_SCALE ? (v < 0 ? -MIN_SCALE : MIN_SCALE) : v);
 const finite = (v: number, fallback: number) => (Number.isFinite(v) ? v : fallback);
 
@@ -370,7 +365,6 @@ export function rotateOp(start: TransformState, p0: Vec, p: Vec, snap = 0): Tran
 export const dragRotate = (start: TransformState, p0: Vec, p: Vec, snap = 0) => applyOp(start, rotateOp(start, p0, p, snap));
 
 export const moveOp = (p0: Vec, p: Vec): TransformOp => ({ type: 'move', dx: p.x - p0.x, dy: p.y - p0.y });
-export const dragMove = (start: TransformState, p0: Vec, p: Vec) => applyOp(start, moveOp(p0, p));
 
 // ---------------------------------------------------------------- which way is the pointer going?
 

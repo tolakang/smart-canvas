@@ -90,7 +90,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T11.1 — Browser export engine: draw an output's `OutputRenderer` DOM to a canvas with fonts and images inlined (SVG `foreignObject`), giving PNG / JPG / WebP up to 4096 px, plus SVG with live text; a feature check (Safari → server).
 - T11.2 — (folded into T11.1) Export dialog routing: each file goes to the browser or the server (PDF, outlines, > 4096 px, failed feature check), shows where it is made, retries a failed browser file on the server, and zips several files in the browser.
 
-## P12 — Node graph (D32, `docs/NODE-GRAPH.md`)
+## P12 — Node graph (D32; retired by D49 / D56)
 - T12.1 — Model schema 2, v1 migration, core graph helpers (typed ports, cycle check, effective layers); API upgrades v1; no visible change.
 - T12.2 — Board on the typed graph: typed handles, invalid drops refused with a hint, generic re-route / detach.
 - ~~T12.3 — Several compositions~~ — retired from the board by D49 (one Layer Comp; its Square / Vertical / Horizontal layouts replace extra master previews).
@@ -147,5 +147,10 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T18.1 (M1) — Snapping between layouts: in a layout editor or a Preview editor the selected layer also snaps to where it sits in the master's other layouts (relative position; owner picked "Same layer's spot"), with a dashed, labelled outline of each spot while dragging.
 - T18.2 (M5) — Retire process nodes, output-only layers, other master previews, compositions as layers and the stored Core Rule node from the model, engine, renderer, API schema and UI; schema 3 with a v2 → v3 migration (D56).
 
-## Next — dev plan (proposed; the owner picks and orders)
-- Nothing proposed; the owner decides what comes next.
+## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
+- Q1 — Multi-page PDFs: pick which page to use when uploading (today the first page; D52, D55). The API converts the chosen page (`pdftocairo -f N -l N`); the browser fallback renders the same page.
+- Q2 — Preset nodes and team families: after a family is renamed in the Size presets dialog (M4), offer to rename the Preset nodes that came from it, and to add sizes the family gained. Today nodes on boards are left as they were.
+- Q3 — Project history: keep earlier saves (every n minutes or on big edits) and let an editor preview and restore one. `rev` already counts saves; this stores snapshots (DB + a retention limit).
+- Q4 — Review: comments pinned to a Preview, and an "approved" mark per Preview, for the team before export. Viewers can comment.
+- Q5 — Retire `output.family` (computed but no longer used for placement since D38): a model change with a migration, like D56. Owner decision.
+- Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). Needs a colour-managed PDF path in the worker; big.

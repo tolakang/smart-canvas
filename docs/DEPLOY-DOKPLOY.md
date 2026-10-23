@@ -5,7 +5,7 @@ One Dokploy **Compose** app runs the whole stack from `docker-compose.yml`:
 | Service | What it is | Reachable from |
 |---|---|---|
 | `web` | nginx: the app (static files) plus a `/api` proxy to `api` | **the internet, through your domain** |
-| `api` | Fastify. Runs the database migrations on every start, then serves | inside the stack only |
+| `api` | Fastify. Runs the database migrations on every start, then serves. Its image has Poppler (`pdftocairo`) to keep PDF uploads as vector (D55) | inside the stack only |
 | `worker` | the export worker (headless Chromium): renders PNG / JPG / WebP / PDF / SVG | inside the stack only |
 | `postgres` | Postgres 16: projects, users, the export queue (pg-boss) | inside the stack only |
 | `minio` | S3 storage for uploads and exported files | inside the stack only |

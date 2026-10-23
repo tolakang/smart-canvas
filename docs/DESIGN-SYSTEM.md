@@ -11,7 +11,7 @@ other shared names onto its palette.
 |---|---|---|
 | Neutrals | `--bg` #f5f5f5 · `--surface` #fff · `--surface-2` #f5f5f5 · `--fg` #1e1e1e · `--muted` #757575 · `--line` #e6e6e6 · `--line-strong` #d4d4d4 | `--surface-2` is the field fill and the hover fill |
 | Accent / state | `--accent` #0d99ff · `--accent-soft` #e5f4ff · `--danger` #dc3412 · `--warn` #b86200 | `--warn`: hand edits, frozen outputs |
-| Node types | `--type-input` blue · `--type-process` orange-red · `--type-main` purple · `--type-output` green | Only the 3 px stripe on top of a node |
+| Node types | `--type-input` blue · `--type-main` purple · `--type-output` green (`--type-process` orange-red is kept as a group / tile colour) | Only the 3 px stripe on top of a node |
 | Type | `--fs-xs` 11 · `--fs-sm` 12 · `--fs-md` 13 · `--fs-lg` 15 | Inter, then system UI, Noto Sans and Noto Sans Khmer |
 | Space | `--sp-1` 4 · `--sp-2` 8 · `--sp-3` 12 · `--sp-4` 16 | 4 px grid |
 | Radius | `--r-sm` 4 · `--r-md` 6 · `--r-lg` 10 | Fields and buttons use `md`; nodes use `lg` |
@@ -110,7 +110,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - An empty picture input shows an upload button. Files can still be dropped on the card.
   - Hidden and library inputs show a small mark next to the name. Double-click the name to rename.
 - **Inspector:** name, behaviour, visibility, the content editor, and the actions (Duplicate, Save to library, Delete). The cards don't repeat any of it.
-- **Card sizing:** cards size their grid column `minmax(0, 1fr)`, so no thumbnail sticks out of a card. Side ports sit level with the title, which is where the node palette puts a new node's port: under the drop point.
+- **Card sizing:** cards size their grid column `minmax(0, 1fr)`, so no thumbnail sticks out of a card. Side ports sit level with the title.
 - **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the first master preview can't be deleted; selected wires alone are disconnected. In the master preview editor it removes the selected layer, as its row's trash button does. In an output editor it hides the layer on that output.
 
 ## Picture frames (D37)

@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P16 (UI polish) is done; the proposed next work is BACKLOG **Next** (M1–M6), to be chosen by the owner. Retired by D49: T12.3–T12.8 and T13.4 (board only; engine support kept).
+**Next:** P1–P18 are done. Proposed next work is BACKLOG **Next** (Q1–Q6), to be chosen by the owner. Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -140,10 +140,20 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T16.1 — Canvas tools: tooltips, Select / Hand, selection bar, Tidy icon, scissor badge, groups of page-3 panels — [#118](https://github.com/tolakang/smart-canvas/pull/118)
 - [x] T16.2 — Projects screen: template cards, ⋯ menus, search / sort, New project dialog, rename — [#119](https://github.com/tolakang/smart-canvas/pull/119)
 
+## P17 Dev plan picks (M2, M3, M4, M6)
+- [x] T17.1 (M2) — Resize snapping for turned / leaned layers — [#120](https://github.com/tolakang/smart-canvas/pull/120)
+- [x] T17.2 (M3) — PDF pages kept as vector (D55) — [#121](https://github.com/tolakang/smart-canvas/pull/121)
+- [x] T17.3 (M4) — Preset families in the Size presets dialog — [#122](https://github.com/tolakang/smart-canvas/pull/122)
+- [x] T17.4 (M6) — Large exports made and zipped on the server — [#123](https://github.com/tolakang/smart-canvas/pull/123)
+
+## P18 The last two picks (M1, M5)
+- [x] T18.1 (M1) — Snap to the layer's spot in the other layouts — [#124](https://github.com/tolakang/smart-canvas/pull/124)
+- [x] T18.2 (M5) — Retire engine features the board no longer offers, schema 3 (D56) — [#125](https://github.com/tolakang/smart-canvas/pull/125)
+
 ## Next (see BACKLOG; proposals, the owner picks)
-- [ ] M1 — Snapping between layouts' guides (needs a definition)
-- [ ] M2 — Resize snapping for rotated / skewed layers
-- [ ] M3 — PDF pages kept as vector
-- [ ] M4 — Team preset families in the Presets dialog
-- [ ] M5 — Retire process nodes / nesting / output-only layers from the engine (owner decision)
-- [ ] M6 — Server-side ZIP for large Preset exports
+- [ ] Q1 — Pick the page of a multi-page PDF
+- [ ] Q2 — Preset nodes follow a renamed team family
+- [ ] Q3 — Project history: see and restore earlier saves
+- [ ] Q4 — Review: comments and approval on Previews
+- [ ] Q5 — Retire `output.family` (computed, unused since D38; model change)
+- [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2)

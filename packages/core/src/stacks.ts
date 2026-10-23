@@ -1,6 +1,6 @@
 /**
  * Assets cards (D40): one board node holding many pictures — drop several files at once, each becomes its own
- * input (a layer of its own), wired into the card's master previews. Pure; ids are passed in.
+ * input (a layer of its own), wired into the compositions the card feeds (the master and its layouts). Pure; ids are passed in.
  */
 import { MAIN, withComposition } from './graph';
 import type { AssetStack, NFrame, ProjectDoc } from './model';
@@ -47,7 +47,7 @@ export function renameStack(doc: ProjectDoc, id: string, label: string): SourceR
   return editStack(doc, id, (st) => (clean ? { ...st, label: clean } : st));
 }
 
-/** The master previews a card feeds: where its items are wired; a card with none wired feeds the master preview. */
+/** The compositions a card feeds: where its items are wired; a card with none wired feeds the master preview. */
 export function stackCompositions(doc: ProjectDoc, stackId: string): string[] {
   const items = new Set(assetStacks(doc).find((st) => st.id === stackId)?.items ?? []);
   const comps = [...new Set(doc.edges.filter((e) => e.kind === 'layer' && items.has(e.from) && doc.compositions.some((c) => c.id === e.to)).map((e) => e.to))];
@@ -76,7 +76,7 @@ export function dropGrid(n: number): NFrame[] {
 
 /**
  * Adds pictures to a card, after its last item: each becomes an input (a subject, in front) with its file, is
- * wired into the card's master previews and placed in a grid there (`dropGrid`). One result, so one undo step
+ * wired into the compositions the card feeds and placed in a grid there (`dropGrid`). One result, so one undo step
  * for the whole drop.
  */
 export function addPicturesToStack(doc: ProjectDoc, stackId: string, pictures: readonly StackPicture[]): SourceResult {
