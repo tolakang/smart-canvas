@@ -155,7 +155,7 @@ const presetSet = {
   type: 'object',
   additionalProperties: false,
   required: ['id', 'label', 'board', 'outputs'],
-  properties: { id, label: { type: 'string', maxLength: 200 }, board: point, outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: id } },
+  properties: { id, label: { type: 'string', maxLength: 200 }, board: point, outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: id }, hidden: { type: 'array', maxItems: LIMITS.maxOutputs, items: id } },
 } as const;
 
 /** D47: a Core Rule node — which master preview, and where. */

@@ -166,6 +166,7 @@ export function outputRows(doc: ProjectDoc, outputId: string): PortRow[] {
 // Nodes are never removed with the Delete key (inputs have a delete button with a confirm).
 export function docToNodes(doc: ProjectDoc): BoardNode[] {
   const connected = new Set(doc.edges.filter((e) => e.kind === 'composition').map((e) => e.to));
+  const hiddenPreviews = new Set(presetSets(doc).flatMap((set) => (set.hidden ?? []).filter((o) => set.outputs.includes(o))));
   const compositionNode = (c: Composition): MainFlowNode => ({
     id: compositionNodeId(c.id),
     type: 'mainNode',
@@ -228,6 +229,8 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
     ),
     ...doc.outputs.map(
       (output): OutputFlowNode => ({
+        // D51: a Preview hidden from its Preset node's row is off the board (and so are its wires).
+        ...(hiddenPreviews.has(output.id) ? { hidden: true } : {}),
         id: outputNodeId(output.id),
         type: 'outputNode',
         position: output.board,
@@ -249,7 +252,8 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
     if (set) {
       const fromNode = endpoint(doc, e.from);
       if (!fromNode) return [];
-      const row: Edge = { id: e.id, type: 'routed', data: { points: [] }, source: setNodeId(set.id), sourceHandle: setRowHandle(e.to), target: outputNodeId(e.to), className: 'sc-edge--composition', deletable: true };
+      // D51: a row's wire has no ✂ badge (the row's eye hides its Preview; select the wire to cut it).
+      const row: Edge = { id: e.id, type: 'routed', data: { points: [], noCut: true }, source: setNodeId(set.id), sourceHandle: setRowHandle(e.to), target: outputNodeId(e.to), className: 'sc-edge--composition', deletable: true };
       if (setIn.has(set.id)) return [row];
       const into: Edge = { id: setInEdgeId(set.id), type: 'routed', data: { points: [] }, source: fromNode, sourceHandle: OUTPUT_HANDLE, target: setNodeId(set.id), className: 'sc-edge--composition', deletable: true };
       setIn.set(set.id, into);
