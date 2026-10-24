@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P22 are done. Proposed next work is BACKLOG **Next** (Q3, Q4, Q6), to be chosen by the owner. Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P22 are done; P23 (Q3 project history) is under way. Proposed next work is BACKLOG **Next** (Q4, Q6), to be chosen by the owner. Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -167,8 +167,10 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T22.2 (Q2) — Preset nodes follow a renamed team family (D60)
 - [x] T22.3 (Q5) — Retire `output.family`, schema 4 (D61)
 
+## P23 Project history (Q3, D62)
+- [x] T23.1 — API: versions kept on save, named versions, restore, retention
+- [ ] T23.2 — History panel: list, read-only preview, Restore, Save version
+
 ## Next (see BACKLOG; proposals, the owner picks)
-- [ ] Q2 — Preset nodes follow a renamed team family
-- [ ] Q3 — Project history: see and restore earlier saves
 - [ ] Q4 — Review: comments and approval on Previews
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2)

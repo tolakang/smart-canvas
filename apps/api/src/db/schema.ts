@@ -1,7 +1,8 @@
 /**
  * Postgres schema (Drizzle). Tables per the docs/DATA-MODEL.ts header:
- * users, teams, memberships, invites, sessions, projects, assets, library_items, presets, export_jobs.
+ * users, teams, memberships, invites, sessions, projects, project_versions, assets, library_items, presets, export_jobs.
  * `projects.doc` holds the whole ProjectDoc as JSONB; `projects.rev` is the optimistic-lock revision.
+ * `project_versions` (D62) keeps earlier docs of a project for its history.
  * Layout results are never stored.
  */
 import { sql } from 'drizzle-orm';
@@ -42,6 +43,8 @@ export const presetGroup = pgEnum('preset_group', ['print', 'social']);
 export const assetKind = pgEnum('asset_kind', ['image', 'vector', 'font']);
 export const exportFormat = pgEnum('export_format', ['png', 'jpg', 'webp', 'svg', 'pdf']);
 export const exportStatus = pgEnum('export_status', ['queued', 'running', 'done', 'failed']);
+/** D62: why a project version was kept. */
+export const versionKind = pgEnum('version_kind', ['auto', 'before-delete', 'before-restore', 'named']);
 
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 type EnumOf<E extends { enumValues: readonly string[] }> = E['enumValues'][number];
@@ -131,10 +134,33 @@ export const projects = pgTable(
     /** T7.3: a team template — listed apart; "New from template" copies its doc. */
     isTemplate: boolean('is_template').notNull().default(false),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    /** D62: who saved the current doc (shown on the history version it later becomes). */
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [index('projects_team_idx').on(t.teamId)],
+);
+
+/**
+ * D62: project history. A copy of a project's doc as it was at `rev`, kept on save (every VERSION_EVERY_MS of
+ * editing, or before an edit that removes panels), before a restore, or when someone names one.
+ * `createdBy` is who made that state (who saved it, or who named it).
+ */
+export const projectVersions = pgTable(
+  'project_versions',
+  {
+    id: id(),
+    projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    rev: integer('rev').notNull(),
+    kind: versionKind('kind').notNull(),
+    /** Named: the name given; before-delete: what was removed ("1 panel"); else empty. */
+    label: text('label').notNull().default(''),
+    doc: jsonb('doc').$type<ProjectDoc>().notNull(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('project_versions_project_idx').on(t.projectId, t.createdAt)],
 );
 
 // ---------- team-level records ----------

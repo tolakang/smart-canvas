@@ -165,4 +165,11 @@
 - D61 `output.family` is retired (owner, 2026-10-24: "Go Q1, Q2 and Q5"; BACKLOG Q5). Since layout v3 (D38) the stack / side family was computed and reported but changed no placement.
   - **Removed:** `OutputNode.family` and its type, `DEFAULTS.sideFamilyMinRatio`, `familyOf`, and `family` in the layout result and rule context. Guide families (square / vertical / horizontal, D42) and preset families (N5) are unrelated and stay.
   - **Schema 4:** `migrateProjectDoc` brings v3 documents up by dropping the field (v1 / v2 go through v3 first), on load and on save; the API accepts v4, and v3 / v2 / v1 from clients that haven't reloaded.
-
+- D62 Project history (owner, 2026-10-24: "Show me the plan for Q3", plan approved "go ahead"; BACKLOG Q3). Earlier docs of a project are kept and can be previewed and restored.
+  - **Storage:** a `project_versions` table (project, rev, kind, label, doc JSONB, who, when); deleted with its project. `projects.updated_by` records who saved the current doc, so a version shows who made it. ProjectDoc is unchanged (schema 4).
+  - **When a version is kept:** the server decides inside the save, with the row locked, and keeps the doc the save replaces — when the last version is 10 minutes old or more ("auto"), or when the save has fewer panels than the stored doc ("before-delete", labelled with how many). A state already kept is not kept twice. Autosave is unchanged and no client can skip a version.
+  - **Named versions:** an editor can name the project as it is now ("Sent to client"); up to 50 per project, kept until deleted.
+  - **Retention:** the other kinds are pruned to the newest 50 per project in the same transaction.
+  - **Restore:** the current doc is kept first ("before-restore", so a restore can be undone), then the version becomes the next rev; the project keeps its current name. Open boards get 409 on their next save and offer "Reload latest". A version from an older schema opens through `migrateProjectDoc`.
+  - **Who:** members list and preview versions; editors name, delete and restore (viewers are read-only).
+  - **API:** `GET|POST /teams/:teamId/projects/:projectId/versions`, `GET|DELETE …/versions/:versionId`, `POST …/versions/:versionId/restore` (`routes/versions.ts`).

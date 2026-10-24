@@ -3,12 +3,14 @@
  * `is_template`: listed apart, and "New from template" / "Duplicate" copy a doc into a new project.
  * Saves are optimistic: the client sends the `rev` it loaded; a save against an older rev gets 409
  * with the current rev so the UI can offer "reload latest". The server owns `rev` (and mirrors it into doc.rev).
+ * A save may keep the doc it replaces as a history version first (D62, routes/versions.ts).
  */
 import { copyProjectDoc, createBoardProject, migrateProjectDoc, type ProjectDoc } from '@smart-canvas/core';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { currentUser, requireTeam } from '../auth/plugin';
 import { projects } from '../db/schema';
+import { keepBeforeSave, storedPanels } from './versions';
 import { projectDocSchema } from './project-doc.schema';
 
 type Params = { teamId: string; projectId: string };
@@ -57,7 +59,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       }
       const [row] = await db
         .insert(projects)
-        .values({ teamId: req.params.teamId, name: doc.name, doc, rev: doc.rev, isTemplate: req.body.isTemplate ?? false, createdBy: currentUser(req).id })
+        .values({ teamId: req.params.teamId, name: doc.name, doc, rev: doc.rev, isTemplate: req.body.isTemplate ?? false, createdBy: currentUser(req).id, updatedBy: currentUser(req).id })
         .returning({ id: projects.id, rev: projects.rev, doc: projects.doc, isTemplate: projects.isTemplate });
       return reply.code(201).send(row);
     },
@@ -80,7 +82,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       const doc = copyProjectDoc(migrateProjectDoc(source.doc), req.body.name ?? `${source.doc.name} (copy)`.slice(0, 200));
       const [row] = await db
         .insert(projects)
-        .values({ teamId: req.params.teamId, name: doc.name, doc, rev: 0, isTemplate, createdBy: currentUser(req).id })
+        .values({ teamId: req.params.teamId, name: doc.name, doc, rev: 0, isTemplate, createdBy: currentUser(req).id, updatedBy: currentUser(req).id })
         .returning({ id: projects.id, rev: projects.rev, doc: projects.doc, isTemplate: projects.isTemplate });
       return reply.code(201).send(row);
     },
@@ -118,16 +120,25 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       const { rev } = req.body;
       const doc = migrateProjectDoc(req.body.doc);
       const next = rev + 1;
-      const updated = await db
-        .update(projects)
-        .set({ doc: { ...doc, rev: next }, rev: next, name: doc.name, updatedAt: sql`now()` })
-        .where(and(inTeam(req.params), eq(projects.rev, rev)))
-        .returning({ rev: projects.rev, updatedAt: projects.updatedAt });
-      if (updated[0]) return updated[0];
-
-      const [current] = await db.select({ rev: projects.rev }).from(projects).where(inTeam(req.params));
-      if (!current) return reply.code(404).send({ error: 'not_found' });
-      return reply.code(409).send({ error: 'stale_rev', rev: current.rev });
+      // The row is locked for the save, so the version kept from it (D62) is the doc this save replaces.
+      const out = await db.transaction(async (tx) => {
+        const [current] = await tx
+          .select({ rev: projects.rev, updatedBy: projects.updatedBy, panels: storedPanels })
+          .from(projects)
+          .where(inTeam(req.params))
+          .for('update');
+        if (!current) return { error: 'not_found' as const };
+        if (current.rev !== rev) return { error: 'stale_rev' as const, rev: current.rev };
+        await keepBeforeSave(tx, req.params.projectId, current, doc);
+        const [row] = await tx
+          .update(projects)
+          .set({ doc: { ...doc, rev: next }, rev: next, name: doc.name, updatedBy: currentUser(req).id, updatedAt: sql`now()` })
+          .where(eq(projects.id, req.params.projectId))
+          .returning({ rev: projects.rev, updatedAt: projects.updatedAt });
+        return row;
+      });
+      if (out && 'error' in out) return reply.code(out.error === 'not_found' ? 404 : 409).send(out);
+      return out;
     },
   );
 
