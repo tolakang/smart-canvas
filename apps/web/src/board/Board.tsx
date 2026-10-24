@@ -132,24 +132,6 @@ const STATE_LABEL: Record<SaveState, string> = {
   conflict: 'Someone else saved a newer version.',
 };
 
-const INSPECTOR_HIDDEN_KEY = 'sc-inspector-hidden';
-/** A per-device on / off setting; storage can be missing or blocked (private windows), then it is just off. */
-function readFlag(key: string): boolean {
-  try {
-    return localStorage.getItem(key) === '1';
-  } catch {
-    return false;
-  }
-}
-function writeFlag(key: string, on: boolean) {
-  try {
-    if (on) localStorage.setItem(key, '1');
-    else localStorage.removeItem(key);
-  } catch {
-    // not remembered
-  }
-}
-
 /** D62: a history version shown read-only on the board. */
 interface Previewing {
   version: Version;
@@ -300,8 +282,7 @@ function BoardCanvas(props: {
   /** D63: the Review panel (in the inspector's place, like History). */
   const [reviewOpen, setReviewOpen] = useState(false);
   /** U2: the side panel hidden on desktop, for more canvas (remembered on this device). */
-  const [inspectorHidden, setInspectorHidden] = useState(() => readFlag(INSPECTOR_HIDDEN_KEY));
-  useEffect(() => writeFlag(INSPECTOR_HIDDEN_KEY, inspectorHidden), [inspectorHidden]);
+  const [inspectorHidden, setInspectorHidden] = useStoredFlag('sc-inspector-hidden', false);
   /** D63: the review of Previews; polled while a Preview editor or the Review panel is open. */
   const review = useReview(url, Boolean(editingOutput) || reviewOpen);
   const reloadReview = review.reload;
@@ -1382,7 +1363,7 @@ function BoardCanvas(props: {
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
           </button>
           {!floating && (
-            <button type="button" className="sc-topbar__icon" onClick={() => setInspectorHidden((h) => !h)} aria-label="Side panel" aria-pressed={!inspectorHidden} title={inspectorHidden ? 'Show the side panel' : 'Hide the side panel'}>
+            <button type="button" className="sc-topbar__icon" onClick={() => setInspectorHidden(!inspectorHidden)} aria-label="Side panel" aria-pressed={!inspectorHidden} title={inspectorHidden ? 'Show the side panel' : 'Hide the side panel'}>
               <Icon name="panel" />
             </button>
           )}
