@@ -61,8 +61,15 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
   }, 90_000);
 
   it('overrides one output only', async () => {
-    await page.getByRole('button', { name: 'Edit Preview Instagram square' }).click();
     const editor = page.getByRole('dialog', { name: 'Preview editor Instagram square' });
+    // The board may still be placing the three new Previews; a click that lands while the button moves misses it,
+    // so click until the editor is open (as wires.e2e does for its drag).
+    await expect
+      .poll(async () => {
+        if (!(await editor.count())) await page.getByRole('button', { name: 'Edit Preview Instagram square' }).click();
+        return editor.count();
+      }, { timeout: 20_000 })
+      .toBe(1);
     await editor.getByRole('complementary', { name: 'Layers' }).getByRole('button', { name: /^Subject/ }).click();
     for (let i = 0; i < 3; i++) await page.keyboard.press('Shift+ArrowRight');
     // "All changes saved" can still be showing from before the nudges: wait for the override itself to be saved.

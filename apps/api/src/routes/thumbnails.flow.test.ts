@@ -4,7 +4,7 @@ import { buildApp } from '../app';
 import { MemoryStore } from '../storage/object-store';
 import { adminUrl, freshDb } from '../test/db';
 import { caller, setupTeam } from '../test/team';
-import { MAX_THUMB_BYTES } from './thumbnails';
+import { MAX_THUMB_BYTES, thumbKey } from './thumbnails';
 
 // A 1 × 1 PNG.
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
@@ -17,6 +17,7 @@ describe.skipIf(!adminUrl)('project thumbnails API (Postgres, D64)', () => {
   let editor = '';
   let viewer = '';
   let projectId = '';
+  const store = new MemoryStore();
   const url = () => `/teams/${teamId}/projects/${projectId}/thumbnail`;
   const put = (cookie: string, body: Buffer, type = 'image/png') =>
     app.inject({ method: 'PUT', url: url(), payload: body, headers: { cookie, 'content-type': type } });
@@ -24,7 +25,7 @@ describe.skipIf(!adminUrl)('project thumbnails API (Postgres, D64)', () => {
   beforeAll(async () => {
     const fresh = await freshDb();
     drop = fresh.drop;
-    app = await buildApp({ db: fresh.db, store: new MemoryStore(), secureCookie: false, logger: false });
+    app = await buildApp({ db: fresh.db, store, secureCookie: false, logger: false });
     call = caller(app);
     const team = await setupTeam(app);
     teamId = team.teamId;
@@ -73,5 +74,11 @@ describe.skipIf(!adminUrl)('project thumbnails API (Postgres, D64)', () => {
   it('viewers cannot store one; other teams see nothing', async () => {
     expect((await put(viewer, PNG)).statusCode).toBe(403);
     expect((await call('GET', `/teams/00000000-0000-4000-8000-000000000000/projects/${projectId}/thumbnail`, editor)).statusCode).toBe(404);
+  });
+
+  it('deleting the project deletes its thumbnail from storage', async () => {
+    expect(store.objects.has(thumbKey(projectId))).toBe(true);
+    expect((await call('DELETE', `/teams/${teamId}/projects/${projectId}`, editor)).statusCode).toBe(204);
+    expect(store.objects.has(thumbKey(projectId))).toBe(false);
   });
 });

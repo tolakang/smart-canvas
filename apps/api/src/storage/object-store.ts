@@ -1,5 +1,6 @@
 import {
   CreateBucketCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
   NoSuchKey,
@@ -11,6 +12,8 @@ import {
 export interface ObjectStore {
   put(key: string, body: Uint8Array, contentType: string): Promise<void>;
   get(key: string): Promise<Uint8Array | null>;
+  /** Removes the object; a missing key is not an error. */
+  delete(key: string): Promise<void>;
 }
 
 export class MemoryStore implements ObjectStore {
@@ -20,6 +23,9 @@ export class MemoryStore implements ObjectStore {
   }
   async get(key: string) {
     return this.objects.get(key)?.body ?? null;
+  }
+  async delete(key: string) {
+    this.objects.delete(key);
   }
 }
 
@@ -63,6 +69,10 @@ export class S3Store implements ObjectStore {
       if (err instanceof NoSuchKey) return null;
       throw err;
     }
+  }
+
+  async delete(key: string) {
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.config.bucket, Key: key })); // S3: no error when missing
   }
 }
 
