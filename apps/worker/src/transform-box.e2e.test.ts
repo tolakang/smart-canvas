@@ -224,6 +224,17 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [p] });
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     };
+    /**
+     * Two quick taps, stamped 120 ms apart as a finger would make them: a scripted touch otherwise waits for a busy
+     * page before the next is sent, and a slow runner pushed them past the double-tap time.
+     */
+    const doubleTap = async (p: Pt) => {
+      const t = Date.now() / 1000;
+      for (const at of [t, t + 0.12]) {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [p], timestamp: at });
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [], timestamp: at + 0.03 });
+      }
+    };
     const centreOf = async (sel: string) => {
       const b = await ed.locator(sel).boundingBox();
       if (!b) throw new Error(`no ${sel}`);
@@ -254,8 +265,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeGreaterThan(3);
     // Double-tap the edge: back to where it was.
     const e1 = await centreOf('[data-tb-handle="e"]');
-    await tap(e1);
-    await tap(e1);
+    await doubleTap(e1);
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeLessThan(1e-6);
     near(await placement(), before);
     await phone.waitForTimeout(400);
@@ -279,9 +289,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
         for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
       throw new Error('no empty stage');
     });
-    // (Two taps within the double-tap time: send them back to back, as a slow runner adds its own delay.)
-    await tap(empty2);
-    await tap(empty2);
+    await doubleTap(empty2);
     await expect.poll(async () => Math.round((await canvasBox()).width)).toBe(Math.round(w0));
     // Tapping the selected layer again picks the one behind it (a picture over the background).
     // (A tap on empty canvas clears the selection, so select the picture again first.)

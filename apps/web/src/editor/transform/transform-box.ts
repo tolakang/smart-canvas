@@ -382,7 +382,7 @@ export class TransformBox {
       this.opts.onChange?.(this.getState(), { phase: 'end', handle: g.handle, mode: this.modeOf(g) ?? undefined, doc: this.doc });
     }
     this.cancelGesture();
-    if (wasTap && !armedHold) this.tap(g.handle, g.downClient, g.pointerType);
+    if (wasTap && !armedHold) this.tap(g.handle, g.downClient, g.pointerType, e.timeStamp);
   };
 
   private onCancel = (e: PointerEvent) => {
@@ -404,8 +404,9 @@ export class TransformBox {
 
   /** Double-click / double-tap: two taps on the same handle within doubleTapMs and DOUBLE_TAP_DIST. */
   /** `at` in client px. */
-  private tap(handle: HandleId, at: Vec, pointerType: string) {
-    const now = performance.now();
+  /** `time`: when the pointer lifted (the event's own time), so a busy page doesn't stretch the gap. */
+  private tap(handle: HandleId, at: Vec, pointerType: string, time: number) {
+    const now = time;
     const prev = this.lastTap;
     if (prev && prev.handle === handle && now - prev.time <= this.opts.doubleTapMs && len(sub(at, prev.at)) <= DOUBLE_TAP_DIST) {
       this.lastTap = null;

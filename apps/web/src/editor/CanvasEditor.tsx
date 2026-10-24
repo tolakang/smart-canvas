@@ -252,7 +252,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     select(id);
     if (id) return (emptyTap.current = null);
     const prev = emptyTap.current;
-    const now = performance.now();
+    // When the finger lifted, not when this ran: a busy page (a redraw after the first tap) must not stretch the gap.
+    const now = e.timeStamp;
     if (prev && now - prev.time <= DOUBLE_TAP_MS && Math.hypot(e.clientX - prev.x, e.clientY - prev.y) <= 24) {
       emptyTap.current = null;
       setView({ zoom: 1, pan: { x: 0, y: 0 } });
