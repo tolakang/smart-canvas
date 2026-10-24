@@ -1,12 +1,15 @@
 /**
  * Postgres schema (Drizzle). Tables per the docs/DATA-MODEL.ts header:
- * users, teams, memberships, invites, sessions, projects, project_versions, assets, library_items, presets, export_jobs.
+ * users, teams, memberships, invites, sessions, projects, project_versions, review_comments, output_approvals, assets,
+ * library_items, presets, export_jobs.
  * `projects.doc` holds the whole ProjectDoc as JSONB; `projects.rev` is the optimistic-lock revision.
- * `project_versions` (D62) keeps earlier docs of a project for its history.
+ * `project_versions` (D62) keeps earlier docs of a project for its history. `review_comments` and `output_approvals`
+ * (D63) are the team's review of its Previews, kept outside the doc (viewers comment; undo and restore leave them).
  * Layout results are never stored.
  */
 import { sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   boolean,
   doublePrecision,
   index,
@@ -161,6 +164,43 @@ export const projectVersions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('project_versions_project_idx').on(t.projectId, t.createdAt)],
+);
+
+/**
+ * D63: a comment on a Preview (`outputId`, an id inside the project's doc, so a Preview brought back by a restore gets
+ * its comments back). Top-level comments may be pinned to a point (0..1 of the Preview) and resolved; replies
+ * (`parentId`) are neither.
+ */
+export const reviewComments = pgTable(
+  'review_comments',
+  {
+    id: id(),
+    projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    outputId: text('output_id').notNull(),
+    parentId: uuid('parent_id').references((): AnyPgColumn => reviewComments.id, { onDelete: 'cascade' }),
+    authorId: uuid('author_id').references(() => users.id, { onDelete: 'set null' }),
+    text: text('text').notNull(),
+    pinX: real('pin_x'),
+    pinY: real('pin_y'),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    resolvedBy: uuid('resolved_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('review_comments_project_idx').on(t.projectId, t.createdAt)],
+);
+
+/** D63: a Preview approved, with the fingerprint of what it looked like then (`previewFingerprint`). */
+export const outputApprovals = pgTable(
+  'output_approvals',
+  {
+    projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    outputId: text('output_id').notNull(),
+    fingerprint: text('fingerprint').notNull(),
+    approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'set null' }),
+    approvedAt: timestamp('approved_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.projectId, t.outputId] })],
 );
 
 // ---------- team-level records ----------
