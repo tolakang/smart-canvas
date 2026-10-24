@@ -26,6 +26,7 @@ import { RenderThumbnail } from '../render/OutputRenderer';
 import { useBoard } from './context';
 import type { OutputFlowNode } from './flow';
 import { HealthBadge } from './HealthBadge';
+import { threadsOf } from './review';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
@@ -60,7 +61,8 @@ export function unitSettings(o: OutputNode, unit: Unit): OutputSettings {
 
 export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
   const { output, connected } = data;
-  const { doc, readOnly, run, teamId, layoutDeps, missingFonts, openOutputEditor, exportOutputs } = useBoard();
+  const { doc, readOnly, run, teamId, layoutDeps, missingFonts, openOutputEditor, exportOutputs, review } = useBoard();
+  const openThreads = threadsOf(review, output.id).length;
   // T7.4: thumbnails lag behind edits (deferred) so typing and dragging stay responsive with 10 outputs.
   const shownDoc = useDeferredValue(doc);
   // The node can outlive its output by a render (React Flow syncs nodes after the doc changes).
@@ -89,6 +91,21 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
           {output.label.replace(/\s*\d+\s*[×x]\s*\d+$/, '') || output.label} ({output.size.width} × {output.size.height})
         </span>
         {health && <HealthBadge health={health} />}
+        {openThreads > 0 && (
+          // D63: open comments; opens the editor on them.
+          <button
+            type="button"
+            className={`sc-preview__comments ${NO_CANVAS}`}
+            onClick={() => openOutputEditor(output.id, { comments: true })}
+            aria-label={`${openThreads} open ${openThreads === 1 ? 'comment' : 'comments'} on ${output.label}`}
+            title="Open comments"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
+            </svg>
+            {openThreads}
+          </button>
+        )}
         <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} output ${output.label}`}>
           {readOnly ? 'View' : 'Edit'}
         </button>

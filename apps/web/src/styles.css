@@ -1028,3 +1028,39 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-board__version-actions { display: flex; gap: var(--sp-2); margin-left: auto; }
 .sc-board__version button { height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); font: inherit; cursor: pointer; }
 .sc-board__version .sc-board__restore { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+
+/* D63: comments on Previews — pins on the canvas, the Comments panel, the count on Preview nodes. */
+.sc-editor__point { position: absolute; inset: 0; z-index: 4; cursor: crosshair; touch-action: none; }
+.sc-pin { position: absolute; z-index: 5; display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; margin: -24px 0 0 0; border: 2px solid #fff; border-radius: 12px 12px 12px 2px; background: var(--accent); color: #fff; font: 600 11px/1 var(--font, inherit); box-shadow: var(--shadow-2); cursor: pointer; }
+.sc-pin--on { background: var(--fg); outline: 2px solid var(--accent); }
+.sc-pin--resolved { background: var(--muted); }
+.sc-pin--new { background: var(--warn); pointer-events: none; }
+.sc-pin--inline { position: static; margin: 0; min-width: 18px; height: 18px; border-width: 0; font-size: 10px; box-shadow: none; cursor: default; }
+@media (pointer: coarse) { .sc-pin:not(.sc-pin--inline) { min-width: 32px; height: 32px; margin-top: -32px; border-radius: 16px 16px 16px 3px; } }
+.sc-comments { width: 300px; display: flex; flex-direction: column; }
+.sc-comments__head { justify-content: space-between; align-items: center; }
+.sc-comments__toggle { display: inline-flex; align-items: center; gap: 4px; font-weight: 400; font-size: 11px; color: var(--muted); }
+.sc-comments__hint { margin: 0; font-size: 11px; line-height: 1.5; }
+.sc-comments__list { margin: 0; padding: 0; list-style: none; flex: 1; overflow: auto; }
+.sc-comments__thread { padding: 10px 16px; border-bottom: 1px solid var(--fig-line); display: grid; gap: 6px; }
+.sc-comments__thread--on { background: var(--accent-soft); }
+.sc-comments__thread--resolved { opacity: 0.7; }
+.sc-comments__reply { margin-left: 14px; padding-left: 10px; border-left: 2px solid var(--fig-line); }
+.sc-comment { display: grid; gap: 4px; font-size: 12px; }
+.sc-comment__meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.sc-comment__meta .sc-muted { font-size: 11px; }
+.sc-comment__text { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; cursor: pointer; }
+p.sc-comment__text { cursor: auto; }
+.sc-comment__resolved { margin: 0; font-size: 11px; }
+.sc-comment__actions, .sc-comments__compose-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 24px; padding: 0 8px; border: 1px solid var(--fig-line); border-radius: var(--r-sm); background: var(--fig-panel); font: inherit; font-size: 11px; color: inherit; cursor: pointer; }
+.sc-comments__reply-btn { justify-self: start; }
+.sc-comments__compose { display: grid; gap: 6px; }
+.sc-comments__compose textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 48px; padding: 6px 8px; border: 1px solid var(--fig-line); border-radius: var(--r-sm); background: var(--surface); color: inherit; font: inherit; font-size: 12px; }
+.sc-comments__compose textarea:focus { outline: none; border-color: var(--accent); }
+.sc-comments__compose-actions .sc-comments__primary { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+.sc-comments__compose-actions .sc-comments__primary:disabled { opacity: 0.5; cursor: default; }
+@media (pointer: coarse) { .sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 40px; padding: 0 12px; } }
+.sc-fig__tool--comment { position: relative; }
+.sc-fig__count { position: absolute; top: -4px; right: -4px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 9px; line-height: 14px; text-align: center; }
+.sc-preview__comments { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 6px; border: 0; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }

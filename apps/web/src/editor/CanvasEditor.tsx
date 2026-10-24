@@ -54,10 +54,18 @@ export interface CanvasEditorProps {
   spotsOf?: (layerId: string) => { label: string; frame: NFrame }[];
   /** Extra panels for the selected input, under its position and size in the Design panel (text style, overrides). */
   props?: (source: InputSource) => ReactNode;
+  /** D63: more tool buttons, after Move / Hand (the output editor's Comment tool). */
+  tools?: ReactNode;
+  /** D63: drawn over the canvas at the current scale (comment pins). */
+  overlay?: (scale: number) => ReactNode;
+  /** D63: while set, a click or tap on the canvas is a point (0..1 of the canvas) instead of a selection. */
+  onPoint?: (p: { x: number; y: number }) => void;
+  /** D63: shown in place of the Design panel (the Comments panel). */
+  aside?: ReactNode;
   onClose: () => void;
 }
 
-export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, spotsOf, props: sidePanel, onClose }: CanvasEditorProps) {
+export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, spotsOf, props: sidePanel, tools, overlay, onPoint, aside, onClose }: CanvasEditorProps) {
   const { doc, readOnly, teamId, layoutDeps } = useBoard();
   // The layers the canvas draws (a Headline card's unused language hidden, D44).
   const layerList = useMemo(() => layerSources(doc), [doc]);
@@ -429,6 +437,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
               <path d="M5 8V3.5a1 1 0 012 0V7m0-4.5v-1a1 1 0 012 0V7m0-4a1 1 0 012 0v4.5m0-2a1 1 0 012 0V10a4.5 4.5 0 01-4.5 4.5H8a4 4 0 01-3.2-1.6L2.6 10a1 1 0 011.6-1.2L5 9.8" />
             </svg>,
           )}
+          {tools}
         </span>
         <span className="sc-fig__title">{title}</span>
         {selectedSource && (
@@ -557,20 +566,35 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
                 ) : null}
               </div>
             )}
+            {overlay?.(scale)}
+            {onPoint && !hand && (
+              // D63: a point on the canvas (a comment's pin); the layers underneath don't take the press.
+              <div
+                className="sc-editor__point"
+                data-testid="point-surface"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  if (r.width > 0 && r.height > 0) onPoint({ x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) });
+                }}
+              />
+            )}
           </div>
           {hand && <div className="sc-editor__pan" data-testid="pan-surface" {...panHandlers} />}
         </div>
-        <DesignPanel
-          scene={scene}
-          source={selectedItem ? selectedSource : null}
-          frame={frameNow}
-          lockRatio={lockRatio}
-          onLockRatio={(on) => selected && setRatioLock({ id: selected, on })}
-          onCommit={(f) => selected && onCommit(selected, { x: f.x, y: f.y, w: f.w, h: f.h, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) })}
-          readOnly={readOnly}
-        >
-          {selectedSource && sidePanel?.(selectedSource)}
-        </DesignPanel>
+        {aside ?? (
+          <DesignPanel
+            scene={scene}
+            source={selectedItem ? selectedSource : null}
+            frame={frameNow}
+            lockRatio={lockRatio}
+            onLockRatio={(on) => selected && setRatioLock({ id: selected, on })}
+            onCommit={(f) => selected && onCommit(selected, { x: f.x, y: f.y, w: f.w, h: f.h, ...(f.rotation ? { rotation: f.rotation } : {}), ...(f.shear ? { shear: f.shear } : {}) })}
+            readOnly={readOnly}
+          >
+            {selectedSource && sidePanel?.(selectedSource)}
+          </DesignPanel>
+        )}
       </div>
     </div>
   );

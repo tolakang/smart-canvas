@@ -173,7 +173,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P24 Review of Previews (Q4, D63)
 - [x] T24.1 — API and core: comments, approvals, fingerprint
-- [ ] T24.2 — Comments on Previews: pins, Comments panel, node count
+- [x] T24.2 — Comments on Previews: pins, Comments panel, node count
 - [ ] T24.3 — Approval, Review panel, export warning
 
 ## Next (see BACKLOG; proposals, the owner picks)
