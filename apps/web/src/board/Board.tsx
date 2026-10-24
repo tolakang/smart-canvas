@@ -107,6 +107,7 @@ import { addPictures, uploadPictures } from './stack-upload';
 import { HistoryPanel, versionTitle, versionWhen, type Version } from './HistoryPanel';
 import { openCounts, useApprovalStates, useReview } from './review';
 import { ReviewPanel } from './ReviewPanel';
+import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 
 interface Loaded {
   rev: number;
@@ -286,7 +287,8 @@ function BoardCanvas(props: {
   /** D63: the review of Previews; polled while a Preview editor or the Review panel is open. */
   const review = useReview(url, Boolean(editingOutput) || reviewOpen);
   const reloadReview = review.reload;
-  const openComments = useMemo(() => [...openCounts(review.data).values()].reduce((n, c) => n + c, 0), [review.data]);
+  const openCommentCounts = useMemo(() => openCounts(review.data), [review.data]);
+  const openComments = useMemo(() => [...openCommentCounts.values()].reduce((n, c) => n + c, 0), [openCommentCounts]);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const nodesRef = useRef(nodes);
   useEffect(() => {
@@ -469,6 +471,12 @@ function BoardCanvas(props: {
   const [several, setSeveral] = useState(false);
   /** D58 (Q8): zoomed out on touch — panels are too small to tap their controls, so a tap zooms to the panel. */
   const [farZoom, setFarZoom] = useState(false);
+  /** U3: zoomed out far enough that panels get name tags (ZoomLabels); `--zoom-inv` keeps the tags' screen size. */
+  const [zoomedOut, setZoomedOut] = useState(false);
+  const zoomChanged = useCallback((zoom: number) => {
+    flowEl.current?.style.setProperty('--zoom-inv', String(1 / zoom));
+    setZoomedOut(zoom < LABEL_ZOOM);
+  }, []);
   const far = coarse && farZoom && !several;
   const farRef = useRef(false);
   useLayoutEffect(() => {
@@ -1439,9 +1447,13 @@ function BoardCanvas(props: {
             onPaneContextMenu={onPaneContextMenu}
             colorMode={theme}
             onSelectionChange={({ nodes: picked }) => setSelectedNode(picked.length === 1 ? (picked[0]?.id ?? null) : null)}
-            onMove={(_, vp) => setFarZoom(vp.zoom < FAR_ZOOM)}
+            onMove={(_, vp) => {
+              setFarZoom(vp.zoom < FAR_ZOOM);
+              zoomChanged(vp.zoom);
+            }}
             onInit={(instance) => {
               flow.current = instance;
+              zoomChanged(instance.getZoom());
             }}
             onConnect={onConnect}
             onEdgesChange={onEdgesChange}
@@ -1531,6 +1543,7 @@ function BoardCanvas(props: {
                 )}
               </Panel>
             )}
+            {zoomedOut && <ZoomLabels nodes={flowNodes} doc={doc} approvals={approvals} openComments={openCommentCounts} />}
             <ViewportPortal>
               {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
               {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}

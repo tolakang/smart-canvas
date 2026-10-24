@@ -1177,3 +1177,91 @@ h1, h2, h3 { letter-spacing: -0.011em; }
   .sc-wire-cut--idle { width: 12px; height: 12px; opacity: 0.45; transition: width var(--t-fast), height var(--t-fast), opacity var(--t-fast); }
   .sc-wire-cut--idle:hover, .sc-wire-cut--idle:focus-visible { width: 22px; height: 22px; opacity: 1; }
 }
+
+/* ===== U3 (2026-10-24) visual redesign of the board: an ambient canvas with floating panels, cards with a
+   coloured icon header, coloured wires and ports. Behaviour and markup are unchanged; this block sits last. ===== */
+:root {
+  --ambient: radial-gradient(1100px 620px at 12% -12%, #dfe9ff 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #efe4ff 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #e2f6ef 0, transparent 60%), #eef0f4;
+  --glass: color-mix(in srgb, var(--surface) 78%, transparent);
+  --panel-r: 18px;
+  --head-asset: #7c3aed; --head-master: #2563eb; --head-preview: #0d9488; --head-preset: #16a34a; --head-rule: #0891b2;
+}
+:root[data-theme='dark'] {
+  --ambient: radial-gradient(1100px 620px at 12% -12%, #172447 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #2a1a47 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #0f2f26 0, transparent 60%), #0b0d11;
+  --glass: color-mix(in srgb, var(--surface) 72%, transparent);
+}
+
+/* Shell: the whole board sits on the ambient backdrop; the bar, canvas and side panel float on it. */
+.sc-board { background: var(--ambient); }
+.sc-board .sc-topbar { height: 60px; min-height: 60px; padding: 10px 12px 0; background: transparent; border-bottom: 0; }
+.sc-board .sc-topbar__group { height: 44px; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 14px; background: var(--glass); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow-2); }
+.sc-board .sc-topbar__group:empty { display: none; }
+.sc-board .sc-topbar__name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.sc-board .sc-topbar__add { padding: 0 4px; }
+.sc-board .sc-topbar__add button { height: 34px; padding: 0 16px; border-radius: 10px; background: var(--fg); color: var(--bg); font-weight: 600; }
+.sc-board .sc-topbar__add button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 86%, var(--accent)); }
+.sc-board .sc-topbar .sc-topbar__primary { height: 34px; padding: 0 16px; border-radius: 10px; }
+.sc-board .sc-topbar__icon { width: 34px; height: 34px; border-radius: 10px; }
+.sc-board .sc-topbar button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.sc-board .sc-topbar button[aria-pressed='true'] { background: var(--accent-soft); color: var(--accent); }
+.sc-board .sc-save { padding: 0 6px; }
+.sc-board__canvas { padding: 10px 12px 12px; gap: 12px; }
+.sc-board__flow { border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: color-mix(in srgb, var(--surface) 55%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), var(--shadow-1); overflow: hidden; }
+:root[data-theme='dark'] .sc-board__flow { background: color-mix(in srgb, var(--bg) 60%, transparent); box-shadow: var(--shadow-1); }
+.sc-board__canvas > .sc-inspector-panel:not(.sc-floating) { width: 320px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: var(--shadow-2); }
+.sc-inspector-panel__section { border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent); }
+.sc-inspector-panel__section:last-child { border-bottom: 0; }
+.sc-bg:not(.sc-bg--grid) { --xy-background-pattern-color: color-mix(in srgb, var(--fg) 16%, transparent); }
+
+/* Cards: rounder, airy, a soft tinted header with a coloured icon chip, a lift on hover, a glow when selected. */
+.react-flow__node { font-size: 12.5px; }
+.sc-node { padding: 14px; gap: 10px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); background: var(--surface); box-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 6px 16px -6px rgb(16 24 40 / 0.12); }
+.sc-node::before { display: none; }
+.sc-node > .sc-node__head { --head: var(--head-asset); position: relative; margin: -14px -14px 0; padding: 10px 14px 10px 42px; min-height: 44px; border-radius: 16px 16px 0 0; border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--head) 12%, var(--surface)), color-mix(in srgb, var(--head) 4%, var(--surface))) !important; }
+.sc-node > .sc-node__head::before { content: ''; position: absolute; left: 14px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 7px; background: linear-gradient(135deg, color-mix(in srgb, var(--head) 70%, #fff), var(--head)); box-shadow: 0 2px 6px -1px color-mix(in srgb, var(--head) 55%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.35); }
+.sc-node--input > .sc-node__head { --head: var(--head-asset); }
+.sc-node--main > .sc-node__head { --head: var(--head-master); }
+.sc-node--rule > .sc-node__head { --head: var(--head-rule); }
+.sc-node--output > .sc-node__head { --head: var(--head-preview); }
+.sc-node--preset > .sc-node__head { --head: var(--head-preset); }
+.sc-node--frozen > .sc-node__head { --head: #94a3b8; }
+.sc-node__title { font-size: 13.5px; font-weight: 650; letter-spacing: -0.01em; }
+.react-flow__node:hover .sc-node { box-shadow: 0 2px 4px rgb(16 24 40 / 0.06), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
+.react-flow__node.selected .sc-node { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px var(--ring), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
+.sc-node .sc-main-thumb { border-radius: 12px; overflow: hidden; background: var(--surface-2); }
+.sc-preview__export { padding: 6px 20px; border-radius: 999px; background: color-mix(in srgb, var(--head-preview) 14%, var(--surface)); color: color-mix(in srgb, var(--head-preview) 70%, var(--fg)); }
+.sc-preview__export:hover { background: color-mix(in srgb, var(--head-preview) 24%, var(--surface)); }
+.sc-node .sc-btn, .sc-node .sc-open-editor { border-radius: 9px; }
+.sc-open-editor { font-weight: 600; }
+
+/* The Layer Comp group: a soft tinted frame instead of a dashed line. */
+.sc-comp-group { border: 1px solid color-mix(in srgb, var(--head-master) 22%, transparent); border-radius: 26px; background: linear-gradient(180deg, color-mix(in srgb, var(--head-master) 7%, transparent), color-mix(in srgb, var(--head-preview) 5%, transparent)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4); }
+.sc-comp__group { border-radius: 10px; }
+
+/* Wires and ports: thicker, coloured, with a soft glow when selected. */
+.react-flow__edge-path { stroke: color-mix(in srgb, var(--head-master) 45%, var(--faint)); stroke-width: 2; }
+.react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2.5; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 45%, transparent)); }
+.react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
+.react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }
+
+/* Minimap and the canvas toolbar match the floating panels. */
+.react-flow__minimap { border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 14px; overflow: hidden; background: var(--glass) !important; backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
+.sc-canvasbar { border-radius: 16px; padding: 6px; background: var(--glass); box-shadow: var(--shadow-3); }
+
+/* Zoomed out (U3): a name tag above each panel, the same screen size at any zoom; it never takes a click. */
+.sc-zlabels { position: absolute; left: 0; top: 0; pointer-events: none; }
+.sc-zlabel { position: absolute; left: 0; top: 0; pointer-events: none; }
+.sc-zlabel__tag { position: absolute; left: 0; bottom: 0; display: inline-flex; align-items: center; gap: 6px; max-width: 320px; padding: 4px 9px; transform: scale(var(--zoom-inv, 1)); transform-origin: bottom left; margin-bottom: 6px; border-radius: 8px; background: var(--fg); color: var(--bg); font-size: 12px; font-weight: 600; white-space: nowrap; box-shadow: var(--shadow-2); }
+.sc-zlabel__name { overflow: hidden; text-overflow: ellipsis; }
+.sc-zlabel__mark { padding: 0 6px; border-radius: 6px; background: color-mix(in srgb, var(--bg) 18%, transparent); font-size: 11px; }
+.sc-zlabel__mark--ok { background: var(--ok); color: #fff; }
+.sc-zlabel__mark--warn { background: var(--warn); color: #fff; }
+
+/* Phones: the floating bar and canvas need less margin. */
+@media (max-width: 767px) {
+  .sc-board .sc-topbar { padding: 6px 6px 0; height: 54px; min-height: 54px; }
+  .sc-board__canvas { padding: 6px; }
+  .sc-board__flow { border-radius: 14px; }
+}
+.sc-board .sc-topbar > .sc-topbar__group:first-child { justify-self: start; max-width: 100%; }
+.sc-board .sc-topbar > .sc-topbar__end { justify-self: end; }

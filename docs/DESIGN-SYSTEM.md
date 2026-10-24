@@ -146,3 +146,11 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Save status:** "All changes saved" in full on wide screens; "Saved", "Saving…", "Unsaved", "Retrying…" or "Newer version" where the bar is narrow (below 1100 px), never a bare dot.
 - **Side panel with nothing selected:** the project's name, "Nothing selected…", three figures (Previews, Approved n/N, open Comments), **Export all**, and the three ways to add to the board. **Hide panel** (and the side-panel icon in the bar) gives the canvas the room; it is remembered on the device.
 - **Wire badges:** an idle wire's ✂ is a small quiet dot with a mouse and grows to the scissors under the pointer; a selected wire, and touch screens, always show the scissors.
+
+## Board look (U3 visual redesign)
+- **Ambient canvas:** the board sits on a soft multi-colour gradient (`--ambient`, light and dark). The top bar's groups, the canvas and the side panel float on it as rounded glass panels (`--glass`, 14–18 px corners, blur, `--shadow-2`).
+- **Top bar:** three pills — project (back, name, undo / redo), **Add** (a solid dark pill, centred), and actions (status, Assets, History, Review, theme, side panel, **Export**).
+- **Cards:** 16 px corners, 14 px padding, a soft two-layer shadow that lifts on hover, and a 2 px accent ring with a halo when selected. The header is a gentle tint of the card's colour with a coloured icon chip: assets violet `--head-asset`, Layer Comp blue `--head-master`, Core Rule cyan `--head-rule`, Previews teal `--head-preview`, Presets green `--head-preset`; frozen Previews grey.
+- **Layer Comp group:** a soft tinted frame (no dashed line).
+- **Wires and ports:** 2 px wires tinted blue, accent with a glow when selected or hovered; 12 px ports with a white ring.
+- **Zoomed out (below 60 %):** each panel gets a dark name tag above it (Preview tags add ✓ approved / changed and the open-comment count). Tags keep their screen size at any zoom (`--zoom-inv`) and never take a click (`board/ZoomLabels.tsx`).
