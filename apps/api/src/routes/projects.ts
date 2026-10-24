@@ -10,7 +10,7 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { currentUser, requireTeam } from '../auth/plugin';
 import { projects } from '../db/schema';
-import { keepBeforeSave, storedPanels } from './versions';
+import { keepBeforeSave, storedCounts } from './versions';
 import { projectDocSchema } from './project-doc.schema';
 
 type Params = { teamId: string; projectId: string };
@@ -123,7 +123,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       // The row is locked for the save, so the version kept from it (D62) is the doc this save replaces.
       const out = await db.transaction(async (tx) => {
         const [current] = await tx
-          .select({ rev: projects.rev, updatedBy: projects.updatedBy, panels: storedPanels })
+          .select({ rev: projects.rev, updatedBy: projects.updatedBy, ...storedCounts })
           .from(projects)
           .where(inTeam(req.params))
           .for('update');

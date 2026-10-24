@@ -144,7 +144,7 @@ export const projects = pgTable(
 
 /**
  * D62: project history. A copy of a project's doc as it was at `rev`, kept on save (every VERSION_EVERY_MS of
- * editing, or before an edit that removes panels), before a restore, or when someone names one.
+ * editing, or before an edit that removes inputs or sizes), before a restore, or when someone names one.
  * `createdBy` is who made that state (who saved it, or who named it).
  */
 export const projectVersions = pgTable(
@@ -154,7 +154,7 @@ export const projectVersions = pgTable(
     projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
     rev: integer('rev').notNull(),
     kind: versionKind('kind').notNull(),
-    /** Named: the name given; before-delete: what was removed ("1 panel"); else empty. */
+    /** Named: the name given; before-delete: what was removed ("1 input", "2 sizes"); else empty. */
     label: text('label').notNull().default(''),
     doc: jsonb('doc').$type<ProjectDoc>().notNull(),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),

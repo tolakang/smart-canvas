@@ -79,18 +79,23 @@ describe.skipIf(!adminUrl)('project history API (Postgres, D62)', () => {
     expect(got.doc).toMatchObject({ name: 'C', rev: 3 }); // the doc as it was before the save that kept it
   });
 
-  it('keeps the doc before a save that removes panels, even right after another version', async () => {
+  it('keeps the doc before a save that removes inputs or sizes, even right after another version', async () => {
     const p = await create();
     let rev = await save(p.id, 0, p.doc);
     const fewer = { ...p.doc, sources: p.doc.sources.slice(1), edges: p.doc.edges.filter((e) => e.from !== p.doc.sources[0]?.id) };
     rev = await save(p.id, rev, fewer);
     expect((await versions(p.id)).map((v) => [v.rev, v.kind, v.label])).toEqual([
-      [1, 'before-delete', '1 panel'],
+      [1, 'before-delete', '1 input'],
       [0, 'auto', ''],
     ]);
     const none = { ...fewer, sources: [], edges: [] };
-    await save(p.id, rev, none);
-    expect((await versions(p.id))[0]).toMatchObject({ rev: 2, kind: 'before-delete', label: `${fewer.sources.length} panels` });
+    rev = await save(p.id, rev, none);
+    expect((await versions(p.id))[0]).toMatchObject({ rev: 2, kind: 'before-delete', label: `${fewer.sources.length} inputs` });
+    // Sizes count too, and both are named.
+    const out = (id: string) => ({ id, label: id, size: { width: 10, height: 10, unit: 'px' as const }, overrides: [], board: { x: 0, y: 0 } });
+    rev = await save(p.id, rev, { ...p.doc, outputs: [out('a'), out('b')] });
+    await save(p.id, rev, { ...p.doc, sources: p.doc.sources.slice(1), edges: [], outputs: [] });
+    expect((await versions(p.id))[0]).toMatchObject({ kind: 'before-delete', label: '1 input and 2 sizes' });
   });
 
   it(`prunes to the newest ${KEEP_AUTO} kept versions; named ones stay`, async () => {

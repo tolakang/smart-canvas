@@ -165,7 +165,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T22.3 (Q5) — **Done.** Retire `output.family` (computed but unused for placement since D38): schema 4 with a v3 → v4 migration (D61).
 
 ## P23 — Project history (owner, 2026-10-24: "Show me the plan for Q3", plan approved "go ahead"; D62)
-- T23.1 (Q3) — **Done.** API: `project_versions`, a version kept on save (every 10 minutes of editing, before panels are removed), named versions, restore, retention.
+- T23.1 (Q3) — **Done.** API: `project_versions`, a version kept on save (every 10 minutes of editing, before inputs or sizes are removed), named versions, restore, retention.
 - T23.2 (Q3) — History panel on the board: the list, a read-only preview, Restore, Save version.
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)

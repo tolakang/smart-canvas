@@ -1,7 +1,7 @@
 /**
  * D62 project history: earlier docs of a project, kept in `project_versions`.
- * - A save keeps the doc it replaces when the last version is VERSION_EVERY_MS old, or when the save removes panels
- *   ("before-delete"). The server decides, so autosave needs nothing and no client can skip a version.
+ * - A save keeps the doc it replaces when the last version is VERSION_EVERY_MS old, or when the save removes inputs
+ *   or sizes ("before-delete", labelled with what went: "1 input", "2 sizes"). The server decides, so autosave needs nothing and no client can skip a version.
  * - Restoring keeps the current doc first ("before-restore"), then stores the version as the next rev: open boards
  *   get 409 on their next save and offer "Reload latest".
  * - Named versions are kept until deleted (MAX_NAMED per project); the others are pruned to the newest KEEP_AUTO.
@@ -20,18 +20,17 @@ export const MAX_NAMED = 50;
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
-/** The doc lists that are board panels (sizes are outputs): a save that shortens them removes panels. */
-const PANEL_KEYS = ['sources', 'compositions', 'outputs', 'stacks', 'headlines', 'presetSets'] as const;
-
-export function panelCount(doc: ProjectDoc): number {
-  return PANEL_KEYS.reduce((n, k) => n + (doc[k]?.length ?? 0), 0);
+/** What a save removed, in the board's words: inputs (layers) and sizes (outputs). A card can hold several inputs. */
+export function removedLabel(stored: { inputs: number; sizes: number }, next: ProjectDoc): string {
+  const n = (count: number, one: string) => (count > 0 ? `${count} ${one}${count === 1 ? '' : 's'}` : '');
+  return [n(stored.inputs - next.sources.length, 'input'), n(stored.sizes - next.outputs.length, 'size')].filter(Boolean).join(' and ');
 }
 
-/** The stored doc's panel count, counted in Postgres so a save doesn't read the whole doc back. */
-export const storedPanels = sql<number>`(${sql.join(
-  PANEL_KEYS.map((k) => sql`coalesce(jsonb_array_length(${projects.doc} -> ${k}::text), 0)`),
-  sql` + `,
-)})::int`;
+/** The stored doc's input and size counts, counted in Postgres so a save doesn't read the whole doc back. */
+export const storedCounts = {
+  inputs: sql<number>`coalesce(jsonb_array_length(${projects.doc} -> 'sources'), 0)::int`,
+  sizes: sql<number>`coalesce(jsonb_array_length(${projects.doc} -> 'outputs'), 0)::int`,
+};
 
 /** Copies the project's stored doc into a version (in SQL, so the doc isn't read back), then prunes. */
 async function keep(tx: Tx, projectId: string, kind: 'auto' | 'before-delete' | 'before-restore' | 'named', label: string, by: string | null) {
@@ -52,9 +51,9 @@ async function keep(tx: Tx, projectId: string, kind: 'auto' | 'before-delete' | 
 
 /**
  * Called by a save, inside its transaction with the project row locked, before the row is overwritten by `next`.
- * `current` is the stored row: its rev, who saved it and its panel count.
+ * `current` is the stored row: its rev, who saved it, and its input and size counts.
  */
-export async function keepBeforeSave(tx: Tx, projectId: string, current: { rev: number; updatedBy: string | null; panels: number }, next: ProjectDoc) {
+export async function keepBeforeSave(tx: Tx, projectId: string, current: { rev: number; updatedBy: string | null; inputs: number; sizes: number }, next: ProjectDoc) {
   const [last] = await tx
     .select({ rev: projectVersions.rev, old: sql<boolean>`${projectVersions.createdAt} <= now() - ${`${VERSION_EVERY_MS} milliseconds`}::interval` })
     .from(projectVersions)
@@ -62,8 +61,8 @@ export async function keepBeforeSave(tx: Tx, projectId: string, current: { rev: 
     .orderBy(desc(projectVersions.createdAt), desc(projectVersions.rev))
     .limit(1);
   if (last?.rev === current.rev) return; // this state is kept already
-  const removed = current.panels - panelCount(next);
-  if (removed > 0) await keep(tx, projectId, 'before-delete', `${removed} panel${removed === 1 ? '' : 's'}`, current.updatedBy);
+  const removed = removedLabel(current, next);
+  if (removed) await keep(tx, projectId, 'before-delete', removed, current.updatedBy);
   else if (!last || last.old) await keep(tx, projectId, 'auto', '', current.updatedBy);
 }
 
