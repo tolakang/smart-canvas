@@ -105,7 +105,7 @@ import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
 import { addPictures, uploadPictures } from './stack-upload';
 import { HistoryPanel, versionTitle, versionWhen, type Version } from './HistoryPanel';
-import { useApprovalStates, useReview } from './review';
+import { openCounts, useApprovalStates, useReview } from './review';
 import { ReviewPanel } from './ReviewPanel';
 
 interface Loaded {
@@ -121,6 +121,9 @@ const ERROR_NOTICE: Partial<Record<SourceError, string>> = {
 };
 
 
+/** U2: what the save status says where the bar is narrow (tablets, phones). */
+const SHORT_LABEL: Record<SaveState, string> = { saved: 'Saved', pending: 'Unsaved', saving: 'Saving…', error: 'Retrying…', conflict: 'Newer version' };
+
 const STATE_LABEL: Record<SaveState, string> = {
   saved: 'All changes saved',
   pending: 'Unsaved changes…',
@@ -128,6 +131,24 @@ const STATE_LABEL: Record<SaveState, string> = {
   error: 'Save failed, retrying…',
   conflict: 'Someone else saved a newer version.',
 };
+
+const INSPECTOR_HIDDEN_KEY = 'sc-inspector-hidden';
+/** A per-device on / off setting; storage can be missing or blocked (private windows), then it is just off. */
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+function writeFlag(key: string, on: boolean) {
+  try {
+    if (on) localStorage.setItem(key, '1');
+    else localStorage.removeItem(key);
+  } catch {
+    // not remembered
+  }
+}
 
 /** D62: a history version shown read-only on the board. */
 interface Previewing {
@@ -278,9 +299,13 @@ function BoardCanvas(props: {
   const [outputComments, setOutputComments] = useState(false);
   /** D63: the Review panel (in the inspector's place, like History). */
   const [reviewOpen, setReviewOpen] = useState(false);
+  /** U2: the side panel hidden on desktop, for more canvas (remembered on this device). */
+  const [inspectorHidden, setInspectorHidden] = useState(() => readFlag(INSPECTOR_HIDDEN_KEY));
+  useEffect(() => writeFlag(INSPECTOR_HIDDEN_KEY, inspectorHidden), [inspectorHidden]);
   /** D63: the review of Previews; polled while a Preview editor or the Review panel is open. */
   const review = useReview(url, Boolean(editingOutput) || reviewOpen);
   const reloadReview = review.reload;
+  const openComments = useMemo(() => [...openCounts(review.data).values()].reduce((n, c) => n + c, 0), [review.data]);
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const nodesRef = useRef(nodes);
   useEffect(() => {
@@ -1099,6 +1124,19 @@ function BoardCanvas(props: {
       props.history.toggle();
     }
   };
+  /** U2: the team's fonts and library, under the Assets button. */
+  const openAssets = (button: HTMLElement) => {
+    const r = button.getBoundingClientRect();
+    setMenu({
+      x: r.left,
+      y: r.bottom + 4,
+      title: 'Assets',
+      items: [
+        { label: 'Team fonts', onSelect: () => setShowFonts(true) },
+        { label: 'Team library', onSelect: () => setShowLibrary(true) },
+      ],
+    });
+  };
   /** D63: the Review panel; it closes History (and a version shown) first. */
   const openReview = () => {
     if (!reviewOpen) {
@@ -1304,7 +1342,10 @@ function BoardCanvas(props: {
           {!props.history.previewing && (
             <span className={`sc-save sc-save--${saveState}`} role="status">
               <span className="sc-save__dot" aria-hidden="true" />
-              {STATE_LABEL[saveState]}
+              <span className="sc-save__long">{STATE_LABEL[saveState]}</span>
+              <span className="sc-save__short" aria-hidden="true">
+                {SHORT_LABEL[saveState]}
+              </span>
               {saveState === 'conflict' && (
                 <button type="button" onClick={props.onReload}>
                   Reload latest
@@ -1319,6 +1360,17 @@ function BoardCanvas(props: {
           ) : (
           <>
           <span className="sc-topbar__sep" aria-hidden="true" />
+          {/* U2: the team's fonts and library under one Assets menu; History, Review and the theme as icons. */}
+          <button type="button" className="sc-topbar__ghost" aria-haspopup="menu" onClick={(e) => openAssets(e.currentTarget)} title="Team fonts and library">
+            <Icon name="library" /> Assets
+          </button>
+          <button type="button" className="sc-topbar__icon" onClick={openHistory} aria-label="History" aria-pressed={props.history.open} title="History: earlier versions of this project">
+            <Icon name="history" />
+          </button>
+          <button type="button" className="sc-topbar__icon sc-topbar__review" onClick={openReview} aria-label="Review" aria-pressed={reviewOpen} title="Review: approval and comments on every Preview">
+            <Icon name="check" />
+            {openComments > 0 && <span className="sc-topbar__count" aria-hidden="true">{openComments}</span>}
+          </button>
           <button
             type="button"
             className="sc-topbar__icon sc-theme-toggle"
@@ -1329,18 +1381,11 @@ function BoardCanvas(props: {
           >
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
           </button>
-          <button type="button" className="sc-topbar__ghost" onClick={() => setShowFonts(true)} title="Team fonts">
-            <Icon name="font" /> Fonts
-          </button>
-          <button type="button" className="sc-topbar__ghost" onClick={() => setShowLibrary(true)} title="Team library">
-            <Icon name="library" /> Library
-          </button>
-          <button type="button" className="sc-topbar__ghost" onClick={openHistory} aria-pressed={props.history.open} title="Earlier versions of this project">
-            <Icon name="history" /> History
-          </button>
-          <button type="button" className="sc-topbar__ghost" onClick={openReview} aria-pressed={reviewOpen} title="Approval and comments on every Preview">
-            <Icon name="check" /> Review
-          </button>
+          {!floating && (
+            <button type="button" className="sc-topbar__icon" onClick={() => setInspectorHidden((h) => !h)} aria-label="Side panel" aria-pressed={!inspectorHidden} title={inspectorHidden ? 'Show the side panel' : 'Hide the side panel'}>
+              <Icon name="panel" />
+            </button>
+          )}
           </>
           )}
           {!readOnly && (
@@ -1551,7 +1596,9 @@ function BoardCanvas(props: {
           ) : reviewOpen ? (
             <ReviewPanel floating={floating} onClose={() => setReviewOpen(false)} />
           ) : (
-            (!floating || panel === 'inspector') && <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} />
+            ((!floating && !inspectorHidden) || panel === 'inspector') && (
+              <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} onHide={floating ? undefined : () => setInspectorHidden(true)} />
+            )
           )}
           {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
           {editingMain && <MainEditor compositionId={editingMain} onClose={() => setEditingMain(null)} />}

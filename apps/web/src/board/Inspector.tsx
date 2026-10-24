@@ -52,7 +52,7 @@ import { OutputSettings } from './OutputSettings';
 const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
 
 /** Docked on desktop; on tablets and phones (T13.6) an overlay or a bottom sheet with a close button. */
-export function Inspector({ selected, floating, onClose }: { selected: string | null; floating?: 'overlay' | 'sheet'; onClose?: () => void }) {
+export function Inspector({ selected, floating, onClose, onHide }: { selected: string | null; floating?: 'overlay' | 'sheet'; onClose?: () => void; onHide?: () => void }) {
   const { doc } = useBoard();
   const source = doc.sources.find((s) => inputNodeId(s.id) === selected);
   const output = doc.outputs.find((o) => outputNodeId(o.id) === selected);
@@ -80,9 +80,7 @@ export function Inspector({ selected, floating, onClose }: { selected: string | 
       ) : composition && compositionById(doc, composition) ? (
         <CompositionInspector key={composition} compositionId={composition} />
       ) : (
-        <Section title="Nothing selected">
-          <p className="sc-muted sc-inspector-panel__hint">Click a node to see its settings here. Use + Add or right-click the canvas to add asset and Preset nodes; drag a wire out of the Layer Comp group to add a Preset node.</p>
-        </Section>
+        <ProjectOverview onHide={onHide} />
       )}
     </aside>
   );
@@ -322,6 +320,68 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
           <span className="sc-muted">{comp.size.unit}</span>
         </div>
       </Section>
+    </>
+  );
+}
+
+/**
+ * U2: with nothing selected, the panel says how the project stands — its Previews, approvals and open comments —
+ * with Export all at hand and the three ways to add panels; "Hide panel" gives the canvas the room.
+ */
+function ProjectOverview({ onHide }: { onHide?: () => void }) {
+  const { doc, review, approvals, exportOutputs, readOnly } = useBoard();
+  const previews = doc.outputs.length;
+  const approved = doc.outputs.filter((o) => approvals.get(o.id)?.state === 'approved').length;
+  const open = (review?.comments ?? []).filter((c) => !c.parentId && !c.resolvedAt && doc.outputs.some((o) => o.id === c.outputId)).length;
+  const stats = [
+    { label: previews === 1 ? 'Preview' : 'Previews', value: previews },
+    { label: 'Approved', value: `${approved}/${previews}` },
+    { label: open === 1 ? 'Comment' : 'Comments', value: open },
+  ];
+  return (
+    <>
+      <section className="sc-inspector-panel__section sc-overview">
+        <div className="sc-inspector-panel__title">
+          <span className="sc-overview__name" title={doc.name}>
+            {doc.name}
+          </span>
+          {onHide && (
+            <button type="button" className="sc-icon-btn" onClick={onHide} aria-label="Hide panel" title="Hide the side panel">
+              <Icon name="panel" />
+            </button>
+          )}
+        </div>
+        <p className="sc-muted sc-inspector-panel__hint">Nothing selected. Click a panel on the board to see its settings here.</p>
+        <dl className="sc-overview__stats">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <dt>{s.label}</dt>
+              <dd>{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+        {!readOnly && previews > 0 && (
+          <button type="button" className="sc-btn sc-btn--primary" onClick={() => exportOutputs(doc.outputs.map((o) => o.id))}>
+            <Icon name="export" /> Export all {previews}
+          </button>
+        )}
+      </section>
+      {!readOnly && (
+        <section className="sc-inspector-panel__section">
+          <div className="sc-inspector-panel__title">Add to the board</div>
+          <ul className="sc-overview__tips">
+            <li>
+              <strong>+ Add</strong> in the top bar, or right-click the canvas: asset nodes and Preset nodes.
+            </li>
+            <li>
+              <strong>Drag a wire</strong> out of the Layer Comp group: a Preset node of sizes.
+            </li>
+            <li>
+              <strong>Drop pictures</strong> on the canvas: an Image node with them.
+            </li>
+          </ul>
+        </section>
+      )}
     </>
   );
 }
