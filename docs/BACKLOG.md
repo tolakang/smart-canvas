@@ -166,7 +166,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P23 — Project history (owner, 2026-10-24: "Show me the plan for Q3", plan approved "go ahead"; D62)
 - T23.1 (Q3) — **Done.** API: `project_versions`, a version kept on save (every 10 minutes of editing, before inputs or sizes are removed), named versions, restore, retention.
-- T23.2 (Q3) — History panel on the board: the list, a read-only preview, Restore, Save version.
+- T23.2 (Q3) — **Done.** History panel on the board: the list by day, a read-only preview with Restore, Save version; in the More menu on phones.
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q4 — Review: comments pinned to a Preview, and an "approved" mark per Preview, for the team before export. Viewers can comment.

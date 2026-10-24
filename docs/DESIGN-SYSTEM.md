@@ -121,3 +121,8 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Stretch:** dragging an edge stretches the picture with the frame, live while you drag (Shift or the ratio lock on corners keeps proportions).
 - **Replace:** a new picture lands inside the old frame, centred, with its own proportions.
 
+## History (D62)
+- **Where:** **History** in the board's top bar (in the More menu on phones) opens a panel in the inspector's place: an overlay on tablets, a bottom sheet on phones.
+- **List:** newest first, grouped by Today, Yesterday, then the date. Each row says what the version is (Auto-saved, Before deleting 1 input, Before restore, or its name), then the time and who. The version shown is highlighted.
+- **Preview:** the board shows the version read-only under a light-blue bar: "Version from Today, 14:05 · Before deleting 1 input · Dara", with **Restore** (accent, editors only) and **Close**. The save status is hidden while a version is shown.
+- **Naming:** an editor names the board as it is now from the field at the top of the panel (hidden while a version is shown). A named version has a trash button; it asks before deleting.
