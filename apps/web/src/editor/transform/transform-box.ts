@@ -51,6 +51,8 @@ export interface TransformBoxOptions {
   onChange?: (state: TransformState, info: ChangeInfo) => void;
   /** Touch hold completed (good moment for haptics / a sound). */
   onArm?: (handle: HandleId) => void;
+  /** A single tap or click on a handle or the element (`at` in client px), before any double-tap. */
+  onTap?: (handle: HandleId, at: Vec, pointerType: string) => void;
   /**
    * Screen px per state unit. The state (and its history) is kept in the caller's units (the editor: design
    * px) so zooming and panning never touch it; the box draws and reads the pointer at this scale.
@@ -132,7 +134,7 @@ const RESIZE_CURSORS = ['ew-resize', 'nwse-resize', 'ns-resize', 'nesw-resize'];
 export class TransformBox {
   private state: TransformState;
   private doc: TransformDoc;
-  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'snapResize' | 'aspect'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'snapMove' | 'snapResize' | 'aspect'>;
+  private readonly opts: Required<Omit<TransformBoxOptions, 'onChange' | 'onArm' | 'onTap' | 'snapMove' | 'snapResize' | 'aspect'>> & Pick<TransformBoxOptions, 'onChange' | 'onArm' | 'onTap' | 'snapMove' | 'snapResize' | 'aspect'>;
   private readonly guides: SVGGElement;
   private guideLines: { x: number[]; y: number[] } = { x: [], y: [] };
   private readonly overlay: HTMLDivElement;
@@ -380,24 +382,29 @@ export class TransformBox {
       this.opts.onChange?.(this.getState(), { phase: 'end', handle: g.handle, mode: this.modeOf(g) ?? undefined, doc: this.doc });
     }
     this.cancelGesture();
-    if (wasTap && !armedHold) this.tap(g.handle, g.downClient);
+    if (wasTap && !armedHold) this.tap(g.handle, g.downClient, g.pointerType);
   };
 
   private onCancel = (e: PointerEvent) => {
+    if (this.gesture && e.pointerId === this.gesture.pointerId) this.cancel();
+  };
+
+  /** Drop the gesture under way, putting back where it started (D58: a second finger turns it into a pinch). */
+  cancel(): void {
     const g = this.gesture;
-    if (!g || e.pointerId !== g.pointerId) return;
-    // The browser took the touch (scroll/zoom) or the window lost the pointer: put back the start state.
+    if (!g) return;
+    // The browser took the touch (scroll/zoom), the window lost the pointer or a pinch began: put back the start state.
     if (g.moved) {
       this.state = g.start;
       this.scheduleRender();
       this.opts.onChange?.(this.getState(), { phase: 'end', handle: g.handle, doc: this.doc });
     }
     this.cancelGesture();
-  };
+  }
 
   /** Double-click / double-tap: two taps on the same handle within doubleTapMs and DOUBLE_TAP_DIST. */
   /** `at` in client px. */
-  private tap(handle: HandleId, at: Vec) {
+  private tap(handle: HandleId, at: Vec, pointerType: string) {
     const now = performance.now();
     const prev = this.lastTap;
     if (prev && prev.handle === handle && now - prev.time <= this.opts.doubleTapMs && len(sub(at, prev.at)) <= DOUBLE_TAP_DIST) {
@@ -406,6 +413,7 @@ export class TransformBox {
       return;
     }
     this.lastTap = { handle, time: now, at };
+    this.opts.onTap?.(handle, at, pointerType);
   }
 
   private cancelGesture() {

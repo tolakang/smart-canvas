@@ -155,6 +155,10 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T20.1 — **Done.** Move and zoom: one finger moves the board (empty canvas, panels not selected, their buttons); tap selects, a selected panel follows the finger; two fingers pinch and pan anywhere; double-tap zooms in.
 - T20.2 — **Done.** Select: long-press opens the menu again (D33); a Select mode on phones (taps add or remove, a drag draws a box; Group, Delete, Done); the phone toolbar shows Select mode, Fit, grid and Tidy.
 
+## P21 — Touch, the rest (owner, 2026-10-24: "Go Q7 and Q8", plan approved "go ahead"; D58)
+- T21.1 (Q7) — **Done.** Layout editors on touch like the board: one finger moves the canvas, a tap selects (again for the layer behind), the selected layer and its handles drag at once, two fingers pinch and pan, double-tap empty canvas fits.
+- T21.2 (Q8) — Small panels on phones: zoomed out below about 50 %, a tap on a panel zooms to it and selects it instead of pressing its controls.
+
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q1 — Multi-page PDFs: pick which page to use when uploading (today the first page; D52, D55). The API converts the chosen page (`pdftocairo -f N -l N`); the browser fallback renders the same page.
 - Q2 — Preset nodes and team families: after a family is renamed in the Size presets dialog (M4), offer to rename the Preset nodes that came from it, and to add sizes the family gained. Today nodes on boards are left as they were.
@@ -162,5 +166,3 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - Q4 — Review: comments pinned to a Preview, and an "approved" mark per Preview, for the team before export. Viewers can comment.
 - Q5 — Retire `output.family` (computed but no longer used for placement since D38): a model change with a migration, like D56. Owner decision.
 - Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). Needs a colour-managed PDF path in the worker; big.
-- Q7 — Layout editors on touch, like the board (D58): one finger pans the canvas, a tap selects a layer, a selected layer moves under the finger, two fingers pinch anywhere. Today the editors keep D36's hold-then-drag (owner's choice, 2026-10-21), so this needs the owner's say.
-- Q8 — Small panels on phones: fitted to a phone, the board shows panels about 58×40 px and a finger mostly lands on a control inside them. Options: Fit on phones stops at a readable zoom and scrolls, or a tap on a panel at low zoom zooms to it first.

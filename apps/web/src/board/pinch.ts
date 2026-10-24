@@ -30,7 +30,8 @@ export function pinchViewport(start: Viewport, from: { mid: { x: number; y: numb
   return { x: to.mid.x - wx * zoom, y: to.mid.y - wy * zoom, zoom };
 }
 
-export function usePinch(ref: RefObject<HTMLElement | null>, target: () => PinchTarget | null, limits: { min: number; max: number }) {
+/** `onPinch`: a pinch began (a drag the first finger started should stop). The editors use it too (D58, Q7). */
+export function usePinch(ref: RefObject<HTMLElement | null>, target: () => PinchTarget | null, limits: { min: number; max: number }, onPinch?: () => void) {
   const { min, max } = limits;
   useEffect(() => {
     const el = ref.current;
@@ -51,6 +52,7 @@ export function usePinch(ref: RefObject<HTMLElement | null>, target: () => Pinch
     };
     const onStart = (e: TouchEvent) => {
       if (e.touches.length < 2) return;
+      if (!locked) onPinch?.();
       locked = true;
       begin(e);
       e.stopPropagation();
@@ -81,5 +83,5 @@ export function usePinch(ref: RefObject<HTMLElement | null>, target: () => Pinch
       el.removeEventListener('touchend', onEnd, true);
       el.removeEventListener('touchcancel', onEnd, true);
     };
-  }, [ref, target, min, max]);
+  }, [ref, target, min, max, onPinch]);
 }

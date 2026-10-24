@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P20 are done. Proposed next work is BACKLOG **Next** (Q1–Q8), to be chosen by the owner. Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P20 are done; P21 is under way. Proposed next work is BACKLOG **Next** (Q1–Q6), to be chosen by the owner. Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -158,6 +158,10 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T20.1 — Move and zoom: one finger moves the board, a selected panel follows the finger, two fingers pinch anywhere — [#131](https://github.com/tolakang/smart-canvas/pull/131)
 - [x] T20.2 — Select: long-press menu again, Select several on touch — [#132](https://github.com/tolakang/smart-canvas/pull/132)
 
+## P21 Touch, the rest (D58)
+- [x] T21.1 (Q7) — Layout editors on touch like the board
+- [ ] T21.2 (Q8) — Small panels on phones: a tap zooms to the panel
+
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] Q1 — Pick the page of a multi-page PDF
 - [ ] Q2 — Preset nodes follow a renamed team family
@@ -165,5 +169,3 @@ Legend: `[x]` done · `[ ]` to do
 - [ ] Q4 — Review: comments and approval on Previews
 - [ ] Q5 — Retire `output.family` (computed, unused since D38; model change)
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2)
-- [ ] Q7 — Layout editors on touch, like the board (D58; owner decision, D36)
-- [ ] Q8 — Small panels on phones at the fitted zoom

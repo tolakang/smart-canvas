@@ -56,8 +56,8 @@ export function DesignPanel(props: {
         <section className="sc-design__section sc-design__touch">
           <div className="sc-design__title">Gestures</div>
           <p className="sc-design__hint">
-            Tap a layer to select it · long-press, then drag to move · long-press a handle, then drag: outward to resize, along the edge to skew · double-tap a handle to undo what it changed ·
-            pinch to zoom · two fingers to pan
+            Tap a layer to select it (tap again for the one behind) · drag it to move · drag a handle: outward to resize, along the edge to skew · double-tap a handle to undo what it changed ·
+            one finger elsewhere moves the canvas · pinch to zoom · double-tap empty canvas to fit
           </p>
         </section>
         <section className="sc-design__section sc-design__shortcuts">

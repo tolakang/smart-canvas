@@ -2,7 +2,7 @@
  * D36 end to end: the editor's transform box (Affinity-style). Drag an edge along itself to skew (the opposite
  * edge stays), outward to stretch; the shear is stored and drawn by the one renderer; a double-click on a
  * handle undoes what it changed — after any mix of stretch, skew, scale and rotate the layer lands back on
- * its original placement; moves snap to the canvas edges; on a phone a long press arms a handle or the layer first.
+ * its original placement; moves snap to the canvas edges; on a phone (D58, Q7) the selected layer and its handles drag at once and a finger elsewhere moves the canvas.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { mainComposition, type NFrame, type ProjectDoc } from '@smart-canvas/core';
@@ -195,7 +195,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     near(await placement(), before);
   }, 120_000);
 
-  it('phone: a quick drag edits nothing; long-press then drag skews (a handle) and moves (the layer); a double-tap resets', async () => {
+  it('phone (D58, Q7): one finger on empty canvas pans; the selected layer and its handles drag at once; a double-tap resets; two fingers pinch; a double-tap on empty canvas fits', async () => {
     // The same signed-in session, as a phone.
     const ctx = await stack.env.browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, storageState: await page.context().storageState() });
     const phone = await ctx.newPage();
@@ -203,55 +203,99 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     await phone.goto(page.url().split('#')[0] + '#' + (page.url().split('#')[1] ?? ''));
     await phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first().tap();
     const ed = phone.getByRole('dialog', { name: /Master preview editor/ });
-    await ed.locator('.sc-editor__canvas [data-source-id="subject"]').tap();
-    await ed.locator('[data-tb-handle="e"]').waitFor();
-    const touch = (type: string, x = 0, y = 0) =>
-      cdp.send('Input.dispatchTouchEvent', { type: type as 'touchStart', touchPoints: type === 'touchEnd' ? [] : [{ x, y, id: 1 }] });
-    const tdrag = async (holdMs: number, dy: number) => {
-      const b = await ed.locator('[data-tb-handle="e"]').boundingBox();
-      if (!b) throw new Error('no handle');
-      const c = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
-      await touch('touchStart', c.x, c.y);
-      await phone.waitForTimeout(holdMs);
+    const canvasBox = async () => {
+      const b = await ed.locator('.sc-editor__canvas').boundingBox();
+      if (!b) throw new Error('no canvas');
+      return b;
+    };
+    type Pt = { x: number; y: number };
+    /** A scripted touch: each finger from its start to its end in 10 steps. */
+    const fingers = async (paths: { from: Pt; to: Pt }[]) => {
+      const at = (i: number) => paths.map((f, id) => ({ id, x: f.from.x + ((f.to.x - f.from.x) * i) / 10, y: f.from.y + ((f.to.y - f.from.y) * i) / 10 }));
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(0) });
       for (let i = 1; i <= 10; i++) {
-        await touch('touchMove', c.x + i * 0.2, c.y + (dy * i) / 10);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(i) });
         await phone.waitForTimeout(16);
       }
-      await touch('touchEnd');
-      await phone.waitForTimeout(300);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await phone.waitForTimeout(400);
     };
+    const tap = async (p: Pt) => {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [p] });
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    };
+    const centreOf = async (sel: string) => {
+      const b = await ed.locator(sel).boundingBox();
+      if (!b) throw new Error(`no ${sel}`);
+      return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+    };
+    // A tap selects the layer (on lift).
+    await tap(await centreOf('.sc-editor__canvas [data-source-id="subject"]'));
+    await ed.locator('[data-tb-handle="e"]').waitFor();
+    await phone.waitForTimeout(400);
     const before = await placement();
-    // No hold: nothing changes (a swipe is not an edit).
-    await tdrag(0, 40);
-    await phone.waitForTimeout(500);
+    // One finger on the empty stage around the canvas moves the canvas, and edits nothing.
+    const c0 = await canvasBox();
+    const empty = await phone.evaluate(() => {
+      const stage = document.querySelector('.sc-editor__stage')?.getBoundingClientRect();
+      if (!stage) throw new Error('no stage');
+      for (let y = stage.y + 6; y < stage.bottom - 6; y += 6)
+        for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
+      throw new Error('no empty stage');
+    });
+    await fingers([{ from: empty, to: { x: empty.x + 40, y: empty.y + 30 } }]);
+    const c1 = await canvasBox();
+    expect(Math.round(c1.x - c0.x)).toBe(40);
+    expect(Math.round(c1.y - c0.y)).toBe(30);
     near(await placement(), before);
-    // Hold, then drag: the edge skews.
-    await tdrag(450, 40);
+    // No hold: a drag on the selected layer's edge handle skews at once.
+    const e0 = await centreOf('[data-tb-handle="e"]');
+    await fingers([{ from: e0, to: { x: e0.x + 2, y: e0.y + 40 } }]);
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeGreaterThan(3);
     // Double-tap the edge: back to where it was.
-    const hb = await ed.locator('[data-tb-handle="e"]').boundingBox();
-    if (!hb) throw new Error('no handle');
-    const hc = { x: hb.x + hb.width / 2, y: hb.y + hb.height / 2 };
-    await touch('touchStart', hc.x, hc.y);
-    await touch('touchEnd');
+    const e1 = await centreOf('[data-tb-handle="e"]');
+    await tap(e1);
     await phone.waitForTimeout(60);
-    await touch('touchStart', hc.x, hc.y);
-    await touch('touchEnd');
+    await tap(e1);
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeLessThan(1e-6);
     near(await placement(), before);
-    // Long-press the layer itself, then drag: it moves.
-    const lb = await ed.locator('.sc-editor__canvas [data-source-id="subject"]').boundingBox();
-    if (!lb) throw new Error('no layer');
-    const at = { x: lb.x + lb.width / 2, y: lb.y + lb.height / 2 };
-    await touch('touchStart', at.x, at.y);
-    await phone.waitForTimeout(450);
-    for (let i = 1; i <= 10; i++) {
-      await touch('touchMove', at.x + i * 3, at.y + i * 2);
-      await phone.waitForTimeout(16);
-    }
-    await touch('touchEnd');
+    await phone.waitForTimeout(400);
+    // A drag on the selected layer moves it at once.
+    const l0 = await centreOf('.sc-editor__canvas [data-source-id="subject"]');
+    await fingers([{ from: l0, to: { x: l0.x + 30, y: l0.y + 20 } }]);
     await expect.poll(async () => (await placement()).x, { timeout: 10_000 }).toBeGreaterThan(before.x + 1e-4);
-    expect((await placement()).w).toBeCloseTo(before.w, 6); // moved, not resized
+    const moved = await placement();
+    expect(moved.w).toBeCloseTo(before.w, 6); // moved, not resized
+    // Two fingers spread on the layer: the canvas zooms (about twice), nothing moves.
+    const w0 = (await canvasBox()).width;
+    const m = await centreOf('.sc-editor__canvas');
+    await fingers([{ from: { x: m.x - 30, y: m.y }, to: { x: m.x - 60, y: m.y } }, { from: { x: m.x + 30, y: m.y }, to: { x: m.x + 60, y: m.y } }]);
+    expect((await canvasBox()).width / w0).toBeGreaterThan(1.8);
+    near(await placement(), moved);
+    // A double-tap on empty canvas fits again.
+    const empty2 = await phone.evaluate(() => {
+      const stage = document.querySelector('.sc-editor__stage')?.getBoundingClientRect();
+      if (!stage) throw new Error('no stage');
+      for (let y = stage.y + 6; y < stage.bottom - 6; y += 6)
+        for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
+      throw new Error('no empty stage');
+    });
+    await tap(empty2);
+    await phone.waitForTimeout(80);
+    await tap(empty2);
+    await expect.poll(async () => Math.round((await canvasBox()).width)).toBe(Math.round(w0));
+    // Tapping the selected layer again picks the one behind it (a picture over the background).
+    // (A tap on empty canvas clears the selection, so select the picture again first.)
+    await phone.waitForTimeout(400);
+    const pic = await centreOf('.sc-editor__canvas [data-source-id="subject"]');
+    await tap(pic);
+    const label = () => ed.getByTestId('selection').innerText();
+    await ed.locator('[data-tb-handle="e"]').waitFor();
+    const first = await label();
+    await phone.waitForTimeout(400);
+    await tap(pic);
+    await expect.poll(label).not.toBe(first);
+    near(await placement(), moved);
     await ctx.close();
   }, 90_000);
 });
