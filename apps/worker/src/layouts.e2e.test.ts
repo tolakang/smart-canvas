@@ -36,7 +36,7 @@ describe.skipIf(!adminUrl)('layouts and the Core Preset Guide (D50)', () => {
 
   const saved = () => page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
-  const editor = () => page.getByRole('dialog', { name: /Master preview editor/ });
+  const editor = () => page.getByRole('dialog', { name: /Layer Comp editor/ });
   const layersPanel = () => editor().getByRole('complementary', { name: 'Layers' });
   const close = async () => {
     await page.keyboard.press('Escape');

@@ -84,7 +84,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
 
   return (
     // D49 (page 3): a Preview — one size of a Preset node, its live layout, Edit (its own overrides) and Export.
-    <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`} aria-label={`Output ${output.label}`}>
+    <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`} aria-label={`Preview ${output.label}`}>
       <Handle type="target" position={Position.Left} isConnectable={!readOnly && !connected} className="sc-handle--composition" title="From its Preset node row" />
       <div className="sc-node__head">
         <div className="sc-node__title">Preview</div>
@@ -92,7 +92,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
           {output.label.replace(/\s*\d+\s*[×x]\s*\d+$/, '') || output.label} ({output.size.width} × {output.size.height})
         </span>
         {health && <HealthBadge health={health} />}
-        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} output ${output.label}`}>
+        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} Preview ${output.label}`}>
           {readOnly ? 'View' : 'Edit'}
         </button>
       </div>
@@ -133,7 +133,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
       )}
       {output.overrides.length > 0 && (
         <div className="sc-node__overrides">
-          <span className="sc-chip" title="Layers changed by hand on this output" aria-label={`${output.overrides.length} overridden layers`}>
+          <span className="sc-chip" title="Layers changed by hand on this Preview" aria-label={`${output.overrides.length} overridden layers`}>
             {output.overrides.length} edited by hand
           </span>
           {!readOnly && (
@@ -155,7 +155,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
           <span className="sc-muted">Loading fonts…</span>
         )}
       </div>
-      <button type="button" className={`sc-preview__export ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export output ${output.label}`}>
+      <button type="button" className={`sc-preview__export ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export Preview ${output.label}`}>
         Export
       </button>
     </div>

@@ -10,7 +10,7 @@ other shared names onto its palette.
 | Group | Tokens | Notes |
 |---|---|---|
 | Neutrals | `--bg` #f4f5f7 · `--surface` #fff · `--surface-2` #f1f3f5 · `--surface-3` #e9ecef · `--fg` #14171c · `--muted` #5e6672 · `--line` #e4e7eb · `--line-strong` #cfd4da | Cool greys. `--muted` is 5.9:1 on white, so small grey text passes AA |
-| Accent / state | `--accent` #0a6cdb · `--accent-hover` · `--accent-soft` #e7f0fc · `--ring` (focus halo) · `--danger` #c8321b · `--warn` #a85a00 · `--ok` #0d7a3f | The accent is dark enough for white button text (5:1) |
+| Accent / state | `--accent` #0965cf · `--accent-hover` · `--accent-soft` #e7f0fc · `--on-accent` · `--ring` (focus halo) · `--danger` #c8321b · `--warn` #9a5200 · `--ok` #0d7a3f | U7: every text colour is AA (4.5:1) on every surface in both themes; text on a solid accent or status fill uses `--on-accent` (white in light, near-black in dark, where white on the lighter accent is only 2.8:1) |
 | Node types | `--type-input` blue · `--type-main` violet · `--type-output` green (`--type-process` orange-red is kept as a group / tile colour) | Only the 3 px stripe on top of a node |
 | Type | `--fs-xs` 11 · `--fs-sm` 12 · `--fs-md` 13 · `--fs-lg` 15 · `--fs-xl` 20; `--font-ui` | **Inter** (bundled, `@fontsource-variable/inter`) for the interface only; artwork fonts are separate (`fonts/bundled.css`) |
 | Space | `--sp-1` 4 · `--sp-2` 8 · `--sp-3` 12 · `--sp-4` 16 · `--sp-5` 24 | 4 px grid |
@@ -116,7 +116,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - Hidden and library inputs show a small mark next to the name. Double-click the name to rename.
 - **Inspector:** name, behaviour, visibility, the content editor, and the actions (Duplicate, Save to library, Delete). The cards don't repeat any of it.
 - **Card sizing:** cards size their grid column `minmax(0, 1fr)`, so no thumbnail sticks out of a card. Side ports sit level with the title.
-- **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the first master preview can't be deleted; selected wires alone are disconnected. In the master preview editor it removes the selected layer, as its row's trash button does. In an output editor it hides the layer on that output.
+- **Delete / Backspace:** on the board it deletes the selected nodes, with one confirm and one undo step. A selected group is ungrouped; the Layer Comp can't be deleted; selected wires alone are disconnected. In the Layer Comp editor it removes the selected layer, as its row's trash button does. In a Preview editor it hides the layer on that Preview.
 
 ## Picture frames (D37)
 - **Frame:** an image or SVG layer's frame (selection box, handles, size badge, snapping) is the picture's visible pixels, never its transparent margins.
@@ -168,3 +168,10 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - The editor bar follows the theme: a glass bar (`--fig-bar: var(--glass)`) floating on the ambient backdrop like the board's, with the active tool as a solid accent button. (The old dark bar is gone.)
 - On tablets and desktops the Layers panel, the stage and the Design (or Comments) panel float with a 12 px margin and 18 px corners; phones keep the full-width canvas and the bottom sheet.
 - With nothing selected, the Design panel shows the canvas size and **Keyboard shortcuts** folded (open it to see them); touch screens show the gestures instead.
+
+## Words, health and access (U7, D64)
+- **One name for each thing**, everywhere in the UI: **Layer Comp** (the master artwork and its layouts; its editor is the "Layer Comp editor") and **Preview** (each size; "Preview editor", "Export 3 Previews", "Previews" in the export dialog). Code keeps its model names (`output`, `main`).
+- **Empty layers are a to-do, not a warning:** a Layer Comp or Preview whose only issue is wired layers with no file or text yet shows a grey badge with an outlined dot, "N empty layers" (amends D35). Amber stays for real compromises (text that doesn't fit, a clamped layer), red for errors.
+- **No emoji as icons:** the library's delete, the Assets card's grid / list switch and the library's empty text use the icon set or words.
+- **Contrast:** checked against WCAG AA for every text colour on every surface in both themes (see Tokens). **Focus:** every control shows the accent ring on keyboard focus; project cards lift on focus like on hover. **Names:** every button and field on the board, the editors, the export dialog and the home has an accessible name (checked with a scan of the rendered pages). **Motion:** "reduce motion" turns off every transition and animation.
+

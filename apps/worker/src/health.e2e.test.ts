@@ -1,6 +1,6 @@
 /**
- * T13.1 (D35) end to end: nodes show their layout health. A new project's master preview warns about wired
- * inputs that are still empty; an output warns when its text can't fit; a disconnected output is grey.
+ * T13.1 (D35) end to end: nodes show their layout health. A new project's Layer Comp lists wired
+ * inputs that are still empty, in grey (D64); an output warns when its text can't fit; a disconnected output is grey.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addOutput, connectSource, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
@@ -48,9 +48,9 @@ describe.skipIf(!adminUrl)('layout health on nodes (T13.1)', () => {
   const main = () => page.locator('.react-flow__node-mainNode');
   const banner = () => page.locator('.react-flow__node-outputNode[data-id="out:banner"]');
 
-  it('the master preview warns about a wired input with no file yet, and lists it', async () => {
-    await expect.poll(() => badge(main()).getAttribute('data-health')).toBe('warning');
-    const btn = main().getByRole('button', { name: /^Layout health: 1 warning$/ });
+  it('the Layer Comp shows a wired input with no file yet as a grey to-do, and lists it', async () => {
+    await expect.poll(() => badge(main()).getAttribute('data-health')).toBe('empty');
+    const btn = main().getByRole('button', { name: /^Layout health: 1 empty layer$/ });
     await btn.click();
     expect(await main().getByRole('list', { name: 'Layout issues' }).innerText()).toContain('Subject\nNo file or text yet');
     await page.keyboard.press('Escape');

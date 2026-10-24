@@ -37,7 +37,7 @@ describe.skipIf(!adminUrl)('content fit in outputs (T9.1)', () => {
     doc = ok(addOutput(doc, { id: 'post', label: 'Post', size: { width: 1080, height: 1350, unit: 'px' } }));
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     await page.reload();
-    await page.getByLabel('Output Story', { exact: true }).locator('.sc-render [data-source-id="subject"]').waitFor();
+    await page.getByLabel('Preview Story', { exact: true }).locator('.sc-render [data-source-id="subject"]').waitFor();
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
@@ -46,7 +46,7 @@ describe.skipIf(!adminUrl)('content fit in outputs (T9.1)', () => {
   /** A layer's box as fractions of the output thumbnail. */
   const share = (output: string, id: string) =>
     page
-      .getByLabel(`Output ${output}`, { exact: true })
+      .getByLabel(`Preview ${output}`, { exact: true })
       .locator('.sc-render')
       .first()
       .evaluate((render, sourceId) => {

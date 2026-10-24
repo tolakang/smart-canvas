@@ -41,11 +41,11 @@ describe.skipIf(!adminUrl)('comments on Previews (D63)', () => {
   });
 
   const node = (p: Page) => p.locator('.react-flow__node-outputNode[data-id="out:banner"]');
-  const editor = (p: Page) => p.getByRole('dialog', { name: 'Output editor Banner' });
+  const editor = (p: Page) => p.getByRole('dialog', { name: 'Preview editor Banner' });
   const panel = (p: Page) => editor(p).getByRole('complementary', { name: 'Comments' });
 
   it('an editor pins a comment with the Comment tool; the Preview node counts it', async () => {
-    await node(page).getByRole('button', { name: 'Edit output Banner' }).click();
+    await node(page).getByRole('button', { name: 'Edit Preview Banner' }).click();
     await editor(page).getByRole('button', { name: 'Comment', exact: true }).click();
     expect(await editor(page).getByRole('complementary', { name: 'Design' }).count()).toBe(0); // Comments in its place
     await panel(page).getByText('Click or tap the Preview to pin a comment there.').waitFor();
@@ -114,7 +114,7 @@ describe.skipIf(!adminUrl)('comments on Previews (D63)', () => {
       await phone.goto(board);
       await node(phone).waitFor();
       // Zoomed out on touch, the first tap on a panel zooms to it (D58, Q8); the second presses Edit.
-      const edit = node(phone).getByRole('button', { name: 'Edit output Banner' });
+      const edit = node(phone).getByRole('button', { name: 'Edit Preview Banner' });
       await edit.tap();
       await phone.waitForTimeout(400);
       if (!(await editor(phone).count())) await edit.tap();

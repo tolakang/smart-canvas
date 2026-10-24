@@ -51,7 +51,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                 <span>
                   {s.label}
                   {overrides.has(s.id) && (
-                    <span className="sc-edited" title="Edited by hand on this output: it no longer follows the automatic layout. Reset it in the properties panel.">
+                    <span className="sc-edited" title="Edited by hand on this Preview: it no longer follows the automatic layout. Reset it in the properties panel.">
                       edited
                     </span>
                   )}
@@ -66,9 +66,9 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                 <span className="sc-layer__actions">
                   <button
                     type="button"
-                    aria-label={`${hiddenHere ? 'Show' : 'Hide'} layer ${s.label} on this output`}
+                    aria-label={`${hiddenHere ? 'Show' : 'Hide'} layer ${s.label} on this Preview`}
                     aria-pressed={hiddenHere}
-                    title={hiddenHere ? 'Show on this output' : 'Hide on this output'}
+                    title={hiddenHere ? 'Show on this Preview' : 'Hide on this Preview'}
                     disabled={!s.visible}
                     onClick={() => run((d) => setOverrideHidden(d, outputId, s.id, !hiddenHere, author()))}
                   >

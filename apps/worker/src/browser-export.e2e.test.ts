@@ -52,7 +52,7 @@ describe.skipIf(!adminUrl)('browser export matches the worker (T11.1)', () => {
     doc = ok(addOutput(doc, { id: 'post', label: 'Post', size: { width: 1080, height: 1350, unit: 'px' } }));
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     await page.reload();
-    await page.getByLabel('Output Post', { exact: true }).locator('.sc-render [data-source-id="subject"]').waitFor();
+    await page.getByLabel('Preview Post', { exact: true }).locator('.sc-render [data-source-id="subject"]').waitFor();
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
@@ -63,7 +63,7 @@ describe.skipIf(!adminUrl)('browser export matches the worker (T11.1)', () => {
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Format').selectOption(format);
     await dialog.getByText('Made in your browser').waitFor();
-    await dialog.getByRole('button', { name: /^Export 1 output/ }).click();
+    await dialog.getByRole('button', { name: /^Export 1 Preview/ }).click();
     const row = dialog.getByRole('list', { name: 'Export progress' }).locator('li');
     await expect.poll(() => row.getAttribute('data-status'), { timeout: 60_000 }).toBe('done');
     expect(await row.getAttribute('data-where')).toBe('browser');

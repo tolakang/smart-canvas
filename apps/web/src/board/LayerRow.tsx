@@ -105,7 +105,7 @@ export function LayerActions({ source }: { source: InputSource }) {
 }
 
 /** The one confirm before deleting an input (row trash, node header, right-click menu). */
-export const confirmDelete = (label: string) => window.confirm(`Delete input "${label}"? Its wires and output overrides go with it.`);
+export const confirmDelete = (label: string) => window.confirm(`Delete input "${label}"? Its wires and edits on Previews go with it.`);
 
 const PATHS = {
   eye: 'M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5zm7 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
@@ -132,6 +132,7 @@ const PATHS = {
   hand: 'M5.5 8V4a1 1 0 0 1 2 0v3.5M7.5 3.5v-1a1 1 0 0 1 2 0V7.5M9.5 4a1 1 0 0 1 2 0v4M11.5 6a1 1 0 0 1 2 0v3.5A4.5 4.5 0 0 1 9 14H8.5a4 4 0 0 1-3.2-1.6L3 9.5a1 1 0 0 1 1.6-1.2L5.5 9.5',
   marquee: 'M2 5V2h3M7 2h2M11 2h3v3M14 7v2M14 11v3h-3M9 14H7M5 14H2v-3M2 9V7',
   minus: 'M3 8h10',
+  list: 'M6 4h7.5M6 8h7.5M6 12h7.5M2.5 4h1M2.5 8h1M2.5 12h1',
   fit: 'M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10',
   grid: 'M2.5 2.5h11v11h-11zM6.2 2.5v11M9.8 2.5v11M2.5 6.2h11M2.5 9.8h11',
   arrange: 'M2.5 2.5v11M5 3.5h8.5v3H5zM5 9.5h5.5v3H5z',

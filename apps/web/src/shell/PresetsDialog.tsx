@@ -152,7 +152,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
     <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="presets-title">
       <div className="sc-card sc-presets">
         <h1 id="presets-title">Size presets</h1>
-        <p className="sc-muted sc-lede">Sizes for new outputs. Built-in ones are fixed{props.isAdmin ? '; add your team’s own below.' : '; admins can add the team’s own.'}</p>
+        <p className="sc-muted sc-lede">Sizes for new Previews. Built-in ones are fixed{props.isAdmin ? '; add your team’s own below.' : '; admins can add the team’s own.'}</p>
         {list !== null && familiesOf(list).length > 0 && (
           <section aria-label="Preset node families">
             <h2>Preset node families</h2>

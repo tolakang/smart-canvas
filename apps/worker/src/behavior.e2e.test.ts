@@ -26,7 +26,7 @@ describe.skipIf(!adminUrl)('input behaviours (T8.7)', () => {
 
   const saved = () => page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
-  const story = () => page.getByLabel('Output Story', { exact: true });
+  const story = () => page.getByLabel('Preview Story', { exact: true });
 
   /** The layer's box inside the output thumbnail, as fractions of the thumbnail. */
   const coverage = (id: string) =>

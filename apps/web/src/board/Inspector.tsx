@@ -142,7 +142,7 @@ function OutputInspector({ output }: { output: OutputNode }) {
       {output.overrides.length > 0 && (
         <Section title="Edited by hand">
           <p className="sc-muted sc-inspector-panel__hint">
-            {output.overrides.length} {output.overrides.length === 1 ? 'layer differs' : 'layers differ'} from the automatic layout on this output.
+            {output.overrides.length} {output.overrides.length === 1 ? 'layer differs' : 'layers differ'} from the automatic layout on this Preview.
           </p>
           {!readOnly && (
             <button type="button" className="sc-btn" onClick={() => window.confirm(`Reset all overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}>
@@ -176,8 +176,8 @@ function InputInspector({ source }: { source: InputSource }) {
         </div>
       </Section>
       {source.behavesLike === 'background' && source.content.kind !== 'text' && (
-        <Section title="For vertical and horizontal outputs">
-          <p className="sc-muted sc-inspector-panel__hint">Optional: a picture for vertical outputs and one for horizontal outputs. Each output uses the one for its shape; square outputs use the main picture.</p>
+        <Section title="For vertical and horizontal Previews">
+          <p className="sc-muted sc-inspector-panel__hint">Optional: a picture for vertical Previews and one for horizontal Previews. Each Preview uses the one for its shape; square Previews use the main picture.</p>
           <BackgroundSlots source={source} />
         </Section>
       )}
@@ -230,7 +230,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
     <>
       <Section title="Headline node">
         <NameField label="Headline name" value={pair.label} onCommit={(label) => run((d) => renamePair(d, pair.id, label))} />
-        <div className="sc-seg" role="radiogroup" aria-label="Language every output uses">
+        <div className="sc-seg" role="radiogroup" aria-label="Language every Preview uses">
           {(['km', 'en'] as const).map((lang) => (
             <label key={lang}>
               <input type="radio" name={`inspector-use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang))} />
@@ -238,9 +238,9 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
             </label>
           ))}
         </div>
-        <p className="sc-inspector-panel__hint">Every output draws the language in use. Each language keeps its own position and size.</p>
+        <p className="sc-inspector-panel__hint">Every Preview draws the language in use. Each language keeps its own position and size.</p>
         {!readOnly && (
-          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and output overrides go with them.`) && run((d) => deletePair(d, pair.id))}>
+          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and edits on Previews go with them.`) && run((d) => deletePair(d, pair.id))}>
             <Icon name="trash" /> Delete node
           </button>
         )}
@@ -278,7 +278,7 @@ function AssetsInspector({ stackId }: { stackId: string }) {
           </div>
         )}
         {!readOnly && (
-          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${stack.label}`} onClick={() => window.confirm(`Delete “${stack.label}” and its ${items.length} ${kind === 'text' ? 'text slots' : 'pictures'}? Their wires and output overrides go with them.`) && run((d) => deleteStack(d, stack.id))}>
+          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${stack.label}`} onClick={() => window.confirm(`Delete “${stack.label}” and its ${items.length} ${kind === 'text' ? 'text slots' : 'pictures'}? Their wires and edits on Previews go with them.`) && run((d) => deleteStack(d, stack.id))}>
             <Icon name="trash" /> Delete node
           </button>
         )}

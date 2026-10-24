@@ -82,14 +82,14 @@ describe.skipIf(!adminUrl)('S2 Khmer text parity: board = export worker', () => 
     for (const o of OUTPUTS) doc = ok(addOutput(doc, o));
     expect((await page.request.put(projectUrl(), { data: { rev, doc } })).status()).toBe(200);
     await page.reload();
-    for (const o of OUTPUTS) await page.getByLabel(`Output ${o.label}`, { exact: true }).locator('.sc-render [data-source-id=headline] > div').first().waitFor();
+    for (const o of OUTPUTS) await page.getByLabel(`Preview ${o.label}`, { exact: true }).locator('.sc-render [data-source-id=headline] > div').first().waitFor();
   }
 
   for (const [n, h] of HEADLINES.entries()) {
     it(`headline ${n + 1} (${h.font} ${h.weight}): same lines, word breaks, nothing clipped`, async () => {
       await showHeadline(h);
       for (const o of OUTPUTS) {
-        const onScreen = await readHeadline(page.getByLabel(`Output ${o.label}`, { exact: true }).locator('.sc-render'));
+        const onScreen = await readHeadline(page.getByLabel(`Preview ${o.label}`, { exact: true }).locator('.sc-render'));
         const render = await openRender(stack.env.browser, stack.env.webUrl, { ...ids, target: o.id, bleed: false, scale: 1 }, stack.api);
         try {
           const frame = render.locator(FRAME);

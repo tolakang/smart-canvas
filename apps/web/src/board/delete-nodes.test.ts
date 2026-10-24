@@ -19,7 +19,7 @@ describe('Delete key on the board', () => {
     const d = sample();
     const t = deletableNodes(d, [inputNodeId('logo'), MAIN_ID, outputNodeId('o1')]);
     expect(t.map((x) => x.kind)).toEqual(['input', 'output']);
-    expect(deleteQuestion(t.slice(0, 1))).toBe('Delete “Logo”? Their wires and output overrides go with them.');
+    expect(deleteQuestion(t.slice(0, 1))).toBe('Delete “Logo”? Their wires and edits on Previews go with them.');
     expect(deleteQuestion(t)).toMatch(/^Delete 2 nodes\?/);
   });
 

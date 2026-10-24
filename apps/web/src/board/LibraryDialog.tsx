@@ -6,6 +6,7 @@ import { addSourceFromLibrary, fillToCss, LIMITS, type LibraryItem, type SourceR
 import { useEffect, useRef, useState } from 'react';
 import { api, assetUrl } from '../api';
 import { newId } from './ids';
+import { Icon } from './LayerRow';
 
 const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 
@@ -62,7 +63,7 @@ export function LibraryDialog(props: {
         {items === null ? (
           <p className="sc-muted">Loading…</p>
         ) : shown.length === 0 ? (
-          <p className="sc-muted">{items.length ? 'Nothing matches.' : 'Nothing saved yet. Use 📚 on an input to save it here.'}</p>
+          <p className="sc-muted">{items.length ? 'Nothing matches.' : 'Nothing saved yet. Select an input and choose Save to library in its panel.'}</p>
         ) : (
           <ul className="sc-list">
             {shown.map((item) => (
@@ -90,7 +91,7 @@ export function LibraryDialog(props: {
                       Add
                     </button>
                     <button type="button" aria-label={`Delete ${item.name} from library`} onClick={() => void remove(item)}>
-                      🗑
+                      <Icon name="trash" />
                     </button>
                   </span>
                 )}

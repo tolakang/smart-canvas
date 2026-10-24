@@ -99,10 +99,10 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         )}
         <div className={`sc-seg sc-assets__view ${NO_CANVAS}`} role="group" aria-label={`${stack.label} view`}>
           <button type="button" aria-pressed={!list} aria-label="Grid view" title="Grid" onClick={() => setList(false)}>
-            ▦
+            <Icon name="grid" />
           </button>
           <button type="button" aria-pressed={list} aria-label="List view" title="List" onClick={() => setList(true)}>
-            ☰
+            <Icon name="list" />
           </button>
         </div>
       </div>
