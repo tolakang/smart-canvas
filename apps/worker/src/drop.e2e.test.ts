@@ -10,15 +10,13 @@ import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { boardNode, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
-/** N2: a one-page PDF (200 × 100 pt) with a filled rectangle, with a correct cross-reference table. */
-function onePagePdf(): string {
-  const content = '0 0.6 0.4 rg 20 20 160 60 re f';
-  const objects = [
-    '<< /Type /Catalog /Pages 2 0 R >>',
-    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Contents 4 0 R >>',
-    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
-  ];
+/** A PDF whose pages are `pages` (size in pt and a content stream), with a correct cross-reference table. */
+function pdfOf(pages: { w: number; h: number; content: string }[]): string {
+  const objects = ['<< /Type /Catalog /Pages 2 0 R >>', `<< /Type /Pages /Kids [${pages.map((_, i) => `${3 + 2 * i} 0 R`).join(' ')}] /Count ${pages.length} >>`];
+  for (const [i, p] of pages.entries()) {
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${p.w} ${p.h}] /Contents ${4 + 2 * i} 0 R >>`);
+    objects.push(`<< /Length ${p.content.length} >>\nstream\n${p.content}\nendstream`);
+  }
   let out = '%PDF-1.4\n';
   const offsets = objects.map((o, i) => {
     const at = out.length;
@@ -29,6 +27,10 @@ function onePagePdf(): string {
   out += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('')}`;
   return `${out}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
 }
+/** N2: a one-page PDF (200 × 100 pt) with a filled rectangle. */
+const onePagePdf = () => pdfOf([{ w: 200, h: 100, content: '0 0.6 0.4 rg 20 20 160 60 re f' }]);
+/** Q1: two pages — 200 × 100 pt green, then 120 × 160 pt blue. */
+const twoPagePdf = () => pdfOf([{ w: 200, h: 100, content: '0 0.6 0.4 rg 20 20 160 60 re f' }, { w: 120, h: 160, content: '0 0 1 rg 20 20 80 120 re f' }]);
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100" fill="#0a7"/></svg>';
 
@@ -131,6 +133,49 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
     expect(page.url()).toContain('#/t/');
     expect(await boardNode(page, 'Text').getByRole('alert').count()).toBe(0);
   }, 30_000);
+
+  it('Q1: a PDF of several pages asks which page — the one picked is kept, in vector; Cancel adds nothing', async () => {
+    const dialog = page.getByRole('dialog', { name: 'Which page?' });
+    await dropFile(boardNode(page, 'Image').locator('.sc-node__head').first(), { name: 'two.pdf', type: 'application/pdf', text: twoPagePdf() });
+    await dialog.waitFor({ timeout: 20_000 });
+    expect(await dialog.getByRole('button', { name: /^Page \d+$/ }).count()).toBe(2);
+    await expect.poll(() => dialog.locator('.sc-pdfpages__page img').count(), { timeout: 15_000 }).toBe(2); // thumbnails
+    await dialog.getByRole('button', { name: 'Page 2' }).click();
+    await dialog.waitFor({ state: 'detached' });
+    await expect.poll(async () => (await doc()).sources.some((x) => x.label === 'two'), { timeout: 20_000 }).toBe(true);
+    await saved();
+    const added = (await doc()).sources.find((x) => x.label === 'two');
+    expect(added?.kind).toBe('vector');
+    const assetId = added?.content.kind === 'vector' ? added.content.assetId : '';
+    const svg = await (await page.request.get(url.replace(/projects\/.*$/, `assets/${assetId}/content`))).text();
+    expect(svg).toContain('width="120" height="160"');
+    expect(svg).toContain('fill="rgb(0%, 0%, 100%)"');
+    // Cancel: nothing is uploaded, nothing added, no error.
+    const before = (await doc()).sources.length;
+    await dropFile(boardNode(page, 'Image').locator('.sc-node__head').first(), { name: 'again.pdf', type: 'application/pdf', text: twoPagePdf() });
+    await dialog.waitFor({ timeout: 20_000 });
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await dialog.waitFor({ state: 'detached' });
+    await page.waitForTimeout(1500);
+    expect((await doc()).sources.length).toBe(before);
+    expect(await boardNode(page, 'Image').first().getByRole('alert').count()).toBe(0);
+  }, 60_000);
+
+  it('Q1: a slot that takes only pixels draws the page picked', async () => {
+    const bgNode = page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: /^Background$/ }) });
+    const dialog = page.getByRole('dialog', { name: 'Which page?' });
+    await dropFile(bgNode.locator('.sc-bg-slot--horizontal'), { name: 'bg2.pdf', type: 'application/pdf', text: twoPagePdf() });
+    await dialog.waitFor({ timeout: 20_000 });
+    await dialog.getByRole('button', { name: 'Page 2' }).click();
+    await expect.poll(async () => {
+      const bg = (await doc()).sources.find((x) => x.id === 'background');
+      return bg?.content.kind === 'image' ? (bg.content.variants?.horizontal ?? '') : '';
+    }, { timeout: 20_000 }).not.toBe('');
+    const bg = (await doc()).sources.find((x) => x.id === 'background');
+    const assetId = bg?.content.kind === 'image' ? bg.content.variants?.horizontal : '';
+    const meta = await sharp(await (await page.request.get(url.replace(/projects\/.*$/, `assets/${assetId}/content`))).body()).metadata();
+    expect([meta.width, meta.height]).toEqual([3000, 4000]);
+  }, 60_000);
 
   it('N2: a slot that takes only pixels (a Background slot) gets the PDF’s first page as a PNG', async () => {
     const bgNode = page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: /^Background$/ }) });

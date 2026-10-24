@@ -7,7 +7,7 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { addPairRow, deletePair, deletePairRow, LANGUAGE_LABEL, LIMITS, mainComposition, setLanguage, unfitPictures, withComposition, type InputSource, type ProjectDoc } from '@smart-canvas/core';
 import { useState, type DragEvent } from 'react';
-import { ApiError, assetUrl, uploadAsset } from '../api';
+import { ApiError, assetUrl, UploadCancelled, uploadAsset } from '../api';
 import { setPicture, withSource } from './content';
 import { PICTURE_ACCEPT } from './stack-upload';
 import { useBoard } from './context';
@@ -58,6 +58,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
       const kind = asset.kind;
       run((d) => ({ ok: true, doc: pictureIntoSlot(d, s, row[lang === 'km' ? 'en' : 'km'], asset.id, kind) }));
     } catch (err) {
+      if (err instanceof UploadCancelled) return;
       setError(err instanceof ApiError && err.status === 415 ? `${file.name}: use a PNG, JPEG, WebP, SVG or PDF file.` : `${file.name}: upload failed.`);
     } finally {
       setBusy(null);

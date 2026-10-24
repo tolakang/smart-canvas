@@ -999,3 +999,11 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-board__toast button { min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: transparent; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 .sc-board__toast button:hover { background: color-mix(in srgb, var(--surface) 15%, transparent); }
 @media (pointer: coarse) { .sc-board__toast button { min-height: 44px; } }
+
+/* Q1: which page of a PDF. */
+.sc-pdfpages { width: min(560px, calc(100vw - 32px)); max-height: 85vh; display: grid; gap: var(--sp-2); grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.sc-pdfpages h2 { margin: 0; }
+.sc-pdfpages__grid { list-style: none; margin: 0; padding: 0; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--sp-2); }
+.sc-pdfpages__page { width: 100%; display: grid; gap: 4px; justify-items: center; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: inherit; font: inherit; font-size: var(--fs-sm); cursor: pointer; min-height: 44px; }
+.sc-pdfpages__page:hover, .sc-pdfpages__page:focus-visible { border-color: var(--accent); }
+.sc-pdfpages__page img, .sc-pdfpages__blank { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: var(--canvas); border-radius: var(--r-sm); }

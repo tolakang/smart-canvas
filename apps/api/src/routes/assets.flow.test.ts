@@ -27,9 +27,9 @@ describe.skipIf(!adminUrl)('asset upload (Postgres)', () => {
   let editor = '';
   let viewer = '';
 
-  const upload = (data: Uint8Array, filename = 'f.bin', contentType = 'application/octet-stream', cookie = editor) => {
+  const upload = (data: Uint8Array, filename = 'f.bin', contentType = 'application/octet-stream', cookie = editor, query = '') => {
     const m = multipart(data, filename, contentType);
-    return app.inject({ method: 'POST', url: `/teams/${teamId}/assets`, payload: m.payload, headers: { ...m.headers, cookie } });
+    return app.inject({ method: 'POST', url: `/teams/${teamId}/assets${query}`, payload: m.payload, headers: { ...m.headers, cookie } });
   };
   const get = (url: string, cookie = viewer) => app.inject({ method: 'GET', url, headers: { cookie } });
 
@@ -111,6 +111,17 @@ describe.skipIf(!adminUrl)('asset upload (Postgres)', () => {
     const hostile = (await get(`/teams/${teamId}/assets/${(await upload(fixture('hostile.pdf'), 'h.pdf', 'application/pdf')).json().id}/content`)).body;
     expect(hostile).not.toMatch(/script|evil\.example|alert/i);
     expect(hostile).toMatch(/<use href="#glyph/);
+  });
+
+  it('Q1: ?page=N keeps that page of a PDF; a page past the last is unreadable, a bad number a 400', async () => {
+    const two = fixture('two-pages.pdf');
+    const second = await upload(two, 'two.pdf', 'application/pdf', editor, '?page=2');
+    expect(second.statusCode).toBe(201);
+    expect(second.json()).toMatchObject({ kind: 'vector', width: 120, height: 160 });
+    expect((await get(`/teams/${teamId}/assets/${second.json().id}/content`)).body).toContain('fill="rgb(0%, 0%, 100%)"');
+    expect((await upload(two, 'two.pdf', 'application/pdf')).json()).toMatchObject({ width: 200, height: 100 });
+    expect((await upload(two, 'two.pdf', 'application/pdf', editor, '?page=3')).json()).toMatchObject({ error: 'unreadable_pdf' });
+    expect((await upload(two, 'two.pdf', 'application/pdf', editor, '?page=0')).statusCode).toBe(400);
   });
 
   it('rejects SVGs with entity declarations or references', async () => {
