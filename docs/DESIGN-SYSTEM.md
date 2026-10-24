@@ -154,3 +154,12 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Layer Comp group:** a soft tinted frame (no dashed line).
 - **Wires and ports:** 2 px wires tinted blue, accent with a glow when selected or hovered; 12 px ports with a white ring.
 - **Zoomed out (below 60 %):** each panel gets a dark name tag above it (Preview tags add ✓ approved / changed and the open-comment count). Tags keep their screen size at any zoom (`--zoom-inv`) and never take a click (`board/ZoomLabels.tsx`).
+
+## Projects home and sign-in (U5)
+- **Brand:** `ui/Brand.tsx` — the mark (three stacked frames on a blue–violet tile) and the name "Smart Canvas".
+- **Home:** on the ambient backdrop. A glass brand bar (mark, name, the team, Team and Size presets as quiet buttons), a 36 px "Projects" title with one line of lede and the **New project** button, then the project cards: a 16:10 cover in the project's colour with its initial (a real thumbnail comes with U5b), the name and when it was edited; ⋯ shows on hover (always on touch). Cards lift on hover.
+- **Sign in:** a brand panel (the promise, a small illustration of frames) beside the form card; the form has a Show / Hide password button. On narrow screens only the card shows, with the mark above it.
+
+## Dialogs (U6)
+- 560 px wide (never wider than the screen), 20 px title, section headings in small caps, actions on the right with the main one last (Cancel, Export).
+- Export's sizes are a soft list of rows with checkboxes; Fonts shows each family as a sample card; lists of members and presets are soft cards.

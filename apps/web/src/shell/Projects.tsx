@@ -7,6 +7,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { api, type Me } from '../api';
 import { ContextMenu, type MenuItem, type MenuState } from '../board/ContextMenu';
+import { BrandMark, PRODUCT_NAME } from '../ui/Brand';
 import { Icon } from '../board/LayerRow';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
 import { PresetsDialog } from './PresetsDialog';
@@ -177,25 +178,38 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
   );
 
   return (
-    <section className="sc-card sc-card--wide sc-home">
+    <section className="sc-home">
+      <nav className="sc-home__nav" aria-label="App">
+        <span className="sc-brand">
+          <BrandMark />
+          {PRODUCT_NAME}
+        </span>
+        <span className="sc-home__team-chip" title="Your team">
+          <span className={`sc-tile sc-tile--${tileColor(team.name)}`} aria-hidden="true">
+            {initialOf(team.name)}
+          </span>
+          {team.name}
+        </span>
+        <span className="sc-home__tools">
+          <button type="button" className="sc-btn sc-btn--quiet" onClick={() => setShowTeam(true)}>
+            Team
+          </button>
+          <button type="button" className="sc-btn sc-btn--quiet" onClick={() => setShowPresets(true)}>
+            Size presets
+          </button>
+        </span>
+      </nav>
       <header className="sc-home__head">
         <div className="sc-home__title">
           <span className="sc-home__team">{team.name}</span>
           <h1>Projects</h1>
+          <p className="sc-muted sc-home__lede">Every campaign, every size. Open a board or start a new one.</p>
         </div>
-        <span className="sc-home__tools">
-          <button type="button" className="sc-btn" onClick={() => setShowTeam(true)}>
-            Team
+        {canEdit && (
+          <button type="button" className="sc-btn sc-btn--primary sc-home__new-btn" onClick={() => setCreating({ templateId: null })}>
+            <Icon name="plus" /> New project
           </button>
-          <button type="button" className="sc-btn" onClick={() => setShowPresets(true)}>
-            Size presets
-          </button>
-          {canEdit && (
-            <button type="button" className="sc-btn sc-btn--primary" onClick={() => setCreating({ templateId: null })}>
-              <Icon name="plus" /> New project
-            </button>
-          )}
-        </span>
+        )}
       </header>
 
       {rows === null ? (

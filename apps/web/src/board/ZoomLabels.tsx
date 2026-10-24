@@ -52,7 +52,14 @@ export function ZoomLabels(props: {
                 <span className="sc-zlabel__name">{title}</span>
                 {state === 'approved' && <span className="sc-zlabel__mark sc-zlabel__mark--ok">✓</span>}
                 {state === 'changed' && <span className="sc-zlabel__mark sc-zlabel__mark--warn">changed</span>}
-                {open > 0 && <span className="sc-zlabel__mark">💬 {open}</span>}
+                {open > 0 && (
+                  <span className="sc-zlabel__mark">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                      <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
+                    </svg>{' '}
+                    {open}
+                  </span>
+                )}
               </span>
             </div>
           );
