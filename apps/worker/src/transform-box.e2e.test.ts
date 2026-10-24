@@ -255,7 +255,6 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     // Double-tap the edge: back to where it was.
     const e1 = await centreOf('[data-tb-handle="e"]');
     await tap(e1);
-    await phone.waitForTimeout(60);
     await tap(e1);
     await expect.poll(async () => Math.abs((await placement()).shear ?? 0), { timeout: 10_000 }).toBeLessThan(1e-6);
     near(await placement(), before);
@@ -280,8 +279,8 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
         for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
       throw new Error('no empty stage');
     });
+    // (Two taps within the double-tap time: send them back to back, as a slow runner adds its own delay.)
     await tap(empty2);
-    await phone.waitForTimeout(80);
     await tap(empty2);
     await expect.poll(async () => Math.round((await canvasBox()).width)).toBe(Math.round(w0));
     // Tapping the selected layer again picks the one behind it (a picture over the background).
