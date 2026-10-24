@@ -2,17 +2,26 @@
  * Output editor (T5.1, D13): the shared canvas editor on one output's computed layout. Every edit is an
  * override on that output (move/resize/rotate → frame, text panel → style, eye → hidden); the master
  * and the other outputs are untouched.
+ * D63: the Comment tool turns a click or tap on the Preview into a pinned comment; the Comments panel takes the
+ * Design panel's place while it is on.
  */
 import { computeLayout, isOutputConnected, layerSpots, outputComposition, outputScene, resetOutputOverrides, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type OutputNode, type TransformHistory } from '@smart-canvas/core';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '../board/context';
+import { threadsOf } from '../board/review';
 import { CanvasEditor } from './CanvasEditor';
+import { CommentPins, CommentsPanel } from './CommentsPanel';
 import { LayersPanel } from './LayersPanel';
 import { OverrideInspector } from './OverrideInspector';
 import { TextPanel } from './TextPanel';
 
-export function OutputEditor({ outputId, onClose }: { outputId: string; onClose: () => void }) {
-  const { doc, run, layoutDeps, author, readOnly } = useBoard();
+export function OutputEditor({ outputId, comments = false, onClose }: { outputId: string; comments?: boolean; onClose: () => void }) {
+  const { doc, run, layoutDeps, author, readOnly, review } = useBoard();
+  /** D63: the Comment tool, the pin being written, the thread picked, and whether resolved threads show. */
+  const [commenting, setCommenting] = useState(comments);
+  const [pending, setPending] = useState<{ x: number; y: number } | null>(null);
+  const [active, setActive] = useState<string | null>(null);
+  const [showResolved, setShowResolved] = useState(false);
   const output = doc.outputs.find((o) => o.id === outputId);
   const scene = useMemo(
     () => (output && layoutDeps ? outputScene(computeLayout(doc, output.id, layoutDeps), output) : null),
@@ -54,6 +63,7 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
   if (!output) return null;
   if (!scene) return <div className="sc-editor-screen sc-muted">Loading fonts…</div>;
   const connected = isOutputConnected(doc, output.id);
+  const openThreads = threadsOf(review, output.id).length;
   return (
     <CanvasEditor
       label={`Output editor ${output.label}`}
@@ -91,6 +101,37 @@ export function OutputEditor({ outputId, onClose }: { outputId: string; onClose:
           {s.content.kind === 'text' && <TextPanel key={s.id} source={{ ...s, content: s.content }} outputId={output.id} />}
         </div>
       )}
+      tools={
+        <button
+          type="button"
+          className="sc-fig__tool sc-fig__tool--comment"
+          aria-label="Comment"
+          title="Comment: pin a comment on the Preview"
+          aria-pressed={commenting}
+          onClick={() => {
+            setCommenting((on) => !on);
+            setPending(null);
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+            <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
+          </svg>
+          {openThreads > 0 && <span className="sc-fig__count">{openThreads}</span>}
+        </button>
+      }
+      overlay={
+        commenting
+          ? (scale) => (
+              <CommentPins threads={threadsOf(review, output.id, showResolved)} scene={scene} scale={scale} active={active} pending={pending} onPick={setActive} />
+            )
+          : undefined
+      }
+      onPoint={commenting ? (p) => (setPending(p), setActive(null)) : undefined}
+      aside={
+        commenting ? (
+          <CommentsPanel outputId={output.id} showResolved={showResolved} onShowResolved={setShowResolved} pending={pending} onPending={setPending} active={active} onActive={setActive} />
+        ) : undefined
+      }
       onClose={onClose}
     />
   );

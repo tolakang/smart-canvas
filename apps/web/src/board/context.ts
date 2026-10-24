@@ -1,17 +1,26 @@
-import type { InputSource, LayoutDeps, OverrideAuthor, ProjectDoc, SizePreset, SourceResult } from '@smart-canvas/core';
+import type { InputSource, LayoutDeps, OverrideAuthor, ProjectDoc, SizePreset, SourceResult, TeamRole } from '@smart-canvas/core';
 import type { AssetMeta } from '../api';
 import type { TeamFont } from '../fonts/loader';
+import type { ReviewData } from './review';
 import { createContext, useContext } from 'react';
 
 /** What node editors need from the board: where to upload, whether edits are allowed, how to apply them. */
 export interface BoardActions {
   teamId: string;
   readOnly: boolean;
+  /** D63: who is signed in and their role in the team (comments: who may edit, resolve, delete). */
+  userId: string;
+  role: TeamRole;
+  /** D63: the project's API path, and its review of Previews (comments, approvals); null until loaded. */
+  projectUrl: string;
+  review: ReviewData | null;
+  reloadReview: () => void;
   /** The current project document (follows every edit). */
   doc: ProjectDoc;
   /** Opens the master preview editor on a composition (default: the master preview). */
   openMainEditor: (compositionId?: string) => void;
-  openOutputEditor: (outputId: string) => void;
+  /** `comments`: open with the Comment tool on (D63). */
+  openOutputEditor: (outputId: string, opts?: { comments?: boolean }) => void;
   /** Opens the export dialog with these outputs chosen (T13.7: export a group); N6: or a Preset node's sizes, as one ZIP. */
   exportOutputs: (outputIds: string[], presetSetId?: string) => void;
   /** Stamp for override writes: the signed-in user, now. */

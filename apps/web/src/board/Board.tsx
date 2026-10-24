@@ -26,7 +26,7 @@ import {
   LIMITS,
   reconnectNeedsChoice,
   reconnectOutput,
-  setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult } from '@smart-canvas/core';
+  setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult, type TeamRole } from '@smart-canvas/core';
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -105,6 +105,7 @@ import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
 import { addPictures, uploadPictures } from './stack-upload';
 import { HistoryPanel, versionTitle, versionWhen, type Version } from './HistoryPanel';
+import { useReview } from './review';
 
 interface Loaded {
   rev: number;
@@ -133,7 +134,7 @@ interface Previewing {
   doc: ProjectDoc;
 }
 
-export function Board(props: { teamId: string; projectId: string; userId: string; readOnly: boolean; onBack: () => void }) {
+export function Board(props: { teamId: string; projectId: string; userId: string; readOnly: boolean; role: TeamRole; onBack: () => void }) {
   const { teamId, projectId, readOnly } = props;
   const url = `/teams/${teamId}/projects/${projectId}`;
   const [reloadKey, setReloadKey] = useState(0);
@@ -201,6 +202,7 @@ export function Board(props: { teamId: string; projectId: string; userId: string
       teamId={teamId}
       projectId={projectId}
       userId={props.userId}
+      role={props.role}
       url={url}
       initial={previewing ? { rev: previewing.version.rev, doc: { ...previewing.doc, name: result.ok.doc.name } } : result.ok}
       readOnly={readOnly || Boolean(previewing)}
@@ -250,6 +252,7 @@ function BoardCanvas(props: {
   teamId: string;
   projectId: string;
   userId: string;
+  role: TeamRole;
   url: string;
   initial: Loaded;
   readOnly: boolean;
@@ -271,6 +274,9 @@ function BoardCanvas(props: {
   /** The composition open in the master preview editor (the master or one of its layouts). */
   const [editingMain, setEditingMain] = useState<string | null>(null);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
+  const [outputComments, setOutputComments] = useState(false);
+  /** D63: the review of Previews; polled while a Preview editor is open. */
+  const review = useReview(url, Boolean(editingOutput));
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const nodesRef = useRef(nodes);
   useEffect(() => {
@@ -662,9 +668,17 @@ function BoardCanvas(props: {
     () => ({
       teamId,
       readOnly,
+      userId: props.userId,
+      role: props.role,
+      projectUrl: url,
+      review: review.data,
+      reloadReview: review.reload,
       doc,
       openMainEditor: (compositionId: string = MAIN_ID) => setEditingMain(compositionId),
-      openOutputEditor: (id: string) => setEditingOutput(id),
+      openOutputEditor: (id: string, opts?: { comments?: boolean }) => {
+        setOutputComments(Boolean(opts?.comments));
+        setEditingOutput(id);
+      },
       exportOutputs: (ids: string[], set?: string) => void autosave.flush().then(() => setExporting({ outputs: ids, ...(set ? { set } : {}) })),
       author,
       teamFonts,
@@ -682,7 +696,7 @@ function BoardCanvas(props: {
       setStackFocus,
       run,
     }),
-    [teamId, readOnly, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
+    [teamId, readOnly, props.userId, props.role, url, review.data, review.reload, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );
 
   // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.
@@ -1514,7 +1528,7 @@ function BoardCanvas(props: {
           )}
           {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
           {editingMain && <MainEditor compositionId={editingMain} onClose={() => setEditingMain(null)} />}
-          {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}
+          {editingOutput && <OutputEditor outputId={editingOutput} comments={outputComments} onClose={() => setEditingOutput(null)} />}
         </BoardContext.Provider>
       </div>
       {reconnecting && (

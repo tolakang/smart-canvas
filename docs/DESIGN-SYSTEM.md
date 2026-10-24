@@ -126,3 +126,9 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **List:** newest first, grouped by Today, Yesterday, then the date. Each row says what the version is (Auto-saved, Before deleting 1 input, Before restore, or its name), then the time and who. The version shown is highlighted.
 - **Preview:** the board shows the version read-only under a light-blue bar: "Version from Today, 14:05 · Before deleting 1 input · Dara", with **Restore** (accent, editors only) and **Close**. The save status is hidden while a version is shown.
 - **Naming:** an editor names the board as it is now from the field at the top of the panel (hidden while a version is shown). A named version has a trash button; it asks before deleting.
+
+## Comments on Previews (D63)
+- **Comment tool:** a speech-bubble tool after Move / Hand in the Preview editor's bar, with the open count on it. While it is on, a click or tap on the Preview pins a new comment there, and the Comments panel takes the Design panel's place.
+- **Pins:** accent-blue tags with the thread's number, their tail on the spot; the picked one is dark, resolved ones grey, the one being written amber. Bigger on touch (32 px).
+- **Comments panel:** "Show resolved" at the top, then the new comment's box (Post, Cancel), the threads with their replies indented, and "Comment on the whole Preview" at the bottom. Each comment shows who, when and the text; Resolve / Reopen, Edit and Delete show only to whoever may use them. Ctrl/⌘ + Enter posts, Esc cancels.
+- **Preview nodes:** a light-blue pill with a speech bubble and the open count, next to the health badge; it opens the editor on its comments.

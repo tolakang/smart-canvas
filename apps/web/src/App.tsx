@@ -56,6 +56,7 @@ function Shell() {
         projectId={route.projectId}
         userId={me.user.id}
         readOnly={team.role === 'viewer'}
+        role={team.role}
         onBack={() => (window.location.hash = '#/')}
       />
     );
