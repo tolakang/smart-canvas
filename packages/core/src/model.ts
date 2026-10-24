@@ -11,7 +11,6 @@ export type Unit = 'px' | 'mm';
 export type TeamRole = 'admin' | 'editor' | 'viewer';
 export type SourceKind = 'image' | 'vector' | 'text' | 'fill';
 export type Behavior = 'background' | 'subject' | 'text' | 'logo' | 'decoration';
-export type LayoutFamily = 'auto' | 'stack' | 'side';
 export type ExportFormat = 'png' | 'jpg' | 'webp' | 'svg' | 'pdf';
 export type PresetGroup = 'print' | 'social';
 
@@ -32,7 +31,6 @@ export const DEFAULTS = {
   minFontPx: 12, // design px
   minLogoWidthPct: 8, // of min(trim w, trim h)
   fontStepPx: 0.5,
-  sideFamilyMinRatio: 1.3, // w/h at or above → 'side' when family = 'auto'
 } as const;
 
 // ---------- geometry ----------
@@ -170,7 +168,6 @@ export interface OutputNode {
   exportScale?: number; // px outputs; 1..4, default 1
   bleedMm?: number; // default 0 (print presets set 3)
   safeMarginPct?: number; // default DEFAULTS.safeMarginPct
-  family: LayoutFamily; // default 'auto'
   overrides: Override[]; // empty = fully automatic
   /** Only present while disconnected: frames captured at disconnect time. Deleted on reconnect.
    *  Frames only: text/asset content edits on sources still show; positions/sizes stay frozen. */
@@ -209,7 +206,7 @@ export interface BoardGroup {
 export type GroupColor = 'grey' | 'blue' | 'purple' | 'green' | 'orange' | 'red';
 
 export interface ProjectDoc {
-  schema: 3;
+  schema: 4;
   rev: number; // increments on every save; reject stale writes
   name: string;
   compositions: Composition[]; // [0] is 'main'; length <= LIMITS.maxCompositions

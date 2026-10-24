@@ -17,7 +17,6 @@ export interface LayoutItem {
 
 export interface LayoutResult {
   metrics: CanvasMetrics;
-  family: 'stack' | 'side';
   items: LayoutItem[]; // back→front (highest port first)
 }
 

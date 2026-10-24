@@ -29,7 +29,7 @@ const v1 = () => {
 describe('migrateProjectDoc (v1 → v2, D32)', () => {
   it('turns the master into composition main with rows in port order, and wires into typed edges', () => {
     const doc = migrateProjectDoc(v1());
-    expect(doc.schema).toBe(3); // and on to v3
+    expect(doc.schema).toBe(4); // and on to v4
     expect(doc.rev).toBe(7);
     expect(mainComposition(doc)).toEqual({
       id: 'main',
@@ -45,14 +45,14 @@ describe('migrateProjectDoc (v1 → v2, D32)', () => {
       { id: 'out:ig', from: 'main', to: 'ig', kind: 'composition' },
     ]);
     expect(doc.sources.every((s) => !('port' in s))).toBe(true);
-    expect(doc.schema).toBe(3);
+    expect(doc.outputs.every((o) => !('family' in o))).toBe(true); // D61
     expect(doc.outputs[0]?.overrides).toHaveLength(1); // overrides kept
     expect(doc.outputs[1]?.frozen).toEqual({ items: [] }); // frozen kept, still disconnected
     expect(outputComposition(doc, 'ig')).toBe('main');
     expect(outputComposition(doc, 'frozen')).toBeUndefined();
   });
 
-  it('leaves v3 documents as they are', () => {
+  it('leaves v4 documents as they are', () => {
     const doc = createProjectDoc('New');
     expect(migrateProjectDoc(doc)).toBe(doc);
   });
@@ -90,7 +90,8 @@ describe('migrateProjectDoc (v2 → v3, D56)', () => {
       groups: [{ id: 'g', label: 'G', color: 'grey' as const, nodes: ['p1', 'o1'] }],
     };
     const doc = migrateProjectDoc(v2 as unknown as ProjectDoc);
-    expect(doc.schema).toBe(3);
+    expect(doc.schema).toBe(4);
+    expect(doc.outputs.every((o) => !('family' in o))).toBe(true);
     expect('processes' in doc).toBe(false);
     expect('coreRules' in doc).toBe(false);
     expect(doc.compositions.map((c) => c.id)).toEqual(['main', 'gv']);
@@ -114,11 +115,21 @@ describe('migrateProjectDoc (v2 → v3, D56)', () => {
   });
 });
 
+describe('migrateProjectDoc (v3 → v4, D61)', () => {
+  it('drops output.family and keeps everything else', () => {
+    const now = createProjectDoc('V3');
+    const out = { id: 'o', label: 'O', size: { width: 10, height: 10, unit: 'px' as const }, overrides: [], board: { x: 1, y: 2 }, bleedMm: 3 };
+    const v3 = { ...now, schema: 3 as const, outputs: [{ ...out, family: 'side' }] };
+    const doc = migrateProjectDoc(v3 as unknown as ProjectDoc);
+    expect(doc).toEqual({ ...now, outputs: [out] });
+  });
+});
+
 describe('graph helpers', () => {
   const doc: ProjectDoc = {
     ...createProjectDoc('G'),
     compositions: [...createProjectDoc('G').compositions, { id: 'c2', label: 'Vertical guide', size: { width: 10, height: 16, unit: 'px' }, placements: {}, layers: ['subject'], board: { x: 0, y: 0 }, guide: { of: 'main', family: 'vertical' } }],
-    outputs: [{ id: 'o', label: 'O', size: { width: 1, height: 1, unit: 'px' }, family: 'auto', overrides: [], board: { x: 0, y: 0 } }],
+    outputs: [{ id: 'o', label: 'O', size: { width: 1, height: 1, unit: 'px' }, overrides: [], board: { x: 0, y: 0 } }],
     edges: [
       { id: 'b', from: 'subject', to: 'c2', kind: 'layer' },
       { id: 'c', from: 'main', to: 'o', kind: 'composition' },

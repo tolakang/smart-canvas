@@ -57,7 +57,7 @@ describe('Khmer layout with real metrics', () => {
     doc = {
       ...r.doc,
       sources: r.doc.sources.map((s) => (s.id === 'headline' ? { ...s, content: { kind: 'text', text: TEXT, style } } : s)),
-      outputs: [{ id: 'o1', label: 'Story', size: { width: 1080, height: 1920, unit: 'px' }, family: 'auto', overrides: [], board: { x: 0, y: 0 } }],
+      outputs: [{ id: 'o1', label: 'Story', size: { width: 1080, height: 1920, unit: 'px' }, overrides: [], board: { x: 0, y: 0 } }],
     };
     const item = computeLayout(doc, 'o1', { measure, assets: {} }).items.find((i) => i.sourceId === 'headline');
     expect(item?.lines?.length).toBeGreaterThan(0);

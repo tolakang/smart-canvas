@@ -79,7 +79,7 @@ function mapPlacement(n: NFrame, from: { width: number; height: number }, to: Si
   const toPx = sizeInDesignPx(to);
   const master = { w: from.width, h: from.height };
   const metrics = canvasMetrics({ size: { ...to } });
-  const f: Frame = gridFrame(toDesignFrame(n, from), { metrics, family: 'stack', master, k: Math.min(toPx.width / from.width, toPx.height / from.height) });
+  const f: Frame = gridFrame(toDesignFrame(n, from), { metrics, master, k: Math.min(toPx.width / from.width, toPx.height / from.height) });
   return {
     x: f.x / toPx.width,
     y: f.y / toPx.height,

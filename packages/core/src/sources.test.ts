@@ -153,7 +153,6 @@ describe('deleteSource', () => {
           id: 'o',
           label: 'O',
           size: { width: 100, height: 100, unit: 'px' },
-          family: 'auto',
           board: { x: 0, y: 0 },
           overrides: [
             { sourceId: 'subject', hidden: true, updatedBy: 'u', updatedAt: '2026-01-01' },

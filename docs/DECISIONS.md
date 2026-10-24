@@ -162,4 +162,7 @@
 - D60 A Preset node follows its team family (owner, 2026-10-24: "Go Q1, Q2 and Q5"; BACKLOG Q2). Amends M4's "Preset nodes already on boards keep theirs".
   - **Which family:** worked out, not stored — the family most of the node's sizes come from (each output keeps the `presetId` it was made from, and renaming a family in the Size presets dialog renames those presets): `setFamily` in `preset-sets.ts`.
   - **Offers on the node:** when that family's name is not the node's, "Rename to “…”"; when the family has sizes the node lacks (by preset, or the same W × H), "Add N new sizes". Each is one undo step; nothing changes on its own, and other projects are not touched until they are opened.
+- D61 `output.family` is retired (owner, 2026-10-24: "Go Q1, Q2 and Q5"; BACKLOG Q5). Since layout v3 (D38) the stack / side family was computed and reported but changed no placement.
+  - **Removed:** `OutputNode.family` and its type, `DEFAULTS.sideFamilyMinRatio`, `familyOf`, and `family` in the layout result and rule context. Guide families (square / vertical / horizontal, D42) and preset families (N5) are unrelated and stay.
+  - **Schema 4:** `migrateProjectDoc` brings v3 documents up by dropping the field (v1 / v2 go through v3 first), on load and on save; the API accepts v4, and v3 / v2 / v1 from clients that haven't reloaded.
 

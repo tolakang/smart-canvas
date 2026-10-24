@@ -162,11 +162,10 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 ## P22 — Dev plan picks (owner, 2026-10-24: "Go Q1, Q2 and Q5")
 - T22.1 (Q1) — **Done.** Multi-page PDFs: pick the page when uploading; the API keeps that page in vector, pixel-only slots get it as a PNG (D59).
 - T22.2 (Q2) — **Done.** Preset nodes and team families: after a family is renamed in the Size presets dialog, offer to rename the Preset nodes that came from it, and to add sizes the family gained — as offers on the node when its project is opened (D60).
-- T22.3 (Q5) — Retire `output.family` (computed but unused for placement since D38): a model change with a migration.
+- T22.3 (Q5) — **Done.** Retire `output.family` (computed but unused for placement since D38): schema 4 with a v3 → v4 migration (D61).
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q2 — Preset nodes and team families: after a family is renamed in the Size presets dialog (M4), offer to rename the Preset nodes that came from it, and to add sizes the family gained. Today nodes on boards are left as they were.
 - Q3 — Project history: keep earlier saves (every n minutes or on big edits) and let an editor preview and restore one. `rev` already counts saves; this stores snapshots (DB + a retention limit).
 - Q4 — Review: comments pinned to a Preview, and an "approved" mark per Preview, for the team before export. Viewers can comment.
-- Q5 — Retire `output.family` (computed but no longer used for placement since D38): a model change with a migration, like D56. Owner decision.
 - Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). Needs a colour-managed PDF path in the worker; big.

@@ -9,7 +9,7 @@ import { defaultSources } from './sources';
 export function createProjectDoc(name: string): ProjectDoc {
   const sources = defaultSources();
   return {
-    schema: 3,
+    schema: 4,
     rev: 0,
     name,
     compositions: [{ ...newComposition(MAIN, 'Master preview', { x: 0, y: 0 }), layers: ['logo', 'headline', 'subject', 'background'] }],

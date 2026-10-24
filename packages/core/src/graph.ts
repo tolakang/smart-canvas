@@ -121,7 +121,7 @@ interface DocV1 {
   name: string;
   master: { size: Size; placements: Record<string, NFrame>; board: { x: number; y: number } };
   sources: (ProjectDoc['sources'][number] & { port?: number })[];
-  outputs: ProjectDoc['outputs'];
+  outputs: OutputV3[];
   wires: WireV1[];
 }
 
@@ -132,13 +132,29 @@ function renameDefaultLabels(doc: ProjectDoc): ProjectDoc {
   return { ...doc, compositions: doc.compositions.map((c) => (old.test(c.label) ? { ...c, label: c.label.replace('Main preview', 'Master preview') } : c)) };
 }
 
+/** v1–v3 outputs had a layout family ('auto' | 'stack' | 'side'), unused for placement since D38 (retired: D61). */
+type OutputV3 = ProjectDoc['outputs'][number] & { family?: string };
+/** v3 (D56–D60): as now, with `output.family`. */
+type DocV3 = Omit<ProjectDoc, 'schema' | 'outputs'> & { schema: 3; outputs: OutputV3[] };
 /** v2 (D32–D55): process nodes, other master previews, compositions and processes as rows, output-only layers, Core Rule nodes. */
 type DocV2 = Omit<ProjectDoc, 'schema' | 'outputs'> & {
   schema: 2;
   processes?: { id: string }[];
-  outputs: (ProjectDoc['outputs'][number] & { layers?: string[] })[];
+  outputs: (OutputV3 & { layers?: string[] })[];
   coreRules?: unknown[];
 };
+
+/** D61: v3 → v4: outputs lose `family`. */
+function toV4(raw: DocV3): ProjectDoc {
+  return {
+    ...raw,
+    schema: 4,
+    outputs: raw.outputs.map(({ family: _f, ...o }) => {
+      void _f;
+      return o;
+    }),
+  };
+}
 
 /**
  * D56: v2 → v3. What the page-3 board can't show leaves the document (opening a v2 project already dropped
@@ -146,7 +162,7 @@ type DocV2 = Omit<ProjectDoc, 'schema' | 'outputs'> & {
  * 'main'), rows that aren't inputs, output-only layers and Core Rule nodes — with their wires, placements,
  * overrides, frozen frames and transform histories.
  */
-function toV3(raw: DocV2): ProjectDoc {
+function toV3(raw: DocV2): DocV3 {
   const { processes: _p, coreRules: _c, ...rest } = raw;
   void _p;
   void _c;
@@ -165,7 +181,7 @@ function toV3(raw: DocV2): ProjectDoc {
   const nodes = new Set([...inputs, ...keep, ...outputs, ...(raw.stacks ?? []).map((s) => s.id), ...(raw.headlines ?? []).map((h) => h.id), ...(raw.presetSets ?? []).map((s) => s.id)]);
   return {
     ...rest,
-    schema: 3,
+    schema: 3 as const,
     compositions: raw.compositions
       .filter((c) => keep.has(c.id))
       .map((c) => ({
@@ -191,12 +207,13 @@ function toV3(raw: DocV2): ProjectDoc {
 /**
  * A stored document in the current schema. v1 (one master preview, `wires`, a `port` on each source) becomes
  * v2: the master preview is composition 'main' with rows in port order; wires become typed edges with the
- * same ids; overrides and frozen frames are kept. v2 becomes v3 (D56, `toV3`). Default composition names
- * read "Master preview" (D39).
+ * same ids; overrides and frozen frames are kept. v2 becomes v3 (D56, `toV3`), v3 becomes v4 (D61, `toV4`).
+ * Default composition names read "Master preview" (D39).
  */
-export function migrateProjectDoc(raw: ProjectDoc | DocV2 | DocV1): ProjectDoc {
-  if (raw.schema === 3) return renameDefaultLabels(raw);
-  if (raw.schema === 2) return renameDefaultLabels(toV3(raw));
+export function migrateProjectDoc(raw: ProjectDoc | DocV3 | DocV2 | DocV1): ProjectDoc {
+  if (raw.schema === 4) return renameDefaultLabels(raw);
+  if (raw.schema === 3) return renameDefaultLabels(toV4(raw));
+  if (raw.schema === 2) return renameDefaultLabels(toV4(toV3(raw)));
   const order = [...raw.sources].sort((a, b) => (a.port ?? 0) - (b.port ?? 0)).map((s) => s.id);
   const sources = raw.sources.map(({ port: _port, ...s }) => {
     void _port;
@@ -208,7 +225,7 @@ export function migrateProjectDoc(raw: ProjectDoc | DocV2 | DocV1): ProjectDoc {
     if (w.from === MAIN && known.has(w.to)) return [{ id: edgeId(MAIN, w.to, 'composition'), from: MAIN, to: w.to, kind: 'composition' }];
     return [];
   });
-  return {
+  return toV4({
     schema: 3,
     rev: raw.rev,
     name: raw.name,
@@ -216,5 +233,5 @@ export function migrateProjectDoc(raw: ProjectDoc | DocV2 | DocV1): ProjectDoc {
     sources,
     outputs: raw.outputs,
     edges,
-  };
+  });
 }
