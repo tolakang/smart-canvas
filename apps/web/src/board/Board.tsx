@@ -104,6 +104,7 @@ import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
 import { addPictures, uploadPictures } from './stack-upload';
+import { HistoryPanel, versionTitle, versionWhen, type Version } from './HistoryPanel';
 
 interface Loaded {
   rev: number;
@@ -126,11 +127,22 @@ const STATE_LABEL: Record<SaveState, string> = {
   conflict: 'Someone else saved a newer version.',
 };
 
+/** D62: a history version shown read-only on the board. */
+interface Previewing {
+  version: Version;
+  doc: ProjectDoc;
+}
+
 export function Board(props: { teamId: string; projectId: string; userId: string; readOnly: boolean; onBack: () => void }) {
   const { teamId, projectId, readOnly } = props;
   const url = `/teams/${teamId}/projects/${projectId}`;
   const [reloadKey, setReloadKey] = useState(0);
   const [result, setResult] = useState<LoadResult | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [previewing, setPreviewing] = useState<Previewing | null>(null);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  /** The live board's pending edits, saved before a preview replaces it (set by the canvas). */
+  const flush = useRef<() => Promise<void>>(() => Promise.resolve());
 
   useEffect(() => {
     let live = true;
@@ -145,22 +157,73 @@ export function Board(props: { teamId: string; projectId: string; userId: string
     };
   }, [url, reloadKey]);
 
+  const history: HistoryControls = {
+    open: historyOpen,
+    previewing: previewing?.version ?? null,
+    error: historyError,
+    toggle: () => setHistoryOpen((o) => !o),
+    view: async (version) => {
+      setHistoryError(null);
+      try {
+        await flush.current();
+        const v = await api<Version & { doc: ProjectDoc }>('GET', `${url}/versions/${version.id}`);
+        setPreviewing({ version, doc: v.doc });
+      } catch {
+        setHistoryError('Could not open that version.');
+      }
+    },
+    // Back to the live board: loaded again, so it shows the latest save.
+    close: () => {
+      setPreviewing(null);
+      setHistoryError(null);
+      setReloadKey((k) => k + 1);
+    },
+    restore: async () => {
+      if (!previewing) return;
+      setHistoryError(null);
+      try {
+        await api('POST', `${url}/versions/${previewing.version.id}/restore`);
+        setPreviewing(null);
+        setReloadKey((k) => k + 1);
+      } catch {
+        setHistoryError('Could not restore that version.');
+      }
+    },
+    flush: () => flush.current(),
+  };
+
   // Only data fetched for the current reload counts: never remount the canvas on a stale rev.
   if (!result || result.key !== reloadKey) return <p className="sc-muted">Loading…</p>;
   if ('error' in result) return <p className="sc-error">{result.error}</p>;
   return (
     <BoardCanvas
-      key={reloadKey}
+      key={previewing ? `v:${previewing.version.id}` : reloadKey}
       teamId={teamId}
       projectId={projectId}
       userId={props.userId}
       url={url}
-      initial={result.ok}
-      readOnly={readOnly}
+      initial={previewing ? { rev: previewing.version.rev, doc: { ...previewing.doc, name: result.ok.doc.name } } : result.ok}
+      readOnly={readOnly || Boolean(previewing)}
+      canEdit={!readOnly}
+      history={history}
+      historyRefresh={reloadKey}
+      flushRef={flush}
       onBack={props.onBack}
       onReload={() => setReloadKey((k) => k + 1)}
     />
   );
+}
+
+/** D62: the history panel and preview, kept by Board across canvas remounts. */
+interface HistoryControls {
+  open: boolean;
+  previewing: Version | null;
+  error: string | null;
+  toggle: () => void;
+  view: (v: Version) => Promise<void>;
+  close: () => void;
+  restore: () => Promise<void>;
+  flush: () => Promise<void>;
 }
 
 /** Shift-click adds a panel to the selection or takes it out, like Figma; Ctrl / ⌘ too (React Flow's default). */
@@ -190,6 +253,11 @@ function BoardCanvas(props: {
   url: string;
   initial: Loaded;
   readOnly: boolean;
+  /** The person may edit (readOnly is also on while a history version is shown). */
+  canEdit: boolean;
+  history: HistoryControls;
+  historyRefresh: number;
+  flushRef: React.MutableRefObject<() => Promise<void>>;
   onBack: () => void;
   onReload: () => void;
 }) {
@@ -254,6 +322,15 @@ function BoardCanvas(props: {
       }),
     [url, initial.rev],
   );
+
+  useEffect(() => {
+    if (readOnly) return;
+    const ref = props.flushRef;
+    ref.current = () => autosave.flush();
+    return () => {
+      ref.current = () => Promise.resolve();
+    };
+  }, [autosave, readOnly, props.flushRef]);
 
   useEffect(() => {
     const onHide = () => {
@@ -988,6 +1065,20 @@ function BoardCanvas(props: {
     setMenu({ x: r.left, y: r.bottom + 4, title: 'Add', items: [...assets.slice(0, assets.length - presets.length), ...addItems(spot.preset).slice(assets.length - presets.length)] });
   };
 
+  /** D62: the history panel takes the inspector's place (on tablets and phones, the one floating panel). */
+  const openHistory = () => {
+    if (props.history.open) closeHistory();
+    else {
+      setPanel(null);
+      props.history.toggle();
+    }
+  };
+  /** Closing the panel leaves a version being shown too. */
+  const closeHistory = () => {
+    if (props.history.previewing) props.history.close();
+    props.history.toggle();
+  };
+
   /** Phone top bar (T13.6): what doesn't fit goes in a "More" menu under the button. */
   const openMore = (button: HTMLElement) => {
     const r = button.getBoundingClientRect();
@@ -1006,6 +1097,7 @@ function BoardCanvas(props: {
         ...edit,
         { label: 'Team fonts', separated: edit.length > 0, onSelect: () => setShowFonts(true) },
         { label: 'Team library', onSelect: () => setShowLibrary(true) },
+        { label: 'History', onSelect: openHistory },
         { label: theme === 'dark' ? 'Light theme' : 'Dark theme', onSelect: toggleTheme },
       ],
     });
@@ -1141,7 +1233,7 @@ function BoardCanvas(props: {
           <strong className="sc-topbar__name" title={initial.doc.name}>
             {initial.doc.name}
           </strong>
-          {readOnly && <span className="sc-badge">View only</span>}
+          {readOnly && !props.history.previewing && <span className="sc-badge">View only</span>}
           {!readOnly && screen !== 'phone' && (
             <>
               <span className="sc-topbar__sep" aria-hidden="true" />
@@ -1173,15 +1265,18 @@ function BoardCanvas(props: {
               {notice}
             </span>
           )}
-          <span className={`sc-save sc-save--${saveState}`} role="status">
-            <span className="sc-save__dot" aria-hidden="true" />
-            {STATE_LABEL[saveState]}
-            {saveState === 'conflict' && (
-              <button type="button" onClick={props.onReload}>
-                Reload latest
-              </button>
-            )}
-          </span>
+          {/* D62: nothing is saved while a history version is shown. */}
+          {!props.history.previewing && (
+            <span className={`sc-save sc-save--${saveState}`} role="status">
+              <span className="sc-save__dot" aria-hidden="true" />
+              {STATE_LABEL[saveState]}
+              {saveState === 'conflict' && (
+                <button type="button" onClick={props.onReload}>
+                  Reload latest
+                </button>
+              )}
+            </span>
+          )}
           {screen === 'phone' ? (
             <button type="button" className="sc-topbar__icon" aria-label="More" aria-haspopup="menu" title="More" onClick={(e) => openMore(e.currentTarget)}>
               <Icon name="more" />
@@ -1205,6 +1300,9 @@ function BoardCanvas(props: {
           <button type="button" className="sc-topbar__ghost" onClick={() => setShowLibrary(true)} title="Team library">
             <Icon name="library" /> Library
           </button>
+          <button type="button" className="sc-topbar__ghost" onClick={openHistory} aria-pressed={props.history.open} title="Earlier versions of this project">
+            <Icon name="history" /> History
+          </button>
           </>
           )}
           {!readOnly && (
@@ -1221,6 +1319,26 @@ function BoardCanvas(props: {
           )}
         </div>
       </header>
+      {props.history.previewing && (
+        <div className="sc-board__version" role="status">
+          <span>
+            <strong>Version from {versionWhen(props.history.previewing)}</strong>
+            {` · ${versionTitle(props.history.previewing)}`}
+            {props.history.previewing.by ? ` · ${props.history.previewing.by}` : ''}
+          </span>
+          {props.history.error && <span className="sc-error">{props.history.error}</span>}
+          <span className="sc-board__version-actions">
+            {props.canEdit && (
+              <button type="button" className="sc-board__restore" onClick={() => void props.history.restore()}>
+                Restore
+              </button>
+            )}
+            <button type="button" onClick={props.history.close}>
+              Close
+            </button>
+          </span>
+        </div>
+      )}
       <div
         className="sc-board__canvas"
         // A file dropped outside an input must not make the browser open it (and leave the board).
@@ -1312,7 +1430,16 @@ function BoardCanvas(props: {
               onGrid={setGrid}
               minimap={minimap}
               onMinimap={setMinimap}
-              panels={floating && { open: panel, onOpen: setPanel, library: false }}
+              panels={
+                floating && {
+                  open: panel,
+                  onOpen: (p) => {
+                    if (p && props.history.open) closeHistory();
+                    setPanel(p);
+                  },
+                  library: false,
+                }
+              }
               compact={screen === 'phone'}
               minimapToggle={screen === 'desktop'}
               onTidy={readOnly ? undefined : tidy}
@@ -1371,7 +1498,20 @@ function BoardCanvas(props: {
             />
           </ReactFlow>
           </div>
-          {(!floating || panel === 'inspector') && <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} />}
+          {props.history.open ? (
+            <HistoryPanel
+              url={url}
+              readOnly={!props.canEdit}
+              previewing={props.history.previewing?.id ?? null}
+              refresh={props.historyRefresh}
+              floating={floating}
+              onView={(v) => void props.history.view(v)}
+              flush={props.history.flush}
+              onClose={closeHistory}
+            />
+          ) : (
+            (!floating || panel === 'inspector') && <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} />
+          )}
           {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
           {editingMain && <MainEditor compositionId={editingMain} onClose={() => setEditingMain(null)} />}
           {editingOutput && <OutputEditor outputId={editingOutput} onClose={() => setEditingOutput(null)} />}

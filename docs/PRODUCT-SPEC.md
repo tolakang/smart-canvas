@@ -43,6 +43,7 @@
 | F8 | Team library | Save/reuse source across projects |
 | F9 | Auth and roles | viewer read-only; editor edits; admin manages presets and members |
 | F10 | Khmer text | Word-safe line breaks; no clipped diacritics; fonts identical in export |
+| F11 | Project history (D62) | Earlier versions kept on save and before deletes; preview read-only; restore keeps the current one first; viewers preview only |
 
 ## Non-functional
 - 10 inputs × 10 outputs stays responsive (previews throttled, thumbnails cached).
