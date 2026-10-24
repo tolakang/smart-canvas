@@ -140,3 +140,9 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Preview nodes:** a row under the header with "✓ Approved" (green pill) or "Changed since approved" (amber pill), and the open-comments pill.
 - **Review panel:** **Review** in the top bar (More on phones), in the inspector's place. "N of M approved · K open comments", then the Previews grouped by Preset node, each with its state pill and open count; a tap opens its editor (on its comments when it has some).
 - **Export dialog:** once the project has an approval, each size says "· approved", "· changed since approved" or "· not approved", and an amber note counts the chosen ones not approved, with "Only approved (N)".
+
+## Board chrome (U2)
+- **Top bar, right side:** save status · **Assets** (a menu: Team fonts, Team library) · History (icon) · Review (icon, with the open-comment count) · theme (icon) · side panel (icon, desktop) · **Export** (primary). One primary button; the rest are quiet icons with tooltips and accessible names.
+- **Save status:** "All changes saved" in full on wide screens; "Saved", "Saving…", "Unsaved", "Retrying…" or "Newer version" where the bar is narrow (below 1100 px), never a bare dot.
+- **Side panel with nothing selected:** the project's name, "Nothing selected…", three figures (Previews, Approved n/N, open Comments), **Export all**, and the three ways to add to the board. **Hide panel** (and the side-panel icon in the bar) gives the canvas the room; it is remembered on the device.
+- **Wire badges:** an idle wire's ✂ is a small quiet dot with a mouse and grows to the scissors under the pointer; a selected wire, and touch screens, always show the scissors.

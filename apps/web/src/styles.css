@@ -1154,3 +1154,26 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+/* U2: board chrome — the project overview in the side panel, the Review count, short save labels, quiet wires. */
+.sc-overview__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-lg); font-weight: 650; }
+.sc-overview__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); margin: var(--sp-1) 0; }
+.sc-overview__stats div { padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); }
+.sc-overview__stats dt { color: var(--muted); font-size: var(--fs-xs); }
+.sc-overview__stats dd { margin: 2px 0 0; font-size: var(--fs-xl); font-weight: 650; font-variant-numeric: tabular-nums; }
+.sc-overview .sc-btn--primary { justify-content: center; height: 34px; gap: var(--sp-2); }
+.sc-overview__tips { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--sp-2); color: var(--muted); font-size: var(--fs-sm); line-height: 1.5; }
+.sc-overview__tips strong { color: var(--fg); font-weight: 600; }
+.sc-topbar__review { position: relative; }
+.sc-topbar__count { position: absolute; top: 2px; right: 2px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700; line-height: 15px; text-align: center; }
+.sc-save__short { display: none; }
+@media (max-width: 1100px) {
+  .sc-topbar .sc-save { font-size: var(--fs-xs) !important; }
+  .sc-save__long { display: none; }
+  .sc-save__short { display: inline; }
+}
+/* Idle wire badges are small, quiet dots until the pointer is on them (a selected wire's badge, and touch, show the scissors). */
+@media (hover: hover) and (pointer: fine) {
+  .sc-wire-cut--idle { width: 12px; height: 12px; opacity: 0.45; transition: width var(--t-fast), height var(--t-fast), opacity var(--t-fast); }
+  .sc-wire-cut--idle:hover, .sc-wire-cut--idle:focus-visible { width: 22px; height: 22px; opacity: 1; }
+}
