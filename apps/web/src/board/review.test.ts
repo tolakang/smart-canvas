@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { mayOnComment, openCounts, threadsOf, type ReviewComment, type ReviewData } from './review';
+import { computeLayout, createProjectDoc, previewFingerprint, type LayoutDeps, type ProjectDoc } from '@smart-canvas/core';
+import { approvalOf, approvalStates, mayOnComment, openCounts, threadsOf, type ReviewComment, type ReviewData } from './review';
 
 const c = (id: string, patch: Partial<ReviewComment> = {}): ReviewComment => ({
   id,
@@ -47,5 +48,26 @@ describe('review helpers (D63)', () => {
     expect(mayOnComment(theirs, { userId: 'ed', role: 'editor' })).toEqual({ edit: false, resolve: true, remove: false });
     expect(mayOnComment(theirs, { userId: 'boss', role: 'admin' })).toEqual({ edit: false, resolve: true, remove: true });
     expect(mayOnComment(c('r', { parentId: 'a', authorId: 'ed' }), { userId: 'ed', role: 'editor' }).resolve).toBe(false);
+  });
+});
+
+describe('approval states (D63)', () => {
+  const deps: LayoutDeps = { measure: (text, px) => text.length * 0.5 * px, assets: {} };
+  const out = (id: string) => ({ id, label: id, size: { width: 1080, height: 1080, unit: 'px' as const }, overrides: [], board: { x: 0, y: 0 } });
+  const doc: ProjectDoc = { ...createProjectDoc('A'), outputs: [out('o1'), out('o2')] };
+  const fp = (d: ProjectDoc, id: string) => previewFingerprint(d, id, computeLayout(d, id, deps));
+  const approved = (fingerprint: string, outputId = 'o1') => ({ comments: [], approvals: [{ outputId, fingerprint, approvedBy: 'Ada', approvedAt: 'x' }] });
+
+  it('approved while the Preview looks as it did; changed once it does not; others not approved', () => {
+    const data = approved(fp(doc, 'o1'));
+    expect(approvalOf(approvalStates(doc, deps, data), 'o1').state).toBe('approved');
+    expect(approvalOf(approvalStates(doc, deps, data), 'o2').state).toBe('none');
+    const resized = { ...doc, outputs: [{ ...out('o1'), size: { width: 1200, height: 1080, unit: 'px' as const } }, out('o2')] };
+    expect(approvalOf(approvalStates(resized, deps, data), 'o1').state).toBe('changed');
+  });
+
+  it('reads as approved until the layout can be computed, and ignores Previews that are gone', () => {
+    expect(approvalOf(approvalStates(doc, null, approved('anything')), 'o1').state).toBe('approved');
+    expect(approvalStates(doc, deps, approved('x', 'gone')).size).toBe(0);
   });
 });

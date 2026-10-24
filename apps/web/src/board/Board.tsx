@@ -105,7 +105,8 @@ import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
 import { addPictures, uploadPictures } from './stack-upload';
 import { HistoryPanel, versionTitle, versionWhen, type Version } from './HistoryPanel';
-import { useReview } from './review';
+import { useApprovalStates, useReview } from './review';
+import { ReviewPanel } from './ReviewPanel';
 
 interface Loaded {
   rev: number;
@@ -275,8 +276,11 @@ function BoardCanvas(props: {
   const [editingMain, setEditingMain] = useState<string | null>(null);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
   const [outputComments, setOutputComments] = useState(false);
-  /** D63: the review of Previews; polled while a Preview editor is open. */
-  const review = useReview(url, Boolean(editingOutput));
+  /** D63: the Review panel (in the inspector's place, like History). */
+  const [reviewOpen, setReviewOpen] = useState(false);
+  /** D63: the review of Previews; polled while a Preview editor or the Review panel is open. */
+  const review = useReview(url, Boolean(editingOutput) || reviewOpen);
+  const reloadReview = review.reload;
   const [nodes, setNodes] = useState<BoardNode[]>(() => docToNodes(initial.doc));
   const nodesRef = useRef(nodes);
   useEffect(() => {
@@ -626,6 +630,7 @@ function BoardCanvas(props: {
   }, [teamId, presetsRev]);
   const { sizes, remember } = useAssetSizes(teamId, usedAssetsKey(doc));
   const { deps: layoutDeps, missingFonts } = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
+  const approvals = useApprovalStates(doc, layoutDeps, review.data);
 
   // D37: once a picture's visible pixels are known, its unfitted frames hug them (in place: nothing moves on
   // screen). Not an undo step — it's how the doc is shown; undoing to an unfitted doc just fits it again.
@@ -672,7 +677,13 @@ function BoardCanvas(props: {
       role: props.role,
       projectUrl: url,
       review: review.data,
-      reloadReview: review.reload,
+      reloadReview,
+      approvals,
+      reviewApprove: async (outputId: string, fingerprint: string | null) => {
+        const path = `${url}/review/approvals/${encodeURIComponent(outputId)}`;
+        await (fingerprint ? api('PUT', path, { fingerprint }) : api('DELETE', path)).catch(() => setNotice('Could not change the approval. Try again.'));
+        reloadReview();
+      },
       doc,
       openMainEditor: (compositionId: string = MAIN_ID) => setEditingMain(compositionId),
       openOutputEditor: (id: string, opts?: { comments?: boolean }) => {
@@ -696,7 +707,7 @@ function BoardCanvas(props: {
       setStackFocus,
       run,
     }),
-    [teamId, readOnly, props.userId, props.role, url, review.data, review.reload, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
+    [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );
 
   // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.
@@ -1084,8 +1095,17 @@ function BoardCanvas(props: {
     if (props.history.open) closeHistory();
     else {
       setPanel(null);
+      setReviewOpen(false);
       props.history.toggle();
     }
+  };
+  /** D63: the Review panel; it closes History (and a version shown) first. */
+  const openReview = () => {
+    if (!reviewOpen) {
+      if (props.history.open) closeHistory();
+      setPanel(null);
+    }
+    setReviewOpen((o) => !o);
   };
   /** Closing the panel leaves a version being shown too. */
   const closeHistory = () => {
@@ -1112,6 +1132,7 @@ function BoardCanvas(props: {
         { label: 'Team fonts', separated: edit.length > 0, onSelect: () => setShowFonts(true) },
         { label: 'Team library', onSelect: () => setShowLibrary(true) },
         { label: 'History', onSelect: openHistory },
+        { label: 'Review', onSelect: openReview },
         { label: theme === 'dark' ? 'Light theme' : 'Dark theme', onSelect: toggleTheme },
       ],
     });
@@ -1317,6 +1338,9 @@ function BoardCanvas(props: {
           <button type="button" className="sc-topbar__ghost" onClick={openHistory} aria-pressed={props.history.open} title="Earlier versions of this project">
             <Icon name="history" /> History
           </button>
+          <button type="button" className="sc-topbar__ghost" onClick={openReview} aria-pressed={reviewOpen} title="Approval and comments on every Preview">
+            <Icon name="check" /> Review
+          </button>
           </>
           )}
           {!readOnly && (
@@ -1449,6 +1473,7 @@ function BoardCanvas(props: {
                   open: panel,
                   onOpen: (p) => {
                     if (p && props.history.open) closeHistory();
+                    if (p) setReviewOpen(false);
                     setPanel(p);
                   },
                   library: false,
@@ -1523,6 +1548,8 @@ function BoardCanvas(props: {
               flush={props.history.flush}
               onClose={closeHistory}
             />
+          ) : reviewOpen ? (
+            <ReviewPanel floating={floating} onClose={() => setReviewOpen(false)} />
           ) : (
             (!floating || panel === 'inspector') && <Inspector selected={selectedNode} floating={floating} onClose={() => setPanel(null)} />
           )}
@@ -1543,7 +1570,7 @@ function BoardCanvas(props: {
         />
       )}
       {showLibrary && <LibraryDialog teamId={teamId} readOnly={readOnly} sourceCount={sourceCount} run={run} onClose={() => setShowLibrary(false)} />}
-      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} initialOutputs={exporting.outputs} presetSet={exporting.set} onClose={() => setExporting(false)} />}
+      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} approvals={approvals} initialOutputs={exporting.outputs} presetSet={exporting.set} onClose={() => setExporting(false)} />}
       {showFonts && (
         <FontsDialog
           teamId={teamId}

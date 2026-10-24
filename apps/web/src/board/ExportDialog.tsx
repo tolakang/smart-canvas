@@ -25,6 +25,7 @@ import {
   zipOnServer,
 } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { approvalOf, type ApprovalState } from './review';
 import { api, ApiError, assetUrl } from '../api';
 import { exportInBrowser, type BrowserFormat } from '../render/browserExport';
 import { browserExportSupported } from '../render/exportFile';
@@ -49,7 +50,17 @@ interface Row {
   fellBack?: boolean;
 }
 
-export function ExportDialog(props: { teamId: string; projectId: string; doc: ProjectDoc; layoutDeps: LayoutDeps | null; initialOutputs?: string[]; presetSet?: string; onClose: () => void }) {
+export function ExportDialog(props: {
+  teamId: string;
+  projectId: string;
+  doc: ProjectDoc;
+  layoutDeps: LayoutDeps | null;
+  /** D63: approved Previews' states; the dialog warns about chosen ones not approved (once the project uses approval). */
+  approvals?: ReadonlyMap<string, ApprovalState>;
+  initialOutputs?: string[];
+  presetSet?: string;
+  onClose: () => void;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
   const { doc } = props;
   /** N6: exporting a Preset node — its sizes only, hidden ones included unless unticked, one ZIP named by its family. */
@@ -213,6 +224,11 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
     ? doc.outputs.filter((o) => selected.includes(o.id)).reduce((n, o) => n + (exportRoute(o, format, options()) === 'browser' ? 1 : 0), 0)
     : 0;
   const label = (id: string) => doc.outputs.find((o) => o.id === id)?.label ?? id;
+  // D63: a warning, never a block — and only once someone in the project approves Previews.
+  const approvals = props.approvals ?? new Map<string, ApprovalState>();
+  const isApproved = (id: string) => approvalOf(approvals, id).state === 'approved';
+  const notApproved = approvals.size > 0 ? selected.filter((id) => !isApproved(id)) : [];
+  const APPROVAL_NOTE = { approved: ' · approved', changed: ' · changed since approved', none: approvals.size > 0 ? ' · not approved' : '' } as const;
   return (
     <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="export-title">
       <div className="sc-card sc-export">
@@ -229,7 +245,12 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
                     checked={selected.includes(o.id)}
                     onChange={(e) => setSelected((s) => (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)))}
                   />
-                  {o.label} <span className="sc-muted">{o.size.width} × {o.size.height} {o.size.unit}{hidden.has(o.id) ? ' · hidden on the board' : ''}</span>
+                  {o.label}{' '}
+                  <span className="sc-muted">
+                    {o.size.width} × {o.size.height} {o.size.unit}
+                    {hidden.has(o.id) ? ' · hidden on the board' : ''}
+                    {APPROVAL_NOTE[approvalOf(approvals, o.id).state]}
+                  </span>
                 </label>
               ))}
             </fieldset>
@@ -294,6 +315,16 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
                     : `${plan} made in your browser, ${selected.length - plan} on the server.`}
               </p>
             )}
+            {notApproved.length > 0 && (
+              <p className="sc-export__approval" role="status">
+                {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'output isn’t' : 'outputs aren’t'} approved.
+                {selected.length > notApproved.length && (
+                  <button type="button" onClick={() => setSelected((s) => s.filter(isApproved))}>
+                    Only approved ({selected.length - notApproved.length})
+                  </button>
+                )}
+              </p>
+            )}
             {error && (
               <p className="sc-error" role="alert">
                 {error}
@@ -327,6 +358,16 @@ export function ExportDialog(props: { teamId: string; projectId: string; doc: Pr
                 </li>
               ))}
             </ul>
+            {notApproved.length > 0 && (
+              <p className="sc-export__approval" role="status">
+                {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'output isn’t' : 'outputs aren’t'} approved.
+                {selected.length > notApproved.length && (
+                  <button type="button" onClick={() => setSelected((s) => s.filter(isApproved))}>
+                    Only approved ({selected.length - notApproved.length})
+                  </button>
+                )}
+              </p>
+            )}
             {error && (
               <p className="sc-error" role="alert">
                 {error}

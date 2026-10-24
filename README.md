@@ -2,7 +2,7 @@
 
 Artwork adaptation web app: one master artwork → many sizes via a flow board (asset nodes → Layer Comp + Core Rule → Preset nodes → Previews).
 
-Status: v1 built (backlog P1–P23 done; project history, D62; documents are schema 4, D61; board tools to standard, D57; touch screens, D58). Spec in `docs/` — start with `docs/00-READ-FIRST.md`, then `docs/HANDOVER.md`; proposed next work at the end of `docs/BACKLOG.md`.
+Status: v1 built (backlog P1–P24 done; project history, D62; review of Previews, D63; documents are schema 4, D61; board tools to standard, D57; touch screens, D58). Spec in `docs/` — start with `docs/00-READ-FIRST.md`, then `docs/HANDOVER.md`; proposed next work at the end of `docs/BACKLOG.md`.
 
 ```
 pnpm i          # install (Node >= 22, pnpm 10)

@@ -5,7 +5,7 @@
  * D63: the Comment tool turns a click or tap on the Preview into a pinned comment; the Comments panel takes the
  * Design panel's place while it is on.
  */
-import { computeLayout, isOutputConnected, layerSpots, outputComposition, outputScene, resetOutputOverrides, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type OutputNode, type TransformHistory } from '@smart-canvas/core';
+import { computeLayout, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type OutputNode, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '../board/context';
 import { threadsOf } from '../board/review';
@@ -16,17 +16,17 @@ import { OverrideInspector } from './OverrideInspector';
 import { TextPanel } from './TextPanel';
 
 export function OutputEditor({ outputId, comments = false, onClose }: { outputId: string; comments?: boolean; onClose: () => void }) {
-  const { doc, run, layoutDeps, author, readOnly, review } = useBoard();
+  const { doc, run, layoutDeps, author, readOnly, review, reviewApprove } = useBoard();
   /** D63: the Comment tool, the pin being written, the thread picked, and whether resolved threads show. */
   const [commenting, setCommenting] = useState(comments);
   const [pending, setPending] = useState<{ x: number; y: number } | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [showResolved, setShowResolved] = useState(false);
   const output = doc.outputs.find((o) => o.id === outputId);
-  const scene = useMemo(
-    () => (output && layoutDeps ? outputScene(computeLayout(doc, output.id, layoutDeps), output) : null),
-    [doc, output, layoutDeps],
-  );
+  const layout = useMemo(() => (output && layoutDeps ? computeLayout(doc, output.id, layoutDeps) : null), [doc, output, layoutDeps]);
+  const scene = useMemo(() => (output && layout ? outputScene(layout, output) : null), [output, layout]);
+  // D63: what this Preview looks like now, to approve it (and to tell an approval it has changed since).
+  const fingerprint = useMemo(() => (output && layout ? previewFingerprint(doc, output.id, layout) : ''), [doc, output, layout]);
   // A frame without rotation / shear means 0: write that only when it replaces a non-zero value (else the
   // layer keeps following the master's).
   const size = useMemo(() => (scene ? { width: scene.width, height: scene.height } : null), [scene]);
@@ -76,6 +76,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
             {!connected && ' · disconnected (frozen)'}
           </span>
           <span className="sc-muted">Changes here are overrides on this output only</span>
+          <Approval outputId={output.id} fingerprint={fingerprint} onApprove={reviewApprove} />
           {!readOnly && (
             <button
               type="button"
@@ -142,4 +143,40 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
 function layerHistories(output: OutputNode, scene: { width: number; height: number } | null): Record<string, TransformHistory> | undefined {
   const saved = output.transforms;
   return scene && saved && saved.scene.width === scene.width && saved.scene.height === scene.height ? saved.layers : undefined;
+}
+
+/**
+ * D63: the Preview's approval in the editor's bar. Editors approve it as it looks now, approve it again after a
+ * change, or withdraw; viewers see the state only.
+ */
+function Approval(props: { outputId: string; fingerprint: string; onApprove: (outputId: string, fingerprint: string | null) => Promise<void> }) {
+  const { review, readOnly } = useBoard();
+  const [busy, setBusy] = useState(false);
+  const approval = review?.approvals.find((a) => a.outputId === props.outputId);
+  const changed = approval && props.fingerprint && approval.fingerprint !== props.fingerprint;
+  const act = (fingerprint: string | null) => {
+    setBusy(true);
+    void props.onApprove(props.outputId, fingerprint).finally(() => setBusy(false));
+  };
+  return (
+    <span className={`sc-approval${approval ? (changed ? ' sc-approval--changed' : ' sc-approval--on') : ''}`} role="group" aria-label="Approval">
+      {approval ? (
+        <span className="sc-approval__state" title={`Approved by ${approval.approvedBy ?? 'someone'} on ${new Date(approval.approvedAt).toLocaleString()}`}>
+          {changed ? 'Changed since approved' : `✓ Approved${approval.approvedBy ? ` by ${approval.approvedBy}` : ''}`}
+        </span>
+      ) : (
+        readOnly && <span className="sc-approval__state">Not approved</span>
+      )}
+      {!readOnly && (!approval || changed) && (
+        <button type="button" className="sc-approval__approve" disabled={busy || !props.fingerprint} onClick={() => act(props.fingerprint)}>
+          {approval ? 'Approve again' : 'Approve'}
+        </button>
+      )}
+      {!readOnly && approval && (
+        <button type="button" disabled={busy} onClick={() => act(null)}>
+          Withdraw
+        </button>
+      )}
+    </span>
+  );
 }

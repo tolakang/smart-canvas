@@ -1,7 +1,7 @@
 import type { InputSource, LayoutDeps, OverrideAuthor, ProjectDoc, SizePreset, SourceResult, TeamRole } from '@smart-canvas/core';
 import type { AssetMeta } from '../api';
 import type { TeamFont } from '../fonts/loader';
-import type { ReviewData } from './review';
+import type { ApprovalState, ReviewData } from './review';
 import { createContext, useContext } from 'react';
 
 /** What node editors need from the board: where to upload, whether edits are allowed, how to apply them. */
@@ -15,6 +15,10 @@ export interface BoardActions {
   projectUrl: string;
   review: ReviewData | null;
   reloadReview: () => void;
+  /** D63: each approved Preview's state (approved as it looks now, or changed since); others aren't listed. */
+  approvals: ReadonlyMap<string, ApprovalState>;
+  /** D63: approves a Preview as `fingerprint` (what it looks like now), or withdraws its approval (null). */
+  reviewApprove: (outputId: string, fingerprint: string | null) => Promise<void>;
   /** The current project document (follows every edit). */
   doc: ProjectDoc;
   /** Opens the master preview editor on a composition (default: the master preview). */

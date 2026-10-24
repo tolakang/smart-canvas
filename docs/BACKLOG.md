@@ -171,7 +171,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 ## P24 — Review of Previews (owner, 2026-10-24: "Show me the plan for Q4", plan approved "go ahead"; D63)
 - T24.1 (Q4) — **Done.** API and core: `review_comments`, `output_approvals`, comment / reply / resolve / delete rules, approve / withdraw, `previewFingerprint`.
 - T24.2 (Q4) — **Done.** Comments on Previews: the Comment tool and pins in the Preview editor, the Comments panel (replies, resolve, edit, delete), the open count on Preview nodes; a tap pins on touch.
-- T24.3 (Q4) — Approval: Approve / Withdraw, "Approved" and "Changed since approved" on nodes, the Review panel, the export warning and "Only approved".
+- T24.3 (Q4) — **Done.** Approval: Approve / Approve again / Withdraw in the Preview editor, "✓ Approved" and "Changed since approved" on nodes, the Review panel, the export warning and "Only approved".
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). Needs a colour-managed PDF path in the worker; big.
