@@ -23,7 +23,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D5
 - **CI:** `.github/workflows/ci.yml` caches Playwright's Chromium (`~/.cache/ms-playwright`, keyed by the Playwright version) and gives the check job 25 minutes; a fresh browser download once took 11 minutes and cut the tests off (#128). The check job takes about 4–5 minutes with the cache.
 - **CI flakes seen:** e2e suites once timed out in `beforeAll` on a slow runner; a canvas test once read the doc before autosave (800 ms) had saved it — poll with a longer timeout rather than re-running.
 
-## What changed recently (P15–P20, #108–#132)
+## What changed recently (P15–P21, #108–#135)
 - **P15 (#108–#117):** N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. #115 replayed the transform history for the reset buttons; the owner said the in-place reset was right, so #116 reverted it. #117 removed code the board no longer reaches.
 - **P16 (#118, #119):** canvas tools (tooltips, Select / Hand, selection bar, Tidy icon, scissor badge) and the Projects screen (template cards, ⋯ menus, search / sort, New project dialog, rename).
 - **P17 (#120–#123):** M2 turned / leaned layers snap on resize. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server.
@@ -32,6 +32,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D5
 - **P19 (#127–#129, D57):** board tools to the standard of design tools. #127 Select, Hand and keys (Shift-click, Esc, Ctrl/⌘+A, touch long-press adds to the selection, Space = Hand, saved arrow nudges). #128 grid snap (16 px, guides step aside, Alt skips, dots show the state, button on phones) and Tidy (selection or board, Shift+T, glide, notice with Undo), plus the CI browser cache. #129 made the Tidy e2e test always check Tidy selection and its Undo.
 - **#130:** docs, code and dev plan brought up to date after P19 (the canvas menu says Tidy selection when it tidies the selection).
 - **P20 (#131, #132, D58):** the board on touch screens like the design apps' phone versions. #131 move and zoom: one finger moves the board, a tap selects, a selected panel follows the finger, two fingers pinch and pan anywhere, double-tap zooms in. #132 select: long-press opens menus again, Select several (taps, a box, Done) replaces Select / Hand on touch.
+- **#133:** docs after P20; a tap right after a finger box counts (React Flow waited for a click). **P21 (#134, #135, D58):** #134 Q7 the layout editors on touch like the board (supersedes D36's hold); #135 Q8 zoomed out on touch, a tap on a panel zooms to it.
 
 ## The product today (page‑3 board, D48–D58)
 ```
@@ -88,6 +89,8 @@ New projects come from `createBoardProject` (API `POST /projects`).
 
 **Size presets dialog:** sizes by group plus "Preset node families" with their sizes; admins rename or delete a team family as a whole (M4, `PUT` / `DELETE /teams/:teamId/preset-families/:family`).
 
+**Small panels (D58, T21.2).** On touch below 50 % zoom (`FAR_ZOOM`, tracked by `onMove`), capture listeners on the board stop a press inside a panel (pointerdown) and turn its tap (click) into select + `fitView` to that panel; ports pass through. Tests tap Edit twice at the fitted zoom (the first tap zooms).
+
 **Editors on touch (D58, T21.1).** `CanvasEditor.tsx`: a finger not on the selected layer's box (`onTouchDown` / `onTouchMove` / `onTouchUp` on the stage) is a tap (select on lift; empty canvas twice = fit) or a pan; the transform box has `longPressMs: 0` and `onTap` (the selected layer tapped again → the one behind); `usePinch` (from `board/pinch.ts`, with `onPinch` cancelling the box's drag via `TransformBox.cancel()`) maps the editor's zoom / pan to a viewport.
 
 **Touch (D58, T20.1–T20.2).** One finger moves the board (empty canvas, panels not selected, their buttons: `noPanClassName` is `TOUCH_NO_PAN` on touch, so a card's `nopan` counts with a mouse only); a tap selects, a selected panel follows the finger (`flowNodes` makes unselected panels non-draggable on touch, `nodeDragThreshold` 4); two fingers pinch and pan anywhere (`usePinch` in `board/pinch.ts`, capture phase, locked until every finger is up); double-tap zooms in. A long-press opens a menu (`useLongPress`, D33). **Select several** (T20.2) replaces Select / Hand on touch: `MultiSelect` in `CanvasToolbar.tsx` sets React Flow's `multiSelectionActive` (taps add or take out), finger panning goes off so one finger draws a box, and the selection bar shows Done. A finger box ends without a click, and React Flow would swallow the next tap waiting for one; `onSelectionEnd` in `Board.tsx` sends it that click (touch only). In e2e, Chrome moves a touch onto a control near it: grab panels at a point with no control within ~10 px (`grabPoint` / `grabAny` in `responsive.e2e.test.ts`), and keep Fit from zooming out to tiny panels; only input panels (`src:`) have a panel menu.
@@ -131,4 +134,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - `output.family` is computed but no longer changes placement (D38).
 
 ## Next
-P1–P20 are done. P21 (Q7, Q8) is under way. A new dev plan (Q1–Q6) is proposed at the end of `docs/BACKLOG.md` and listed in `TASKS.md`; the owner picks and orders it.
+P1–P21 are done. A new dev plan (Q1–Q6) is proposed at the end of `docs/BACKLOG.md` and listed in `TASKS.md`; the owner picks and orders it.

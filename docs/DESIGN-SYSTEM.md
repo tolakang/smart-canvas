@@ -61,6 +61,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - One finger moves the board (empty canvas, panels not selected, their buttons); a tap selects; a selected panel follows the finger.
   - Two fingers pinch and pan anywhere (`board/pinch.ts`); double-tap zooms in.
   - **Select several** replaces Select / Hand in the canvas toolbar: taps add or take out panels, one finger draws a box, the selection bar has Done.
+  - Zoomed out below 50 %, a tap on a panel zooms to it and selects it (its controls take taps again close up).
   - A long-press (`ui/long-press.ts`) opens the right-click menus.
   - Tap a port, then tap a target, to wire.
   - Buttons, menu rows and ports are at least 44 px to tap.

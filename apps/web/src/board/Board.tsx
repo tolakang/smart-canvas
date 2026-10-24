@@ -166,6 +166,8 @@ export function Board(props: { teamId: string; projectId: string; userId: string
 /** Shift-click adds a panel to the selection or takes it out, like Figma; Ctrl / ⌘ too (React Flow's default). */
 const MULTI_SELECT_KEYS = ['Shift', 'Meta', 'Control'];
 const ZOOM_LIMITS = { min: 0.1, max: 2 };
+/** D58 (Q8): on touch, below this zoom a tap on a panel zooms to it instead of pressing what is inside it. */
+const FAR_ZOOM = 0.5;
 
 /** T13.8: every wire can carry reroute points. */
 const edgeTypes = { routed: RoutedEdge };
@@ -372,6 +374,46 @@ function BoardCanvas(props: {
   useLongPress(flowEl, 500);
   /** D58, touch: Select several is on — taps add or take out panels, one finger on empty canvas draws a box. */
   const [several, setSeveral] = useState(false);
+  /** D58 (Q8): zoomed out on touch — panels are too small to tap their controls, so a tap zooms to the panel. */
+  const [farZoom, setFarZoom] = useState(false);
+  const far = coarse && farZoom && !several;
+  const farRef = useRef(false);
+  useLayoutEffect(() => {
+    farRef.current = far;
+  }, [far]);
+  // A press on a panel's content while zoomed out reaches nothing inside it (no button, no keyboard for a field);
+  // its tap zooms to the panel and selects it. Ports keep their taps (tap a port, then a target, to wire).
+  useEffect(() => {
+    const el = flowEl.current;
+    if (!el) return;
+    const panelOf = (e: Event) => {
+      const t = e.target as Element | null;
+      if (!farRef.current || !t || t.closest('.react-flow__handle')) return null;
+      const panel = t.closest<HTMLElement>('.react-flow__node');
+      return panel && panel !== t ? panel : null;
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' || !panelOf(e)) return;
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const onClick = (e: MouseEvent) => {
+      const panel = panelOf(e);
+      const id = panel?.dataset.id;
+      if (!id) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const picked = displayNodesRef.current.filter((n) => n.selected && n.id !== id).map((n) => ({ type: 'select' as const, id: n.id, selected: false }));
+      onNodesChange([...picked, { type: 'select', id, selected: true }]);
+      void flow.current?.fitView({ nodes: [{ id }], duration: 300, maxZoom: 1, padding: 0.15 });
+    };
+    el.addEventListener('pointerdown', onDown, true);
+    el.addEventListener('click', onClick, true);
+    return () => {
+      el.removeEventListener('pointerdown', onDown, true);
+      el.removeEventListener('click', onClick, true);
+    };
+  }, [onNodesChange]);
   const [grid, setGrid] = useStoredFlag('sc-board-grid', false);
   useLayoutEffect(() => {
     gridRef.current = grid;
@@ -1215,6 +1257,7 @@ function BoardCanvas(props: {
             onPaneContextMenu={onPaneContextMenu}
             colorMode={theme}
             onSelectionChange={({ nodes: picked }) => setSelectedNode(picked.length === 1 ? (picked[0]?.id ?? null) : null)}
+            onMove={(_, vp) => setFarZoom(vp.zoom < FAR_ZOOM)}
             onInit={(instance) => {
               flow.current = instance;
             }}

@@ -198,17 +198,21 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     const from = await grabPoint(MAIN);
     const v0 = await viewport();
     await touchDrag([{ from, to: { x: from.x + 60, y: from.y + 50 } }]);
-    const v1 = await viewport();
-    expect(Math.round(v1.x - v0.x)).toBe(60);
+    const vPan = await viewport();
+    expect(Math.round(vPan.x - v0.x)).toBe(60);
     expect((await doc()).compositions.find((c) => c.id === 'main')?.board).toEqual(board0);
-    // Tap selects it; now the same drag moves the panel (and saves it), not the board.
-    const on = await grabPoint(MAIN);
-    await phone.touchscreen.tap(on.x, on.y);
+    // Tap selects it (zoomed out, Q8: and zooms to it); now the same drag moves the panel (and saves it), not the board.
+    const tapAt = await grabPoint(MAIN);
+    await phone.touchscreen.tap(tapAt.x, tapAt.y);
     await expect.poll(() => phone.locator(`${MAIN}.selected`).count()).toBe(1);
-    await phone.waitForTimeout(400);
+    await phone.waitForTimeout(600);
+    const v1 = await viewport();
+    const on = await grabPoint(MAIN);
     // (A finger reports small steps; the panel follows once it has moved past the few px a tap may wobble.)
     await touchDrag([{ from: on, to: { x: on.x + 60, y: on.y + 50 } }], 30);
-    expect(await viewport()).toEqual(v1);
+    // The board stays put (it may auto-pan a few px if the panel nears the edge), the panel follows the finger.
+    const after = await viewport();
+    expect(Math.abs(after.x - v1.x) + Math.abs(after.y - v1.y)).toBeLessThan(10);
     await expect.poll(async () => {
       const now = (await doc()).compositions.find((c) => c.id === 'main')?.board;
       // About under the finger (the alignment guides may pull it a few px onto another panel's edge).
@@ -241,6 +245,24 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     const v2 = await viewport();
     expect(Math.round(v2.y - v1.y)).toBe(90);
     expect(v2.zoom).toBeCloseTo(v1.zoom, 3);
+  }, 60_000);
+
+  it('phone (D58, Q8): zoomed out, a tap on a panel zooms to it and selects it, and presses nothing inside it', async () => {
+    await phone.keyboard.press('Escape');
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(500);
+    expect((await viewport()).zoom).toBeLessThan(0.5);
+    const before = JSON.stringify((await doc()).sources);
+    // The logo panel's title, where a finger at this zoom used to land on an item's remove button.
+    const t = await boxOf('.react-flow__node[data-id^="stk:"] .sc-node__title');
+    await phone.touchscreen.tap(t.x + Math.min(30, t.width / 2), t.y + t.height / 2);
+    await expect.poll(async () => (await viewport()).zoom, { timeout: 10_000 }).toBeGreaterThan(0.5);
+    await expect.poll(() => phone.locator('.react-flow__node[data-id^="stk:"].selected').count()).toBe(1);
+    expect(JSON.stringify((await doc()).sources)).toBe(before);
+    expect(await phone.getByRole('dialog').count()).toBe(0);
+    await phone.keyboard.press('Escape');
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(500);
   }, 60_000);
 
   it('phone (D58): Select several — taps add panels, a drag on empty canvas draws a box, Group, Done; a long press on a tool shows its tooltip', async () => {
@@ -345,7 +367,11 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect((await phone.request.put(url, { data: { rev: cur.rev, doc: wired.doc } })).status()).toBe(200);
     await phone.reload();
     await bar(phone).waitFor();
-    await phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first().tap();
+    // Zoomed out (Q8), the first tap zooms to the panel; then Edit takes the tap.
+    const edit = phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first();
+    await edit.tap();
+    await phone.waitForTimeout(500);
+    if (!(await phone.getByRole('complementary', { name: 'Design' }).count())) await edit.tap();
     const design = phone.getByRole('complementary', { name: 'Design' });
     await design.waitFor();
     expect(await phone.getByRole('complementary', { name: 'Layers' }).isVisible()).toBe(false);

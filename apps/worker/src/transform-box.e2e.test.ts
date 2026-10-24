@@ -201,8 +201,12 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     const phone = await ctx.newPage();
     const cdp = await ctx.newCDPSession(phone);
     await phone.goto(page.url().split('#')[0] + '#' + (page.url().split('#')[1] ?? ''));
-    await phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first().tap();
+    // Zoomed out (Q8), the first tap zooms to the panel; then Edit takes the tap.
+    const edit = phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first();
+    await edit.tap();
+    await phone.waitForTimeout(500);
     const ed = phone.getByRole('dialog', { name: /Master preview editor/ });
+    if (!(await ed.count())) await edit.tap();
     const canvasBox = async () => {
       const b = await ed.locator('.sc-editor__canvas').boundingBox();
       if (!b) throw new Error('no canvas');
