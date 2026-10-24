@@ -1064,3 +1064,18 @@ p.sc-comment__text { cursor: auto; }
 .sc-fig__tool--comment { position: relative; }
 .sc-fig__count { position: absolute; top: -4px; right: -4px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 9px; line-height: 14px; text-align: center; }
 .sc-preview__comments { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 6px; border: 0; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
+
+/* D63: approval — in the Preview editor's bar, on Preview nodes, in the Review panel and the export dialog. */
+.sc-approval { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
+.sc-approval__state { font-size: 11px; font-weight: 600; }
+.sc-approval--on .sc-approval__state { color: var(--ok); }
+.sc-approval--changed .sc-approval__state { color: var(--warn); }
+.sc-fig__bar .sc-approval__approve { background: var(--ok); color: #fff; border-color: var(--ok); font-weight: 600; }
+.sc-preview__approval { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.sc-preview__approval--approved { background: var(--ok-soft); color: var(--ok); }
+.sc-preview__approval--changed { background: var(--warn-soft, var(--surface-2)); color: var(--warn); }
+.sc-preview__approval--none { background: var(--surface-2); color: var(--muted); }
+.sc-review__row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sc-export__approval { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 10px; border-left: 3px solid var(--warn); border-radius: var(--r-sm); background: var(--surface-2); font-size: var(--fs-sm); }
+.sc-export__approval button { margin-left: auto; }
+.sc-preview__review { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px 12px 0; }

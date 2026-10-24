@@ -132,3 +132,9 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Pins:** accent-blue tags with the thread's number, their tail on the spot; the picked one is dark, resolved ones grey, the one being written amber. Bigger on touch (32 px).
 - **Comments panel:** "Show resolved" at the top, then the new comment's box (Post, Cancel), the threads with their replies indented, and "Comment on the whole Preview" at the bottom. Each comment shows who, when and the text; Resolve / Reopen, Edit and Delete show only to whoever may use them. Ctrl/⌘ + Enter posts, Esc cancels.
 - **Preview nodes:** a light-blue pill with a speech bubble and the open count, next to the health badge; it opens the editor on its comments.
+
+## Approval and the Review panel (D63)
+- **Preview editor bar:** "Approve" (green) for editors; once approved, "✓ Approved by Ada" in green with "Withdraw"; after a change, "Changed since approved" in amber with "Approve again" and "Withdraw". Viewers see the state only ("Not approved" when there is none).
+- **Preview nodes:** a row under the header with "✓ Approved" (green pill) or "Changed since approved" (amber pill), and the open-comments pill.
+- **Review panel:** **Review** in the top bar (More on phones), in the inspector's place. "N of M approved · K open comments", then the Previews grouped by Preset node, each with its state pill and open count; a tap opens its editor (on its comments when it has some).
+- **Export dialog:** once the project has an approval, each size says "· approved", "· changed since approved" or "· not approved", and an amber note counts the chosen ones not approved, with "Only approved (N)".

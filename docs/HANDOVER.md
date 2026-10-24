@@ -1,6 +1,6 @@
-# Handover — 2026-10-24 (after P23, project history)
+# Handover — 2026-10-24 (after P24, review of Previews)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D62**), `docs/BACKLOG.md` (P15–P23 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D63**), `docs/BACKLOG.md` (P15–P24 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -23,7 +23,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D6
 - **CI:** `.github/workflows/ci.yml` caches Playwright's Chromium (`~/.cache/ms-playwright`, keyed by the Playwright version) and gives the check job 25 minutes; a fresh browser download once took 11 minutes and cut the tests off (#128). The check job takes about 4–5 minutes with the cache.
 - **CI flakes seen:** e2e suites once timed out in `beforeAll` on a slow runner; a canvas test once read the doc before autosave (800 ms) had saved it — poll with a longer timeout rather than re-running.
 
-## What changed recently (P15–P23, #108–#140)
+## What changed recently (P15–P24, #108–#143)
 - **P15 (#108–#117):** N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. #115 replayed the transform history for the reset buttons; the owner said the in-place reset was right, so #116 reverted it. #117 removed code the board no longer reaches.
 - **P16 (#118, #119):** canvas tools (tooltips, Select / Hand, selection bar, Tidy icon, scissor badge) and the Projects screen (template cards, ⋯ menus, search / sort, New project dialog, rename).
 - **P17 (#120–#123):** M2 turned / leaned layers snap on resize. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server.
@@ -34,6 +34,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D6
 - **P20 (#131, #132, D58):** the board on touch screens like the design apps' phone versions. #131 move and zoom: one finger moves the board, a tap selects, a selected panel follows the finger, two fingers pinch and pan anywhere, double-tap zooms in. #132 select: long-press opens menus again, Select several (taps, a box, Done) replaces Select / Hand on touch.
 - **P22 (#136–#138):** #136 Q1 pick a multi-page PDF's page (D59); #137 Q2 Preset nodes follow their team family (D60); #138 Q5 `output.family` retired, schema 4 (D61).
 - **P23 (#139, #140, D62):** project history. #139 the API keeps versions on save (every 10 minutes of editing, before inputs or sizes are removed), named versions, restore, retention; #140 the History panel on the board.
+- **P24 (#141–#143, D63):** review of Previews. #141 the API (`review_comments`, `output_approvals`) and core `previewFingerprint`; #142 comments (Comment tool, pins, Comments panel, count on nodes); #143 approval, the Review panel and the export warning.
 - **#133:** docs after P20; a tap right after a finger box counts (React Flow waited for a click). **P21 (#134, #135, D58):** #134 Q7 the layout editors on touch like the board (supersedes D36's hold); #135 Q8 zoomed out on touch, a tap on a panel zooms to it.
 
 ## The product today (page‑3 board, D48–D58)
@@ -85,6 +86,8 @@ New projects come from `createBoardProject` (API `POST /projects`).
 **Removed from the board:** process nodes, extra master previews, single outputs, the node library and palette, and the D47 Core Rule node (its UI code is gone too, #117). **D56** retired them from the model, engine, renderer and API too: documents are schema 3 (the master and its layouts, inputs, outputs, board nodes); **D61** made them schema 4 (no `output.family`), and `migrateProjectDoc` brings v1–v3 documents up on load and on save.
 
 **History (D62, P23).** The server keeps earlier docs in `project_versions` (`apps/api/src/routes/versions.ts`): inside each save (`PUT`, row locked) `keepBeforeSave` copies the doc being replaced when the last version is 10 minutes old (`auto`) or the save has fewer inputs or sizes (`before-delete`, labelled "1 input", "2 sizes"); restore keeps the current doc first (`before-restore`) and writes the version as the next rev, so other open boards get 409 → "Reload latest". Named versions (up to 50) stay; the rest are pruned to 50. On the board, **History** (top bar; the More menu on phones) opens `board/HistoryPanel.tsx` in the inspector's place. A tap on a version shows it read-only: `Board` keeps the preview (`Previewing`) and the panel open across canvas remounts, saves the live board's pending edits first (`flushRef`), and remounts `BoardCanvas` with the version's doc, `readOnly` and a bar with **Restore** (editors) and **Close** (which reloads the live board). Viewers see and preview versions only.
+
+**Review (D63, P24).** Comments and approvals live outside the doc (`apps/api/src/routes/review.ts`): viewers comment, undo / restore don't touch them. On the board, `useReview` (`board/review.ts`) loads them with the board, on window focus and every 30 s while a Preview editor or the Review panel is open; context carries `review`, `reloadReview`, `approvals` (`useApprovalStates`: only approved Previews are laid out, to compare `previewFingerprint` with the stored one) and `reviewApprove`. The Preview editor (`editor/OutputEditor.tsx`) has the Comment tool (pins via `CanvasEditor`'s `tools` / `overlay` / `onPoint` / `aside` props, `editor/CommentsPanel.tsx`) and the Approval group in its bar. Preview nodes show the approval and open count under the header; **Review** in the top bar (More on phones) opens `board/ReviewPanel.tsx` in the inspector's place (History and Review close each other). The export dialog marks sizes and warns only once the project has an approval.
 
 **Board extras:** **Tidy board** (canvas toolbar and right-click menu) lays everything out; a new Preset node lands clear of other nodes.
 
@@ -139,4 +142,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next
-P1–P23 are done. The rest of the dev plan (Q4, Q6) is proposed at the end of `docs/BACKLOG.md` and listed in `TASKS.md`; the owner picks and orders it.
+P1–P24 are done. The rest of the dev plan (Q6) is proposed at the end of `docs/BACKLOG.md` and listed in `TASKS.md`; the owner picks and orders it.
