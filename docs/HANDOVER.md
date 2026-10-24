@@ -142,4 +142,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next
-P1–P24 are done. The rest of the dev plan (Q6) is proposed at the end of `docs/BACKLOG.md` and listed in `TASKS.md`; the owner picks and orders it.
+P1–P24 are done. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.

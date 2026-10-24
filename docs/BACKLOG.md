@@ -174,4 +174,4 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T24.3 (Q4) — **Done.** Approval: Approve / Approve again / Withdraw in the Preview editor, "✓ Approved" and "Changed since approved" on nodes, the Review panel, the export warning and "Only approved".
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
-- Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). Needs a colour-managed PDF path in the worker; big.
+- Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). **Planned, on hold** (owner, 2026-10-24: "Write this Q6 plan for later. Do not dev it yet."): full plan in `docs/plans/Q6-print-colour.md` — Ghostscript after Chromium in the worker, FOGRA39 / SWOP profiles, three PRs, three open questions for the owner.

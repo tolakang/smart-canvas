@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P24 are done. Proposed next work is BACKLOG **Next** (Q6), to be chosen by the owner. Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P24 are done. Proposed next work is BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -177,4 +177,4 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T24.3 — Approval, Review panel, export warning
 
 ## Next (see BACKLOG; proposals, the owner picks)
-- [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2)
+- [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`
