@@ -21,13 +21,12 @@ import { DesignPanel } from './DesignPanel';
 import { fitScale, NUDGE_STEP, resetRotation, resetTransform } from './geometry';
 import { frameOfState, sameFrame, snapMove, snapResize, snapTargets, syncDoc } from './transform/frame';
 import type { TransformDoc } from './transform/math';
-import { TransformBox } from './transform/transform-box';
+import { DOUBLE_TAP_DIST, DOUBLE_TAP_MS, TransformBox } from './transform/transform-box';
 
 /** Moves and resizes snap within this many screen px. */
 const SNAP_PX = 6;
-/** Touch: a finger that moves less than this is a tap; two taps closer in time and place are a double-tap. */
+/** Touch: a finger that moves less than this is a tap (two taps make a double-tap as on the box's handles). */
 const TAP_SLOP_PX = 8;
-const DOUBLE_TAP_MS = 300;
 const MIN_SCALE = 0.02;
 const MAX_SCALE = 64;
 
@@ -254,7 +253,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     const prev = emptyTap.current;
     // When the finger lifted, not when this ran: a busy page (a redraw after the first tap) must not stretch the gap.
     const now = e.timeStamp;
-    if (prev && now - prev.time <= DOUBLE_TAP_MS && Math.hypot(e.clientX - prev.x, e.clientY - prev.y) <= 24) {
+    if (prev && now - prev.time <= DOUBLE_TAP_MS && Math.hypot(e.clientX - prev.x, e.clientY - prev.y) <= DOUBLE_TAP_DIST) {
       emptyTap.current = null;
       setView({ zoom: 1, pan: { x: 0, y: 0 } });
     } else emptyTap.current = { x: e.clientX, y: e.clientY, time: now };
@@ -332,13 +331,9 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
   const selectedFrame = selectedItem?.frame ?? null;
   // A fitted picture's own proportions: resets of its stretch / scale handles end at them.
   const aspect = selectedFrame?.fitted && selectedSource ? pictureAspect(selectedSource, layoutDeps?.assets ?? {}) : undefined;
-  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect });
-  const layersAtRef = useRef(layersAt);
-  const selectRef = useRef(select);
+  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select });
   useLayoutEffect(() => {
-    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect };
-    layersAtRef.current = layersAt;
-    selectRef.current = select;
+    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select };
   });
 
   // One transform box per selected layer, picking up its history from this session.
@@ -351,13 +346,15 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     const start = syncDoc(history.current.get(id) ?? historiesRef.current?.[id], frame);
     history.current.set(id, start);
     const b = new TransformBox(canvasEl.current, control.current, start, {
-      // D58 (Q7): the selected layer and its handles drag at once on touch; a finger anywhere else moves the canvas.
-      longPressMs: 0,
-      // Touch: tapping the selected layer again picks the one behind it (Alt+click with a mouse).
+      // D58 (Q7): the selected layer and its handles drag at once on touch (the default); a finger anywhere else
+      // moves the canvas. A tap inside the box (once no double-tap came): a layer in front of the selected one is
+      // picked, else the one behind it (Alt+click with a mouse).
       onTap: (handle, at, pointerType) => {
         if (handle !== 'body' || pointerType !== 'touch') return;
-        const under = layersAtRef.current(at.x, at.y);
-        if (under.length > 1 && under.includes(id)) selectRef.current(under[(under.indexOf(id) + 1) % under.length] ?? id);
+        const under = latest.current.layersAt(at.x, at.y);
+        const front = under[0];
+        if (front && front !== id) return latest.current.select(front);
+        if (under.length > 1 && under.includes(id)) latest.current.select(under[(under.indexOf(id) + 1) % under.length] ?? id);
       },
       getScale: () => latest.current.scale,
       flip: false,

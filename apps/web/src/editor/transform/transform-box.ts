@@ -10,9 +10,9 @@
  *   drag the element         move
  *   double-click a handle    undo what that handle changed (see removeForHandle)
  *
- * Touch
- *   long-press a handle or the element, then drag: the hold (longPressMs) arms it, so a quick swipe or tap
- *   never moves anything by accident; a finger that moves before then is not an edit.
+ * Touch (D58: drags at once; the caller decides that a finger elsewhere moves the canvas)
+ *   drag a handle or the element; with longPressMs > 0, a hold arms it first and a finger that moves before
+ *   then is not an edit.
  *   edge handles: the first DIRECTION_LOCK_PX of movement decide — along the handle's normal = stretch,
  *   along its edge = skew — and the choice holds until the finger lifts.
  *   double-tap a handle      reset, as above
@@ -31,7 +31,7 @@ import {
 } from './math';
 
 export interface TransformBoxOptions {
-  /** Hold time before a touch drag starts, ms (0 = tap and drag at once). */
+  /** Hold time before a touch drag starts, ms (0, the default since D58 = drag at once). */
   longPressMs?: number;
   /** Max time between the two taps / clicks of a double, ms. */
   doubleTapMs?: number;
@@ -51,7 +51,7 @@ export interface TransformBoxOptions {
   onChange?: (state: TransformState, info: ChangeInfo) => void;
   /** Touch hold completed (good moment for haptics / a sound). */
   onArm?: (handle: HandleId) => void;
-  /** A single tap or click on a handle or the element (`at` in client px), before any double-tap. */
+  /** A single tap or click on a handle or the element (`at` in client px): called once no second tap came. */
   onTap?: (handle: HandleId, at: Vec, pointerType: string) => void;
   /**
    * Screen px per state unit. The state (and its history) is kept in the caller's units (the editor: design
@@ -116,12 +116,13 @@ interface Gesture {
 /** What converting client px to stage px needs. */
 interface StageBox { left: number; top: number; zoomX: number; zoomY: number; offX: number; offY: number }
 
+/** Two taps further apart than this (px), or longer apart than DOUBLE_TAP_MS, are not a double tap. */
+export const DOUBLE_TAP_DIST = 24;
+export const DOUBLE_TAP_MS = 300;
 const DEFAULTS = {
-  longPressMs: 350, doubleTapMs: 300, touchSlopPx: 10, directionLockPx: 8, rotateGapPx: 28, directionalMouse: true,
+  longPressMs: 0, doubleTapMs: DOUBLE_TAP_MS, touchSlopPx: 10, directionLockPx: 8, rotateGapPx: 28, directionalMouse: true,
   getScale: () => 1, proportional: (shift: boolean) => !shift, flip: true,
 };
-/** Two taps further apart than this are not a double tap. */
-const DOUBLE_TAP_DIST = 24;
 /** A mouse press that moves less than this is a click, not a drag. */
 const CLICK_SLOP = 3;
 
@@ -143,6 +144,8 @@ export class TransformBox {
   private readonly handles = new Map<HandleId, HTMLElement>();
   private gesture: Gesture | null = null;
   private lastTap: { handle: HandleId; time: number; at: Vec } | null = null;
+  /** A single tap waiting out the double-tap time before onTap hears of it. */
+  private tapTimer: number | undefined;
   private frameRequest = 0;
   private readonly cleanup: (() => void)[] = [];
 
@@ -250,6 +253,7 @@ export class TransformBox {
   }
 
   destroy(): void {
+    clearTimeout(this.tapTimer);
     this.cancelGesture();
     cancelAnimationFrame(this.frameRequest);
     for (const off of this.cleanup) off();
@@ -410,11 +414,13 @@ export class TransformBox {
     const prev = this.lastTap;
     if (prev && prev.handle === handle && now - prev.time <= this.opts.doubleTapMs && len(sub(at, prev.at)) <= DOUBLE_TAP_DIST) {
       this.lastTap = null;
+      clearTimeout(this.tapTimer);
       this.reset(handle);
       return;
     }
     this.lastTap = { handle, time: now, at };
-    this.opts.onTap?.(handle, at, pointerType);
+    clearTimeout(this.tapTimer);
+    if (this.opts.onTap) this.tapTimer = window.setTimeout(() => this.opts.onTap?.(handle, at, pointerType), this.opts.doubleTapMs);
   }
 
   private cancelGesture() {

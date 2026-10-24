@@ -235,6 +235,15 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [], timestamp: at + 0.03 });
       }
     };
+    /** A point on the empty stage around the canvas. */
+    const emptyStage = () =>
+      phone.evaluate(() => {
+      const stage = document.querySelector('.sc-editor__stage')?.getBoundingClientRect();
+      if (!stage) throw new Error('no stage');
+      for (let y = stage.y + 6; y < stage.bottom - 6; y += 6)
+        for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
+      throw new Error('no empty stage');
+    })
     const centreOf = async (sel: string) => {
       const b = await ed.locator(sel).boundingBox();
       if (!b) throw new Error(`no ${sel}`);
@@ -247,13 +256,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     const before = await placement();
     // One finger on the empty stage around the canvas moves the canvas, and edits nothing.
     const c0 = await canvasBox();
-    const empty = await phone.evaluate(() => {
-      const stage = document.querySelector('.sc-editor__stage')?.getBoundingClientRect();
-      if (!stage) throw new Error('no stage');
-      for (let y = stage.y + 6; y < stage.bottom - 6; y += 6)
-        for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
-      throw new Error('no empty stage');
-    });
+    const empty = await emptyStage();
     await fingers([{ from: empty, to: { x: empty.x + 40, y: empty.y + 30 } }]);
     const c1 = await canvasBox();
     expect(Math.round(c1.x - c0.x)).toBe(40);
@@ -282,15 +285,20 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     expect((await canvasBox()).width / w0).toBeGreaterThan(1.8);
     near(await placement(), moved);
     // A double-tap on empty canvas fits again.
-    const empty2 = await phone.evaluate(() => {
-      const stage = document.querySelector('.sc-editor__stage')?.getBoundingClientRect();
-      if (!stage) throw new Error('no stage');
-      for (let y = stage.y + 6; y < stage.bottom - 6; y += 6)
-        for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
-      throw new Error('no empty stage');
+    const empty2 = await emptyStage();
+    // (If this fails on a runner, the pointer events it saw are printed.)
+    await phone.evaluate(() => {
+      const log: string[] = ((window as unknown as { __taps: string[] }).__taps = []);
+      for (const t of ['pointerdown', 'pointerup', 'pointercancel', 'touchstart', 'touchend', 'click'])
+        document.addEventListener(t, (e) => log.push(`${t} ${Math.round(e.timeStamp)} ${(e as PointerEvent).pointerId ?? ''} ${(e.target as Element).className}`), true);
     });
     await doubleTap(empty2);
-    await expect.poll(async () => Math.round((await canvasBox()).width)).toBe(Math.round(w0));
+    try {
+      await expect.poll(async () => Math.round((await canvasBox()).width)).toBe(Math.round(w0));
+    } catch (err) {
+      console.error('double-tap to fit:', JSON.stringify(empty2), await phone.evaluate(() => (window as unknown as { __taps: string[] }).__taps.join(' | ')));
+      throw err;
+    }
     // Tapping the selected layer again picks the one behind it (a picture over the background).
     // (A tap on empty canvas clears the selection, so select the picture again first.)
     await phone.waitForTimeout(400);

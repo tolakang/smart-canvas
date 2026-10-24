@@ -467,7 +467,9 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-board__canvas { display: flex; min-height: 0; }
 .sc-board__flow { flex: 1; min-width: 0; position: relative; }
 /* D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
-@media (pointer: coarse) { .sc-board__flow .react-flow, .sc-editor__stage { touch-action: none; } }
+@media (pointer: coarse) { .sc-board__flow .react-flow { touch-action: none; } }
+/* D58: the editor's touch gestures (pan, pinch) are its own on every device, touch laptops included. */
+.sc-editor__stage { touch-action: none; }
 /* Hand (or Space held): the board pans from anywhere, panels included; the cursor says so. */
 .sc-board__flow--hand .react-flow__pane, .sc-board__flow--hand .react-flow__node { cursor: grab; }
 .sc-board__flow--hand .react-flow__pane.dragging, .sc-board__flow--hand:active .react-flow__node { cursor: grabbing; }
