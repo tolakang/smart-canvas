@@ -163,3 +163,8 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 ## Dialogs (U6)
 - 560 px wide (never wider than the screen), 20 px title, section headings in small caps, actions on the right with the main one last (Cancel, Export).
 - Export's sizes are a soft list of rows with checkboxes; Fonts shows each family as a sample card; lists of members and presets are soft cards.
+
+## Editors (U4)
+- The editor bar follows the theme: a glass bar (`--fig-bar: var(--glass)`) floating on the ambient backdrop like the board's, with the active tool as a solid accent button. (The old dark bar is gone.)
+- On tablets and desktops the Layers panel, the stage and the Design (or Comments) panel float with a 12 px margin and 18 px corners; phones keep the full-width canvas and the bottom sheet.
+- With nothing selected, the Design panel shows the canvas size and **Keyboard shortcuts** folded (open it to see them); touch screens show the gestures instead.

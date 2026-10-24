@@ -60,8 +60,9 @@ export function DesignPanel(props: {
             one finger elsewhere moves the canvas · pinch to zoom · double-tap empty canvas to fit
           </p>
         </section>
-        <section className="sc-design__section sc-design__shortcuts">
-          <div className="sc-design__title">Shortcuts</div>
+        {/* U4: the keys are there when wanted, folded away otherwise. */}
+        <details className="sc-design__section sc-design__shortcuts">
+          <summary className="sc-design__title">Keyboard shortcuts</summary>
           <dl className="sc-design__keys">
             {SHORTCUTS.map(([k, v]) => (
               <div key={k}>
@@ -70,7 +71,7 @@ export function DesignPanel(props: {
               </div>
             ))}
           </dl>
-        </section>
+        </details>
       </aside>
     );
   }
