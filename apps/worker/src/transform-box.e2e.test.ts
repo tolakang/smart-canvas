@@ -235,15 +235,20 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [], timestamp: at + 0.03 });
       }
     };
-    /** A point on the empty stage around the canvas. */
+    /**
+     * A point on the empty stage around the canvas, with empty stage for 24 px all round: the stage can shift a few
+     * px when the selection (and the header's "Selected: …") goes, and a tap there must not land on the canvas.
+     */
     const emptyStage = () =>
       phone.evaluate(() => {
-      const stage = document.querySelector('.sc-editor__stage')?.getBoundingClientRect();
-      if (!stage) throw new Error('no stage');
-      for (let y = stage.y + 6; y < stage.bottom - 6; y += 6)
-        for (let x = stage.x + 6; x < stage.right - 6; x += 6) if (document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage')) return { x, y };
-      throw new Error('no empty stage');
-    })
+        const stage = document.querySelector('.sc-editor__stage')?.getBoundingClientRect();
+        if (!stage) throw new Error('no stage');
+        const empty = (x: number, y: number) => document.elementFromPoint(x, y)?.classList.contains('sc-editor__stage') ?? false;
+        const clear = (x: number, y: number) => [-24, 0, 24].every((dx) => [-24, 0, 24].every((dy) => empty(x + dx, y + dy)));
+        for (let y = stage.y + 26; y < stage.bottom - 26; y += 6)
+          for (let x = stage.x + 26; x < stage.right - 26; x += 6) if (clear(x, y)) return { x, y };
+        throw new Error('no empty stage');
+      });
     const centreOf = async (sel: string) => {
       const b = await ed.locator(sel).boundingBox();
       if (!b) throw new Error(`no ${sel}`);
@@ -278,11 +283,11 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     await expect.poll(async () => (await placement()).x, { timeout: 10_000 }).toBeGreaterThan(before.x + 1e-4);
     const moved = await placement();
     expect(moved.w).toBeCloseTo(before.w, 6); // moved, not resized
-    // Two fingers spread on the layer: the canvas zooms (about twice), nothing moves.
+    // Two fingers pinched together on the layer: the canvas zooms out (to about half), nothing moves.
     const w0 = (await canvasBox()).width;
     const m = await centreOf('.sc-editor__canvas');
-    await fingers([{ from: { x: m.x - 30, y: m.y }, to: { x: m.x - 60, y: m.y } }, { from: { x: m.x + 30, y: m.y }, to: { x: m.x + 60, y: m.y } }]);
-    expect((await canvasBox()).width / w0).toBeGreaterThan(1.8);
+    await fingers([{ from: { x: m.x - 60, y: m.y }, to: { x: m.x - 30, y: m.y } }, { from: { x: m.x + 60, y: m.y }, to: { x: m.x + 30, y: m.y } }]);
+    expect((await canvasBox()).width / w0).toBeLessThan(0.55);
     near(await placement(), moved);
     // A double-tap on empty canvas fits again.
     const empty2 = await emptyStage();
