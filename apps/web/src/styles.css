@@ -1302,6 +1302,12 @@ body { background: var(--ambient); background-attachment: fixed; min-height: 100
   background: radial-gradient(120% 90% at 20% 10%, color-mix(in srgb, var(--tile) 34%, var(--surface)), transparent 60%), linear-gradient(135deg, color-mix(in srgb, var(--tile) 22%, var(--surface)), color-mix(in srgb, var(--tile) 8%, var(--surface)));
   color: color-mix(in srgb, var(--tile) 75%, var(--fg)); border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
 .sc-home__section .sc-rows__text { padding: 12px 14px 14px; gap: 3px; }
+/* D64: once the board has stored a thumbnail, the cover is the work itself — a Preview floating like an artboard on the canvas. */
+.sc-tile--thumb { --tile: var(--muted); overflow: hidden; padding: 0; background: var(--canvas, var(--surface-2)); }
+.sc-tile--thumb img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.sc-home__section > .sc-rows .sc-tile--thumb { padding: 14px; background: radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%), repeating-conic-gradient(color-mix(in srgb, var(--line) 35%, transparent) 0 25%, transparent 0 50%) 0 0 / 16px 16px, var(--surface-2); }
+.sc-home__section > .sc-rows .sc-tile--thumb img { object-fit: contain; border-radius: 4px; filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.18)) drop-shadow(0 1px 2px rgb(0 0 0 / 0.12)); transition: transform var(--t-med); }
+.sc-home__section > .sc-rows > li:hover .sc-tile--thumb img { transform: scale(1.03); }
 .sc-home__section .sc-rows__name { font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sc-home__section > .sc-rows > li .sc-more { position: absolute; top: 10px; right: 10px; border-radius: 10px; background: var(--glass); backdrop-filter: blur(8px); box-shadow: var(--shadow-1); opacity: 0; transition: opacity var(--t-fast); }
 .sc-home__section > .sc-rows > li:hover .sc-more, .sc-home__section > .sc-rows > li:focus-within .sc-more { opacity: 1; }

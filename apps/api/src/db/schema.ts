@@ -139,6 +139,8 @@ export const projects = pgTable(
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     /** D62: who saved the current doc (shown on the history version it later becomes). */
     updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    /** D64: when the board last stored the project's thumbnail (object store key `thumbs/<id>`); null = none yet. */
+    thumbAt: timestamp('thumb_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

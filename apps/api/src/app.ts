@@ -11,6 +11,7 @@ import { memberRoutes } from './routes/members';
 import { presetRoutes } from './routes/presets';
 import { projectRoutes } from './routes/projects';
 import { reviewRoutes } from './routes/review';
+import { thumbnailRoutes } from './routes/thumbnails';
 import { versionRoutes } from './routes/versions';
 import type { ObjectStore } from './storage/object-store';
 
@@ -41,6 +42,7 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
   await app.register(presetRoutes);
   await app.register(libraryRoutes);
   await app.register(assetRoutes, { store: opts.store });
+  await app.register(thumbnailRoutes, { store: opts.store });
   await app.register(exportRoutes, { queue: opts.queue, store: opts.store });
 
   return app;
