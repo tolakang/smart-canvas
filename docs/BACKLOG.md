@@ -162,3 +162,5 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - Q4 — Review: comments pinned to a Preview, and an "approved" mark per Preview, for the team before export. Viewers can comment.
 - Q5 — Retire `output.family` (computed but no longer used for placement since D38): a model change with a migration, like D56. Owner decision.
 - Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). Needs a colour-managed PDF path in the worker; big.
+- Q7 — Layout editors on touch, like the board (D58): one finger pans the canvas, a tap selects a layer, a selected layer moves under the finger, two fingers pinch anywhere. Today the editors keep D36's hold-then-drag (owner's choice, 2026-10-21), so this needs the owner's say.
+- Q8 — Small panels on phones: fitted to a phone, the board shows panels about 58×40 px and a finger mostly lands on a control inside them. Options: Fit on phones stops at a readable zoom and scrolls, or a tap on a panel at low zoom zooms to it first.

@@ -1,6 +1,6 @@
 /**
  * T13.6 end to end (D33): the workspace on a phone and a tablet. Phone: condensed top bar with a More menu,
- * library and inspector as bottom sheets, the Select tool by default (D58: one finger moves the board, a selected
+ * library and inspector as bottom sheets, no Select / Hand tools (D58: one finger moves the board, a tap selects, a selected
  * panel moves under the finger, two fingers pinch and pan anywhere; Select several for taps and a box, then Group /
  * Delete), long-press for a menu, tap a port then a target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
  */
@@ -126,7 +126,7 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
    * A point where a finger grabs the panel itself: preferably with no port, button or other control within a finger's
    * reach (Chrome moves a touch onto a control close to it), else a plain spot on its title.
    */
-  const grabPoint = (node: string) => phone.evaluate((sel) => {
+  const grabPoint = (node: string, clearOnly = false) => phone.evaluate(({ sel, clearOnly }) => {
     const panel = document.querySelector(sel);
     const box = panel?.getBoundingClientRect();
     const title = panel?.querySelector('.sc-node__title')?.getBoundingClientRect();
@@ -137,16 +137,17 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     };
     for (let y = box.y + 6; y < box.bottom - 6; y += 4)
       for (let x = box.x + 6; x < box.right - 6; x += 4) if (([[0, 0], [-10, 0], [10, 0], [0, -10], [0, 10]] as const).every(([dx, dy]) => plain(x + dx, y + dy))) return { x, y };
-    for (let fx = 0.1; fx < 1; fx += 0.1) if (plain(title.x + title.width * fx, title.y + title.height / 2)) return { x: title.x + title.width * fx, y: title.y + title.height / 2 };
+    if (!clearOnly) for (let fx = 0.1; fx < 1; fx += 0.1) if (plain(title.x + title.width * fx, title.y + title.height / 2)) return { x: title.x + title.width * fx, y: title.y + title.height / 2 };
     throw new Error(`no grab point on ${sel}`);
-  }, node);
-  /** A grab point on the first of the panels `sel` matches that has one. */
+  }, { sel: node, clearOnly });
+  /** A grab point on the first of the panels `sel` matches that has one, a clear one if any panel has it. */
   const grabAny = async (sel: string) => {
     const ids = await phone.locator(sel).evaluateAll((ns) => ns.map((n) => n.getAttribute('data-id') ?? ''));
-    for (const id of ids) {
-      const p = await grabPoint(`.react-flow__node[data-id="${id}"]`).catch(() => undefined);
-      if (p) return p;
-    }
+    for (const clearOnly of [true, false])
+      for (const id of ids) {
+        const p = await grabPoint(`.react-flow__node[data-id="${id}"]`, clearOnly).catch(() => undefined);
+        if (p) return p;
+      }
     throw new Error(`no grab point on ${sel}`);
   };
 
@@ -268,6 +269,7 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect((await viewport()).x - v0.x).toBeGreaterThan(-20);
     await selbar.getByRole('button', { name: 'Clear selection' }).tap();
     await selbar.getByText('0 selected').waitFor();
+    await phone.waitForTimeout(600);
     // Taps add panels (and a second tap takes one out again).
     const first = await grabAny('.react-flow__node:not([data-id="main"]):not([data-id^="grp:"])');
     await phone.touchscreen.tap(first.x, first.y);
@@ -303,6 +305,9 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
   }, 60_000);
 
   it('phone: long-press on the canvas opens the canvas menu', async () => {
+    const several = bar(phone).getByRole('button', { name: 'Select several' });
+    if ((await several.getAttribute('aria-pressed')) === 'true') await several.tap();
+    await phone.waitForTimeout(600);
     const pane = await phone.locator('.react-flow__pane').boundingBox();
     if (!pane) throw new Error('no pane');
     const cdp = await phone.context().newCDPSession(phone);
