@@ -122,12 +122,12 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await preset().getByRole('button', { name: 'Export all GDN sizes' }).click();
     const dialog = page.getByRole('dialog');
     // Its sizes only, all chosen — the hidden one too, until unticked.
-    expect(await dialog.getByRole('group', { name: 'Outputs' }).getByRole('checkbox').count()).toBe(7);
+    expect(await dialog.getByRole('group', { name: 'Previews' }).getByRole('checkbox').count()).toBe(7);
     const include = dialog.getByLabel(/Include hidden previews \(1\)/);
     expect(await include.isChecked()).toBe(true);
     await include.uncheck();
     await dialog.getByLabel('Format').selectOption('png');
-    const [zip] = await Promise.all([page.waitForEvent('download', { timeout: 120_000 }), dialog.getByRole('button', { name: /^Export 6 outputs/ }).click()]);
+    const [zip] = await Promise.all([page.waitForEvent('download', { timeout: 120_000 }), dialog.getByRole('button', { name: /^Export 6 Preview/ }).click()]);
     expect(zip.suggestedFilename()).toBe('Presets_GDN.zip');
     // A stored ZIP: each name appears in its local header and in the central directory.
     const names = new Set(readFileSync((await zip.path()) as string).toString('utf8').match(/Presets_GDN-\d+×\d+_\d+x\d+\.png/g));
@@ -141,8 +141,8 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
   it('a Preview exports itself; Delete removes the node with its sizes', async () => {
     const before = await doc();
     const id = before.presetSets?.[0]?.outputs[0] ?? '';
-    await page.locator(`.react-flow__node-outputNode[data-id="out:${id}"]`).getByRole('button', { name: /^Export output/ }).click();
-    await page.getByRole('dialog').getByRole('button', { name: /^Export 1 output/ }).waitFor();
+    await page.locator(`.react-flow__node-outputNode[data-id="out:${id}"]`).getByRole('button', { name: /^Export Preview/ }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^Export 1 Preview/ }).waitFor();
     await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
 
     await preset().locator('.sc-node__title').click();
@@ -192,7 +192,7 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Format').selectOption('jpg');
     await dialog.getByText(/^Large export \(\d+ million pixels\): made and zipped on the server\.$/).waitFor();
-    const [zip] = await Promise.all([page.waitForEvent('download', { timeout: 240_000 }), dialog.getByRole('button', { name: /^Export 5 outputs/ }).click()]);
+    const [zip] = await Promise.all([page.waitForEvent('download', { timeout: 240_000 }), dialog.getByRole('button', { name: /^Export 5 Preview/ }).click()]);
     expect(await dialog.locator('[data-where="browser"]').count()).toBe(0);
     expect(zip.suggestedFilename()).toBe('Presets_Promo.zip');
     expect(zip.url()).toMatch(/\/exports\/zip\?ids=.+&set=/);

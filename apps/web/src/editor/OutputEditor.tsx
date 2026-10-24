@@ -66,7 +66,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
   const openThreads = threadsOf(review, output.id).length;
   return (
     <CanvasEditor
-      label={`Output editor ${output.label}`}
+      label={`Preview editor ${output.label}`}
       title={
         <>
           <strong>{output.label}</strong>
@@ -75,7 +75,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
             {(output.bleedMm ?? 0) > 0 && ` · bleed ${output.bleedMm} mm`}
             {!connected && ' · disconnected (frozen)'}
           </span>
-          <span className="sc-muted">Changes here are overrides on this output only</span>
+          <span className="sc-muted">Changes here apply to this Preview only</span>
           <Approval outputId={output.id} fingerprint={fingerprint} onApprove={reviewApprove} />
           {!readOnly && (
             <button

@@ -28,7 +28,7 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
     const cur = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
     expect((await page.request.put(url, { data: { rev: cur.rev, doc: ok(addOutput(cur.doc, { id: 'story', label: 'Story', size: { width: 1080, height: 1920, unit: 'px' } })) } })).status()).toBe(200);
     await page.reload();
-    await page.getByLabel('Output Story', { exact: true }).waitFor();
+    await page.getByLabel('Preview Story', { exact: true }).waitFor();
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
@@ -40,7 +40,7 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
   };
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
   const card = () => page.locator('.react-flow__node-headlineNode').first();
-  const drawnInStory = () => page.getByLabel('Output Story', { exact: true }).locator('.sc-render').first().evaluate((r) => [...r.querySelectorAll('[data-source-id]')].map((e) => e.getAttribute('data-source-id')));
+  const drawnInStory = () => page.getByLabel('Preview Story', { exact: true }).locator('.sc-render').first().evaluate((r) => [...r.querySelectorAll('[data-source-id]')].map((e) => e.getAttribute('data-source-id')));
 
   it('the Headline node: a picture in each slot; the story draws Khmer only', async () => {
     // D49: every project starts with a Headline node.

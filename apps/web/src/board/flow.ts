@@ -254,9 +254,9 @@ export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: st
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
-  if (refusal === 'wrong_type') return e.kind === 'composition' ? 'A master preview wires into an output.' : 'An input wires into a row of a master preview.';
+  if (refusal === 'wrong_type') return e.kind === 'composition' ? 'A Layer Comp wires into a Preview.' : 'An input wires into a row of a Layer Comp.';
   if (refusal) return 'Drop the wire on a port.';
-  if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This output already has a master preview: drag its wire off first.';
+  if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This Preview already has a Layer Comp: drag its wire off first.';
   return null;
 }
 

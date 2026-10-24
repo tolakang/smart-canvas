@@ -63,7 +63,7 @@ export function GroupNodeView({ data }: NodeProps<GroupFlowNode>) {
             <Icon name={group.collapsed ? 'plus' : 'minus'} />
           </button>
           {outputs.length > 0 && (
-            <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Export group ${group.label}`} title={`Export its ${outputs.length} output${outputs.length === 1 ? '' : 's'}`} onClick={() => exportOutputs(outputs)}>
+            <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Export group ${group.label}`} title={`Export its ${outputs.length} Preview${outputs.length === 1 ? '' : 's'}`} onClick={() => exportOutputs(outputs)}>
               <Icon name="export" />
             </button>
           )}

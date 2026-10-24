@@ -28,10 +28,11 @@ describe('layout health (D35)', () => {
     expect(outputHealth(doc, 'o1', computeLayout(doc, 'o1', deps)).level).toBe('ok');
   });
 
-  it('warns about wired layers with no file or text yet', () => {
+  it('lists wired layers with no file or text yet as a grey to-do, not a warning (D64)', () => {
     const doc = withOutputEdge(project()); // defaults: no photo, no logo file, no text
     const h = compositionHealth(doc);
-    expect(h.level).toBe('warning');
+    expect(h.level).toBe('empty');
+    expect(h.issues.every((i) => i.level === 'todo')).toBe(true);
     expect(h.issues.map((i) => [i.sourceId, i.code])).toEqual([
       ['logo', 'empty'],
       ['headline', 'empty'],
@@ -49,6 +50,14 @@ describe('layout health (D35)', () => {
     expect(h.level).toBe('warning');
     expect(h.issues.map((i) => i.code)).toContain('text-overflow');
     expect(h.issues.find((i) => i.code === 'text-overflow')?.label).toBe('Headline');
+  });
+
+  it('a real warning outranks empty layers', () => {
+    let doc = withOutputEdge(project(output({ size: { width: 1080, height: 1080, unit: 'px' } })));
+    doc = { ...doc, sources: doc.sources.map((s) => (s.content.kind === 'text' ? { ...s, content: { ...s.content, text: 'W'.repeat(400), style: { ...s.content.style, maxLines: 1 } } } : s)) };
+    const h = outputHealth(doc, 'o1', computeLayout(doc, 'o1', deps));
+    expect(h.level).toBe('warning');
+    expect(h.issues.map((i) => i.code)).toEqual(expect.arrayContaining(['text-overflow', 'empty']));
   });
 
   it('a missing font is an error, on the output and on the composition', () => {

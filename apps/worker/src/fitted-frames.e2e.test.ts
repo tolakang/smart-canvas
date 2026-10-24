@@ -55,7 +55,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
 
   it('the editor frame is the badge; stretching the right edge stretches the picture', async () => {
     await openLayout(page);
-    const editor = page.getByRole('dialog', { name: /Master preview editor/ });
+    const editor = page.getByRole('dialog', { name: /Layer Comp editor/ });
     const layer = editor.locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
     const lb = await layer.boundingBox();
     if (!lb) throw new Error('no layer');
@@ -101,12 +101,12 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
     if (!r.ok) throw new Error(r.error);
     expect((await page.request.put(url, { data: { rev: cur.rev, doc: r.doc } })).status()).toBe(200);
     await page.reload();
-    await page.getByLabel('Output Post', { exact: true }).locator('.sc-render [data-source-id="subject"] img').waitFor();
+    await page.getByLabel('Preview Post', { exact: true }).locator('.sc-render [data-source-id="subject"] img').waitFor();
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Format').selectOption('png');
     await dialog.getByText('Made in your browser').waitFor();
-    await dialog.getByRole('button', { name: /^Export 1 output/ }).click();
+    await dialog.getByRole('button', { name: /^Export 1 Preview/ }).click();
     const row = dialog.getByRole('list', { name: 'Export progress' }).locator('li');
     await expect.poll(() => row.getAttribute('data-status'), { timeout: 60_000 }).toBe('done');
     const [file] = await Promise.all([page.waitForEvent('download'), row.getByRole('link', { name: 'Download' }).click()]);
@@ -131,7 +131,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
   }, 120_000);
 
   it('rotated, stretched, editor closed and reopened: a double-click on the edge brings back the picture’s shape', async () => {
-    const editor = page.getByRole('dialog', { name: /Master preview editor/ });
+    const editor = page.getByRole('dialog', { name: /Layer Comp editor/ });
     const layer = editor.locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
     const handle = async (h: string) => {
       const b = await editor.locator(`[data-tb-handle="${h}"]`).boundingBox();

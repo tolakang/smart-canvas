@@ -80,7 +80,7 @@ export function BehaviorPicker({ source, id }: { source: InputSource; id?: strin
       id={id}
       className="sc-behavior nodrag nopan nowheel"
       aria-label={`${source.label} behaves like`}
-      title="How this input adapts in outputs"
+      title="How this input adapts in Previews"
       value={source.behavesLike}
       onChange={(e) => run((doc) => setBehavior(doc, source.id, e.target.value as Behavior))}
     >

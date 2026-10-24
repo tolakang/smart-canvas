@@ -57,12 +57,12 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     for (const id of ['background', 'headline', 'logo', 'subject']) expect(d.edges.some((e) => e.kind === 'layer' && e.to === 'main' && e.from === id)).toBe(true);
     expect(d.outputs.map((o) => o.label)).toEqual(['Instagram portrait 4:5', 'Instagram square', 'A5 flyer']);
     expect(d.edges.filter((e) => e.kind === 'composition')).toHaveLength(3);
-    await page.getByLabel('Output Instagram square', { exact: true }).locator('.sc-render [data-source-id=headline]').waitFor();
+    await page.getByLabel('Preview Instagram square', { exact: true }).locator('.sc-render [data-source-id=headline]').waitFor();
   }, 90_000);
 
   it('overrides one output only', async () => {
-    await page.getByRole('button', { name: 'Edit output Instagram square' }).click();
-    const editor = page.getByRole('dialog', { name: 'Output editor Instagram square' });
+    await page.getByRole('button', { name: 'Edit Preview Instagram square' }).click();
+    const editor = page.getByRole('dialog', { name: 'Preview editor Instagram square' });
     await editor.getByRole('complementary', { name: 'Layers' }).getByRole('button', { name: /^Subject/ }).click();
     for (let i = 0; i < 3; i++) await page.keyboard.press('Shift+ArrowRight');
     // "All changes saved" can still be showing from before the nudges: wait for the override itself to be saved.
@@ -82,7 +82,7 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Format').selectOption('png');
-    await dialog.getByRole('button', { name: /^Export 3 outputs/ }).click();
+    await dialog.getByRole('button', { name: /^Export 3 Preview/ }).click();
     const list = dialog.getByRole('list', { name: 'Export progress' });
     await expect.poll(async () => list.locator('li').evaluateAll((els) => els.map((e) => e.getAttribute('data-status'))), { timeout: 90_000, interval: 500 }).toEqual(['done', 'done', 'done']);
     // D31: these sizes are made in the browser (up to 4096 px), not by the worker.

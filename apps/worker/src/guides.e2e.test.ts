@@ -35,7 +35,7 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
     doc = ok(addOutput(doc, { id: 'post', label: 'Post', size: { width: 2400, height: 2400, unit: 'px' } }));
     expect((await page.request.put(url, { data: { rev: cur.rev, doc } })).status()).toBe(200);
     await page.reload();
-    await page.getByLabel('Output Story', { exact: true }).waitFor();
+    await page.getByLabel('Preview Story', { exact: true }).waitFor();
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
@@ -48,7 +48,7 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
     const before = (await doc()).doc;
     for (const family of ['Vertical', 'Horizontal'] as const) {
       await openLayout(page, family);
-      const editor = page.getByRole('dialog', { name: /Master preview editor/ });
+      const editor = page.getByRole('dialog', { name: /Layer Comp editor/ });
       await editor.waitFor();
       await page.keyboard.press('Escape');
       await editor.waitFor({ state: 'detached' });
@@ -58,8 +58,8 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
     expect(guidesOf(d, MAIN).map((g) => g.label)).toEqual(['Vertical guide', 'Horizontal guide']);
     // Still one Layer Comp on the board: the layouts open from it.
     expect(await page.locator('.react-flow__node-mainNode').count()).toBe(1);
-    await page.getByLabel('Output Story', { exact: true }).getByText('Vertical guide').waitFor();
-    expect(await page.getByLabel('Output Post', { exact: true }).getByText('guide').count()).toBe(0);
+    await page.getByLabel('Preview Story', { exact: true }).getByText('Vertical guide').waitFor();
+    expect(await page.getByLabel('Preview Post', { exact: true }).getByText('guide').count()).toBe(0);
     // Seeded from the master through the grid: the story looks the same as before.
     const [a, b] = [subjectIn(before, 'story'), subjectIn(d, 'story')];
     for (const k of ['x', 'y', 'w', 'h'] as const) expect(b?.[k]).toBeCloseTo(a?.[k] ?? NaN, 3);
@@ -73,7 +73,7 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
     const next = withComposition(cur.doc, vertical.id, (c) => ({ ...c, placements: { ...c.placements, subject: { x: 0.1, y: 0.05, w: 0.8, h: 0.3 } } }));
     expect((await page.request.put(url, { data: { rev: cur.rev, doc: next } })).status()).toBe(200);
     await page.reload();
-    const story = page.getByLabel('Output Story', { exact: true }).locator('.sc-render').first();
+    const story = page.getByLabel('Preview Story', { exact: true }).locator('.sc-render').first();
     await story.locator('[data-source-id="subject"]').waitFor();
     // Near the top of the story now.
     const top = await story.evaluate((r) => {

@@ -1,5 +1,6 @@
 /**
- * Layout health on a node (D35): a status dot (green ok, amber warnings, red errors, grey frozen) with the
+ * Layout health on a node (D35): a status dot (green ok, grey empty layers to fill (D64), amber warnings, red errors,
+ * grey frozen) with the
  * number of issues; click it for the list (layer + what happened). Export progress is not shown here.
  */
 import type { Health } from '@smart-canvas/core';
@@ -11,7 +12,8 @@ export function healthSummary(h: Health): string {
   const n = h.issues.length;
   if (h.level === 'error') return `${n} ${n === 1 ? 'problem' : 'problems'}`;
   if (h.level === 'warning') return `${n} ${n === 1 ? 'warning' : 'warnings'}`;
-  if (h.level === 'frozen') return 'Frozen: disconnected, layout no longer follows the master preview';
+  if (h.level === 'empty') return `${n} empty ${n === 1 ? 'layer' : 'layers'}`;
+  if (h.level === 'frozen') return 'Frozen: disconnected, layout no longer follows the Layer Comp';
   return 'Layout OK';
 }
 

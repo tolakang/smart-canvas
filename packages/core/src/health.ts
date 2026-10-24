@@ -2,7 +2,9 @@
  * Layout health (D35): how a node's layout is doing, for the status dot on the board and the issue list.
  * - error: something can't be drawn as designed (a text font that failed to load);
  * - warning: the engine had to compromise (text overflow, logo raised to its minimum, a layer clamped into
- *   the safe area) or a wired layer is still empty;
+ *   the safe area);
+ * - empty (D64, amends D35): the only thing to report is wired layers with no file or text yet — a to-do on a
+ *   new project, not a problem, so it shows grey with the count, not amber;
  * - frozen: a disconnected output (its layout no longer follows the master preview);
  * - ok: nothing to report.
  * Export progress is not health; it stays in the export dialog.
@@ -12,14 +14,15 @@ import { layerSources } from './layers';
 import type { LayoutResult, LayoutWarning } from './layout';
 import type { InputSource, ProjectDoc } from './model';
 
-export type HealthLevel = 'ok' | 'warning' | 'error' | 'frozen';
+export type HealthLevel = 'ok' | 'empty' | 'warning' | 'error' | 'frozen';
 export type HealthCode = LayoutWarning | 'empty' | 'font-missing';
 
 export interface HealthIssue {
   sourceId: string;
   label: string;
   code: HealthCode;
-  level: 'warning' | 'error';
+  /** 'todo': a wired layer still empty (D64). */
+  level: 'todo' | 'warning' | 'error';
   message: string;
 }
 
@@ -55,13 +58,14 @@ function emptyIssues(doc: ProjectDoc, compositionId: string): HealthIssue[] {
 }
 
 function issue(s: Pick<InputSource, 'id' | 'label'>, code: HealthCode): HealthIssue {
-  return { sourceId: s.id, label: s.label, code, level: code === 'font-missing' ? 'error' : 'warning', message: MESSAGE[code] };
+  return { sourceId: s.id, label: s.label, code, level: code === 'font-missing' ? 'error' : code === 'empty' ? 'todo' : 'warning', message: MESSAGE[code] };
 }
 
 function levelOf(issues: HealthIssue[], frozen = false): HealthLevel {
   if (issues.some((i) => i.level === 'error')) return 'error';
-  if (issues.length) return 'warning';
-  return frozen ? 'frozen' : 'ok';
+  if (issues.some((i) => i.level === 'warning')) return 'warning';
+  if (frozen) return 'frozen';
+  return issues.length ? 'empty' : 'ok';
 }
 
 /** Text sources whose font family is in `missingFonts`. */

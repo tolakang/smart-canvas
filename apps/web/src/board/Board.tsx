@@ -118,7 +118,7 @@ type LoadResult = { key: number } & ({ ok: Loaded } | { error: string });
 
 const ERROR_NOTICE: Partial<Record<SourceError, string>> = {
   limit: `A project can have at most ${LIMITS.maxSources} inputs.`,
-  output_limit: `A project can have at most ${LIMITS.maxOutputs} outputs.`,
+  output_limit: `A project can have at most ${LIMITS.maxOutputs} Previews.`,
   invalid: 'That value is out of range.',
 };
 
@@ -1386,7 +1386,7 @@ function BoardCanvas(props: {
               aria-label="Export"
               onClick={() => void autosave.flush().then(() => setExporting({}))}
               disabled={outputCount === 0}
-              title={outputCount === 0 ? 'Add an output first' : 'Export outputs'}
+              title={outputCount === 0 ? 'Add a Preview first' : 'Export Previews'}
             >
               <Icon name="export" /> Export
             </button>
@@ -1603,7 +1603,7 @@ function BoardCanvas(props: {
       </div>
       {reconnecting && (
         <ReconnectDialog
-          label={doc.outputs.find((o) => o.id === reconnecting.outputId)?.label ?? 'output'}
+          label={doc.outputs.find((o) => o.id === reconnecting.outputId)?.label ?? 'Preview'}
           overrides={doc.outputs.find((o) => o.id === reconnecting.outputId)?.overrides.length ?? 0}
           onChoose={(choice) => {
             run((d) => reconnectOutput(d, reconnecting.outputId, choice, reconnecting.compositionId));

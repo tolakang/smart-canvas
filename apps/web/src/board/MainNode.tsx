@@ -178,7 +178,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
                       )}
                     </li>
                   ))}
-                  {g.outputs.length === 0 && <li className="sc-muted">No outputs</li>}
+                  {g.outputs.length === 0 && <li className="sc-muted">No Previews</li>}
                 </ul>
               </section>
             ))}

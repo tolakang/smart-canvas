@@ -79,7 +79,7 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
 
   it('master preview editor: Delete removes the selected layer (as its row trash button)', async () => {
     await openLayout(page);
-    const editor = page.getByRole('dialog', { name: /Master preview editor/ });
+    const editor = page.getByRole('dialog', { name: /Layer Comp editor/ });
     await editor.getByRole('complementary', { name: 'Layers' }).getByText('Headline', { exact: true }).click();
     page.once('dialog', (d) => void d.accept());
     await page.keyboard.press('Delete');

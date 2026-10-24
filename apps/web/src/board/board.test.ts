@@ -251,10 +251,10 @@ describe('typed connections (T12.2, D32)', () => {
     const doc = sampleDoc();
     expect(connectionRefusal(doc, { source: 'src:bg', target: MAIN_ID })).toBeNull();
     expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4' })).toBeNull();
-    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:ig' })).toBe('This output already has a master preview: drag its wire off first.');
+    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:ig' })).toBe('This Preview already has a Layer Comp: drag its wire off first.');
     // D56: no output-only layers.
-    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBe('An input wires into a row of a master preview.');
-    expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of a master preview.');
+    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBe('An input wires into a row of a Layer Comp.');
+    expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of a Layer Comp.');
   });
 });
 

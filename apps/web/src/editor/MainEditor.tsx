@@ -48,7 +48,7 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
   );
   return (
     <CanvasEditor
-      label="Master preview editor"
+      label="Layer Comp editor"
       title={
         <>
           <strong>{main.label}</strong>

@@ -236,8 +236,8 @@ export function ExportDialog(props: {
         {rows === null ? (
           <form onSubmit={start}>
             <fieldset className="sc-export__outputs">
-              <legend>Outputs</legend>
-              {listed.length === 0 && <p className="sc-muted">Add an output first.</p>}
+              <legend>Previews</legend>
+              {listed.length === 0 && <p className="sc-muted">Add a Preview first.</p>}
               {listed.map((o) => (
                 <label key={o.id}>
                   <input
@@ -278,7 +278,7 @@ export function ExportDialog(props: {
             )}
             {hasBleed && (
               <label className="sc-check">
-                <input type="checkbox" checked={withBleed} onChange={(e) => setWithBleed(e.target.checked)} /> Include bleed (print outputs)
+                <input type="checkbox" checked={withBleed} onChange={(e) => setWithBleed(e.target.checked)} /> Include bleed (print sizes)
               </label>
             )}
             {format === 'svg' && (
@@ -317,7 +317,7 @@ export function ExportDialog(props: {
             )}
             {notApproved.length > 0 && (
               <p className="sc-export__approval" role="status">
-                {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'output isn’t' : 'outputs aren’t'} approved.
+                {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'Preview isn’t' : 'Previews aren’t'} approved.
                 {selected.length > notApproved.length && (
                   <button type="button" onClick={() => setSelected((s) => s.filter(isApproved))}>
                     Only approved ({selected.length - notApproved.length})
@@ -332,7 +332,7 @@ export function ExportDialog(props: {
             )}
             <div className="sc-row">
               <button type="submit" disabled={busy || selected.length === 0 || tooLarge.length > 0}>
-                Export {selected.length} {selected.length === 1 ? 'output' : 'outputs'}
+                Export {selected.length} {selected.length === 1 ? 'Preview' : 'Previews'}
               </button>
               <button type="button" onClick={() => ref.current?.close()}>
                 Cancel
@@ -360,7 +360,7 @@ export function ExportDialog(props: {
             </ul>
             {notApproved.length > 0 && (
               <p className="sc-export__approval" role="status">
-                {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'output isn’t' : 'outputs aren’t'} approved.
+                {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'Preview isn’t' : 'Previews aren’t'} approved.
                 {selected.length > notApproved.length && (
                   <button type="button" onClick={() => setSelected((s) => s.filter(isApproved))}>
                     Only approved ({selected.length - notApproved.length})

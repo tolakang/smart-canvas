@@ -31,13 +31,13 @@ describe.skipIf(!adminUrl)('background pictures for vertical / horizontal output
     doc = ok(addOutput(doc, { id: 'post', label: 'Post', size: { width: 1080, height: 1080, unit: 'px' } }));
     expect((await page.request.put(url, { data: { rev: cur.rev, doc } })).status()).toBe(200);
     await page.reload();
-    await page.getByLabel('Output Story', { exact: true }).waitFor();
+    await page.getByLabel('Preview Story', { exact: true }).waitFor();
   }, 120_000);
   afterAll(async () => {
     await stack?.close();
   });
 
-  const bgOf = (output: string) => page.getByLabel(`Output ${output}`, { exact: true }).locator('.sc-render [data-source-id="background"]').first();
+  const bgOf = (output: string) => page.getByLabel(`Preview ${output}`, { exact: true }).locator('.sc-render [data-source-id="background"]').first();
 
   it('a vertical picture added in the inspector is drawn by the story only', async () => {
     const tall = await sharp({ create: { width: 400, height: 800, channels: 3, background: { r: 20, g: 160, b: 90 } } }).png().toBuffer();
@@ -73,7 +73,7 @@ describe.skipIf(!adminUrl)('background pictures for vertical / horizontal output
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Format').selectOption('png');
     for (const label of await dialog.getByRole('checkbox').all()) if ((await label.getAttribute('aria-label'))?.includes('Post')) await label.uncheck();
-    await dialog.getByRole('button', { name: /^Export \d output/ }).click();
+    await dialog.getByRole('button', { name: /^Export \d Preview/ }).click();
     const rows = dialog.getByRole('list', { name: 'Export progress' }).locator('li');
     await expect.poll(async () => (await rows.evaluateAll((li) => li.map((l) => l.getAttribute('data-status')))).every((s) => s === 'done'), { timeout: 60_000 }).toBe(true);
     const story = rows.filter({ hasText: 'Story' }).first();

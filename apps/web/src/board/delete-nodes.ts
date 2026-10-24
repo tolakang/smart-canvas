@@ -47,7 +47,7 @@ export function deleteQuestion(targets: readonly Target[]): string {
   const groups = targets.filter((t) => t.kind === 'group');
   const rest = targets.filter((t) => t.kind !== 'group');
   const names = (ts: readonly Target[]) => (ts.length === 1 ? `“${ts[0]?.label}”` : `${ts.length} nodes`);
-  const parts = [rest.length ? `Delete ${names(rest)}? Their wires and output overrides go with them.` : '', groups.length ? `Ungroup ${names(groups)} (the nodes stay).` : ''];
+  const parts = [rest.length ? `Delete ${names(rest)}? Their wires and edits on Previews go with them.` : '', groups.length ? `Ungroup ${names(groups)} (the nodes stay).` : ''];
   return parts.filter(Boolean).join(' ');
 }
 

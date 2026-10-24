@@ -263,7 +263,7 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
   }
 
   return (
-    <div className="sc-bg-slots" aria-label="Background for vertical and horizontal outputs">
+    <div className="sc-bg-slots" aria-label="Background for vertical and horizontal Previews">
       {(['vertical', 'horizontal'] as const).map((family) => {
         const id = variants[family];
         const label = family === 'vertical' ? 'Vertical' : 'Horizontal';

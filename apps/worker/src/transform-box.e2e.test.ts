@@ -31,7 +31,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     await stack?.close();
   });
 
-  const editor = () => page.getByRole('dialog', { name: /Master preview editor/ });
+  const editor = () => page.getByRole('dialog', { name: /Layer Comp editor/ });
   const layer = () => editor().locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
   const placement = async () => mainComposition(await doc()).placements.subject as NFrame;
@@ -205,7 +205,7 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     const edit = phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first();
     await edit.tap();
     await phone.waitForTimeout(500);
-    const ed = phone.getByRole('dialog', { name: /Master preview editor/ });
+    const ed = phone.getByRole('dialog', { name: /Layer Comp editor/ });
     if (!(await ed.count())) await edit.tap();
     const canvasBox = async () => {
       const b = await ed.locator('.sc-editor__canvas').boundingBox();
