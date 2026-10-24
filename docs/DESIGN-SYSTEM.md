@@ -5,18 +5,20 @@ meaning (node type, state) rather than decoration. All values are CSS custom pro
 `apps/web/src/styles.css`. The editor screen (`.sc-fig`) has its own dark toolbar and maps `--accent` and the
 other shared names onto its palette.
 
-## Tokens
+## Tokens (refreshed in U1, 2026-10-24)
 
 | Group | Tokens | Notes |
 |---|---|---|
-| Neutrals | `--bg` #f5f5f5 · `--surface` #fff · `--surface-2` #f5f5f5 · `--fg` #1e1e1e · `--muted` #757575 · `--line` #e6e6e6 · `--line-strong` #d4d4d4 | `--surface-2` is the field fill and the hover fill |
-| Accent / state | `--accent` #0d99ff · `--accent-soft` #e5f4ff · `--danger` #dc3412 · `--warn` #b86200 | `--warn`: hand edits, frozen outputs |
-| Node types | `--type-input` blue · `--type-main` purple · `--type-output` green (`--type-process` orange-red is kept as a group / tile colour) | Only the 3 px stripe on top of a node |
-| Type | `--fs-xs` 11 · `--fs-sm` 12 · `--fs-md` 13 · `--fs-lg` 15 | Inter, then system UI, Noto Sans and Noto Sans Khmer |
-| Space | `--sp-1` 4 · `--sp-2` 8 · `--sp-3` 12 · `--sp-4` 16 | 4 px grid |
-| Radius | `--r-sm` 4 · `--r-md` 6 · `--r-lg` 10 | Fields and buttons use `md`; nodes use `lg` |
-| Elevation | `--shadow-1` (rest) · `--shadow-2` (hover, menus) | A selected node also gets a 1 px accent ring |
-| Size / motion | `--field-h` 28 px · `--t-fast` 120 ms | Every field and button is 28 px tall |
+| Neutrals | `--bg` #f4f5f7 · `--surface` #fff · `--surface-2` #f1f3f5 · `--surface-3` #e9ecef · `--fg` #14171c · `--muted` #5e6672 · `--line` #e4e7eb · `--line-strong` #cfd4da | Cool greys. `--muted` is 5.9:1 on white, so small grey text passes AA |
+| Accent / state | `--accent` #0a6cdb · `--accent-hover` · `--accent-soft` #e7f0fc · `--ring` (focus halo) · `--danger` #c8321b · `--warn` #a85a00 · `--ok` #0d7a3f | The accent is dark enough for white button text (5:1) |
+| Node types | `--type-input` blue · `--type-main` violet · `--type-output` green (`--type-process` orange-red is kept as a group / tile colour) | Only the 3 px stripe on top of a node |
+| Type | `--fs-xs` 11 · `--fs-sm` 12 · `--fs-md` 13 · `--fs-lg` 15 · `--fs-xl` 20; `--font-ui` | **Inter** (bundled, `@fontsource-variable/inter`) for the interface only; artwork fonts are separate (`fonts/bundled.css`) |
+| Space | `--sp-1` 4 · `--sp-2` 8 · `--sp-3` 12 · `--sp-4` 16 · `--sp-5` 24 | 4 px grid |
+| Radius | `--r-sm` 6 · `--r-md` 8 · `--r-lg` 12 · `--r-xl` 16 | Fields and buttons `md`, nodes and menus `lg`, cards and dialogs `xl` |
+| Elevation | `--shadow-1` (rest) · `--shadow-2` (hover, toolbars) · `--shadow-3` (dialogs, menus, floating panels) | Layered, soft shadows |
+| Size / motion | `--field-h` 28 px · `--t-fast` 140 ms · `--t-med` 200 ms (ease-out curve) | Motion is off for people who ask for reduced motion |
+
+**Component layer (U1):** the last block of `styles.css` makes focus (an accent outline on keyboard focus, a soft `--ring` halo on fields), buttons (primary with a slight inner highlight), fields, dropdowns (no native chrome; a chevron in the theme's colour), cards and dialogs (blurred backdrop, a short entrance), menus and scrollbars the same everywhere.
 
 ## Components
 
@@ -42,7 +44,7 @@ other shared names onto its palette.
 
 ## Themes (T13.3, D34)
 
-Light is the token set on `:root`. Dark redefines the same tokens on `:root[data-theme='dark']`: surfaces `#262626`/`#333` on a `#1a1a1a` board, brighter type colours, and stronger shadows.
+Light is the token set on `:root`. Dark redefines the same tokens on `:root[data-theme='dark']`: surfaces `#171a1f`/`#20242b` on a `#0f1115` board, brighter type colours, and stronger shadows.
 - `apps/web/src/ui/theme.ts` sets `data-theme` before the first paint. It follows the system setting until the user picks a theme with the top-bar toggle; the pick is remembered per browser.
 - React Flow gets `colorMode`, so its dots, controls and minimap follow the theme.
 - New tokens:
