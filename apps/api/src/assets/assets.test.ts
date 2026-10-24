@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { dimensions } from './dimensions';
 import { readFontFamily } from './font';
-import { isPdf, pdfFirstPageToSvg, PdfRejected, PdfUnavailable } from './pdf';
+import { isPdf, pdfPageToSvg, PdfRejected, PdfUnavailable } from './pdf';
 import { sniff } from './sniff';
 import { sanitizeCss, sanitizeSvg, SvgRejected } from './svg-sanitize';
 
@@ -158,16 +158,24 @@ describe('PDF → SVG (M3)', () => {
     expect(isPdf(fixture('tiny.png'))).toBe(false);
   });
   it('draws the first page as an SVG the sanitizer keeps', async () => {
-    const svg = await pdfFirstPageToSvg(fixture('page.pdf'), { maxBytes });
+    const svg = await pdfPageToSvg(fixture('page.pdf'), { maxBytes });
     expect(sniff(svgBytes(svg))?.kind).toBe('vector');
     const clean = sanitizeSvg(svg);
     expect(clean).toMatch(/<path d="M /);
     expect(clean).toMatch(/<use href="#glyph/);
     expect(dimensions(svgBytes(clean))).toEqual({ width: 200, height: 100 });
   });
+  it('Q1: draws the page asked for, and rejects a page past the last', async () => {
+    const two = fixture('two-pages.pdf');
+    expect(dimensions(svgBytes(sanitizeSvg(await pdfPageToSvg(two, { maxBytes }))))).toEqual({ width: 200, height: 100 });
+    const second = sanitizeSvg(await pdfPageToSvg(two, { page: 2, maxBytes }));
+    expect(dimensions(svgBytes(second))).toEqual({ width: 120, height: 160 });
+    expect(second).toMatch(/fill="rgb\(0%, ?0%, ?100%\)"|fill:rgb\(0%, ?0%, ?100%\)|#0000ff/i);
+    await expect(pdfPageToSvg(two, { page: 3, maxBytes })).rejects.toBeInstanceOf(PdfRejected);
+  });
   it('a broken PDF, an oversized page and a missing converter each say so', async () => {
-    await expect(pdfFirstPageToSvg(svgBytes('%PDF-1.4 not really'), { maxBytes })).rejects.toBeInstanceOf(PdfRejected);
-    await expect(pdfFirstPageToSvg(fixture('page.pdf'), { maxBytes: 100 })).rejects.toBeInstanceOf(PdfRejected);
-    await expect(pdfFirstPageToSvg(fixture('page.pdf'), { maxBytes, bin: 'sc-no-such-pdftocairo' })).rejects.toBeInstanceOf(PdfUnavailable);
+    await expect(pdfPageToSvg(svgBytes('%PDF-1.4 not really'), { maxBytes })).rejects.toBeInstanceOf(PdfRejected);
+    await expect(pdfPageToSvg(fixture('page.pdf'), { maxBytes: 100 })).rejects.toBeInstanceOf(PdfRejected);
+    await expect(pdfPageToSvg(fixture('page.pdf'), { maxBytes, bin: 'sc-no-such-pdftocairo' })).rejects.toBeInstanceOf(PdfUnavailable);
   });
 });

@@ -1,7 +1,7 @@
 # PRODUCT-SPEC (v1)
 
 ## Concepts (board as of D49–D56)
-- **Asset nodes**: Logo (one or more logos), Headline (one or more Khmer / English picture pairs, one language in use), Text (text slots, each its own layer), Image (many pictures), Background (vertical and horizontal pictures, or a colour). Each holds items you add, replace or delete; pictures are PNG, JPEG, WebP or SVG, or a PDF's first page (kept as vector, D55; as a PNG in pixel-only slots).
+- **Asset nodes**: Logo (one or more logos), Headline (one or more Khmer / English picture pairs, one language in use), Text (text slots, each its own layer), Image (many pictures), Background (vertical and horizontal pictures, or a colour). Each holds items you add, replace or delete; pictures are PNG, JPEG, WebP or SVG, or a PDF's chosen page (D59; kept as vector, D55; as a PNG in pixel-only slots).
 - **Layer Comp** (the master): the layer order as four groups (logo, headline, elements, background; drag to re-order) and three layouts — Square, Vertical, Horizontal — that share the layers but place them each their own way.
 - **Core Rule**: Core Preset Guide (which layout each output uses; drag to assign) and Core Auto Layout Guide (each layer's rule).
 - **Preset node**: a family of sizes (FB, IG, Story, GDN, App banner, Website, Gift, PR, a team family, or custom); one row per size, each wired to its **Preview** (shown or hidden with the row's eye). Export makes one ZIP of its sizes; Save as team preset makes it a team family.
@@ -51,4 +51,4 @@
 - Export worker runs one job per output; failures reported per output.
 
 ## Out of scope for v1
-AI layout, background removal, CMYK/PDF-X, PSD/AI import, multi-page PDF import, real-time multi-user editing, Google/Telegram login, direct `.af` import (experimental later ticket).
+AI layout, background removal, CMYK/PDF-X, PSD/AI import, real-time multi-user editing, Google/Telegram login, direct `.af` import (experimental later ticket).

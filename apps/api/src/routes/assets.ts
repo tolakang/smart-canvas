@@ -9,7 +9,7 @@ import { LIMITS } from '@smart-canvas/core';
 import { and, desc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { dimensions } from '../assets/dimensions';
-import { isPdf, pdfFirstPageToSvg, PdfRejected, PdfUnavailable } from '../assets/pdf';
+import { isPdf, pdfPageToSvg, PdfRejected, PdfUnavailable } from '../assets/pdf';
 import { readFontFamily } from '../assets/font';
 import { sniff } from '../assets/sniff';
 import { sanitizeSvg, SvgRejected } from '../assets/svg-sanitize';
@@ -42,7 +42,9 @@ export const assetRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (ap
   const member = requireTeam();
   await app.register(multipart, { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1, fields: 0, parts: 1 } });
 
-  app.post<{ Params: { teamId: string } }>('/teams/:teamId/assets', { preHandler: member }, async (req, reply) => {
+  // Q1: `?page=N` keeps that page of a PDF (default the first).
+  const uploadQuery = { type: 'object', properties: { page: { type: 'integer', minimum: 1, maximum: 10_000 } }, additionalProperties: false } as const;
+  app.post<{ Params: { teamId: string }; Querystring: { page?: number } }>('/teams/:teamId/assets', { preHandler: member, schema: { querystring: uploadQuery } }, async (req, reply) => {
     if (!req.isMultipart()) return reply.code(415).send({ error: 'multipart_required' });
     const file = await req.file();
     if (!file) return reply.code(400).send({ error: 'file_required' });
@@ -50,7 +52,7 @@ export const assetRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (ap
 
     if (isPdf(body)) {
       try {
-        body = new TextEncoder().encode(await pdfFirstPageToSvg(body, { maxBytes: MAX_UPLOAD_BYTES }));
+        body = new TextEncoder().encode(await pdfPageToSvg(body, { page: req.query.page ?? 1, maxBytes: MAX_UPLOAD_BYTES }));
       } catch (err) {
         if (err instanceof PdfUnavailable) return reply.code(501).send({ error: 'pdf_vector_unavailable' });
         if (err instanceof PdfRejected) return reply.code(422).send({ error: 'unreadable_pdf', reason: err.message });

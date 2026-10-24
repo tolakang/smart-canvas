@@ -159,8 +159,12 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T21.1 (Q7) — **Done.** Layout editors on touch like the board: one finger moves the canvas, a tap selects (again for the layer behind), the selected layer and its handles drag at once, two fingers pinch and pan, double-tap empty canvas fits.
 - T21.2 (Q8) — **Done.** Small panels on phones: zoomed out below about 50 %, a tap on a panel zooms to it and selects it instead of pressing its controls.
 
+## P22 — Dev plan picks (owner, 2026-10-24: "Go Q1, Q2 and Q5")
+- T22.1 (Q1) — **Done.** Multi-page PDFs: pick the page when uploading; the API keeps that page in vector, pixel-only slots get it as a PNG (D59).
+- T22.2 (Q2) — Preset nodes and team families: after a family is renamed in the Size presets dialog, offer to rename the Preset nodes that came from it, and to add sizes the family gained.
+- T22.3 (Q5) — Retire `output.family` (computed but unused for placement since D38): a model change with a migration.
+
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
-- Q1 — Multi-page PDFs: pick which page to use when uploading (today the first page; D52, D55). The API converts the chosen page (`pdftocairo -f N -l N`); the browser fallback renders the same page.
 - Q2 — Preset nodes and team families: after a family is renamed in the Size presets dialog (M4), offer to rename the Preset nodes that came from it, and to add sizes the family gained. Today nodes on boards are left as they were.
 - Q3 — Project history: keep earlier saves (every n minutes or on big edits) and let an editor preview and restore one. `rev` already counts saves; this stores snapshots (DB + a retention limit).
 - Q4 — Review: comments pinned to a Preview, and an "approved" mark per Preview, for the team before export. Viewers can comment.

@@ -5,7 +5,7 @@
  */
 import { addPicturesToStack, addStack, LIMITS, type ProjectDoc, type SourceResult, type StackPicture } from '@smart-canvas/core';
 import { useState } from 'react';
-import { ApiError, uploadAsset, type AssetMeta } from '../api';
+import { ApiError, UploadCancelled, uploadAsset, type AssetMeta } from '../api';
 import { useBoard } from './context';
 import { newId } from './ids';
 
@@ -33,7 +33,7 @@ export async function uploadPictures(teamId: string, files: readonly File[], rem
         remember(asset);
         pictures[i] = { id: newId(), label: labelOf(file.name), kind: asset.kind, assetId: asset.id };
       } catch (err) {
-        problems.push(reason(file, err));
+        if (!(err instanceof UploadCancelled)) problems.push(reason(file, err));
       } finally {
         onEach?.();
       }

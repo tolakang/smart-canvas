@@ -1,5 +1,5 @@
 /**
- * M3 / D55: a PDF's first page as SVG, kept as vector. Poppler's `pdftocairo -svg` draws the page with cairo:
+ * M3 / D55: a PDF's page (the first, or the one asked for, Q1) as SVG, kept as vector. Poppler's `pdftocairo -svg` draws the page with cairo:
  * text becomes glyph outlines (so the fonts are kept without shipping them), embedded pictures become
  * data:image/png, and links, forms and JavaScript are not drawn at all. The SVG then goes through the same
  * sanitizer as an uploaded SVG. The converter runs as a separate process in a private temp dir, with a time
@@ -32,13 +32,15 @@ async function slot<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 export interface PdfOptions {
+  /** The page to draw, 1-based (default 1). A page past the last is rejected. */
+  page?: number;
   /** The converter binary (tests point it elsewhere). */
   bin?: string;
   timeoutMs?: number;
   maxBytes: number;
 }
 
-export function pdfFirstPageToSvg(pdf: Uint8Array, { bin = 'pdftocairo', timeoutMs = 30_000, maxBytes }: PdfOptions): Promise<string> {
+export function pdfPageToSvg(pdf: Uint8Array, { page = 1, bin = 'pdftocairo', timeoutMs = 30_000, maxBytes }: PdfOptions): Promise<string> {
   return slot(async () => {
     const dir = await mkdtemp(join(tmpdir(), 'sc-pdf-'));
     try {
@@ -48,7 +50,7 @@ export function pdfFirstPageToSvg(pdf: Uint8Array, { bin = 'pdftocairo', timeout
       await new Promise<void>((resolve, reject) => {
         execFile(
           bin,
-          ['-svg', '-f', '1', '-l', '1', '-q', input, output],
+          ['-svg', '-f', String(page), '-l', String(page), '-q', input, output],
           { cwd: dir, timeout: timeoutMs, killSignal: 'SIGKILL', env: { PATH: process.env.PATH ?? '/usr/bin:/bin' }, maxBuffer: 64 * 1024 },
           (err) => {
             if (!err) return resolve();

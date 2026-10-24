@@ -1,6 +1,6 @@
 import { fillToCss, fontStack, LIMITS, unfitPictures, type Fill, type InputSource } from '@smart-canvas/core';
 import { useState, type ChangeEvent, type DragEvent } from 'react';
-import { ApiError, assetUrl, uploadAsset } from '../api';
+import { ApiError, assetUrl, UploadCancelled, uploadAsset } from '../api';
 import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, setVariant, switchFillType, withSource } from './content';
 import { useBoard } from './context';
 
@@ -59,7 +59,7 @@ export function useAssetUpload(source: InputSource) {
         }));
       }
     } catch (err) {
-      setError(uploadMessage(err, kind));
+      if (!(err instanceof UploadCancelled)) setError(uploadMessage(err, kind));
     } finally {
       setBusy(false);
     }
@@ -256,7 +256,7 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
         run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, asset.id)) }));
       }
     } catch (err) {
-      setError(uploadMessage(err, 'image'));
+      if (!(err instanceof UploadCancelled)) setError(uploadMessage(err, 'image'));
     } finally {
       setBusy(null);
     }
