@@ -1,50 +1,63 @@
 :root {
-  /* T10.2 design tokens. Colour: neutrals, one accent, semantic types (input / main / output) used as accents only. */
-  --bg: #f5f5f5;
+  /* T10.2 design tokens; U1 (2026-10-24) refreshed the values: cooler neutrals, an accent dark enough for white text
+     (AA), softer layered shadows, rounder corners. Colour: neutrals, one accent, semantic types used as accents only. */
+  --bg: #f4f5f7;
   --surface: #fff;
-  --surface-2: #f5f5f5; /* field fill, hover */
-  --fg: #1e1e1e;
-  --muted: #757575;
-  --line: #e6e6e6;
-  --line-strong: #d4d4d4;
-  --accent: #0d99ff;
-  --accent-soft: #e5f4ff;
-  --danger: #dc3412;
-  --warn: #b86200;
-  --type-input: #0d99ff;
-  --type-main: #9747ff;
-  --type-output: #14ae5c;
-  --type-process: #f24e1e;
+  --surface-2: #f1f3f5; /* field fill, hover */
+  --surface-3: #e9ecef; /* pressed, selected rows */
+  --fg: #14171c;
+  --muted: #5e6672; /* 5.9:1 on white */
+  --line: #e4e7eb;
+  --line-strong: #cfd4da;
+  --accent: #0a6cdb; /* 5:1 with white text */
+  --accent-hover: #075cbd;
+  --accent-soft: #e7f0fc;
+  --ring: color-mix(in srgb, var(--accent) 35%, transparent);
+  --danger: #c8321b;
+  --warn: #a85a00;
+  --type-input: #0a6cdb;
+  --type-main: #7c3aed;
+  --type-output: #12a150;
+  --type-process: #e5532b;
   --input: var(--accent-soft); /* legacy names */
-  --output: #e8f7ee;
-  --ok: #0f7a40;
-  --ok-soft: #e8f7ee;
-  --warn-soft: #fff4e5;
+  --output: #e7f6ed;
+  --ok: #0d7a3f;
+  --ok-soft: #e7f6ed;
+  --warn-soft: #fff3e0;
   --danger-soft: #fdecea;
-  --faint: #b3b3b3; /* idle wires, disabled text, frozen dots */
-  --canvas: #e5e5e5; /* the editor stage around the artwork */
+  --faint: #b4bac2; /* idle wires, disabled text, frozen dots */
+  --canvas: #e6e8eb; /* the editor stage around the artwork */
   --checker-a: #e6e8ee; /* transparency checkerboard */
   --checker-b: #fff;
-  /* Type: 11 / 12 / 13 / 15 */
+  /* Type: 11 / 12 / 13 / 15 / 20 (UI font: Inter, bundled; artwork fonts are separate) */
   --fs-xs: 11px;
   --fs-sm: 12px;
   --fs-md: 13px;
   --fs-lg: 15px;
+  --fs-xl: 20px;
+  --font-ui: 'Inter Variable', Inter, system-ui, 'Noto Sans', 'Noto Sans Khmer', sans-serif;
   /* Space (4 px grid), radius, elevation, motion */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
   --sp-4: 16px;
-  --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 10px;
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.08);
-  --shadow-2: 0 4px 16px rgb(0 0 0 / 0.12);
+  --sp-5: 24px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --shadow-1: 0 1px 2px rgb(16 24 40 / 0.05), 0 1px 3px rgb(16 24 40 / 0.07);
+  --shadow-2: 0 4px 8px -2px rgb(16 24 40 / 0.08), 0 12px 24px -4px rgb(16 24 40 / 0.12);
+  --shadow-3: 0 8px 16px -4px rgb(16 24 40 / 0.1), 0 24px 48px -8px rgb(16 24 40 / 0.22);
   --field-h: 28px;
-  --t-fast: 120ms ease-out;
+  --t-fast: 140ms cubic-bezier(0.2, 0, 0, 1);
+  --t-med: 200ms cubic-bezier(0.2, 0, 0, 1);
   color: var(--fg);
   background: var(--bg);
-  font: 13px/1.4 Inter, system-ui, 'Noto Sans', 'Noto Sans Khmer', sans-serif;
+  font: 13px/1.45 var(--font-ui);
+  font-feature-settings: 'cv11', 'ss01', 'ss03'; /* Inter: single-storey a, open digits */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 * { box-sizing: border-box; }
 body { margin: 0; }
@@ -257,9 +270,9 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 /* T10.1 editor, Figma style: dark toolbar, grey canvas, compact 11 px panels, blue selection */
 .sc-fig {
   --fig-bar: #2c2c2c; --fig-bar-hover: #3d3d3d; --fig-bar-fg: #fff; --fig-bar-muted: var(--faint);
-  --fig-panel: var(--surface); --fig-line: var(--line); --fig-hover: var(--surface-2); --fig-select: var(--accent-soft); --fig-blue: #0d99ff;
+  --fig-panel: var(--surface); --fig-line: var(--line); --fig-hover: var(--surface-2); --fig-select: var(--accent-soft); --fig-blue: var(--accent);
   --fig-canvas: var(--canvas); --fig-fg: var(--fg); --fig-muted: var(--muted);
-  font-family: Inter, system-ui, 'Noto Sans', 'Noto Sans Khmer', sans-serif; font-size: 11px; color: var(--fig-fg); background: var(--fig-panel);
+  font-family: var(--font-ui); font-size: 11px; color: var(--fig-fg); background: var(--fig-panel);
   --accent: var(--fig-blue); --line: var(--fig-line); --input: var(--fig-select); --muted: var(--fig-muted);
 }
 .sc-fig__bar { height: 48px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 8px; background: var(--fig-bar); color: var(--fig-bar-fg); }
@@ -503,33 +516,37 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
    styles) never changes with the theme, so previews and exports look the same in both. */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #1a1a1a;
-  --surface: #262626;
-  --surface-2: #333;
-  --fg: #ededed;
-  --muted: #a3a3a3;
-  --line: #3a3a3a;
-  --line-strong: #4d4d4d;
-  --accent: #2ba6ff;
-  --accent-soft: #10324d;
+  --bg: #0f1115;
+  --surface: #171a1f;
+  --surface-2: #20242b;
+  --surface-3: #2a2f37;
+  --fg: #e9ebee;
+  --muted: #9aa3ae;
+  --line: #262b33;
+  --line-strong: #363c46;
+  --accent: #4b9dff;
+  --accent-hover: #6aaeff;
+  --accent-soft: #13294a;
+  --ring: color-mix(in srgb, var(--accent) 45%, transparent);
   --danger: #ff7a66;
   --danger-soft: #3d201c;
   --warn: #f5b041;
   --warn-soft: #3a2c15;
   --ok: #4fd18b;
-  --ok-soft: #173525;
-  --type-input: #2ba6ff;
-  --type-main: #b088ff;
+  --ok-soft: #14301f;
+  --type-input: #4b9dff;
+  --type-main: #a78bfa;
   --type-output: #3fcf7f;
   --type-process: #ff7a52;
   --input: var(--accent-soft);
   --output: var(--ok-soft);
-  --faint: #5c5c5c;
-  --canvas: #141414;
+  --faint: #4a515c;
+  --canvas: #0b0d10;
   --checker-a: #2f2f2f;
   --checker-b: #3a3a3a;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4);
-  --shadow-2: 0 6px 20px rgb(0 0 0 / 0.55);
+  --shadow-2: 0 6px 20px rgb(0 0 0 / 0.5);
+  --shadow-3: 0 16px 48px rgb(0 0 0 / 0.6);
 }
 :root[data-theme='dark'] .sc-fig { --fig-bar: #111; --fig-bar-hover: #2a2a2a; }
 .sc-theme-toggle .sc-icon { margin: 0; }
@@ -1079,3 +1096,61 @@ p.sc-comment__text { cursor: auto; }
 .sc-export__approval { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 10px; border-left: 3px solid var(--warn); border-radius: var(--r-sm); background: var(--surface-2); font-size: var(--fs-sm); }
 .sc-export__approval button { margin-left: auto; }
 .sc-preview__review { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px 12px 0; }
+
+/* ===== U1 (2026-10-24): one component layer over the rules above — focus, buttons, fields, dialogs, menus,
+   scrollbars and motion look the same everywhere, in light and dark. Later rules win, so this sits last. ===== */
+::selection { background: color-mix(in srgb, var(--accent) 24%, transparent); }
+:where(button, a, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color: var(--accent); }
+h1, h2, h3 { letter-spacing: -0.011em; }
+
+/* Buttons: one height, one radius, a soft press. */
+.sc-btn, .sc-card button:not([class]), .sc-board__bar button, .sc-history .sc-btn {
+  border-radius: var(--r-md); transition: background var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+}
+.sc-btn:active:not(:disabled), .sc-card button:not([class]):active:not(:disabled) { transform: translateY(0.5px); }
+.sc-btn--primary, .sc-card button[type='submit']:not([class]), .sc-topbar .sc-topbar__primary {
+  border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 1px 2px rgb(16 24 40 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+.sc-btn--primary:hover:not(:disabled), .sc-card button[type='submit']:not([class]):hover:not(:disabled), .sc-topbar .sc-topbar__primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+/* Fields: a quiet border, an accent ring on focus (not a heavy outline). */
+.sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select, textarea),
+.sc-dialog select, .sc-inspector-panel :is(input:not([type='radio'], [type='checkbox'], [type='color'], [type='file']), select, textarea) {
+  border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.sc-card :is(input, select, textarea):focus-visible, .sc-dialog select:focus-visible, .sc-inspector-panel :is(input, select, textarea):focus-visible {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring);
+}
+.sc-card input::placeholder, .sc-inspector-panel input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
+/* Dropdowns: no native chrome; a chevron drawn in the theme's colour. */
+/* :not(.sc-native) lifts this above the older field rules, whose `background` shorthand would clear the chevron. */
+:is(.sc-card, .sc-dialog, .sc-inspector-panel, .sc-design) select:not(.sc-native):not([multiple]) {
+  appearance: none; -webkit-appearance: none; padding-right: 28px !important;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 52%, calc(100% - 10px) 52%; background-size: 4px 4px, 4px 4px; background-repeat: no-repeat;
+}
+
+/* Cards and dialogs: rounder, layered shadow, a backdrop that blurs the board, and a gentle entrance. */
+.sc-card { border-radius: var(--r-xl); border-color: var(--line); box-shadow: var(--shadow-1); }
+.sc-card h1 { font-size: var(--fs-xl); font-weight: 650; }
+.sc-dialog .sc-card { padding: var(--sp-5); gap: var(--sp-4); box-shadow: var(--shadow-3); border: 1px solid var(--line); }
+.sc-dialog::backdrop { background: rgb(15 17 21 / 0.36); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.sc-dialog[open] .sc-card { animation: sc-pop var(--t-med) both; }
+@keyframes sc-pop { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
+.sc-dialog .sc-form__actions, .sc-dialog .sc-row:last-child { justify-content: flex-end; }
+
+/* Menus and floating panels share the elevated surface. */
+.sc-menu { border-radius: var(--r-lg); box-shadow: var(--shadow-3); border: 1px solid var(--line); }
+.sc-floating { box-shadow: var(--shadow-3); }
+
+/* Scrollbars: thin and quiet. */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border: 3px solid transparent; border-radius: 10px; background-clip: padding-box; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* People who ask for less motion get none. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
