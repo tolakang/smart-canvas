@@ -1,4 +1,4 @@
-# Handover — 2026-10-23 (after #129)
+# Handover — 2026-10-24 (after #132)
 
 Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D58**), `docs/BACKLOG.md` (P15–P20 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
@@ -13,7 +13,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D5
   3. `pnpm build`.
   4. `service postgresql start`, then `TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres pnpm test`.
 
-  Don't edit files while the full suite runs: the e2e tests serve `apps/web` through the Vite dev server, so an edit reloads their pages. The last full run was 104 files, 598 tests, all green.
+  Don't edit files while the full suite runs: the e2e tests serve `apps/web` through the Vite dev server, so an edit reloads their pages. The last full run was 105 files, 604 tests, all green. Don't rebase or check out while it runs either (a rebase rewrites files and reloads the pages too).
 - **Attribution:**
   - Commit trailers: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and `Claude-Session: …`.
   - PR bodies end with "🤖 Generated with [Claude Code](https://claude.com/claude-code)" plus the session link.
@@ -23,15 +23,17 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D5
 - **CI:** `.github/workflows/ci.yml` caches Playwright's Chromium (`~/.cache/ms-playwright`, keyed by the Playwright version) and gives the check job 25 minutes; a fresh browser download once took 11 minutes and cut the tests off (#128). The check job takes about 4–5 minutes with the cache.
 - **CI flakes seen:** e2e suites once timed out in `beforeAll` on a slow runner; a canvas test once read the doc before autosave (800 ms) had saved it — poll with a longer timeout rather than re-running.
 
-## What changed recently (P15–P19, #108–#129)
+## What changed recently (P15–P20, #108–#132)
 - **P15 (#108–#117):** N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. #115 replayed the transform history for the reset buttons; the owner said the in-place reset was right, so #116 reverted it. #117 removed code the board no longer reaches.
 - **P16 (#118, #119):** canvas tools (tooltips, Select / Hand, selection bar, Tidy icon, scissor badge) and the Projects screen (template cards, ⋯ menus, search / sort, New project dialog, rename).
 - **P17 (#120–#123):** M2 turned / leaned layers snap on resize. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server.
 - **P18 (#124, #125):** M1 a layer snaps to its spot in the other layouts. M5 retired engine features the board no longer offered (D56, schema 3).
 - **#126:** docs, code and dev plan brought up to date after P15–P18.
 - **P19 (#127–#129, D57):** board tools to the standard of design tools. #127 Select, Hand and keys (Shift-click, Esc, Ctrl/⌘+A, touch long-press adds to the selection, Space = Hand, saved arrow nudges). #128 grid snap (16 px, guides step aside, Alt skips, dots show the state, button on phones) and Tidy (selection or board, Shift+T, glide, notice with Undo), plus the CI browser cache. #129 made the Tidy e2e test always check Tidy selection and its Undo.
+- **#130:** docs, code and dev plan brought up to date after P19 (the canvas menu says Tidy selection when it tidies the selection).
+- **P20 (#131, #132, D58):** the board on touch screens like the design apps' phone versions. #131 move and zoom: one finger moves the board, a tap selects, a selected panel follows the finger, two fingers pinch and pan anywhere, double-tap zooms in. #132 select: long-press opens menus again, Select several (taps, a box, Done) replaces Select / Hand on touch.
 
-## The product today (page‑3 board, D48–D57)
+## The product today (page‑3 board, D48–D58)
 ```
 Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset nodes (purple), one ✂ wire each
                      ↓ into the top of the dashed group
@@ -86,7 +88,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 
 **Size presets dialog:** sizes by group plus "Preset node families" with their sizes; admins rename or delete a team family as a whole (M4, `PUT` / `DELETE /teams/:teamId/preset-families/:family`).
 
-**Touch (D58, T20.1–T20.2).** One finger moves the board (empty canvas, panels not selected, their buttons: `noPanClassName` is `TOUCH_NO_PAN` on touch, so a card's `nopan` counts with a mouse only); a tap selects, a selected panel follows the finger (`flowNodes` makes unselected panels non-draggable on touch, `nodeDragThreshold` 4); two fingers pinch and pan anywhere (`usePinch` in `board/pinch.ts`, capture phase, locked until every finger is up); double-tap zooms in. A long-press opens a menu (`useLongPress`, D33). **Select several** (T20.2) replaces Select / Hand on touch: `MultiSelect` in `CanvasToolbar.tsx` sets React Flow's `multiSelectionActive` (taps add or take out), finger panning goes off so one finger draws a box, and the selection bar shows Done. In e2e, Chrome moves a touch onto a control near it: grab panels at a point with no control within ~10 px (`grabPoint` / `grabAny` in `responsive.e2e.test.ts`), and keep Fit from zooming out to tiny panels; only input panels (`src:`) have a panel menu.
+**Touch (D58, T20.1–T20.2).** One finger moves the board (empty canvas, panels not selected, their buttons: `noPanClassName` is `TOUCH_NO_PAN` on touch, so a card's `nopan` counts with a mouse only); a tap selects, a selected panel follows the finger (`flowNodes` makes unselected panels non-draggable on touch, `nodeDragThreshold` 4); two fingers pinch and pan anywhere (`usePinch` in `board/pinch.ts`, capture phase, locked until every finger is up); double-tap zooms in. A long-press opens a menu (`useLongPress`, D33). **Select several** (T20.2) replaces Select / Hand on touch: `MultiSelect` in `CanvasToolbar.tsx` sets React Flow's `multiSelectionActive` (taps add or take out), finger panning goes off so one finger draws a box, and the selection bar shows Done. A finger box ends without a click, and React Flow would swallow the next tap waiting for one; `onSelectionEnd` in `Board.tsx` sends it that click (touch only). In e2e, Chrome moves a touch onto a control near it: grab panels at a point with no control within ~10 px (`grabPoint` / `grabAny` in `responsive.e2e.test.ts`), and keep Fit from zooming out to tiny panels; only input panels (`src:`) have a panel menu.
 
 **Canvas tools (T16.1, T19, D57).** Shift-click adds a panel, Esc clears, Ctrl/⌘+A selects all, arrows nudge (saved, one undo step per run), holding Space is Hand while held (`BoardKeys` in `board-keys.tsx`). Select is the default with a mouse: click selects, drag moves a panel, a drag on empty canvas selects several (touch: see D58 below), and two or more selected show the selection bar (Group / Delete / clear). Hand moves the board only (`nodesDraggable` / `elementsSelectable` off). Toolbar buttons have tooltips (`ToolButton` in `CanvasToolbar.tsx`: hover 350 ms, keyboard focus, long press on touch). Wire badges use the owner's scissor icon (`ScissorIcon` in `RoutedEdge.tsx`). Groups take any panel id (`groups.ts` `exists`); a group's export includes its Preset nodes' sizes. Grid snap on: drops land on the 16 px grid and the alignment guides step aside; Alt skips snapping (`altRef` in `Board.tsx`); the dots show the state; the grid button shows on phones. Tidy (Shift+T) arranges the selection (`tidySelectionPositions`) or the board, on the grid when snap is on, glides (`sc-board__flow--tidying`) and shows a notice with Undo (`sc-board__toast`).
 
@@ -127,4 +129,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - `output.family` is computed but no longer changes placement (D38).
 
 ## Next
-P1–P19 are done. A new dev plan (Q1–Q6) is proposed at the end of `docs/BACKLOG.md` and listed in `TASKS.md`; the owner picks and orders it.
+P1–P20 are done. A new dev plan (Q1–Q8) is proposed at the end of `docs/BACKLOG.md` and listed in `TASKS.md`; the owner picks and orders it.

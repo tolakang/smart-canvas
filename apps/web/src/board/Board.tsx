@@ -1045,6 +1045,16 @@ function BoardCanvas(props: {
     [savePositions],
   );
 
+  /**
+   * D58: a box drawn with a finger ends without a click, and React Flow waits for one to finish the box — it would
+   * swallow the next tap. Give it that click as the finger lifts (a mouse box ends with a real one).
+   */
+  const onSelectionEnd = useCallback((e: React.MouseEvent) => {
+    if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') return;
+    const pane = flowEl.current?.querySelector('.react-flow__pane');
+    pane?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  }, []);
+
   /** Clears the selection: panels and group frames (Esc, the selection bar's ×). */
   const clearSelection = useCallback(() => {
     const picked = displayNodesRef.current.filter((n) => n.selected);
@@ -1201,6 +1211,7 @@ function BoardCanvas(props: {
             onNodeDragStop={onNodeDragStop}
             onNodeContextMenu={onNodeContextMenu}
             onSelectionContextMenu={onSelectionContextMenu}
+            onSelectionEnd={onSelectionEnd}
             onPaneContextMenu={onPaneContextMenu}
             colorMode={theme}
             onSelectionChange={({ nodes: picked }) => setSelectedNode(picked.length === 1 ? (picked[0]?.id ?? null) : null)}

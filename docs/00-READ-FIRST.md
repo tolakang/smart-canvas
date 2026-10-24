@@ -23,5 +23,5 @@ Team app (login), deployed on Dokploy. Khmer + Latin text.
 5. Only overrides are stored; layout is always recomputed.
 
 ## Status
-Spec v1.0 (2026-10-19); board redesigned 2026-10-22/23 (D48–D51); PDF uploads, several Headline pairs and preset families as data added 2026-10-23 (D52–D54); PDF pages kept as vector (D55); unused engine features retired, schema 3 (D56); board tools (Select, Hand, keys, grid snap, Tidy) to the standard of design tools (D57). Open items with defaults: `DECISIONS.md` §Open. Where things stand and what's next: `HANDOVER.md`, `BACKLOG.md` **Next**.
+Spec v1.0 (2026-10-19); board redesigned 2026-10-22/23 (D48–D51); PDF uploads, several Headline pairs and preset families as data added 2026-10-23 (D52–D54); PDF pages kept as vector (D55); unused engine features retired, schema 3 (D56); board tools (Select, Hand, keys, grid snap, Tidy) to the standard of design tools (D57); the board on touch screens like the design apps' phone versions (D58). Open items with defaults: `DECISIONS.md` §Open. Where things stand and what's next: `HANDOVER.md`, `BACKLOG.md` **Next**.
 Also: DESIGN-SYSTEM.md (UI tokens and components), DEPLOY-DOKPLOY.md (deploy), spikes/ (S2 Khmer parity, S3 SVG outlines). Built-in size presets live in `packages/presets`.

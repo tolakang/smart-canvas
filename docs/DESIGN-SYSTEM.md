@@ -56,9 +56,11 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Breakpoints** (`ui/responsive.ts`, `useScreen()`):
   - **desktop** ≥ 1280 px: the library and inspector are docked.
   - **tablet** 768–1279 px: they open as overlays (`.sc-floating--overlay`) from the canvas toolbar's *Add nodes* and *Inspector* buttons, one at a time.
-  - **phone** < 768 px: they open as bottom sheets (`.sc-floating--sheet`). The top bar keeps only Back, the name, the save dot, *More* and Export; everything else is in the *More* menu. The toolbar drops the zoom buttons, grid and minimap.
-- **Touch** (`(pointer: coarse)`):
-  - Hand is the default tool, and pinch zooms.
+  - **phone** < 768 px: they open as bottom sheets (`.sc-floating--sheet`). The top bar keeps only Back, the name, the save dot, *More* and Export; everything else is in the *More* menu. The toolbar drops the zoom buttons and the minimap.
+- **Touch** (`(pointer: coarse)`, D58):
+  - One finger moves the board (empty canvas, panels not selected, their buttons); a tap selects; a selected panel follows the finger.
+  - Two fingers pinch and pan anywhere (`board/pinch.ts`); double-tap zooms in.
+  - **Select several** replaces Select / Hand in the canvas toolbar: taps add or take out panels, one finger draws a box, the selection bar has Done.
   - A long-press (`ui/long-press.ts`) opens the right-click menus.
   - Tap a port, then tap a target, to wire.
   - Buttons, menu rows and ports are at least 44 px to tap.
