@@ -161,7 +161,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P22 — Dev plan picks (owner, 2026-10-24: "Go Q1, Q2 and Q5")
 - T22.1 (Q1) — **Done.** Multi-page PDFs: pick the page when uploading; the API keeps that page in vector, pixel-only slots get it as a PNG (D59).
-- T22.2 (Q2) — Preset nodes and team families: after a family is renamed in the Size presets dialog, offer to rename the Preset nodes that came from it, and to add sizes the family gained.
+- T22.2 (Q2) — **Done.** Preset nodes and team families: after a family is renamed in the Size presets dialog, offer to rename the Preset nodes that came from it, and to add sizes the family gained — as offers on the node when its project is opened (D60).
 - T22.3 (Q5) — Retire `output.family` (computed but unused for placement since D38): a model change with a migration.
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)

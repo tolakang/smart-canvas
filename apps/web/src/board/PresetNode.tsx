@@ -5,7 +5,7 @@
  * or as a custom W × H, or removed. N5: "Save as team preset" saves the node's sizes as a team preset family, so
  * it is offered as a Preset node from then on.
  */
-import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, presetFamilies, renameSet, setPreviewHidden } from '@smart-canvas/core';
+import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, presetFamilies, renameSet, setFamily, setPreviewHidden, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { api, ApiError } from '../api';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState } from 'react';
@@ -21,7 +21,7 @@ const ROW_DRAG = 'application/x-sc-preset-row';
 
 export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   const { set, rows } = data;
-  const { readOnly, run, presets, reloadPresets, exportOutputs, teamId } = useBoard();
+  const { doc, readOnly, run, presets, reloadPresets, exportOutputs, teamId } = useBoard();
   const updateInternals = useUpdateNodeInternals();
   const rowKey = rows.map((r) => r.output.id).join(',');
   useEffect(() => updateInternals(id), [id, rowKey, updateInternals]);
@@ -43,6 +43,15 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
     run((d) => addSizeToSet(d, set.id, { id: newId(), label: `${set.label} ${w}×${h}`, size: { width: w, height: h, unit: 'px' } }));
   };
   const addable = presets.filter((p) => !used.has(p.id));
+  /**
+   * Q2: the team family this node's sizes came from. Renamed since (in the Size presets dialog): offer its new name;
+   * grown since: offer the sizes it gained. Each is one undo step.
+   */
+  const family = setFamily(doc, set.id, presets);
+  const addMissing = () =>
+    run((d) =>
+      (family?.missing ?? []).reduce<SourceResult>((r, p) => (r.ok ? addSizeToSet(r.doc, set.id, { id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } }) : r), { ok: true, doc: d as ProjectDoc }),
+    );
 
   /** N5: saves the node's sizes as the team's preset family `name` (sizes the family already has are skipped). */
   const [savedNote, setSavedNote] = useState<string | null>(null);
@@ -105,6 +114,20 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         )}
       </div>
       <div className="sc-node__meta">Media size (W×H) · {rows.length} {rows.length === 1 ? 'size' : 'sizes'}</div>
+      {!readOnly && family && (family.label !== set.label || family.missing.length > 0) && (
+        <div className={`sc-preset__family ${NO_CANVAS}`} role="group" aria-label={`Team family ${family.label}`}>
+          {family.label !== set.label && (
+            <button type="button" className="sc-btn sc-btn--ghost" onClick={() => run((d) => renameSet(d, set.id, family.label))} title="The team family these sizes came from has this name now">
+              Rename to “{family.label}”
+            </button>
+          )}
+          {family.missing.length > 0 && (
+            <button type="button" className="sc-btn sc-btn--ghost" onClick={addMissing} title={family.missing.map((p) => p.name).join(', ')}>
+              Add {family.missing.length} new {family.missing.length === 1 ? 'size' : 'sizes'}
+            </button>
+          )}
+        </div>
+      )}
       <ol className="sc-ports sc-preset__rows" aria-label={`${set.label} sizes`}>
         {rows.map(({ output, connected }, i) => (
           <li

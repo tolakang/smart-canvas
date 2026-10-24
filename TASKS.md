@@ -164,7 +164,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P22 Dev plan picks (Q1, Q2, Q5)
 - [x] T22.1 (Q1) — Pick the page of a multi-page PDF (D59)
-- [ ] T22.2 (Q2) — Preset nodes follow a renamed team family
+- [x] T22.2 (Q2) — Preset nodes follow a renamed team family (D60)
 - [ ] T22.3 (Q5) — Retire `output.family`
 
 ## Next (see BACKLOG; proposals, the owner picks)

@@ -128,3 +128,28 @@ export function presetFamilies<T extends { family?: string }>(presets: readonly 
   }
   return [...families].map(([label, list]) => ({ label, presets: list }));
 }
+
+/**
+ * Q2: the team family a Preset node came from, worked out from its sizes (each output keeps the `presetId` it was
+ * made from, and a family renamed in the Size presets dialog renames those presets): the family most of its sizes
+ * belong to, and that family's sizes the node doesn't have yet (by preset, or by the same size). Null when its
+ * sizes come from no family.
+ */
+export function setFamily<T extends { id: string; family?: string; size: Size }>(doc: ProjectDoc, setId: string, presets: readonly T[]): { label: string; missing: T[] } | null {
+  const set = presetSets(doc).find((s) => s.id === setId);
+  if (!set) return null;
+  const outputs = doc.outputs.filter((o) => set.outputs.includes(o.id));
+  const byId = new Map(presets.map((p) => [p.id, p]));
+  const counts = new Map<string, number>();
+  for (const o of outputs) {
+    const family = (o.presetId && byId.get(o.presetId)?.family?.trim()) || '';
+    if (family) counts.set(family, (counts.get(family) ?? 0) + 1);
+  }
+  const label = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+  if (!label) return null;
+  const key = (s: Size) => `${s.width}×${s.height}${s.unit}`;
+  const usedIds = new Set(outputs.map((o) => o.presetId));
+  const usedSizes = new Set(outputs.map((o) => key(o.size)));
+  const missing = (presetFamilies(presets).find((f) => f.label === label)?.presets ?? []).filter((p) => !usedIds.has(p.id) && !usedSizes.has(key(p.size)));
+  return { label, missing };
+}
