@@ -4,7 +4,7 @@
  * computed (D18).
  */
 import { compositionById, edgeId, MAIN, mainComposition, outputComposition } from './graph';
-import { DEFAULTS, LIMITS, type LayoutFamily, type OutputNode, type ProjectDoc, type Size } from './model';
+import { DEFAULTS, LIMITS, type OutputNode, type ProjectDoc, type Size } from './model';
 import { computeLayout, type LayoutDeps, type LayoutResult } from './layout';
 import type { RenderScene } from './render';
 import type { SourceResult } from './sources';
@@ -18,9 +18,8 @@ export const BLEED_MM_MAX = 50;
 /** composition→output edge id; the output is "connected" iff this edge exists. */
 export const outputWireId = (outputId: string) => edgeId(MAIN, outputId, 'composition');
 
-export type OutputSettings = Partial<Pick<OutputNode, 'label' | 'presetId' | 'size' | 'dpi' | 'exportScale' | 'bleedMm' | 'safeMarginPct' | 'family'>>;
+export type OutputSettings = Partial<Pick<OutputNode, 'label' | 'presetId' | 'size' | 'dpi' | 'exportScale' | 'bleedMm' | 'safeMarginPct'>>;
 
-const FAMILIES: readonly LayoutFamily[] = ['auto', 'stack', 'side'];
 const inRange = (v: number | undefined, min: number, max: number) => v === undefined || (Number.isFinite(v) && v >= min && v <= max);
 const validSize = (s: Size) => (s.unit === 'px' || s.unit === 'mm') && [s.width, s.height].every((v) => Number.isFinite(v) && v > 0 && v <= 100_000);
 
@@ -31,7 +30,6 @@ function valid(o: OutputNode): boolean {
     inRange(o.dpi, DPI_RANGE.min, DPI_RANGE.max) &&
     inRange(o.bleedMm, 0, BLEED_MM_MAX) &&
     inRange(o.safeMarginPct, 0, 25) &&
-    FAMILIES.includes(o.family) &&
     o.label.trim().length > 0
   );
 }
@@ -52,7 +50,6 @@ export function addOutput(
   const main = mainComposition(doc);
   const lowest = doc.outputs.reduce((y, o) => Math.max(y, o.board.y + OUTPUT_ROW_GAP), main.board.y);
   const output: OutputNode = {
-    family: 'auto',
     ...spec,
     label: spec.label.trim(),
     size: { ...spec.size },

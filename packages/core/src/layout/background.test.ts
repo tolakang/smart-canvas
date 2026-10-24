@@ -3,7 +3,7 @@ import { layerOrder } from '../graph';
 import type { ProjectDoc } from '../model';
 import { connectSource } from '../ports';
 import { addSource } from '../sources';
-import { computeLayout, coverFrame, familyOf, type LayoutDeps } from './index';
+import { computeLayout, coverFrame, type LayoutDeps } from './index';
 import { mockMeasure as measure, output, project } from './test-doc';
 
 function withPhoto(doc: ProjectDoc, focal = { x: 0.7, y: 0.4 }): ProjectDoc {
@@ -82,14 +82,6 @@ describe('computeLayout', () => {
     expect(item.overridden).toBe(true);
     expect(bg(project(output({ overrides: [{ ...ov, frame: undefined, hidden: true }] })))).toBeUndefined();
     expect(bg(project())?.overridden).toBe(false);
-  });
-
-  it('picks the family from the trim ratio unless set', () => {
-    expect(familyOf({ family: 'auto' }, { w: 3000, h: 1000 })).toBe('side');
-    expect(familyOf({ family: 'auto' }, { w: 1300, h: 1000 })).toBe('side');
-    expect(familyOf({ family: 'auto' }, { w: 1299, h: 1000 })).toBe('stack');
-    expect(familyOf({ family: 'stack' }, { w: 3000, h: 1000 })).toBe('stack');
-    expect(computeLayout(project(output({ size: { width: 3000, height: 1000, unit: 'px' } })), 'o1', deps).family).toBe('side');
   });
 
   it('throws for an unknown output', () => {

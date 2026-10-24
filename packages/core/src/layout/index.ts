@@ -3,7 +3,7 @@
  * stored; only overrides are applied on top.
  */
 import { compositionById, MAIN, mainComposition, outputComposition, wiredLayers } from '../graph';
-import { canvasMetrics, DEFAULTS, type Frame, type OutputNode, type ProjectDoc } from '../model';
+import { canvasMetrics, type Frame, type ProjectDoc } from '../model';
 import { sizeInDesignPx, toDesignFrame } from '../render';
 import { backgroundFrame } from './background';
 import type { RuleContext } from './context';
@@ -21,22 +21,15 @@ export { coverFrame } from './background';
 export { FILL_TOLERANCE, fillsAxis, gridFrame, gridScale, pinOf, type Pin } from './grid';
 export { breakLines, fitText } from './text-fit';
 
-/** `output.family` unless 'auto'; then side when the trim ratio is ≥ 1.3, else stack. */
-export function familyOf(output: Pick<OutputNode, 'family'>, trim: { w: number; h: number }): 'stack' | 'side' {
-  if (output.family !== 'auto') return output.family;
-  return trim.w / trim.h >= DEFAULTS.sideFamilyMinRatio ? 'side' : 'stack';
-}
-
 export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDeps): LayoutResult {
   const output = doc.outputs.find((o) => o.id === outputId);
   if (!output) throw new Error(`unknown output ${outputId}`);
   const metrics = canvasMetrics(output);
-  const family = familyOf(output, metrics.trim);
   // The output's composition (D32): the one wired to it; a disconnected (frozen) output keeps main's rows.
   const comp = compositionById(doc, outputComposition(doc, outputId) ?? MAIN) ?? mainComposition(doc);
   const masterSize = sizeInDesignPx(comp.size);
   const master = { w: masterSize.width, h: masterSize.height };
-  const contextOf = (m: { w: number; h: number }): RuleContext => ({ metrics, family, master: m, k: Math.min(metrics.trim.w / m.w, metrics.trim.h / m.h) });
+  const contextOf = (m: { w: number; h: number }): RuleContext => ({ metrics, master: m, k: Math.min(metrics.trim.w / m.w, metrics.trim.h / m.h) });
   const ctx = contextOf(master);
   // D42: positions come from the master's guide closest to this output's shape (the master when it has none);
   // a layer that guide hasn't placed keeps the master's position.
@@ -111,7 +104,6 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   const main = new Map(layers.map((s) => [s.id, s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null]));
   return {
     metrics,
-    family,
     items: items.map((it) => {
       const c = byId.get(it.sourceId)?.content;
       const id = c && (c.kind === 'image' || c.kind === 'vector') ? c.assetId : null;

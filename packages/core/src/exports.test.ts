@@ -6,7 +6,6 @@ const out = (patch: Partial<OutputNode> = {}): OutputNode => ({
   id: 'o',
   label: 'Instagram',
   size: { width: 1080, height: 1350, unit: 'px' },
-  family: 'auto',
   overrides: [],
   board: { x: 0, y: 0 },
   ...patch,

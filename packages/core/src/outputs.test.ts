@@ -14,7 +14,7 @@ const insta = { id: 'o1', label: 'Instagram', size: { width: 1080, height: 1350,
 describe('addOutput', () => {
   it('adds an automatic output wired to main, right of the master preview', () => {
     const doc = ok(addOutput(createProjectDoc('P'), insta));
-    expect(doc.outputs).toEqual([{ ...insta, family: 'auto', overrides: [], board: { x: 420, y: 0 } }]);
+    expect(doc.outputs).toEqual([{ ...insta, overrides: [], board: { x: 420, y: 0 } }]);
     expect(doc.edges).toEqual([{ id: outputWireId('o1'), from: 'main', to: 'o1', kind: 'composition' }]);
     const two = ok(addOutput(doc, { ...insta, id: 'o2' }));
     expect(two.outputs[1]?.board).toEqual({ x: 420, y: 480 });

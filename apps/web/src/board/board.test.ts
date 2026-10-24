@@ -34,8 +34,8 @@ function sampleDoc(): ProjectDoc {
     board: { x: -300, y: 0 },
   });
   doc.outputs.push(
-    { id: 'ig', label: 'Instagram', size: { width: 1080, height: 1080, unit: 'px' }, family: 'auto', overrides: [], board: { x: 400, y: 0 } },
-    { id: 'a4', label: 'A4', size: { width: 210, height: 297, unit: 'mm' }, family: 'auto', overrides: [], board: { x: 400, y: 200 } },
+    { id: 'ig', label: 'Instagram', size: { width: 1080, height: 1080, unit: 'px' }, overrides: [], board: { x: 400, y: 0 } },
+    { id: 'a4', label: 'A4', size: { width: 210, height: 297, unit: 'mm' }, overrides: [], board: { x: 400, y: 200 } },
   );
   doc.edges.push({ id: 'w1', from: 'bg', to: 'main', kind: 'layer' }, { id: 'w2', from: 'main', to: 'ig', kind: 'composition' });
   return doc;

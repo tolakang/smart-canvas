@@ -14,7 +14,7 @@ Overrides are applied last (frame fields replace computed ones). Hidden sources 
 - Master canvas `Wm×Hm` (design px). Output trim `Wt×Ht`, bleed `b`, full canvas `W=Wt+2b, H=Ht+2b`, safe rect `S` (see `canvasMetrics`).
 - Axis ratios `sx = Wt/Wm`, `sy = Ht/Hm`; `k = min(sx, sy)` — the uniform contain-scale of master onto trim; `g = √(sx·sy)` — the grid scale: a cell of the stretched grid keeps its area share at `g²`.
 - Source master frame `F` (from `NFrame`×master).
-- Ratio `r = Wt/Ht`. Family: `output.family` if not 'auto'; else `side` when `r ≥ 1.3`, otherwise `stack`. v3 reports the family but places every family the same way.
+- Ratio `r = Wt/Ht`. (The stack / side family, from `output.family` or the ratio, placed nothing since layout v3, D38, and is retired: D61.)
 - Layer order = ports (0 front). Rendering order = back→front.
 
 ## The stretched grid (v3)

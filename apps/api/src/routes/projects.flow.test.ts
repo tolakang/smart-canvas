@@ -95,7 +95,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     }));
     for (const doc of [
       { ...p.doc, sources: tooMany },
-      { ...p.doc, schema: 4 },
+      { ...p.doc, schema: 5 },
       { ...p.doc, name: '' },
       { ...p.doc, compositions: p.doc.compositions.map((c) => ({ ...c, size: { width: 0, height: 10, unit: 'px' } })) },
       { ...p.doc, compositions: [] },
@@ -122,12 +122,12 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     };
     expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v1 })).statusCode).toBe(200);
     const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
-    expect(got.schema).toBe(3);
+    expect(got.schema).toBe(4);
     expect(got.compositions[0]).toMatchObject({ id: 'main', size: { width: 2000, height: 1000, unit: 'px' }, layers: ['logo', 'headline', 'subject', 'background'] });
     expect(got.edges).toEqual([{ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' }]);
   });
 
-  it('D56: a v2 document with a process node and a Core Rule node is accepted on save and stored as v3 without them', async () => {
+  it('D56: a v2 document with a process node and a Core Rule node is accepted on save and stored as v4 without them', async () => {
     const p = await create();
     const v2 = {
       ...p.doc,
@@ -138,13 +138,25 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     };
     expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v2 })).statusCode).toBe(200);
     const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
-    expect(got.schema).toBe(3);
+    expect(got.schema).toBe(4);
     expect(got).not.toHaveProperty('processes');
     expect(got).not.toHaveProperty('coreRules');
     expect(got.edges.some((e) => e.from === 'p1' || e.to === 'p1')).toBe(false);
     // A v3 save that still carries `processes`: the unknown field is dropped, not stored.
     expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 1, doc: { ...got, processes: [] } })).statusCode).toBe(200);
     expect((await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc).not.toHaveProperty('processes');
+  });
+
+  it('D61: a v3 document (outputs with a layout family) is accepted on save and stored as v4 without it', async () => {
+    const p = await create();
+    const out = { id: 'o1', label: 'IG', size: { width: 1080, height: 1080, unit: 'px' }, overrides: [], board: { x: 0, y: 0 } };
+    const v3 = { ...p.doc, schema: 3, outputs: [{ ...out, family: 'side' }], edges: [...p.doc.edges, { id: 'out:o1', from: 'main', to: 'o1', kind: 'composition' }] };
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v3 })).statusCode).toBe(200);
+    const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
+    expect(got.schema).toBe(4);
+    expect(got.outputs).toEqual([out]);
+    // A v3 output without its family is refused (the v3 shape needed it).
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 1, doc: { ...v3, outputs: [out] } })).statusCode).toBe(400);
   });
 
   it('deletes', async () => {
