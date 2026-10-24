@@ -3,8 +3,8 @@
  * Source of truth for types and unit math. Copy as-is.
  *
  * Storage: `ProjectDoc` is saved as one JSONB column on `projects` (with `rev` for optimistic locking).
- * Separate tables: users, teams, memberships, invites, sessions, project_versions (D62, project history), assets,
- * library_items, presets, export_jobs.
+ * Separate tables: users, teams, memberships, invites, sessions, project_versions (D62, project history),
+ * review_comments and output_approvals (D63, review of Previews), assets, library_items, presets, export_jobs.
  * Layout results are NEVER stored; only overrides are (inside ProjectDoc.outputs[].overrides).
  */
 

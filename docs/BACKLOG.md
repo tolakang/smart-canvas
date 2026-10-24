@@ -168,6 +168,10 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T23.1 (Q3) — **Done.** API: `project_versions`, a version kept on save (every 10 minutes of editing, before inputs or sizes are removed), named versions, restore, retention.
 - T23.2 (Q3) — **Done.** History panel on the board: the list by day, a read-only preview with Restore, Save version; in the More menu on phones.
 
+## P24 — Review of Previews (owner, 2026-10-24: "Show me the plan for Q4", plan approved "go ahead"; D63)
+- T24.1 (Q4) — **Done.** API and core: `review_comments`, `output_approvals`, comment / reply / resolve / delete rules, approve / withdraw, `previewFingerprint`.
+- T24.2 (Q4) — Comments on Previews: Comment mode and pins in the Preview editor, the Comments panel, the count on Preview nodes.
+- T24.3 (Q4) — Approval: Approve / Withdraw, "Approved" and "Changed since approved" on nodes, the Review panel, the export warning and "Only approved".
+
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
-- Q4 — Review: comments pinned to a Preview, and an "approved" mark per Preview, for the team before export. Viewers can comment.
 - Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). Needs a colour-managed PDF path in the worker; big.
