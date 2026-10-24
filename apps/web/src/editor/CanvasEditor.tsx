@@ -467,7 +467,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
           Close
         </button>
       </header>
-      <div className="sc-editor__body">
+      {/* U4: the gap around the floating panels is empty canvas too: a press there clears the selection. */}
+      <div className="sc-editor__body" onPointerDown={(e) => e.target === e.currentTarget && select(null)}>
         {layers(selected, select)}
         <div
           className={`sc-editor__stage${hand ? ' sc-editor__stage--hand' : ''}`}

@@ -65,6 +65,8 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     const editor = page.getByRole('dialog', { name: 'Output editor Instagram square' });
     await editor.getByRole('complementary', { name: 'Layers' }).getByRole('button', { name: /^Subject/ }).click();
     for (let i = 0; i < 3; i++) await page.keyboard.press('Shift+ArrowRight');
+    // "All changes saved" can still be showing from before the nudges: wait for the override itself to be saved.
+    await expect.poll(async () => (await doc()).outputs[1]?.overrides.map((o) => o.sourceId), { timeout: 15_000 }).toEqual(['subject']);
     await saved();
     await editor.getByRole('button', { name: 'Close' }).click();
 
