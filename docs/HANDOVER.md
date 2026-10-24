@@ -139,7 +139,6 @@ New projects come from `createBoardProject` (API `POST /projects`).
 
 ## Known limits
 - History keeps whole docs, so an old version shows the pictures and fonts it used only while those assets exist; assets are never deleted today.
-- A project's thumbnail (D64) stays in the object store after the project is deleted (like assets, nothing is deleted from storage today); it is never served again.
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next

@@ -10,6 +10,8 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { currentUser, requireTeam } from '../auth/plugin';
 import { projects } from '../db/schema';
+import type { ObjectStore } from '../storage/object-store';
+import { thumbKey } from './thumbnails';
 import { keepBeforeSave, storedCounts } from './versions';
 import { projectDocSchema } from './project-doc.schema';
 
@@ -21,7 +23,7 @@ const projectParams = {
 } as const;
 const nameSchema = { type: 'string', minLength: 1, maxLength: 200 } as const;
 
-export const projectRoutes: FastifyPluginAsync = async (app) => {
+export const projectRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (app, { store }) => {
   const { db } = app;
   const member = requireTeam(); // viewers read, editors and admins write
   const inTeam = (p: Params) => and(eq(projects.id, p.projectId), eq(projects.teamId, p.teamId));
@@ -172,6 +174,8 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     async (req, reply) => {
       const deleted = await db.delete(projects).where(inTeam(req.params)).returning({ id: projects.id });
       if (deleted.length === 0) return reply.code(404).send({ error: 'not_found' });
+      // Its thumbnail (D64) goes too; the project is gone either way, so a storage hiccup only leaves an orphan.
+      await store.delete(thumbKey(req.params.projectId)).catch((err) => req.log.warn({ err }, 'thumbnail not deleted'));
       return reply.code(204).send();
     },
   );
