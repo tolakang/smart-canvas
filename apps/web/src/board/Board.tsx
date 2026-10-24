@@ -93,7 +93,7 @@ import { useTheme } from '../ui/theme';
 import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
 import { boxOf, clearSpot, onGrid, presetBlock, tidyPositions, tidySelectionPositions } from './tidy';
-import { CanvasToolbar, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
+import { CanvasToolbar, MultiSelect, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
@@ -368,15 +368,10 @@ function BoardCanvas(props: {
   // D58: two fingers anywhere pinch-zoom and pan the board, panels and their controls included.
   const pinchTarget = useCallback(() => flow.current, []);
   usePinch(flowEl, pinchTarget, ZOOM_LIMITS);
-  // D57: on touch, a long-press on a panel adds it to the selection or takes it out (Shift-click's stand-in).
-  useLongPress(flowEl, 500, (panel) => {
-    const id = panel.dataset.id;
-    if (!id || activeToolRef.current !== 'select') return false;
-    const current = displayNodesRef.current.find((n) => n.id === id);
-    if (!current) return false;
-    onNodesChange([{ type: 'select', id, selected: !current.selected }]);
-    return true;
-  });
+  // D33 / D58: a long-press opens the menu of what is under the finger (a panel's, a port's, the canvas menu).
+  useLongPress(flowEl, 500);
+  /** D58, touch: Select several is on — taps add or take out panels, one finger on empty canvas draws a box. */
+  const [several, setSeveral] = useState(false);
   const [grid, setGrid] = useStoredFlag('sc-board-grid', false);
   useLayoutEffect(() => {
     gridRef.current = grid;
@@ -1236,10 +1231,11 @@ function BoardCanvas(props: {
             // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
             panOnScroll
             zoomOnScroll={false}
-            selectionOnDrag={activeTool === 'select' && !readOnly && !coarse}
+            selectionOnDrag={activeTool === 'select' && !readOnly && (!coarse || several)}
             // Select: the middle mouse button pans. D58, touch: one finger moves the board (on empty canvas and on
-            // panels not selected), two fingers pinch and pan (usePinch).
-            panOnDrag={activeTool === 'hand' || readOnly || coarse ? true : [1]}
+            // panels not selected), two fingers pinch and pan (usePinch); with Select several one finger draws a box
+            // (React Flow starts a touch box only when finger panning is off).
+            panOnDrag={activeTool === 'hand' || readOnly ? true : coarse ? !several : [1]}
             // D58, touch: a card's buttons and fields don't stop the board moving; ports, drag grips and a selected
             // panel (React Flow marks those with this class) do.
             noPanClassName={coarse ? TOUCH_NO_PAN : 'nopan'}
@@ -1267,19 +1263,26 @@ function BoardCanvas(props: {
               minimapToggle={screen === 'desktop'}
               onTidy={readOnly ? undefined : tidy}
               tidySelection={selectedCount >= 2}
+              several={coarse && !readOnly ? { on: several, onToggle: () => setSeveral((on) => !on) } : undefined}
             />
-            {!readOnly && activeTool === 'select' && selectedCount >= 2 && (
+            {coarse && <MultiSelect on={several} />}
+            {!readOnly && activeTool === 'select' && (selectedCount >= 2 || several) && (
               <Panel position="top-center" className="sc-selbar nodrag nopan nowheel" aria-label="Selection" role="toolbar">
                 <span className="sc-selbar__count">{selectedCount} selected</span>
-                <button type="button" className="sc-btn" onClick={groupSelection} title="Group the selected panels (Ctrl/⌘ + G)">
+                <button type="button" className="sc-btn" onClick={groupSelection} disabled={selectedCount < 2} title="Group the selected panels (Ctrl/⌘ + G)">
                   Group
                 </button>
-                <button type="button" className="sc-btn sc-btn--danger" onClick={deleteSelection} title="Delete the selected panels (Delete)">
+                <button type="button" className="sc-btn sc-btn--danger" onClick={deleteSelection} disabled={selectedCount === 0} title="Delete the selected panels (Delete)">
                   <Icon name="trash" /> Delete
                 </button>
                 <button type="button" className="sc-icon-btn" aria-label="Clear selection" title="Clear selection (Esc)" onClick={clearSelection}>
                   <Icon name="close" />
                 </button>
+                {several && (
+                  <button type="button" className="sc-btn sc-btn--primary" onClick={() => setSeveral(false)}>
+                    Done
+                  </button>
+                )}
               </Panel>
             )}
             <ViewportPortal>
