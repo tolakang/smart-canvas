@@ -99,6 +99,7 @@ import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
 import { useCoarsePointer, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
+import { TOUCH_NO_PAN, usePinch } from './pinch';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
@@ -164,6 +165,7 @@ export function Board(props: { teamId: string; projectId: string; userId: string
 
 /** Shift-click adds a panel to the selection or takes it out, like Figma; Ctrl / ⌘ too (React Flow's default). */
 const MULTI_SELECT_KEYS = ['Shift', 'Meta', 'Control'];
+const ZOOM_LIMITS = { min: 0.1, max: 2 };
 
 /** T13.8: every wire can carry reroute points. */
 const edgeTypes = { routed: RoutedEdge };
@@ -287,6 +289,11 @@ function BoardCanvas(props: {
     return () => clearTimeout(t);
   }, [doc]);
   /** Panels selected now (group frames aside): two or more show the selection bar (group / delete; works on touch too). */
+  /**
+   * D58: on touch a panel moves only once it is selected (tap, then drag); a finger on one that isn't moves the board,
+   * so large panels never trap the view.
+   */
+  const flowNodes = useMemo(() => (coarse ? displayNodes.map((n) => (n.draggable === false || n.selected ? n : { ...n, draggable: false })) : displayNodes), [displayNodes, coarse]);
   const selectedCount = useMemo(() => displayNodes.filter((n) => n.selected && !n.id.startsWith('grp:')).length, [displayNodes]);
   const displayEdges = useMemo(() => {
     const selectedNodes = new Set(displayNodes.filter((n) => n.selected).map((n) => n.id));
@@ -342,8 +349,9 @@ function BoardCanvas(props: {
     }
     setNodes((ns) => applyNodeChanges(changes, ns));
   }, []);
-  // Every screen starts with Select (owner, 2026-10-23): one finger / the mouse selects and moves panels, a drag on
-  // empty canvas selects several; Hand (or two fingers, pinch, wheel, Space) moves the board.
+  // Every screen starts with Select (owner, 2026-10-23): the mouse selects and moves panels, a drag on empty canvas
+  // selects several; Hand (or the wheel, Space) moves the board. D58, touch: one finger moves the board, a tap
+  // selects, a selected panel follows the finger, two fingers pinch and pan.
   const [tool, setTool] = useState<CanvasTool>('select');
   /** Space held: the Hand tool for as long as it is held (spring-loaded); the toolbar shows it. */
   const [spaceHeld, setSpaceHeld] = useState(false);
@@ -357,6 +365,9 @@ function BoardCanvas(props: {
   /** Tablet / phone: the one floating panel that is open. */
   const [panel, setPanel] = useState<'library' | 'inspector' | null>(null);
   const flowEl = useRef<HTMLDivElement>(null);
+  // D58: two fingers anywhere pinch-zoom and pan the board, panels and their controls included.
+  const pinchTarget = useCallback(() => flow.current, []);
+  usePinch(flowEl, pinchTarget, ZOOM_LIMITS);
   // D57: on touch, a long-press on a panel adds it to the selection or takes it out (Shift-click's stand-in).
   useLongPress(flowEl, 500, (panel) => {
     const id = panel.dataset.id;
@@ -1186,7 +1197,7 @@ function BoardCanvas(props: {
         <BoardContext.Provider value={actions}>
           <div className={`sc-board__flow${activeTool === 'hand' ? ' sc-board__flow--hand' : ''}${tidying ? ' sc-board__flow--tidying' : ''}`} ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
-            nodes={displayNodes}
+            nodes={flowNodes}
             edges={displayEdges}
             edgeTypes={edgeTypes}
             onEdgeDoubleClick={onEdgeDoubleClick}
@@ -1225,14 +1236,19 @@ function BoardCanvas(props: {
             // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
             panOnScroll
             zoomOnScroll={false}
-            selectionOnDrag={activeTool === 'select' && !readOnly}
-            // Select: the middle mouse button pans; on touch, one finger selects (React Flow starts a touch selection
-            // box only when finger panning is off) and two fingers pan and pinch-zoom.
-            panOnDrag={activeTool === 'hand' || readOnly ? true : coarse ? false : [1]}
+            selectionOnDrag={activeTool === 'select' && !readOnly && !coarse}
+            // Select: the middle mouse button pans. D58, touch: one finger moves the board (on empty canvas and on
+            // panels not selected), two fingers pinch and pan (usePinch).
+            panOnDrag={activeTool === 'hand' || readOnly || coarse ? true : [1]}
+            // D58, touch: a card's buttons and fields don't stop the board moving; ports, drag grips and a selected
+            // panel (React Flow marks those with this class) do.
+            noPanClassName={coarse ? TOUCH_NO_PAN : 'nopan'}
+            // A tap that wobbles a few px is still a tap, not a move.
+            nodeDragThreshold={coarse ? 4 : 1}
             snapToGrid={grid && !altHeld}
             snapGrid={[16, 16]}
-            minZoom={0.1}
-            maxZoom={2}
+            minZoom={ZOOM_LIMITS.min}
+            maxZoom={ZOOM_LIMITS.max}
             proOptions={{ hideAttribution: false }}
           >
             {/* D57: the dots show the grid's state — every 16 px and stronger while panels snap to it, faint every 32 px when not. */}
