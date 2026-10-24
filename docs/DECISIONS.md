@@ -159,4 +159,7 @@
   - **Browser:** a PDF of more than one page opens "Which page?" with a thumbnail of each page (the first 48 drawn by pdf.js, later ones by number); one tap or click picks it. Cancel uploads nothing and shows no error. A one-page PDF asks nothing. Several PDFs dropped at once ask one at a time (`ui/PdfPageDialog.tsx`).
   - **API:** `POST /teams/:teamId/assets?page=N` (1–10 000; default 1) draws that page as a sanitized SVG (`pdfPageToSvg`, `pdftocairo -f N -l N`); a page past the last is `unreadable_pdf` (422), a bad number 400.
   - **Pixel-only slots and servers without the converter** draw the same page to a PNG in the browser (`pdfToPng(file, page)`).
+- D60 A Preset node follows its team family (owner, 2026-10-24: "Go Q1, Q2 and Q5"; BACKLOG Q2). Amends M4's "Preset nodes already on boards keep theirs".
+  - **Which family:** worked out, not stored — the family most of the node's sizes come from (each output keeps the `presetId` it was made from, and renaming a family in the Size presets dialog renames those presets): `setFamily` in `preset-sets.ts`.
+  - **Offers on the node:** when that family's name is not the node's, "Rename to “…”"; when the family has sizes the node lacks (by preset, or the same W × H), "Add N new sizes". Each is one undo step; nothing changes on its own, and other projects are not touched until they are opened.
 

@@ -117,7 +117,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
   const renameFamily = (name: string) =>
     setAsk({
       title: 'Rename family',
-      message: 'New Preset nodes use the new name; Preset nodes already on boards keep theirs.',
+      message: 'New Preset nodes use the new name. Preset nodes already made from it offer the new name when their project is opened.',
       input: { label: 'Family name', value: name },
       confirm: 'Rename',
       done: (to) => {

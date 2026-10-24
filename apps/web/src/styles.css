@@ -1007,3 +1007,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-pdfpages__page { width: 100%; display: grid; gap: 4px; justify-items: center; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: inherit; font: inherit; font-size: var(--fs-sm); cursor: pointer; min-height: 44px; }
 .sc-pdfpages__page:hover, .sc-pdfpages__page:focus-visible { border-color: var(--accent); }
 .sc-pdfpages__page img, .sc-pdfpages__blank { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: var(--canvas); border-radius: var(--r-sm); }
+
+/* Q2: a Preset node's team family offers its new name or the sizes it gained. */
+.sc-preset__family { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 var(--sp-2) var(--sp-1); }
+.sc-preset__family .sc-btn { font-size: var(--fs-sm); }

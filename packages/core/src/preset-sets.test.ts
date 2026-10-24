@@ -3,7 +3,7 @@ import { MAIN, outputComposition } from './graph';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { deleteOutput, disconnectOutput, isOutputConnected } from './outputs';
-import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setPreviewHidden } from './preset-sets';
+import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setFamily, setPreviewHidden } from './preset-sets';
 import type { SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -73,3 +73,26 @@ describe('Preview visibility (D51)', () => {
     expect(presetSets(ok(setPreviewHidden(doc, 'gdn', 'nope', true)))[0]).not.toHaveProperty('hidden');
   });
 });
+
+describe('setFamily (Q2)', () => {
+  // The node was made from the team family "GDN" (each size keeps its presetId); the family then got renamed and
+  // gained a size.
+  const made = () => ok(addPresetSet({ ...project(output()), outputs: [] }, { id: 'gdn', label: 'GDN', board: { x: 800, y: 0 }, sizes: GDN.map((g) => ({ ...g, presetId: `p-${g.id}` })) }));
+  const team = (family: string, extra: { id: string; size: ReturnType<typeof px> }[] = []) => [...GDN.map((g) => ({ id: `p-${g.id}`, family, size: g.size })), ...extra.map((e) => ({ ...e, family }))];
+
+  it('names the family its sizes came from, after a rename too', () => {
+    expect(setFamily(made(), 'gdn', team('GDN'))).toEqual({ label: 'GDN', missing: [] });
+    expect(setFamily(made(), 'gdn', team('Google Display'))?.label).toBe('Google Display');
+  });
+
+  it('lists the sizes the family gained, not ones the node already has (by preset or by size)', () => {
+    const presets = team('GDN', [{ id: 'p-new', size: px(320, 100) }, { id: 'p-dup', size: px(300, 250) }]);
+    expect(setFamily(made(), 'gdn', presets)?.missing.map((p) => p.id)).toEqual(['p-new']);
+  });
+
+  it('a node whose sizes come from no family has none', () => {
+    expect(setFamily(withSet(), 'gdn', team('GDN'))).toBeNull();
+    expect(setFamily(made(), 'nope', team('GDN'))).toBeNull();
+  });
+});
+

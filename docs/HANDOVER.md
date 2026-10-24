@@ -1,6 +1,6 @@
 # Handover — 2026-10-24 (after #132)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D59**), `docs/BACKLOG.md` (P15–P20 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D60**), `docs/BACKLOG.md` (P15–P20 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -60,6 +60,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 - **Core Auto Layout Guide** shows each layer's rule (`layerRule`).
 
 **Preset node (D46, D51).**
+- **Its team family (D60, Q2):** `setFamily(doc, setId, presets)` finds the family its sizes came from (by `presetId`); the node offers "Rename to “…”" when the family's name changed and "Add N new sizes" when the family grew.
 - Rows reorder by their grip. Add a size from presets or as a custom W×H.
 - The **eye** hides that size's Preview on the board (`PresetSet.hidden`; it still exports). The **trash** removes the size.
 - **Export** opens the export dialog on the node's sizes only (hidden ones included unless "Include hidden previews" is unticked) and downloads one ZIP named `<project>_<family>.zip` once all are done (`exportZipName(project, family)`).
