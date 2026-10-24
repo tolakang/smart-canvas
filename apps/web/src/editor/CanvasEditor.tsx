@@ -1,26 +1,32 @@
 /**
  * The canvas editor shared by the master preview (T3.2) and the output editors (T5.1): select, move, resize,
  * rotate and skew layers with the transform box (D36, Affinity-style: drag an edge along itself to skew;
- * touch: hold, then drag; double-click / double-tap a handle to undo what it changed), moves and (N7) resizes snapping to the
+ * double-click / double-tap a handle to undo what it changed), moves and (N7) resizes snapping to the
  * canvas edges, centre lines and other layers, arrow-key nudging (1 design px, Shift 10). Draws with the same OutputRenderer as export. What an edit
  * writes is the caller's: placements on the main composition, overrides for an output.
  * Figma-style workspace (T10.1): toolbar with Move / Hand tools, pan (Space or H + drag, wheel), zoom at the
  * pointer (Ctrl/⌘ + wheel) and Figma's zoom keys, a size badge on the selection, and a Design panel with
  * X / Y / W / H / rotation.
+ * Touch (D58, Q7; supersedes D36's hold): one finger on empty canvas or a layer not selected moves the canvas; a tap
+ * selects (tapping the selected layer again picks the one behind it); the selected layer and its handles drag at
+ * once; two fingers pinch and pan anywhere; a double-tap on empty canvas fits.
  */
 import { frameTransform, layerSources, pictureAspect, type Frame, type InputSource, type NFrame, type RenderScene } from '@smart-canvas/core';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
+import { usePinch } from '../board/pinch';
 import { OutputRenderer } from '../render/OutputRenderer';
 import { DesignPanel } from './DesignPanel';
 import { fitScale, NUDGE_STEP, resetRotation, resetTransform } from './geometry';
 import { frameOfState, sameFrame, snapMove, snapResize, snapTargets, syncDoc } from './transform/frame';
 import type { TransformDoc } from './transform/math';
-import { TransformBox } from './transform/transform-box';
+import { DOUBLE_TAP_DIST, DOUBLE_TAP_MS, TransformBox } from './transform/transform-box';
 
 /** Moves and resizes snap within this many screen px. */
 const SNAP_PX = 6;
+/** Touch: a finger that moves less than this is a tap (two taps make a double-tap as on the box's handles). */
+const TAP_SLOP_PX = 8;
 const MIN_SCALE = 0.02;
 const MAX_SCALE = 64;
 
@@ -76,6 +82,10 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
   const [space, setSpace] = useState(false);
   const [ratioLock, setRatioLock] = useState<{ id: string; on: boolean } | null>(null); // else the kind's default
   const panFrom = useRef<{ x: number; y: number; pan: { x: number; y: number } } | null>(null);
+  /** D58: one finger on the canvas (not on the selected layer's box): a tap, or a pan once it moves. */
+  const touchPan = useRef<{ id: number; x: number; y: number; pan: { x: number; y: number }; moved: boolean } | null>(null);
+  /** The last tap on empty canvas, for a double-tap to fit. */
+  const emptyTap = useRef<{ x: number; y: number; time: number } | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [area, setArea] = useState({ width: 800, height: 600 });
   const [selected, setSelected] = useState<string | null>(null);
@@ -205,6 +215,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
   // transform box picks the press up as a move). Alt+press picks the next layer behind the selected one.
   // Empty canvas clears the selection. Handles keep resizing / rotating / skewing.
   function onPointerDown(e: PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === 'touch') return; // D58: a tap selects, a drag moves the canvas (onTouchDown)
     const t = e.target as HTMLElement;
     if (t.closest('.tb-handle') || t.closest('.sc-editor__resets')) return;
     const under = layersAt(e.clientX, e.clientY);
@@ -215,6 +226,60 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     setLive(null);
     pendingPress.current = id && !readOnly ? e.nativeEvent : null;
   }
+
+  /** D58: a finger that lands on the canvas or around it, not on the selected layer's box or its buttons. */
+  function onTouchDown(e: PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== 'touch' || !e.isPrimary || hand) return;
+    if ((e.target as HTMLElement).closest('.tb-handle, .tb-target, .sc-editor__resets')) return; // the box's own drag
+    e.currentTarget.setPointerCapture(e.pointerId);
+    touchPan.current = { id: e.pointerId, x: e.clientX, y: e.clientY, pan, moved: false };
+  }
+  function onTouchMove(e: PointerEvent<HTMLDivElement>) {
+    const t = touchPan.current;
+    if (!t || e.pointerId !== t.id) return;
+    if (!t.moved && Math.hypot(e.clientX - t.x, e.clientY - t.y) < TAP_SLOP_PX) return;
+    t.moved = true;
+    setView((v) => ({ ...v, pan: { x: t.pan.x + e.clientX - t.x, y: t.pan.y + e.clientY - t.y } }));
+  }
+  function onTouchUp(e: PointerEvent<HTMLDivElement>) {
+    const t = touchPan.current;
+    if (!t || e.pointerId !== t.id) return;
+    touchPan.current = null;
+    if (t.moved) return;
+    // A tap: the front-most layer under the finger, or nothing (a second tap on empty canvas soon after fits).
+    const id = layersAt(e.clientX, e.clientY)[0] ?? null;
+    select(id);
+    if (id) return (emptyTap.current = null);
+    const prev = emptyTap.current;
+    // When the finger lifted, not when this ran: a busy page (a redraw after the first tap) must not stretch the gap.
+    const now = e.timeStamp;
+    if (prev && now - prev.time <= DOUBLE_TAP_MS && Math.hypot(e.clientX - prev.x, e.clientY - prev.y) <= DOUBLE_TAP_DIST) {
+      emptyTap.current = null;
+      setView({ zoom: 1, pan: { x: 0, y: 0 } });
+    } else emptyTap.current = { x: e.clientX, y: e.clientY, time: now };
+  }
+
+  // D58: two fingers anywhere on the stage pinch-zoom (about their midpoint) and pan; a drag under way stops.
+  const view = useRef({ fit, area, scene, canvasLeft, canvasTop, scale });
+  useLayoutEffect(() => {
+    view.current = { fit, area, scene, canvasLeft, canvasTop, scale };
+  });
+  const pinchTarget = useCallback(
+    () => ({
+      getViewport: () => ({ x: view.current.canvasLeft, y: view.current.canvasTop, zoom: view.current.scale }),
+      setViewport: ({ x, y, zoom: s }: { x: number; y: number; zoom: number }) => {
+        const { fit: f, area: a, scene: sc } = view.current;
+        setLive(null);
+        setView({ zoom: s / f, pan: { x: x - (a.width - sc.width * s) / 2, y: y - (a.height - sc.height * s) / 2 } });
+      },
+    }),
+    [],
+  );
+  const onPinchStart = useCallback(() => {
+    touchPan.current = null;
+    box.current?.cancel();
+  }, []);
+  usePinch(stage, pinchTarget, { min: MIN_SCALE, max: MAX_SCALE }, onPinchStart);
 
   // Wheel pans (Shift: sideways); Ctrl/⌘ + wheel (and trackpad pinch) zooms at the pointer.
   useEffect(() => {
@@ -266,9 +331,9 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
   const selectedFrame = selectedItem?.frame ?? null;
   // A fitted picture's own proportions: resets of its stretch / scale handles end at them.
   const aspect = selectedFrame?.fitted && selectedSource ? pictureAspect(selectedSource, layoutDeps?.assets ?? {}) : undefined;
-  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect });
+  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select });
   useLayoutEffect(() => {
-    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect };
+    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select };
   });
 
   // One transform box per selected layer, picking up its history from this session.
@@ -281,6 +346,16 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
     const start = syncDoc(history.current.get(id) ?? historiesRef.current?.[id], frame);
     history.current.set(id, start);
     const b = new TransformBox(canvasEl.current, control.current, start, {
+      // D58 (Q7): the selected layer and its handles drag at once on touch (the default); a finger anywhere else
+      // moves the canvas. A tap inside the box (once no double-tap came): a layer in front of the selected one is
+      // picked, else the one behind it (Alt+click with a mouse).
+      onTap: (handle, at, pointerType) => {
+        if (handle !== 'body' || pointerType !== 'touch') return;
+        const under = latest.current.layersAt(at.x, at.y);
+        const front = under[0];
+        if (front && front !== id) return latest.current.select(front);
+        if (under.length > 1 && under.includes(id)) latest.current.select(under[(under.indexOf(id) + 1) % under.length] ?? id);
+      },
       getScale: () => latest.current.scale,
       flip: false,
       proportional: (shift) => latest.current.lockRatio || shift,
@@ -389,8 +464,12 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
           className={`sc-editor__stage${hand ? ' sc-editor__stage--hand' : ''}`}
           ref={stage}
           onPointerDown={(e) => {
+            if (e.pointerType === 'touch') return onTouchDown(e);
             if (e.target === e.currentTarget) select(null); // the empty stage around the canvas
           }}
+          onPointerMove={onTouchMove}
+          onPointerUp={onTouchUp}
+          onPointerCancel={() => (touchPan.current = null)}
         >
           <div className="sc-editor__canvas" ref={canvasEl}
             onPointerDown={onPointerDown}

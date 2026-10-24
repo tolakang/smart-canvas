@@ -102,7 +102,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Frame:** a 1.5 px accent outline that follows the layer's real shape (a parallelogram when skewed). Handles keep their on-screen size at any zoom and turn with the layer.
 - **Handles:** white with an accent border. Corners are 10 px squares; edges are pills along their edge; rotate is a round arrow button 28 px above the top edge. Hit areas are 24 px with a mouse and 44 px on touch. Edge handles hide on a side shorter than 48 px.
 - **Skew:** drag an edge along itself. The opposite edge stays put; Alt pivots on the centre; Ctrl/⌘ skews whichever way. The Design panel shows Skew (⫽) next to Rotation.
-- **Touch:** long-press a handle or the layer (350 ms) to edit it, then drag: move, resize, rotate or skew. A quick swipe or tap never edits. A double-tap on a handle resets it.
+- **Touch (D58):** tap a layer to select it (again for the one behind); drag the selected layer or a handle at once: move, resize, rotate or skew. One finger anywhere else moves the canvas, two fingers pinch and pan. A double-tap on a handle resets it; on empty canvas it fits.
 - **Reset:** double-click or double-tap a handle to undo what it changed: rotate handle = rotation, a corner = scale, an edge = that side's stretch and skew.
 - **Snapping:** a move snaps to canvas and layer edges and centres within 6 screen px, shown by a dashed red guide line.
 
