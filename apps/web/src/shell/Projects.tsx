@@ -17,6 +17,8 @@ interface ProjectRow {
   id: string;
   name: string;
   isTemplate: boolean;
+  /** D64: when its thumbnail was stored (null: none yet). */
+  thumbAt?: string | null;
   updatedAt: string;
 }
 
@@ -223,9 +225,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
                 {templates.map((t) => (
                   <li key={t.id} className="sc-tcard" data-template={t.name}>
                     <button type="button" className="sc-tcard__main" onClick={() => (canEdit ? setCreating({ templateId: t.id }) : props.onOpen(t.id))} aria-label={canEdit ? `New project from ${t.name}` : `View template ${t.name}`}>
-                      <span className={`sc-tile sc-tile--lg sc-tile--${tileColor(t.name)}`} aria-hidden="true">
-                        {initialOf(t.name)}
-                      </span>
+                      <Cover teamId={team.id} row={t} large />
                       <span className="sc-tcard__name">{t.name}</span>
                       <span className="sc-rows__meta">{canEdit ? 'Use template' : 'Template'}</span>
                     </button>
@@ -275,9 +275,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
                 {projects.map((p) => (
                   <li key={p.id} data-project={p.name}>
                     <button type="button" className="sc-rows__main sc-rows__main--tile" onClick={() => props.onOpen(p.id)} aria-label={p.name} aria-describedby={`edited-${p.id}`}>
-                      <span className={`sc-tile sc-tile--${tileColor(p.name)}`} aria-hidden="true">
-                        {initialOf(p.name)}
-                      </span>
+                      <Cover teamId={team.id} row={p} />
                       <span className="sc-rows__text">
                         <span className="sc-rows__name">{p.name}</span>
                         <time id={`edited-${p.id}`} className="sc-rows__meta" dateTime={p.updatedAt} title={new Date(p.updatedAt).toLocaleString()}>
@@ -322,6 +320,25 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
       {showTeam && <TeamDialog teamId={team.id} teamName={team.name} userId={props.userId} isAdmin={team.role === 'admin'} onClose={() => setShowTeam(false)} />}
       {showPresets && <PresetsDialog teamId={team.id} isAdmin={team.role === 'admin'} onClose={() => setShowPresets(false)} />}
     </section>
+  );
+}
+
+/** The card's picture: the project's thumbnail (D64) once the board has stored one, else its colour and letter. */
+function Cover(props: { teamId: string; row: ProjectRow; large?: boolean }) {
+  const { row } = props;
+  const [failed, setFailed] = useState(false);
+  const size = props.large ? ' sc-tile--lg' : '';
+  if (row.thumbAt && !failed) {
+    return (
+      <span className={`sc-tile sc-tile--thumb${size}`} aria-hidden="true">
+        <img src={`/api/teams/${props.teamId}/projects/${row.id}/thumbnail?v=${encodeURIComponent(row.thumbAt)}`} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setFailed(true)} />
+      </span>
+    );
+  }
+  return (
+    <span className={`sc-tile${size} sc-tile--${tileColor(row.name)}`} aria-hidden="true">
+      {initialOf(row.name)}
+    </span>
   );
 }
 

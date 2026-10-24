@@ -106,6 +106,7 @@ import { presetSettings } from './OutputNode';
 import { addPictures, uploadPictures } from './stack-upload';
 import { HistoryPanel, versionTitle, versionWhen, type Version } from './HistoryPanel';
 import { openCounts, useApprovalStates, useReview } from './review';
+import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 
@@ -645,6 +646,7 @@ function BoardCanvas(props: {
   const { sizes, remember } = useAssetSizes(teamId, usedAssetsKey(doc));
   const { deps: layoutDeps, missingFonts } = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
   const approvals = useApprovalStates(doc, layoutDeps, review.data);
+  useProjectThumbnail({ teamId, projectUrl: url, doc, deps: layoutDeps, saveState, canEdit: !readOnly });
 
   // D37: once a picture's visible pixels are known, its unfitted frames hug them (in place: nothing moves on
   // screen). Not an undo step — it's how the doc is shown; undoing to an unfitted doc just fits it again.

@@ -1,0 +1,1 @@
+ALTER TABLE "projects" ADD COLUMN "thumb_at" timestamp with time zone;

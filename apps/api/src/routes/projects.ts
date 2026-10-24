@@ -28,7 +28,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
 
   app.get<{ Params: { teamId: string } }>('/teams/:teamId/projects', { preHandler: member }, async (req) => {
     return db
-      .select({ id: projects.id, name: projects.name, rev: projects.rev, isTemplate: projects.isTemplate, createdAt: projects.createdAt, updatedAt: projects.updatedAt })
+      .select({ id: projects.id, name: projects.name, rev: projects.rev, isTemplate: projects.isTemplate, thumbAt: projects.thumbAt, createdAt: projects.createdAt, updatedAt: projects.updatedAt })
       .from(projects)
       .where(eq(projects.teamId, req.params.teamId))
       .orderBy(desc(projects.updatedAt));

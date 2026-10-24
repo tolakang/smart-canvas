@@ -157,7 +157,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 
 ## Projects home and sign-in (U5)
 - **Brand:** `ui/Brand.tsx` — the mark (three stacked frames on a blue–violet tile) and the name "Smart Canvas".
-- **Home:** on the ambient backdrop. A glass brand bar (mark, name, the team, Team and Size presets as quiet buttons), a 36 px "Projects" title with one line of lede and the **New project** button, then the project cards: a 16:10 cover in the project's colour with its initial (a real thumbnail comes with U5b), the name and when it was edited; ⋯ shows on hover (always on touch). Cards lift on hover.
+- **Home:** on the ambient backdrop. A glass brand bar (mark, name, the team, Team and Size presets as quiet buttons), a 36 px "Projects" title with one line of lede and the **New project** button, then the project cards: a 16:10 cover — the project's own work (U5b, D64: a Preview floating like an artboard with a soft shadow on a faint checkerboard, growing a little on hover), or its colour and initial until there is artwork — the name and when it was edited; ⋯ shows on hover (always on touch). Cards lift on hover.
 - **Sign in:** a brand panel (the promise, a small illustration of frames) beside the form card; the form has a Show / Hide password button. On narrow screens only the card shows, with the mark above it.
 
 ## Dialogs (U6)
