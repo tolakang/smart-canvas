@@ -1,7 +1,8 @@
 /**
  * T13.6 end to end (D33): the workspace on a phone and a tablet. Phone: condensed top bar with a More menu,
  * library and inspector as bottom sheets, the Select tool by default (D58: one finger moves the board, a selected
- * panel moves under the finger, two fingers pinch and pan anywhere; Group / Delete), long-press for the canvas menu, tap a port then a target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
+ * panel moves under the finger, two fingers pinch and pan anywhere; Select several for taps and a box, then Group /
+ * Delete), long-press for a menu, tap a port then a target to wire, the editor's Design panel as a sheet. Tablet: the panels are overlays, one at a time.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addSource, connectSource, deleteSource, type ProjectDoc } from '@smart-canvas/core';
@@ -34,7 +35,9 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(await phone.getByRole('button', { name: '+ Add' }).count()).toBe(0);
     expect(await phone.getByRole('complementary', { name: 'Node library' }).count()).toBe(0);
     expect(await phone.getByRole('complementary', { name: 'Inspector' }).count()).toBe(0);
-    expect(await bar(phone).getByRole('button', { name: 'Select (V)' }).getAttribute('aria-pressed')).toBe('true');
+    // D58: Select several stands in for Select / Hand (one finger moves the board, a tap selects).
+    expect(await bar(phone).getByRole('button', { name: 'Select several' }).getAttribute('aria-pressed')).toBe('false');
+    expect(await bar(phone).getByRole('button', { name: /^(Select \(V\)|Hand)/ }).count()).toBe(0);
     expect(await phone.locator('.react-flow__minimap').count()).toBe(0);
     // D57: grid snap is on phones too, and the toolbar still fits the screen.
     expect(await bar(phone).getByRole('button', { name: 'Snap to grid' }).count()).toBe(1);
@@ -119,18 +122,33 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     return b;
   };
   const MAIN = '.react-flow__node[data-id="main"]';
-  /** A point on the panel's title where a finger grabs the panel itself (not a port, button or other control). */
+  /**
+   * A point where a finger grabs the panel itself: preferably with no port, button or other control within a finger's
+   * reach (Chrome moves a touch onto a control close to it), else a plain spot on its title.
+   */
   const grabPoint = (node: string) => phone.evaluate((sel) => {
     const panel = document.querySelector(sel);
+    const box = panel?.getBoundingClientRect();
     const title = panel?.querySelector('.sc-node__title')?.getBoundingClientRect();
-    if (!panel || !title) throw new Error(`no ${sel}`);
-    for (let fx = 0.1; fx < 1; fx += 0.1) {
-      const p = { x: title.x + title.width * fx, y: title.y + title.height / 2 };
-      const hit = document.elementFromPoint(p.x, p.y);
-      if (hit && hit.closest('.react-flow__node') === panel && !hit.closest('.react-flow__handle, button, input, .nodrag')) return p;
-    }
+    if (!panel || !box || !title) throw new Error(`no ${sel}`);
+    const plain = (x: number, y: number) => {
+      const hit = document.elementFromPoint(x, y);
+      return !!hit && hit.closest('.react-flow__node') === panel && !hit.closest('.react-flow__handle, button, input, textarea, label, a, [draggable="true"], .nodrag');
+    };
+    for (let y = box.y + 6; y < box.bottom - 6; y += 4)
+      for (let x = box.x + 6; x < box.right - 6; x += 4) if (([[0, 0], [-10, 0], [10, 0], [0, -10], [0, 10]] as const).every(([dx, dy]) => plain(x + dx, y + dy))) return { x, y };
+    for (let fx = 0.1; fx < 1; fx += 0.1) if (plain(title.x + title.width * fx, title.y + title.height / 2)) return { x: title.x + title.width * fx, y: title.y + title.height / 2 };
     throw new Error(`no grab point on ${sel}`);
   }, node);
+  /** A grab point on the first of the panels `sel` matches that has one. */
+  const grabAny = async (sel: string) => {
+    const ids = await phone.locator(sel).evaluateAll((ns) => ns.map((n) => n.getAttribute('data-id') ?? ''));
+    for (const id of ids) {
+      const p = await grabPoint(`.react-flow__node[data-id="${id}"]`).catch(() => undefined);
+      if (p) return p;
+    }
+    throw new Error(`no grab point on ${sel}`);
+  };
 
   it('phone (D58): one finger on empty canvas moves the board and selects nothing', async () => {
     // The far-off Background 2 from the wiring test would make Fit zoom out until panels are a few px tall.
@@ -224,32 +242,64 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(v2.zoom).toBeCloseTo(v1.zoom, 3);
   }, 60_000);
 
-  it('phone: two panels selected show Group / Delete; a long press on a tool shows its tooltip', async () => {
+  it('phone (D58): Select several — taps add panels, a drag on empty canvas draws a box, Group, Done; a long press on a tool shows its tooltip', async () => {
     await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
     await phone.waitForTimeout(400);
-    const cdp = await phone.context().newCDPSession(phone);
-    await phone.locator('.react-flow__node[data-id^="stk:"] .sc-node__title').first().tap();
-    const other = await grabPoint(MAIN);
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [other] });
-    await phone.waitForTimeout(700);
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await phone.keyboard.press('Escape');
+    const several = bar(phone).getByRole('button', { name: 'Select several' });
+    await several.tap();
+    expect(await several.getAttribute('aria-pressed')).toBe('true');
     const selbar = phone.getByRole('toolbar', { name: 'Selection' });
+    await selbar.getByText('0 selected').waitFor();
+    // A box around the top row's first two asset nodes, from empty canvas below-right of them (a touch close to a
+    // panel is moved onto it by the browser), up-left past their corner.
+    const boxes = await phone.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.react-flow__node')].map((n) => ({ id: n.dataset.id ?? '', ...n.getBoundingClientRect().toJSON() as { x: number; y: number; width: number; height: number } })),
+    );
+    const row = boxes.filter((b) => b.id.startsWith('stk:') || b.id.startsWith('hl:')).sort((a, b) => a.x - b.x).slice(0, 2);
+    if (row.length < 2) throw new Error('no asset row');
+    const from = { x: Math.max(...row.map((b) => b.x + b.width)) + 4, y: Math.max(...row.map((b) => b.y + b.height)) + 40 };
+    const to = { x: Math.min(...row.map((b) => b.x)) - 2, y: Math.min(...row.map((b) => b.y)) - 2 };
+    expect(await phone.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.classList.contains('react-flow__pane'), from)).toBe(true);
+    const v0 = await viewport();
+    await touchDrag([{ from, to }]);
+    expect(await selbar.getByText(/^\d+ selected$/).innerText()).toMatch(/^[2-9] selected$/);
+    // A box, not a pan: the board didn't follow the finger left (it may auto-pan a little as the box nears the edge).
+    expect((await viewport()).x - v0.x).toBeGreaterThan(-20);
+    await selbar.getByRole('button', { name: 'Clear selection' }).tap();
+    await selbar.getByText('0 selected').waitFor();
+    // Taps add panels (and a second tap takes one out again).
+    const first = await grabAny('.react-flow__node:not([data-id="main"]):not([data-id^="grp:"])');
+    await phone.touchscreen.tap(first.x, first.y);
+    await selbar.getByText('1 selected').waitFor();
+    await phone.waitForTimeout(400);
+    const main = await grabPoint(MAIN);
+    await phone.touchscreen.tap(main.x, main.y);
     await selbar.getByText('2 selected').waitFor();
-    await phone.waitForTimeout(600);
+    await phone.waitForTimeout(400);
+    await phone.touchscreen.tap(main.x, main.y);
+    await selbar.getByText('1 selected').waitFor();
+    await phone.waitForTimeout(400);
+    await phone.touchscreen.tap(main.x, main.y);
+    await selbar.getByText('2 selected').waitFor();
+    await phone.waitForTimeout(400);
     await selbar.getByRole('button', { name: 'Group' }).tap();
     await expect.poll(async () => (await doc()).groups?.length, { timeout: 15_000 }).toBe(1);
-    await selbar.getByRole('button', { name: 'Clear selection' }).tap();
+    // Done leaves Select several: the bar goes, one finger moves the board again.
+    await selbar.getByRole('button', { name: 'Done' }).tap();
+    await phone.keyboard.press('Escape');
     await selbar.waitFor({ state: 'detached' });
+    expect(await several.getAttribute('aria-pressed')).toBe('false');
     // A long press on a tool shows its tooltip and doesn't press it.
-    const hand = bar(phone).getByRole('button', { name: /^Hand/ });
-    const hb = await hand.boundingBox();
-    if (!hb) throw new Error('no hand button');
-    const at = [{ x: hb.x + hb.width / 2, y: hb.y + hb.height / 2 }];
+    const cdp = await phone.context().newCDPSession(phone);
+    const sb = await several.boundingBox();
+    if (!sb) throw new Error('no Select several button');
+    const at = [{ x: sb.x + sb.width / 2, y: sb.y + sb.height / 2 }];
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at });
     await phone.waitForTimeout(700);
-    expect(await phone.locator('.sc-tip--show').innerText()).toContain('Drag anywhere to move the board');
+    expect(await phone.locator('.sc-tip--show').innerText()).toContain('Tap panels to add or take them out');
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    expect(await hand.getAttribute('aria-pressed')).toBe('false');
+    expect(await several.getAttribute('aria-pressed')).toBe('false');
   }, 60_000);
 
   it('phone: long-press on the canvas opens the canvas menu', async () => {
@@ -266,27 +316,19 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     await phone.keyboard.press('Escape');
   }, 60_000);
 
-  it('phone: a long-press on a panel adds it to the selection, and again takes it out (D57)', async () => {
+  it('phone (D58): a long-press on a panel opens its menu', async () => {
     await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
     await phone.waitForTimeout(400);
     const cdp = await phone.context().newCDPSession(phone);
-    const hold = async (sel: string) => {
-      const at = [await grabPoint(sel)];
-      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at });
-      await phone.waitForTimeout(700);
-      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-      await phone.waitForTimeout(600);
-    };
-    await phone.locator('.react-flow__node[data-id^="stk:"] .sc-node__title').first().tap();
-    await expect.poll(() => phone.locator('.react-flow__node.selected').count()).toBe(1);
-    const other = MAIN;
-    await hold(other);
-    const selbar = phone.getByRole('toolbar', { name: 'Selection' });
-    await selbar.getByText('2 selected').waitFor();
-    expect(await phone.getByRole('menu').count()).toBe(0); // a selection toggle, not a menu
-    await hold(other);
-    await selbar.waitFor({ state: 'detached' });
-    expect(await phone.locator('.react-flow__node.selected').count()).toBe(1);
+    // An input panel such as the Background (those have a panel menu).
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [await grabAny('.react-flow__node[data-id^="src:"]')] });
+    await phone.waitForTimeout(800);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await phone.getByRole('menu').waitFor();
+    for (const item of ['Duplicate', 'Delete']) expect(await phone.getByRole('menu').getByRole('menuitem', { name: item }).count()).toBe(1);
+    expect(await phone.locator('.react-flow__node.selected').count()).toBe(0); // a menu, not a selection
+    await phone.keyboard.press('Escape');
+    await phone.getByRole('menu').waitFor({ state: 'detached' });
   }, 60_000);
 
   it('phone: editors show the canvas with the Design panel as a sheet', async () => {

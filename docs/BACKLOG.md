@@ -153,7 +153,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 
 ## P20 — The board on touch screens (owner, 2026-10-23: "go ahead" on the mobile plan; D58)
 - T20.1 — **Done.** Move and zoom: one finger moves the board (empty canvas, panels not selected, their buttons); tap selects, a selected panel follows the finger; two fingers pinch and pan anywhere; double-tap zooms in.
-- T20.2 — Select: long-press opens the menu again (D33); a Select mode on phones (taps add or remove, a drag draws a box; Group, Delete, Done); the phone toolbar shows Select mode, Fit, grid and Tidy.
+- T20.2 — **Done.** Select: long-press opens the menu again (D33); a Select mode on phones (taps add or remove, a drag draws a box; Group, Delete, Done); the phone toolbar shows Select mode, Fit, grid and Tidy.
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q1 — Multi-page PDFs: pick which page to use when uploading (today the first page; D52, D55). The API converts the chosen page (`pdftocairo -f N -l N`); the browser fallback renders the same page.

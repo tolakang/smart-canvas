@@ -156,7 +156,7 @@ Legend: `[x]` done · `[ ]` to do
 
 ## P20 The board on touch screens (D58)
 - [x] T20.1 — Move and zoom: one finger moves the board, a selected panel follows the finger, two fingers pinch anywhere
-- [ ] T20.2 — Select: long-press menu again, a Select mode on phones
+- [x] T20.2 — Select: long-press menu again, Select several on touch
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] Q1 — Pick the page of a multi-page PDF

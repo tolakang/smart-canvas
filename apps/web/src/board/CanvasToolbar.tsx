@@ -3,9 +3,9 @@
  * (N4), grid snap and minimap toggles. Every button has a tooltip (name, what it does, shortcut): on hover after a
  * short delay, on keyboard focus, and on a long press on touch screens (where hover doesn't exist). A glass panel over the bottom of the canvas; lives inside <ReactFlow> for its viewport.
  * On tablets and phones (T13.6) it also opens the node library and the inspector; phones drop the zoom buttons
- * (pinch instead), grid and minimap.
+ * (pinch instead) and the minimap. On touch (D58) Select several stands in for Select / Hand.
  */
-import { Panel, useReactFlow, useViewport } from '@xyflow/react';
+import { Panel, useReactFlow, useStoreApi, useViewport } from '@xyflow/react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Icon } from './LayerRow';
 
@@ -19,8 +19,9 @@ const TIPS: Record<string, string> = {
   'Add nodes': 'Add asset and Preset nodes',
   Inspector: 'Settings of the selected node',
   'Select (V)':
-    'Click a panel to select it, drag to move it; Shift-click adds one; drag on empty canvas to select several. Arrows nudge, Esc clears, Ctrl/⌘ + A selects all. On touch, long-press adds a panel',
+    'Click a panel to select it, drag to move it; Shift-click adds one; drag on empty canvas to select several. Arrows nudge, Esc clears, Ctrl/⌘ + A selects all',
   'Hand: drag to pan (H, or hold Space)': 'Drag anywhere to move the board; panels stay put. Hold Space to pan from any tool',
+  'Select several': 'Tap panels to add or take them out; drag on empty canvas to draw a box around them. Done when finished',
   'Zoom out': 'Zoom out (Ctrl/⌘ + wheel, or pinch)',
   'Zoom in': 'Zoom in (Ctrl/⌘ + wheel, or pinch)',
   'Fit to screen (Shift+1)': 'Show every panel',
@@ -124,6 +125,11 @@ export function CanvasToolbar(props: {
   onTidy?: () => void;
   /** Two or more panels selected: Tidy arranges just those (D57). */
   tidySelection?: boolean;
+  /**
+   * D58, touch: the Select several toggle stands in for Select / Hand (one finger already moves the board and a tap
+   * selects).
+   */
+  several?: { on: boolean; onToggle: () => void };
 }) {
   const { panels, compact } = props;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -138,8 +144,14 @@ export function CanvasToolbar(props: {
       {panels?.library && btn('Add nodes', panels.open === 'library', () => panels.onOpen(panels.open === 'library' ? null : 'library'), <Icon name="plus" />)}
       {panels && btn('Inspector', panels.open === 'inspector', () => panels.onOpen(panels.open === 'inspector' ? null : 'inspector'), <Icon name="panel" />)}
       {panels && <span className="sc-canvasbar__sep" aria-hidden="true" />}
-      {btn('Select (V)', props.tool === 'select', () => props.onTool('select'), <Icon name="cursor" />)}
-      {btn('Hand: drag to pan (H, or hold Space)', props.tool === 'hand', () => props.onTool('hand'), <Icon name="hand" />)}
+      {props.several ? (
+        btn('Select several', props.several.on, props.several.onToggle, <Icon name="marquee" />)
+      ) : (
+        <>
+          {btn('Select (V)', props.tool === 'select', () => props.onTool('select'), <Icon name="cursor" />)}
+          {btn('Hand: drag to pan (H, or hold Space)', props.tool === 'hand', () => props.onTool('hand'), <Icon name="hand" />)}
+        </>
+      )}
       <span className="sc-canvasbar__sep" aria-hidden="true" />
       {!compact && btn('Zoom out', undefined, () => void zoomOut({ duration: 150 }), <Icon name="minus" />)}
       <span className="sc-canvasbar__zoom" aria-label="Board zoom">
@@ -157,4 +169,17 @@ export function CanvasToolbar(props: {
       )}
     </Panel>
   );
+}
+
+/**
+ * D58, touch: while Select several is on, React Flow behaves as if Shift were held — a tap adds or takes out a
+ * panel, a box adds to the selection. Lives inside <ReactFlow> for its store.
+ */
+export function MultiSelect({ on }: { on: boolean }) {
+  const store = useStoreApi();
+  useEffect(() => {
+    store.setState({ multiSelectionActive: on });
+    return () => store.setState({ multiSelectionActive: false });
+  }, [store, on]);
+  return null;
 }
