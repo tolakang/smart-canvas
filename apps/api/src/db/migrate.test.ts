@@ -47,6 +47,7 @@ describe.skipIf(!adminUrl)('migrations on empty Postgres', () => {
       'library_items',
       'memberships',
       'presets',
+      'project_versions',
       'projects',
       'sessions',
       'teams',

@@ -18,6 +18,7 @@ describe('db schema', () => {
         'library_items',
         'memberships',
         'presets',
+        'project_versions',
         'projects',
         'sessions',
         'teams',
