@@ -602,7 +602,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   .sc-topbar .sc-save { font-size: 0; }
   .sc-topbar__primary { font-size: 0 !important; gap: 0 !important; }
   .sc-canvasbar { margin-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom)); }
-  /* Editors: the canvas, with the Design panel as a bottom sheet; layers are picked on the canvas. */
+  /* Editors: the canvas, with a bottom sheet under Layers | Design tabs (V3, below). */
   /* Editor bar on a phone: one line, nothing scrolls sideways — the title truncates; size, the selection's
      name (it is in the sheet), "100%" and the bar's extra actions step aside. */
   .sc-fig__bar { gap: var(--sp-1); padding: 0 var(--sp-1); }
@@ -1589,3 +1589,34 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
 .sc-node--output > .react-flow__handle { top: 32px; }
 /* The global `.sc-icon { margin: auto }` centres a lone icon; beside a label it must sit next to it. */
 :is(.sc-preview__export, .sc-head__action, .sc-btn--soft, .sc-preview__comments, .sc-slot__state) .sc-icon { margin: 0; }
+
+/* ───────────────────────── V3 (2026-10-25): phone editors — Layers | Design tabs, gestures one per line ───────────────────────── */
+.sc-sheet-tabs { display: none; }
+.sc-gestures { display: grid; gap: 2px; margin: 0; }
+.sc-gestures > div { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.sc-gestures > div:first-child { border-top: 0; }
+.sc-gestures dt { font-size: 12.5px; font-weight: 650; color: var(--fg); }
+.sc-gestures dd { margin: 0; font-size: 12.5px; color: var(--muted); }
+details.sc-design__shortcuts--touch > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+details.sc-design__shortcuts--touch > summary::-webkit-details-marker { display: none; }
+details.sc-design__shortcuts--touch > summary::after { content: ''; width: 6px; height: 6px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(45deg); transition: transform var(--t-fast); }
+details.sc-design__shortcuts--touch[open] > summary::after { transform: rotate(225deg); }
+@media (max-width: 767px) {
+  .sc-sheet-tabs { display: flex; gap: 4px; margin: 0 12px -1px; padding: 4px; border-radius: 14px 14px 0 0; background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 -6px 16px -10px rgb(16 24 40 / 0.25); }
+  .sc-sheet-tabs button { flex: 1; min-height: 44px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-size: 14px; font-weight: 650; }
+  .sc-sheet-tabs button.sc-sheet-tabs__on { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
+  .sc-editor__body--sheet-layers > .sc-layers { display: block; width: auto; max-height: 45vh; max-height: 45dvh; overflow: auto; padding-bottom: env(safe-area-inset-bottom); border: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; background: var(--surface); box-shadow: var(--shadow-2); }
+  .sc-editor__body--sheet-layers > .sc-design, .sc-editor__body--sheet-layers > .sc-editor__side { display: none; }
+  .sc-editor__body--sheet-layers > .sc-layers .sc-layer { min-height: 52px; }
+  /* The canvas first, then the tabs, then the sheet (the Layers panel comes first in the page's order). */
+  .sc-editor__body > .sc-editor__canvas, .sc-editor__body > .sc-editor__stage { order: 1; }
+  .sc-editor__body > .sc-sheet-tabs { order: 2; }
+  .sc-editor__body > .sc-layers, .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side { order: 3; }
+  .sc-sheet-tabs button { -webkit-tap-highlight-color: transparent; }
+  /* One steady sheet height: the canvas above never jumps when the selection or the tab changes. */
+  /* The tabs are part of the sheet: tabs + panel together stay within the 45 % the sheet always had; a short panel
+     leaves the room to the canvas. */
+  .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side, .sc-editor__body--sheet-layers > .sc-layers { max-height: calc(45vh - 52px); max-height: calc(45dvh - 52px); overflow: auto; }
+}
+/* Touch: no browser tap flash — the app's own pressed and selected states show the tap. */
+button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent; }
