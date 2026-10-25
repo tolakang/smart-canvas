@@ -384,7 +384,23 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     const title = await phone.locator('.sc-fig__title strong').boundingBox();
     expect(title?.height ?? 99).toBeLessThan(24);
     expect(await design.getByText('Gestures').isVisible()).toBe(true);
+    // V3: folded until wanted; one gesture per line.
+    await design.getByText('Gestures').tap();
+    await design.getByText('Move the canvas').waitFor();
+    if (process.env.SC_SHOTS) await phone.screenshot({ path: `${process.env.SC_SHOTS}/phone-editor-gestures.png` });
+    await design.getByText('Gestures').tap();
     expect(await design.getByText('Shortcuts').isVisible()).toBe(false);
+    // V3: the sheet's Layers tab lists every layer on a phone; Design comes back with its tab.
+    const tabs = phone.getByRole('tablist', { name: 'Panels' });
+    await tabs.getByRole('tab', { name: 'Layers' }).tap();
+    const layersSheet = phone.getByRole('complementary', { name: 'Layers' });
+    await expect.poll(() => layersSheet.isVisible()).toBe(true);
+    expect(await design.isVisible()).toBe(false);
+    expect(await layersSheet.locator('[data-layer]').count()).toBeGreaterThan(0);
+    if (process.env.SC_SHOTS) await phone.screenshot({ path: `${process.env.SC_SHOTS}/phone-editor-layers.png` });
+    await tabs.getByRole('tab', { name: 'Design' }).tap();
+    await design.waitFor();
+    if (process.env.SC_SHOTS) await phone.screenshot({ path: `${process.env.SC_SHOTS}/phone-editor-design.png` });
     // Select a layer: whole-px values; tapping a field and leaving it changes nothing (no write, no undo step).
     await phone.locator('.sc-editor__canvas [data-source-id="background"]').tap();
     const x = design.getByLabel('X', { exact: true });

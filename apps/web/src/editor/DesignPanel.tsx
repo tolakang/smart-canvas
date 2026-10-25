@@ -32,6 +32,17 @@ export const SHORTCUTS: [string, string][] = [
   ['Esc', 'Deselect, then close'],
 ];
 
+/** Touch screens: what each gesture does, short. */
+const GESTURES: [string, string][] = [
+  ['Tap', 'Select a layer (again: the one behind)'],
+  ['Drag', 'Move the selected layer'],
+  ['Drag a handle', 'Resize · along an edge: skew'],
+  ['Double-tap a handle', 'Undo what it changed'],
+  ['One finger on empty', 'Move the canvas'],
+  ['Pinch', 'Zoom'],
+  ['Double-tap empty', 'Fit to screen'],
+];
+
 export function DesignPanel(props: {
   scene: RenderScene;
   source: InputSource | null;
@@ -53,13 +64,18 @@ export function DesignPanel(props: {
           </div>
         </section>
         {/* Touch screens get gestures instead of keyboard shortcuts. */}
-        <section className="sc-design__section sc-design__touch">
-          <div className="sc-design__title">Gestures</div>
-          <p className="sc-design__hint">
-            Tap a layer to select it (tap again for the one behind) · drag it to move · drag a handle: outward to resize, along the edge to skew · double-tap a handle to undo what it changed ·
-            one finger elsewhere moves the canvas · pinch to zoom · double-tap empty canvas to fit
-          </p>
-        </section>
+        <details className="sc-design__section sc-design__touch sc-design__shortcuts--touch">
+          <summary className="sc-design__title">Gestures</summary>
+          {/* V3 (owner: "The instructions is crowd, make it easy and clean for human to read"): one gesture per line. */}
+          <dl className="sc-gestures">
+            {GESTURES.map(([k, v]) => (
+              <div key={k}>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
         {/* U4: the keys are there when wanted, folded away otherwise. */}
         <details className="sc-design__section sc-design__shortcuts">
           <summary className="sc-design__title">Keyboard shortcuts</summary>

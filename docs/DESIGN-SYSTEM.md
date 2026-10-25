@@ -67,7 +67,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
   - A long-press (`ui/long-press.ts`) opens the right-click menus.
   - Tap a port, then tap a target, to wire.
   - Buttons, menu rows and ports are at least 44 px to tap.
-- **Editors on a phone:** the canvas, with the Design panel as a bottom sheet (45 vh). The layers panel is hidden, so layers are picked on the canvas.
+- **Editors on a phone:** the canvas, with a bottom sheet (45 vh) under two tabs, **Layers | Design** (Comments in place of Design while comments are open; V3). Layers can also be picked on the canvas.
 
 ## Groups (T13.7)
 - **Frame:** a tinted frame behind its nodes, in one of six colours: grey (`--faint`), blue (`--type-input`), purple (`--type-main`), green (`--type-output`), orange (`--type-process`), red (`--danger`).
@@ -188,4 +188,8 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Core preset:** Square / Vertical / Horizontal as soft panels with a count, the Previews as chips (accent when chosen by hand, × to put back); an empty one says "Drop a Preview here".
 - **Preset:** 44 px rows — the size in bold, the name only when it adds something, eye and bin on hover (always on touch).
 - **Preview:** its name, then "W × H unit"; health and Edit at the right; the picture on a soft checkerboard; Export a full-width soft button with its icon.
+
+## Phone editors (V3, D64)
+- Under 768 px: the canvas on top, then a two-tab bar (**Layers | Design**, 44 px tall tabs, the chosen one raised), then the sheet: as tall as its panel, tabs and panel together at most 45 vh, so a short panel leaves the room to the canvas. Layers rows are 52 px. No browser tap flash anywhere; the app's own states show a tap.
+- **Gestures** (touch screens, in the Design sheet with nothing selected): a folded list, one gesture per line — Tap, Drag, Drag a handle, Double-tap a handle, One finger on empty, Pinch, Double-tap empty — each with a few words.
 

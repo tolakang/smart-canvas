@@ -87,6 +87,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
   // zoom: × the fit scale; pan: screen px from the centred position.
   const [{ zoom, pan }, setView] = useState({ zoom: 1, pan: { x: 0, y: 0 } });
   const [tool, setTool] = useState<Tool>('move');
+  /** V3: on a phone the bottom sheet shows the Layers or the Design (or Comments) panel; wider screens show both. */
+  const [sheet, setSheet] = useState<'layers' | 'design'>('design');
   const [space, setSpace] = useState(false);
   const [ratioLock, setRatioLock] = useState<{ id: string; on: boolean } | null>(null); // else the kind's default
   const panFrom = useRef<{ x: number; y: number; pan: { x: number; y: number } } | null>(null);
@@ -468,7 +470,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
         </button>
       </header>
       {/* U4: the gap around the floating panels is empty canvas too: a press there clears the selection. */}
-      <div className="sc-editor__body" onPointerDown={(e) => e.target === e.currentTarget && select(null)}>
+      <div className={`sc-editor__body sc-editor__body--sheet-${sheet}`} onPointerDown={(e) => e.target === e.currentTarget && select(null)}>
         {layers(selected, select)}
         <div
           className={`sc-editor__stage${hand ? ' sc-editor__stage--hand' : ''}`}
@@ -582,6 +584,14 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
             )}
           </div>
           {hand && <div className="sc-editor__pan" data-testid="pan-surface" {...panHandlers} />}
+        </div>
+        {/* V3 (owner: the layers were missing on a phone): the sheet's two tabs, shown on phones only. */}
+        <div className="sc-sheet-tabs" role="tablist" aria-label="Panels">
+          {(['layers', 'design'] as const).map((t) => (
+            <button key={t} type="button" role="tab" aria-selected={sheet === t} className={sheet === t ? 'sc-sheet-tabs__on' : undefined} onClick={() => setSheet(t)}>
+              {t === 'layers' ? 'Layers' : aside ? 'Comments' : 'Design'}
+            </button>
+          ))}
         </div>
         {aside ?? (
           <DesignPanel
