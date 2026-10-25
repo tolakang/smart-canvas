@@ -1534,3 +1534,58 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
 /* Wires: the ✂ badge only appears on hover or selection; on hover it is smaller. */
 .sc-wire-cut--hover { width: 24px; height: 24px; box-shadow: var(--shadow-1); }
 @media (pointer: coarse) { .sc-wire-cut--hover { width: 36px; height: 36px; } }
+
+/* ───────────────────────── V2 (2026-10-25): Layer Comp, Core preset, Preset and Preview — the same calm cards ───────────────────────── */
+.sc-comp-group { gap: 20px; padding: 26px 22px 22px; }
+.sc-comp-group > .sc-node { width: 280px; }
+.sc-node.sc-node--main, .sc-node.sc-node--rule, .sc-node.sc-node--preset, .sc-node.sc-node--output { padding: 16px; gap: 14px; border-radius: 20px; }
+.sc-node--output.sc-node { width: 280px; }
+.sc-node--preset.sc-node { width: 300px; }
+
+/* A text action in a header (Edit, Export): a soft pill. */
+.sc-head__action { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: color-mix(in srgb, var(--head) 14%, var(--surface)); color: color-mix(in srgb, var(--head) 65%, var(--fg)); font-size: 12.5px; font-weight: 650; cursor: pointer; transition: background var(--t-fast); }
+.sc-head__action:hover { background: color-mix(in srgb, var(--head) 24%, var(--surface)); }
+@media (pointer: coarse) { .sc-head__action { height: 40px; padding: 0 14px; } }
+
+/* Layer Comp: the layer order as soft rows; move arrows on hover. */
+.sc-comp__label { margin-top: 2px; font-size: 11.5px; font-weight: 650; letter-spacing: 0.02em; color: var(--muted); }
+.sc-comp__groups { gap: 6px; }
+.sc-comp__group { gap: 10px; min-height: 40px; padding: 6px 8px 6px 10px; border: 0; border-radius: 12px; background: var(--surface-2); font-size: 13px; font-weight: 550; transition: background var(--t-fast), box-shadow var(--t-fast); }
+.sc-comp__group:hover { background: color-mix(in srgb, var(--surface-3) 80%, var(--surface-2)); }
+.sc-comp__group--drop { box-shadow: inset 0 0 0 2px var(--accent); }
+.sc-comp__count { min-width: 22px; padding: 1px 7px; border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 650; text-align: center; }
+.sc-comp__moves .sc-icon-btn { width: 26px; height: 26px; border-radius: 8px; }
+.sc-comp__layouts { gap: 8px; }
+.sc-comp__layouts .sc-btn { height: 36px; border-radius: 11px; font-weight: 600; }
+
+/* Core preset: Square / Vertical / Horizontal, each with its Previews as chips — always shown. */
+.sc-rule__sections { display: grid; gap: 10px; }
+.sc-rule__section-drop { display: grid; gap: 8px; padding: 12px; border: 1px solid transparent; border-radius: 14px; background: var(--surface-2); transition: border-color var(--t-fast), background var(--t-fast); }
+.sc-rule__section-drop--over { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 70%, transparent); }
+.sc-rule__section-title { display: flex; align-items: center; justify-content: space-between; margin: 0; font-size: 12.5px; font-weight: 650; color: var(--fg); }
+.sc-rule__section-count { min-width: 22px; padding: 1px 7px; border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 650; text-align: center; }
+.sc-rule__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.sc-rule__chip.sc-chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 10px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 550; cursor: grab; box-shadow: 0 1px 1px rgb(16 24 40 / 0.04); }
+.sc-rule__chip--chosen.sc-chip { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); color: var(--accent); }
+.sc-rule__chip-reset { width: 18px; height: 18px; display: grid; place-items: center; padding: 0; margin-right: -4px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.sc-rule__chip-reset:hover { background: var(--accent-soft); }
+.sc-rule__empty { font-size: 12px; color: var(--muted); }
+
+/* Preset: rows with the size first, the actions on hover. */
+.sc-node--preset .sc-preset__rows { margin: 0 -16px; }
+.sc-node--preset .sc-port { min-height: 44px; padding: 6px 22px 6px 16px; gap: 10px; border-top-color: color-mix(in srgb, var(--line) 70%, transparent); }
+.sc-preset__size { min-width: 92px; font-size: 12.5px; }
+.sc-node--preset .sc-port__label { font-size: 12.5px; color: var(--muted); }
+.sc-node--preset .sc-preset__eye, .sc-node--preset .sc-preset__remove { opacity: 0; transition: opacity var(--t-fast); }
+.sc-node--preset .sc-port:hover :is(.sc-preset__eye, .sc-preset__remove), .sc-node--preset .sc-port:focus-within :is(.sc-preset__eye, .sc-preset__remove), .sc-node--preset .sc-preset__eye[aria-pressed='true'] { opacity: 1; }
+@media (hover: none) { .sc-node--preset .sc-preset__eye, .sc-node--preset .sc-preset__remove { opacity: 1; } }
+
+/* Preview: the name on its own line, "Preview · W × H" under it; the picture large; Export a soft full-width button. */
+.sc-node--output .sc-preview__size { font-variant-numeric: tabular-nums; }
+.sc-node--output .sc-main-thumb { min-height: 120px; padding: 10px; border: 0; border-radius: 14px; background: repeating-conic-gradient(color-mix(in srgb, var(--checker-a) 70%, transparent) 0 25%, transparent 0 50%) 0 0 / 14px 14px, var(--surface-2); }
+.sc-node--output .sc-node__meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.sc-node--output .sc-node__meta > span { padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.sc-preview__export { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 38px; padding: 0 16px; border: 0; border-radius: 12px; font-size: 13px; font-weight: 650; cursor: pointer; }
+.sc-node--output > .react-flow__handle { top: 32px; }
+/* The global `.sc-icon { margin: auto }` centres a lone icon; beside a label it must sit next to it. */
+:is(.sc-preview__export, .sc-head__action, .sc-btn--soft, .sc-preview__comments, .sc-slot__state) .sc-icon { margin: 0; }

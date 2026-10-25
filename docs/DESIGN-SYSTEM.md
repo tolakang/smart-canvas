@@ -182,3 +182,10 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Cards:** 280 px wide, 16 px padding, 14 px between sections, 20 px corners. One dashed drop area per card ("Add or drop pictures"). Headline: Khmer / English tiles with an "In use" tag, a two-option switch for the language in use. Text: soft fields whose bin shows on hover or while typing.
 - **Wires:** no resting ✂ badge; it appears on hover (24 px) or on the selected wire.
 
+## Layer Comp, Core preset, Preset, Preview (V2, D64)
+- Same cards as V1: 280 px (Preset 300 px), 16 px padding, 20 px corners, the two-line `NodeHead`; a text action in a header (Edit, Export) is a soft pill tinted with the node's colour.
+- **Layer Comp:** the layer order as soft 40 px rows with a count pill; ↑ ↓ on hover. Layouts as three 36 px buttons.
+- **Core preset:** Square / Vertical / Horizontal as soft panels with a count, the Previews as chips (accent when chosen by hand, × to put back); an empty one says "Drop a Preview here".
+- **Preset:** 44 px rows — the size in bold, the name only when it adds something, eye and bin on hover (always on touch).
+- **Preview:** its name, then "W × H unit"; health and Edit at the right; the picture on a soft checkerboard; Export a full-width soft button with its icon.
+

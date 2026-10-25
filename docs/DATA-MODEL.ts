@@ -146,7 +146,7 @@ export interface OutputNode {
   frozen?: { items: { sourceId: string; frame: Frame; fontSizePx?: number }[] };
   /** Editor transform histories (D41): per output, so resets survive a reload. Absent = none. */
   transforms?: LayerTransforms;
-  layout?: 'square' | 'vertical' | 'horizontal'; // D50: chosen in the Core Preset Guide; absent = closest shape
+  layout?: 'square' | 'vertical' | 'horizontal'; // D50: chosen in the Core preset; absent = closest shape
   board: { x: number; y: number };
 }
 

@@ -41,7 +41,7 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D6
 ```
 Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset nodes (purple), one ✂ wire each
                      ↓ into the top of the dashed group
-        [ Layer Comp | Core Rule ]                              ← the master (blue / mint)
+        [ Layer Comp | Core preset ]                            ← the master (blue / mint)
                      ↓ drag out of the group's bottom port → preset popup
         Preset node (FB, IG, Story, GDN, App banner, Website, Gift, PR, team, Custom)   ← green
            each size row  ── eye · trash ──→ Preview (Edit = its overrides, Export)
@@ -58,9 +58,9 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 - **Square, Vertical, Horizontal** each open that layout's editor. A missing layout is added the first time it's opened (D42 guides).
 - All three editors share the master's layers: order, wiring, show/hide, **lock** and delete apply everywhere. Position and size are per layout (D50: `masterScene` of a guide, `InputSource.locked`).
 
-**Core Rule.**
-- **Core Preset Guide** has three sections listing outputs by the closest shape. Dragging a chip into another section sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`).
-- **Core Auto Layout Guide** shows each layer's rule (`layerRule`).
+**Core preset** (V2; was "Core Rule").
+- Always shows three sections listing Previews by the closest shape. Dragging a chip into another section sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`); × puts it back.
+- The per-layer rules (`layerRule`) still drive every layout; since V2 they are not shown on the board (the Core Auto Layout Guide is gone).
 
 **Preset node (D46, D51).**
 - **Its team family (D60, Q2):** `setFamily(doc, setId, presets)` finds the family its sizes came from (by `presetId`); the node offers "Rename to “…”" when the family's name changed and "Add N new sizes" when the family grew.
@@ -112,7 +112,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` (`addLanguagePair`, `addPairRow`, `deletePairRow`, `pairRows`, `pairInputs`) |
 | Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
 | Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`, `layerSpots`), `render.ts` (`masterScene`); layers a row can show: `layers.ts` (`layerSources`) |
-| Core Rule data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`, `layerRule`; all derived) |
+| Core preset data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`, `layerRule`; all derived) |
 | Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies` by `SizePreset.family`, D54); built-in families in `packages/presets`; a Preset node's **Save as team preset** in `PresetNode.tsx`; families renamed / deleted in `shell/PresetsDialog.tsx` (M4) |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
 | Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `withPositions`, `LAYERS_HANDLE`, `cardEdgeId`); the Delete key: `delete-nodes.ts` |

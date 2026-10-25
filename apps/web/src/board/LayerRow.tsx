@@ -128,6 +128,8 @@ const ICONS = {
   check: { s: 'M3.25 8.5l3 3 6.5-7' },
   close: { s: 'M4 4l8 8M12 4l-8 8' },
   back: { s: 'M10 3.25L5.25 8 10 12.75' },
+  up: { s: 'M3.75 10L8 5.75 12.25 10' },
+  down: { s: 'M3.75 6L8 10.25 12.25 6' },
   undo: { s: 'M5.5 3.5l-3 3 3 3M2.75 6.5h6.75a4 4 0 0 1 0 8H7' },
   redo: { s: 'M10.5 3.5l3 3-3 3M13.25 6.5H6.5a4 4 0 0 0 0 8H9' },
   /** Replace a picture: two arrows turning. */
