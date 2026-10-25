@@ -26,6 +26,8 @@ import { RenderThumbnail } from '../render/OutputRenderer';
 import { useBoard } from './context';
 import type { OutputFlowNode } from './flow';
 import { HealthBadge } from './HealthBadge';
+import { Icon } from './LayerRow';
+import { NodeHead } from './NodeHead';
 import { approvalOf, threadsOf } from './review';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
@@ -86,16 +88,25 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
     // D49 (page 3): a Preview — one size of a Preset node, its live layout, Edit (its own overrides) and Export.
     <div className={`sc-node sc-node--output${connected ? '' : ' sc-node--frozen'}`} aria-label={`Preview ${output.label}`}>
       <Handle type="target" position={Position.Left} isConnectable={!readOnly && !connected} className="sc-handle--composition" title="From its Preset node row" />
-      <div className="sc-node__head">
-        <div className="sc-node__title">Preview</div>
-        <span className="sc-preview__size" title={output.label}>
-          {output.label.replace(/\s*\d+\s*[×x]\s*\d+$/, '') || output.label} ({output.size.width} × {output.size.height})
-        </span>
-        {health && <HealthBadge health={health} />}
-        <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} Preview ${output.label}`}>
-          {readOnly ? 'View' : 'Edit'}
-        </button>
-      </div>
+      {/* V2 (owner: "Header text of each panel should drop by line"): its name, then "Preview · W × H" under it. */}
+      <NodeHead
+        icon="preview"
+        title={output.label.replace(/\s*\d+\s*[×x]\s*\d+(\s*(px|mm))?$/, '') || output.label}
+        sub={
+          <span className="sc-preview__size" title={output.label}>
+            {output.size.width} × {output.size.height} {output.size.unit}
+          </span>
+        }
+        extra={
+          <>
+            {health && <HealthBadge health={health} />}
+            <button type="button" className={`sc-head__action ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} Preview ${output.label}`}>
+              <Icon name={readOnly ? 'eye' : 'pencil'} size={13} />
+              {readOnly ? 'View' : 'Edit'}
+            </button>
+          </>
+        }
+      />
       {(approval.state !== 'none' || openThreads > 0) && (
         // D63: the Preview's review — its approval and open comments.
         <div className="sc-preview__review">
@@ -117,9 +128,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
               aria-label={`${openThreads} open ${openThreads === 1 ? 'comment' : 'comments'} on ${output.label}`}
               title="Open comments"
             >
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
-              </svg>
+              <Icon name="comment" size={12} />
               {openThreads}
             </button>
           )}
@@ -156,6 +165,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
         )}
       </div>
       <button type="button" className={`sc-preview__export ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export Preview ${output.label}`}>
+        <Icon name="export" size={14} />
         Export
       </button>
     </div>

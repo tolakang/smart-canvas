@@ -36,7 +36,7 @@ export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'a
 export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
 /** D44: a Headline card and its two inputs. */
 export type PairFlowNode = Node<{ pair: LanguagePair; rows: { km: InputSource | undefined; en: InputSource | undefined }[] }, 'headlineNode'>;
-/** D49: the Layer Comp + Core Rule group (the master); what it shows is read from the doc. */
+/** D49: the Layer Comp + Core preset group (the master); what it shows is read from the doc. */
 export type MainFlowNode = Node<{ compositionId: string }, 'mainNode'>;
 
 export const OUTPUT_HANDLE = 'out';

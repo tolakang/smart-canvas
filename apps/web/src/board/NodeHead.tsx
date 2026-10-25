@@ -16,6 +16,8 @@ export function NodeHead(props: {
   sub?: ReactNode;
   /** Renames on double-click (omit for a fixed name). */
   onRename?: (name: string) => void;
+  /** What the rename field starts with (default: the title). */
+  renameValue?: string;
   renameLabel?: string;
   /** The ⋯ menu; none or empty: no menu. */
   menu?: MenuItem[];
@@ -28,7 +30,7 @@ export function NodeHead(props: {
   const [open, setOpen] = useState<MenuState | null>(null);
   const commit = () => {
     setEditing(false);
-    if (draft.trim() && draft.trim() !== props.title) props.onRename?.(draft.trim());
+    if (draft.trim() && draft.trim() !== (props.renameValue ?? props.title)) props.onRename?.(draft.trim());
   };
   return (
     <div className="sc-node__head sc-head">
@@ -51,7 +53,7 @@ export function NodeHead(props: {
           <div
             className="sc-node__title sc-head__title"
             title={props.onRename ? `${props.title} — double-click to rename` : props.title}
-            onDoubleClick={() => props.onRename && (setDraft(props.title), setEditing(true))}
+            onDoubleClick={() => props.onRename && (setDraft(props.renameValue ?? props.title), setEditing(true))}
           >
             {props.title}
           </div>

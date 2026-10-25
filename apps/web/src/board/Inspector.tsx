@@ -310,7 +310,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
             </button>
           ))}
         </div>
-        <p className="sc-muted sc-inspector-panel__hint">Each size uses the layout closest to its shape; change that in the Core Preset Guide.</p>
+        <p className="sc-muted sc-inspector-panel__hint">Each size uses the layout closest to its shape; change that in the Core preset.</p>
       </Section>
       <HealthSection health={health} />
       <Section title="Square layout size">

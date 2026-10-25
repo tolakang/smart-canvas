@@ -13,10 +13,17 @@ import { useBoard } from './context';
 import { setRowHandle, type SetFlowNode } from './flow';
 import { newId } from './ids';
 import { Icon } from './LayerRow';
+import { NodeHead } from './NodeHead';
 import { presetSettings } from './OutputNode';
 import { TOUCH_NO_PAN } from './pinch';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
+
+/** A row's name without its trailing size, or '' when what is left is just the preset's name. */
+export function rowName(label: string, setLabel: string): string {
+  const name = label.replace(/\s*\d+\s*[×x]\s*\d+(\s*(px|mm))?$/, '').trim();
+  return name === setLabel.trim() ? '' : name;
+}
 const ROW_DRAG = 'application/x-sc-preset-row';
 
 export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
@@ -25,12 +32,6 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   const updateInternals = useUpdateNodeInternals();
   const rowKey = rows.map((r) => r.output.id).join(',');
   useEffect(() => updateInternals(id), [id, rowKey, updateInternals]);
-  const [renaming, setRenaming] = useState<string | null>(null);
-  const rename = () => {
-    const name = renaming?.trim();
-    setRenaming(null);
-    if (name && name !== set.label) run((d) => renameSet(d, set.id, name));
-  };
   const used = new Set(rows.map((r) => r.output.presetId));
   const hidden = new Set(set.hidden ?? []);
   const [dropAt, setDropAt] = useState<number | null>(null);
@@ -76,44 +77,28 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   return (
     <div className="sc-node sc-node--preset" aria-label={`Preset ${set.label}`}>
       <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="sc-handle--composition" title="From the Layer Comp group: feeds every size" />
-      <div className="sc-node__head">
-        {renaming !== null ? (
-          <input
-            className={`sc-rename ${NO_CANVAS}`}
-            aria-label="Preset name"
-            value={renaming}
-            autoFocus
-            maxLength={200}
-            onChange={(e) => setRenaming(e.target.value)}
-            onBlur={rename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') rename();
-              if (e.key === 'Escape') setRenaming(null);
-            }}
-          />
-        ) : (
-          <div className="sc-node__title" title={`${set.label}${readOnly ? '' : ' — double-click to rename'}`} onDoubleClick={() => !readOnly && setRenaming(set.label)}>
-            {set.label} Preset
-          </div>
-        )}
-        {rows.length > 0 && (
-          <button type="button" className={`sc-open-editor ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id), set.id)} aria-label={`Export all ${set.label} sizes`} title="Export every size as one ZIP">
-            Export
-          </button>
-        )}
-        {!readOnly && (
-          <button
-            type="button"
-            className={`sc-icon-btn ${NO_CANVAS}`}
-            aria-label={`Delete preset ${set.label}`}
-            title="Delete this preset node and its sizes"
-            onClick={() => window.confirm(`Delete “${set.label}” and its ${rows.length} sizes?`) && run((d) => deletePresetSet(d, set.id))}
-          >
-            <Icon name="trash" />
-          </button>
-        )}
-      </div>
-      <div className="sc-node__meta">Media size (W×H) · {rows.length} {rows.length === 1 ? 'size' : 'sizes'}</div>
+      <NodeHead
+        icon="grid"
+        title={`${set.label} Preset`}
+        sub={`${rows.length} ${rows.length === 1 ? 'size' : 'sizes'}`}
+        onRename={readOnly ? undefined : (name) => run((d) => renameSet(d, set.id, name))}
+        renameValue={set.label}
+        renameLabel="Preset name"
+        menuLabel={`${set.label} actions`}
+        menu={
+          readOnly
+            ? []
+            : [{ label: `Delete preset ${set.label}`, danger: true, onSelect: () => window.confirm(`Delete “${set.label}” and its ${rows.length} sizes?`) && run((d) => deletePresetSet(d, set.id)) }]
+        }
+        extra={
+          rows.length > 0 && (
+            <button type="button" className={`sc-head__action ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id), set.id)} aria-label={`Export all ${set.label} sizes`} title="Export every size as one ZIP">
+              <Icon name="export" size={14} />
+              Export
+            </button>
+          )
+        }
+      />
       {!readOnly && family && (family.label !== set.label || family.missing.length > 0) && (
         <div className={`sc-preset__family ${NO_CANVAS}`} role="group" aria-label={`Team family ${family.label}`}>
           {family.label !== set.label && (
@@ -158,7 +143,8 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
               {output.size.width} × {output.size.height}
             </span>
             <span className="sc-port__label" title={output.label}>
-              {connected ? output.label : `${output.label} · disconnected`}
+              {/* V2: the size is already shown; a name that only repeats the preset and the size says nothing more. */}
+              {[rowName(output.label, set.label), connected ? '' : 'disconnected'].filter(Boolean).join(' · ')}
             </span>
             {/* D51: the eye shows / hides this size's Preview on the board (it still exports); the trash removes the size. */}
             <button
