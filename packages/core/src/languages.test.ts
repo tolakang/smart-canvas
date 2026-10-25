@@ -72,6 +72,36 @@ describe('Headline cards: Khmer / English (D44)', () => {
     expect(ok(setLanguage(doc, 'h', 'km')).outputs[0]?.overrides.some((x) => x.sourceId === 'hk')).toBe(false);
   });
 
+  it('V4: with the pictures measured, switching keeps the size exactly — no shrinking however often it is switched', () => {
+    // A 4:1 Khmer picture and a 6:1 English one, both with a transparent margin.
+    const assets = {
+      'hk.png': { width: 800, height: 240, trim: { x: 0, y: 1 / 12, w: 1, h: 10 / 12 } },
+      'he.png': { width: 1200, height: 240, trim: { x: 0, y: 1 / 12, w: 1, h: 10 / 12 } },
+    };
+    let doc = card();
+    const start = { x: 0.1, y: 0.2, w: 0.6, h: 0.15, rotation: 8, fitted: true as const };
+    const edit = { sourceId: 'hk', frame: { x: 100, y: 200, w: 600, h: 150, fitted: true as const }, updatedBy: 'u', updatedAt: '2026-10-25T00:00:00Z' };
+    doc = { ...doc, compositions: doc.compositions.map((c) => (c.id === MAIN ? { ...c, placements: { ...c.placements, hk: start } } : c)), outputs: doc.outputs.map((o) => ({ ...o, overrides: [edit] })) };
+    const area = (f: { w: number; h: number }) => f.w * f.h;
+    const master = mainComposition(doc).size;
+    for (let i = 0; i < 6; i++) doc = ok(setLanguage(doc, 'h', i % 2 ? 'km' : 'en', assets));
+    // Six switches: back on Khmer, exactly where it started, in the master and in the Preview's edit.
+    const back = mainComposition(doc).placements.hk;
+    for (const k of ['x', 'y', 'w', 'h', 'rotation'] as const) expect(back?.[k]).toBeCloseTo(start[k], 9);
+    const ov = doc.outputs[0]?.overrides.find((o) => o.sourceId === 'hk')?.frame;
+    for (const k of ['x', 'y', 'w', 'h'] as const) expect(ov?.[k]).toBeCloseTo(edit.frame[k], 6);
+    // On English: the same centre and area (in design px), in its own wider shape, fitted (not refitted smaller).
+    doc = ok(setLanguage(doc, 'h', 'en', assets));
+    const en = mainComposition(doc).placements.he;
+    if (!en || !back) throw new Error('no frames');
+    expect(en.fitted).toBe(true);
+    expect(en.x + en.w / 2).toBeCloseTo(start.x + start.w / 2, 9);
+    expect(en.y + en.h / 2).toBeCloseTo(start.y + start.h / 2, 9);
+    expect(area(en)).toBeCloseTo(area(start), 9);
+    const px = (f: { w: number; h: number }) => (f.w * master.width) / (f.h * master.height);
+    expect(px(en) / px(start)).toBeCloseTo(6 / 4, 6);
+  });
+
   it('V4: choosing the language already in use changes nothing', () => {
     const doc = card();
     expect(ok(setLanguage(doc, 'h', 'km'))).toEqual(doc);
