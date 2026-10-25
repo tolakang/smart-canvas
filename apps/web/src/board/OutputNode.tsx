@@ -42,6 +42,8 @@ export function presetSettings(p: SizePreset): OutputSettings {
 
 /** The name an output gets from its size when none is typed ("1200×630 px"). */
 export const sizeLabel = (s: { width: number; height: number; unit: Unit }) => `${s.width}×${s.height} ${s.unit}`;
+/** A Preview's name without the size its label may end with ("GDN 1200×200" → "GDN"). */
+export const nameWithoutSize = (label: string) => label.replace(/\s*\d+\s*[×x]\s*\d+(\s*(px|mm))?$/, '').trim();
 
 /**
  * T10.2: an output still named after its size or preset follows size / preset changes (a "1080×1350 px"
@@ -91,7 +93,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
       {/* V2 (owner: "Header text of each panel should drop by line"): its name, then "Preview · W × H" under it. */}
       <NodeHead
         icon="preview"
-        title={output.label.replace(/\s*\d+\s*[×x]\s*\d+(\s*(px|mm))?$/, '') || output.label}
+        title={nameWithoutSize(output.label) || output.label}
         sub={
           <span className="sc-preview__size" title={output.label}>
             {output.size.width} × {output.size.height} {output.size.unit}

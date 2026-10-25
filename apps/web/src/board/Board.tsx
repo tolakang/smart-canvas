@@ -1,4 +1,4 @@
-import {
+import { setEmptyCardWired,
   assetStacks,
   addTextToStack,
   boardStructure,
@@ -824,6 +824,11 @@ function BoardCanvas(props: {
           const stack = assetStacks(d0).find((st) => st.id === stackIdOfNode(e.source));
           const pair = languagePairs(d0).find((p) => p.id === pairIdOfNode(e.source));
           const items = stack?.items ?? (pair ? pairInputs(pair) : []);
+          // D49.1: an empty card's wire is the card's own.
+          if (stack && !stack.items.length) {
+            run((doc) => setEmptyCardWired(doc, stack.id, false));
+            continue;
+          }
           run((doc) => {
             let next = doc;
             for (const id of items) {

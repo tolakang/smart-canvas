@@ -3,7 +3,7 @@
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
  * D49: the master ('main') is the Layer Comp group, node id `main`.
  */
-import { stackKind, assetStacks, compositionById, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, type BoardGroup, isOutputConnected, MAIN, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc } from '@smart-canvas/core';
+import { emptyCardWired, stackKind, assetStacks, compositionById, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, type BoardGroup, isOutputConnected, MAIN, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
 
 export const MAIN_ID = MAIN;
@@ -186,7 +186,11 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
   const setOfOutput = new Map(presetSets(doc).flatMap((set) => set.outputs.map((o) => [o, set] as const)));
   const setIn = new Map<string, Edge>();
   const drawn = new Set<string>();
-  return doc.edges.flatMap((e: DocEdge): Edge[] => {
+  // D49.1: an empty Image / Logo / Text node keeps its own wire (it has no pictures to carry one).
+  const emptyCards = assetStacks(doc)
+    .filter(emptyCardWired)
+    .map((st): Edge => ({ id: cardEdgeId(stackNodeId(st.id)), type: 'routed', data: { points: [] }, source: stackNodeId(st.id), target: MAIN_ID, targetHandle: LAYERS_HANDLE, className: 'sc-edge--layer', deletable: true }));
+  return [...emptyCards, ...doc.edges.flatMap((e: DocEdge): Edge[] => {
     const set = e.kind === 'composition' ? setOfOutput.get(e.to) : undefined;
     if (set) {
       const fromNode = endpoint(doc, e.from);
@@ -218,7 +222,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
         deletable: true,
       },
     ];
-  });
+  })];
 }
 
 /** D49: the Layer Comp's one layer port (top): every asset node wires in there. */
