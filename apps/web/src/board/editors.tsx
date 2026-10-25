@@ -3,6 +3,7 @@ import { useState, type ChangeEvent, type DragEvent } from 'react';
 import { ApiError, assetUrl, UploadCancelled, uploadAsset } from '../api';
 import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, setVariant, switchFillType, withSource } from './content';
 import { useBoard } from './context';
+import { Slot } from './Slot';
 
 // Interactive elements inside a node must not start a node drag, pan or zoom.
 const NO_CANVAS = 'nodrag nopan nowheel';
@@ -268,38 +269,21 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
         const id = variants[family];
         const label = family === 'vertical' ? 'Vertical' : 'Horizontal';
         return (
-          <div
+          <Slot
             key={family}
-            className={`sc-bg-slot sc-bg-slot--${family}`}
-            onDragOver={(e) => !readOnly && e.dataTransfer.types.includes('Files') && (e.preventDefault(), e.stopPropagation())}
-            onDrop={(e) => {
-              const file = e.dataTransfer.files[0];
-              if (readOnly || !file) return;
-              e.preventDefault();
-              e.stopPropagation();
-              void upload(family, file);
-            }}
-          >
-            <span className="sc-bg-slot__title">{label}</span>
-            {id ? <img className="sc-thumb" src={assetUrl(teamId, id)} alt={`${label} background`} draggable={false} /> : <div className="sc-thumb sc-thumb--empty">{busy === family ? 'Uploading…' : 'Same as main'}</div>}
-            {!readOnly && (
-              <div className="sc-bg-slot__actions">
-                <label className={`sc-upload ${NO_CANVAS}`}>
-                  {id ? 'Replace…' : 'Add…'}
-                  <input type="file" accept={ACCEPT.image} aria-label={`${label} background picture`} disabled={busy !== null} hidden onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = '';
-                    if (file) void upload(family, file);
-                  }} />
-                </label>
-                {id && (
-                  <button type="button" className={`sc-link ${NO_CANVAS}`} aria-label={`Clear ${label.toLowerCase()} background`} onClick={() => run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, null)) }))}>
-                    Clear
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+            shape="wide"
+            className={`sc-bg-slot--${family}`}
+            caption={label}
+            src={id ? assetUrl(teamId, id) : null}
+            alt={`${label} background`}
+            busy={busy === family}
+            readOnly={readOnly}
+            accept={ACCEPT.image}
+            emptyText="Same as main"
+            names={{ select: `${label} background`, file: `${label} background picture`, remove: `Clear ${label.toLowerCase()} background` }}
+            onFile={(file) => void upload(family, file)}
+            onRemovePicture={() => run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, null)) }))}
+          />
         );
       })}
       {error && (

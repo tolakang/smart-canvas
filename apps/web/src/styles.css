@@ -1425,3 +1425,112 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
 @media (max-width: 767px) {
   .sc-fig__bar { margin: 6px 6px 0; }
 }
+
+/* ───────────────────────── V1 (2026-10-25): asset nodes — calm headers, roomy slots, actions on demand ───────────────────────── */
+/* Owner: "make those clean modern and breathable everywhere"; "smart trigger for those to appear when need to replace or delete". */
+.sc-node--input { width: 280px; }
+.sc-node--input.sc-node { padding: 16px; gap: 14px; border-radius: 20px; }
+
+/* Header: a kind tile, the name on its own line and a quiet line under it, one ⋯ menu. */
+.sc-node > .sc-node__head.sc-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 12px 14px 16px; min-height: 64px; border-radius: 20px 20px 0 0; }
+.sc-node > .sc-node__head.sc-head::before { content: none; }
+.sc-head__icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: #fff; background: linear-gradient(140deg, color-mix(in srgb, var(--head) 78%, #fff), var(--head)); box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--head) 60%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.3); }
+.sc-head__text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.sc-head__title { font-size: 14.5px; font-weight: 680; letter-spacing: -0.015em; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-head__sub { font-size: 12px; line-height: 1.3; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-head__more { flex: none; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
+.sc-head__more:hover, .sc-head__more[aria-expanded='true'] { background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); }
+.sc-head .sc-node__mark { color: var(--muted); display: grid; place-items: center; }
+.sc-head .sc-rename { flex: 1; min-width: 0; height: 30px; font-size: 14px; font-weight: 600; }
+@media (pointer: coarse) { .sc-head__more { width: 44px; height: 44px; } }
+
+/* A picture slot: the picture contained in a soft tile with room around it. */
+.sc-assets { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.sc-assets__item { aspect-ratio: auto; }
+.sc-slot { position: relative; display: grid; gap: 8px; min-width: 0; }
+.sc-slot__caption { display: flex; align-items: center; gap: 6px; min-height: 18px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.sc-slot__tag { padding: 1px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 10.5px; font-weight: 700; letter-spacing: 0.01em; }
+.sc-slot__tile { position: relative; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); background: repeating-conic-gradient(color-mix(in srgb, var(--checker-a) 70%, transparent) 0 25%, transparent 0 50%) 0 0 / 14px 14px, var(--surface-2); overflow: hidden; transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast); }
+.sc-slot--square .sc-slot__tile { aspect-ratio: 1; }
+.sc-slot--wide .sc-slot__tile { height: 104px; }
+.sc-slot__pick { width: 100%; height: 100%; padding: 8px; display: grid; place-items: center; border: 0; background: none; color: inherit; cursor: pointer; }
+.sc-slot__pick img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.08)); }
+.sc-slot__state { display: grid; justify-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; }
+.sc-slot--empty .sc-slot__tile { border: 1.5px dashed var(--line-strong); background: transparent; }
+.sc-slot--empty:hover .sc-slot__tile, .sc-slot--over .sc-slot__tile { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 70%, transparent); }
+.sc-slot--empty:hover .sc-slot__state, .sc-slot--over .sc-slot__state { color: var(--accent); }
+.sc-slot--over .sc-slot__tile { border-style: solid; box-shadow: 0 0 0 4px var(--ring); }
+.sc-slot--focus .sc-slot__tile { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.sc-slot--in-use .sc-slot__tile { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.sc-slot--dimmed .sc-slot__tile { opacity: 0.45; }
+
+/* Its actions float over the tile — on hover or keyboard focus, and on touch once the slot is tapped. */
+.sc-slot__actions { position: absolute; top: 6px; right: 6px; z-index: 2; display: flex; gap: 2px; padding: 3px; border-radius: 11px; background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 1px 2px rgb(16 24 40 / 0.08), 0 6px 16px -6px rgb(16 24 40 / 0.28); opacity: 0; transform: translateY(-3px) scale(0.96); pointer-events: none; transition: opacity var(--t-fast), transform var(--t-fast); }
+.sc-slot:hover .sc-slot__actions, .sc-slot:focus-within .sc-slot__actions, .sc-slot--focus .sc-slot__actions { opacity: 1; transform: none; pointer-events: auto; }
+@media (hover: none) { .sc-slot:hover:not(.sc-slot--focus) .sc-slot__actions { opacity: 0; pointer-events: none; } }
+.sc-slot--empty .sc-slot__actions { display: none; }
+.sc-slot--empty.sc-slot--focus .sc-slot__actions, .sc-slot--empty:hover .sc-slot__actions:has(.sc-slot__act--danger) { display: flex; }
+.sc-slot__act { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--fg); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
+.sc-slot__act:hover { background: color-mix(in srgb, var(--fg) 9%, transparent); }
+.sc-slot__act--danger:hover { background: var(--danger-soft); color: var(--danger); }
+@media (pointer: coarse) { .sc-slot__act { width: 38px; height: 38px; } }
+.sc-slot--wide .sc-slot__actions { top: 8px; right: 8px; }
+
+/* A list row: a small tile beside the name, the actions at the row's end. */
+.sc-assets--list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.sc-slot--row { grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 12px; padding: 6px; border-radius: 14px; transition: background var(--t-fast); }
+.sc-slot--row:hover, .sc-slot--row.sc-slot--focus { background: var(--surface-2); }
+.sc-slot--row .sc-slot__tile { position: static; width: 52px; height: 52px; aspect-ratio: auto; border-radius: 11px; }
+.sc-slot--row .sc-slot__pick { padding: 5px; }
+.sc-slot--row .sc-slot__label { font-size: 13px; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-slot--row .sc-slot__actions { top: 50%; right: 8px; transform: translateY(-50%); }
+.sc-slot--row:hover .sc-slot__actions, .sc-slot--row:focus-within .sc-slot__actions, .sc-slot--row.sc-slot--focus .sc-slot__actions { transform: translateY(-50%); }
+
+/* One drop area per card. */
+.sc-dropzone { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px dashed var(--line-strong); border-radius: 14px; background: color-mix(in srgb, var(--surface-2) 55%, transparent); color: var(--fg); cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast); }
+.sc-dropzone:hover, .sc-node--drop .sc-dropzone { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 75%, transparent); }
+.sc-dropzone__icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: var(--accent-soft); color: var(--accent); }
+.sc-dropzone__text { display: grid; gap: 1px; min-width: 0; }
+.sc-dropzone__text strong { font-size: 13px; font-weight: 650; }
+.sc-dropzone__text span { font-size: 11.5px; color: var(--muted); }
+.sc-dropzone--busy { cursor: progress; }
+.sc-spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent); border-top-color: var(--accent); animation: sc-spin 0.8s linear infinite; }
+@keyframes sc-spin { to { transform: rotate(360deg); } }
+
+/* Headline: two clean tiles per pair, a two-option switch for the language in use. */
+.sc-hl-slots { gap: 12px; }
+.sc-hl-row { display: grid; gap: 10px; }
+.sc-hl-row + .sc-hl-row { margin-top: 4px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent); }
+.sc-hl-row__head { display: flex; align-items: center; justify-content: space-between; margin: 0; font-size: 12px; font-weight: 650; color: var(--fg); }
+.sc-hl-row__delete { opacity: 0; transition: opacity var(--t-fast); }
+.sc-hl-row:hover .sc-hl-row__delete, .sc-hl-row:focus-within .sc-hl-row__delete { opacity: 1; }
+@media (hover: none) { .sc-hl-row__delete { opacity: 1; } }
+.sc-hl-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sc-hl-add { margin: 0; width: auto; }
+.sc-switch { display: inline-flex; padding: 3px; gap: 2px; border-radius: 11px; background: var(--surface-2); }
+.sc-switch label { position: relative; display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background var(--t-fast), color var(--t-fast), box-shadow var(--t-fast); }
+.sc-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.sc-switch label.sc-switch__on { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
+.sc-switch label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sc-btn--soft { border-color: transparent; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.sc-btn--soft:hover:not(:disabled) { border-color: transparent; background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent-hover); }
+@media (pointer: coarse) { .sc-switch label { padding: 10px 16px; } }
+
+/* Text: each slot a soft field; its delete shows on hover or while typing in it. */
+.sc-text-slots { gap: 12px; }
+.sc-text-slot { gap: 6px; padding: 0; }
+.sc-text-slot__label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.sc-text-slot__input { min-height: 42px; padding: 10px 40px 10px 12px; border: 1px solid transparent; border-radius: 12px; background: var(--surface-2); font-size: 13.5px; transition: background var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast); }
+.sc-text-slot__input:focus { outline: none; background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.sc-text-slot__remove { position: absolute; top: 30px; right: 7px; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; opacity: 0; transition: opacity var(--t-fast), background var(--t-fast), color var(--t-fast); }
+.sc-text-slot:hover .sc-text-slot__remove, .sc-text-slot:focus-within .sc-text-slot__remove { opacity: 1; }
+.sc-text-slot__remove:hover { background: var(--danger-soft); color: var(--danger); }
+@media (hover: none) { .sc-text-slot__remove { opacity: 0; } .sc-text-slot:focus-within .sc-text-slot__remove, .sc-assets__item--focus .sc-text-slot__remove { opacity: 1; } }
+.sc-text-slots__add { width: 100%; justify-content: center; }
+
+/* Background: Vertical / Horizontal as two wide tiles. */
+.sc-bg-slots { gap: 12px; }
+
+/* Wires: the ✂ badge only appears on hover or selection; on hover it is smaller. */
+.sc-wire-cut--hover { width: 24px; height: 24px; box-shadow: var(--shadow-1); }
+@media (pointer: coarse) { .sc-wire-cut--hover { width: 36px; height: 36px; } }

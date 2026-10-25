@@ -1,18 +1,18 @@
 /**
  * A wire with reroute points (T13.8). Without points it is React Flow's usual curve; with points it curves
  * through each of them. Points can be dragged (one undo step when let go) and double-clicked away; a
- * double-click on the wire adds one (Board). Every wire has a small scissor badge at its middle (PDF page 3; the owner's icon), larger
- * while the wire is selected — the way to take a wire off on a touch screen (no Delete key; its ends are small to grab). Removing it goes
- * through the board's edge deletion, like Delete (an output's wire freezes it).
+ * double-click on the wire adds one (Board). V1 (2026-10-25, owner: keep the board clean): the scissor badge (PDF page 3; the owner's
+ * icon) shows only while the pointer is on the wire or the wire is selected — a tap selects it on a touch screen (no Delete key; its
+ * ends are small to grab). Removing it goes through the board's edge deletion, like Delete (an output's wire freezes it).
  */
 import { setEdgePoints } from '@smart-canvas/core';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type Edge, type EdgeProps } from '@xyflow/react';
-import { useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useBoard } from './context';
 import { routePath } from './wires';
 
 type XY = { x: number; y: number };
-/** `noCut` (D51): no idle ✂ badge on this wire (it still shows the Disconnect button when selected). */
+/** `noCut` (D51): no ✂ badge on hover for this wire (it still shows the Disconnect button when selected). */
 export type RoutedEdgeData = { points?: XY[]; noCut?: boolean };
 export type RoutedFlowEdge = Edge<RoutedEdgeData, 'routed'>;
 
@@ -22,6 +22,18 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
   const { screenToFlowPosition, deleteElements } = useReactFlow();
   /** While a point is dragged: the points shown (committed on release). */
   const [drag, setDrag] = useState<{ index: number; points: XY[] } | null>(null);
+  /** The pointer is on the wire or its badge (leaving waits a moment, so the badge can be reached). */
+  const [hover, setHover] = useState(false);
+  const leave = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const enter = () => {
+    if (leave.current) clearTimeout(leave.current);
+    setHover(true);
+  };
+  const exit = () => {
+    if (leave.current) clearTimeout(leave.current);
+    leave.current = setTimeout(() => setHover(false), 250);
+  };
+  useEffect(() => () => void (leave.current && clearTimeout(leave.current)), []);
   const points = drag?.points ?? data?.points ?? [];
   const [bezier, midX, midY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
   const path = points.length ? routePath({ x: sourceX, y: sourceY }, { x: targetX, y: targetY }, points) : bezier;
@@ -48,12 +60,16 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
 
   return (
     <>
-      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} interactionWidth={interactionWidth} />
-      {!readOnly && (selected || !data?.noCut) && (
+      <g onPointerEnter={(e) => e.pointerType === 'mouse' && enter()} onPointerLeave={exit}>
+        <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} interactionWidth={interactionWidth} />
+      </g>
+      {!readOnly && (selected || (hover && !data?.noCut)) && (
         <EdgeLabelRenderer>
           <button
             type="button"
-            className={`sc-wire-cut${selected ? '' : ' sc-wire-cut--idle'} nodrag nopan`}
+            className={`sc-wire-cut${selected ? '' : ' sc-wire-cut--hover'} nodrag nopan`}
+            onPointerEnter={enter}
+            onPointerLeave={exit}
             // Just above the wire, never on it: a double-click there (adding a reroute point) must not hit it.
             style={{ transform: `translate(-50%, calc(-100% - ${selected ? 12 : 6}px)) translate(${mid.x}px, ${mid.y}px)` }}
             aria-label={selected ? 'Disconnect wire' : 'Cut wire'}

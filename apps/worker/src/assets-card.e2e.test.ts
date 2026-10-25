@@ -61,7 +61,7 @@ describe.skipIf(!adminUrl)('Assets card: many pictures in one input (D40)', () =
     await added()
       .getByLabel('Add pictures to Image')
       .setInputFiles(pngs.map((buffer, i) => ({ name: `pic-${i + 1}.png`, mimeType: 'image/png', buffer })));
-    await expect.poll(() => added().locator('.sc-assets__pick img').count(), { timeout: 20_000 }).toBe(3);
+    await expect.poll(() => added().locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(3);
     await saved();
     const d = await doc();
     const items = d.stacks?.at(-1)?.items ?? [];
@@ -84,7 +84,7 @@ describe.skipIf(!adminUrl)('Assets card: many pictures in one input (D40)', () =
     expect(await inspector.getByLabel('pic-2 behaves like').inputValue()).toBe('subject');
     page.once('dialog', (dialog) => void dialog.accept());
     await added().getByRole('button', { name: 'Delete pic-2' }).click({ force: true });
-    await expect.poll(() => added().locator('.sc-assets__pick img').count()).toBe(2);
+    await expect.poll(() => added().locator('.sc-slot__pick img').count()).toBe(2);
     await saved();
     const d = await doc();
     expect(d.sources.some((s) => s.label === 'pic-2')).toBe(false);
@@ -93,10 +93,13 @@ describe.skipIf(!adminUrl)('Assets card: many pictures in one input (D40)', () =
 
   it('page 3: the card switches between a grid and a list (with names)', async () => {
     const card = added();
-    await card.getByRole('button', { name: 'List view' }).click();
-    await expect.poll(() => card.locator('.sc-assets--list .sc-assets__label').allInnerTexts()).toEqual(['pic-1', 'pic-3']);
-    await card.getByRole('button', { name: 'Grid view' }).click();
-    await expect.poll(() => card.locator('.sc-assets__label').count()).toBe(0);
+    // V1: grid / list is in the card's ⋯ menu.
+    await card.getByRole('button', { name: / actions$/ }).click();
+    await page.getByRole('menuitem', { name: 'List view' }).click();
+    await expect.poll(() => card.locator('.sc-assets--list .sc-slot__label').allInnerTexts()).toEqual(['pic-1', 'pic-3']);
+    await card.getByRole('button', { name: / actions$/ }).click();
+    await page.getByRole('menuitem', { name: 'Grid view' }).click();
+    await expect.poll(() => card.locator('.sc-slot__label').count()).toBe(0);
   }, 30_000);
 
   it('pictures dropped on the empty canvas make a new card there', async () => {
