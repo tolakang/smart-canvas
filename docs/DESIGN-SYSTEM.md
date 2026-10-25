@@ -175,3 +175,10 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **No emoji as icons:** the library's delete, the Assets card's grid / list switch and the library's empty text use the icon set or words.
 - **Contrast:** checked against WCAG AA for every text colour on every surface in both themes (see Tokens). **Focus:** every control shows the accent ring on keyboard focus; project cards lift on focus like on hover. **Names:** every button and field on the board, the editors, the export dialog and the home has an accessible name (checked with a scan of the rendered pages). **Motion:** "reduce motion" turns off every transition and animation.
 
+## Asset nodes (V1, D64)
+- **Icons:** one 16 px solid set (`Icon` in `board/LayerRow.tsx`): filled glyphs (bin, picture, eye, lock, export…), bold 1.75 px rounded strokes for line glyphs (×, +, ✓, arrows, replace).
+- **Header** (`board/NodeHead.tsx`): a 34 px kind tile in the node's colour with a white icon, the name (14.5 px, 680) and a quiet line under it (12 px, muted), then one ⋯ menu. Nothing else squeezes into the header line.
+- **Slots** (`board/Slot.tsx`): 2 per row on Image / Logo, 12 px apart, 14 px corners; the picture is contained with 8 px inside. Empty: a dashed tile that is itself the Add target. Actions (Replace, Remove picture, Delete slot) in a small glass bar at the tile's top right — hover, focus, or tapped on touch (38 px targets on touch). A list row: a 52 px tile beside the name.
+- **Cards:** 280 px wide, 16 px padding, 14 px between sections, 20 px corners. One dashed drop area per card ("Add or drop pictures"). Headline: Khmer / English tiles with an "In use" tag, a two-option switch for the language in use. Text: soft fields whose bin shows on hover or while typing.
+- **Wires:** no resting ✂ badge; it appears on hover (24 px) or on the selected wire.
+

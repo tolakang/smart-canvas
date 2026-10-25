@@ -6,41 +6,30 @@
  */
 import { addTextToStack, deleteSource, deleteStack, fontStack, renameStack } from '@smart-canvas/core';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { useState } from 'react';
 import { setText } from './content';
 import { useBoard } from './context';
 import type { StackFlowNode } from './flow';
 import { newId } from './ids';
 import { confirmDelete, Icon } from './LayerRow';
+import { NodeHead } from './NodeHead';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
 export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
   const { stack, items } = data;
   const { readOnly, run, editSource, stackFocus, setStackFocus } = useBoard();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(stack.label);
-  const commit = () => {
-    setEditing(false);
-    if (draft.trim() && draft.trim() !== stack.label) run((d) => renameStack(d, stack.id, draft));
-  };
 
   return (
     <div className="sc-node sc-node--input sc-node--text-node" aria-label={`Text node ${stack.label}`}>
-      <div className="sc-node__head">
-        {editing ? (
-          <input className={`sc-rename ${NO_CANVAS}`} aria-label="Text node name" value={draft} autoFocus maxLength={200} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={(e) => (e.key === 'Enter' ? commit() : e.key === 'Escape' && setEditing(false))} />
-        ) : (
-          <div className="sc-node__title" title={readOnly ? stack.label : `${stack.label} — double-click to rename`} onDoubleClick={() => !readOnly && (setDraft(stack.label), setEditing(true))}>
-            {stack.label}
-          </div>
-        )}
-        {!readOnly && (
-          <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Delete ${stack.label}`} title="Delete this node and its text" onClick={() => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id))}>
-            <Icon name="trash" />
-          </button>
-        )}
-      </div>
+      <NodeHead
+        icon="text"
+        title={stack.label}
+        sub={`${items.length} ${items.length === 1 ? 'text' : 'texts'}`}
+        onRename={readOnly ? undefined : (name) => run((d) => renameStack(d, stack.id, name))}
+        renameLabel="Text node name"
+        menuLabel={`${stack.label} actions`}
+        menu={readOnly ? [] : [{ label: `Delete ${stack.label}`, danger: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]}
+      />
       <ol className={`sc-text-slots ${NO_CANVAS}`} aria-label={`${stack.label} slots`}>
         {items.map((s) => {
           if (s.content.kind !== 'text') return null;
@@ -63,8 +52,8 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
                 onChange={(e) => editSource(s.id, (x) => setText(x, e.target.value))}
               />
               {!readOnly && (
-                <button type="button" className="sc-icon-btn sc-text-slot__remove" aria-label={`Delete ${s.label}`} title="Delete this text" onClick={() => confirmDelete(s.label) && run((d) => deleteSource(d, s.id))}>
-                  <Icon name="close" />
+                <button type="button" className="sc-text-slot__remove" aria-label={`Delete ${s.label}`} title="Delete this text" onClick={() => confirmDelete(s.label) && run((d) => deleteSource(d, s.id))}>
+                  <Icon name="trash" size={14} />
                 </button>
               )}
             </li>
@@ -72,7 +61,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         })}
       </ol>
       {!readOnly && (
-        <button type="button" className={`sc-btn sc-text-slots__add ${NO_CANVAS}`} onClick={() => run((d) => addTextToStack(d, stack.id, { id: newId() }))}>
+        <button type="button" className={`sc-btn sc-btn--soft sc-text-slots__add ${NO_CANVAS}`} onClick={() => run((d) => addTextToStack(d, stack.id, { id: newId() }))}>
           <Icon name="plus" /> Add text
         </button>
       )}

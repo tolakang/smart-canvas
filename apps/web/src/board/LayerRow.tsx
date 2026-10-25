@@ -107,53 +107,71 @@ export function LayerActions({ source }: { source: InputSource }) {
 /** The one confirm before deleting an input (row trash, node header, right-click menu). */
 export const confirmDelete = (label: string) => window.confirm(`Delete input "${label}"? Its wires and edits on Previews go with it.`);
 
-const PATHS = {
-  eye: 'M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5zm7 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
-  'eye-off': 'M2 2l12 12M6.3 3.3A7 7 0 0 1 8 3c4.5 0 7 5 7 5a12 12 0 0 1-2 2.6M4 4.9A12 12 0 0 0 1 8s2.5 5 7 5a7 7 0 0 0 3-.7',
-  plus: 'M8 3v10M3 8h10',
-  trash: 'M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.7 8.5h5.6l.7-8.5M7 7v4M9 7v4',
-  grip: 'M6 4h.01M10 4h.01M6 8h.01M10 8h.01M6 12h.01M10 12h.01',
-  pencil: 'M10.5 2.5l3 3L6 13H3v-3zM9 4l3 3',
-  library: 'M4 2.5h8v11l-4-2.5-4 2.5z',
-  check: 'M3 8.5l3 3 7-7',
-  close: 'M4 4l8 8M12 4l-8 8',
-  back: 'M10 3L5 8l5 5',
-  undo: 'M5.5 3.5L2.5 6.5l3 3M2.5 6.5h7a4 4 0 0 1 0 8H7',
-  redo: 'M10.5 3.5l3 3-3 3M13.5 6.5h-7a4 4 0 0 0 0 8H9',
-  font: 'M3 13L7 3h2l4 10M5 9.5h6',
-  export: 'M8 10V2.5M5 5.5l3-3 3 3M3 10v3.5h10V10',
-  image: 'M2.5 3.5h11v9h-11zM2.5 10.5l3-3 2.5 2.5 2-2 3.5 3.5M10.5 6a.5.5 0 1 0 0-.01',
-  vector: 'M8 2l5.5 6L8 14 2.5 8zM8 2v12',
-  text: 'M3.5 4V3h9v1M8 3v10M6 13h4',
-  fill: 'M2.5 3.5h11v9h-11zM2.5 12.5l11-9',
-  preview: 'M2.5 2.5h11v11h-11zM5 5h6v4H5zM5 11h6',
-  output: 'M3.5 2.5h9v11h-9zM6 6h4M6 8.5h4',
-  cursor: 'M4 2.5l8 5-3.5 1-2 4z',
-  hand: 'M5.5 8V4a1 1 0 0 1 2 0v3.5M7.5 3.5v-1a1 1 0 0 1 2 0V7.5M9.5 4a1 1 0 0 1 2 0v4M11.5 6a1 1 0 0 1 2 0v3.5A4.5 4.5 0 0 1 9 14H8.5a4 4 0 0 1-3.2-1.6L3 9.5a1 1 0 0 1 1.6-1.2L5.5 9.5',
-  marquee: 'M2 5V2h3M7 2h2M11 2h3v3M14 7v2M14 11v3h-3M9 14H7M5 14H2v-3M2 9V7',
-  minus: 'M3 8h10',
-  list: 'M6 4h7.5M6 8h7.5M6 12h7.5M2.5 4h1M2.5 8h1M2.5 12h1',
-  fit: 'M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10',
-  grid: 'M2.5 2.5h11v11h-11zM6.2 2.5v11M9.8 2.5v11M2.5 6.2h11M2.5 9.8h11',
-  arrange: 'M2.5 2.5v11M5 3.5h8.5v3H5zM5 9.5h5.5v3H5z',
-  map: 'M2.5 4l3.5-1.5 4 1.5 3.5-1.5v9.5L10 13.5 6 12l-3.5 1.5zM6 2.5V12M10 4v9.5',
-  sun: 'M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1',
-  more: 'M3.5 8h.01M8 8h.01M12.5 8h.01',
-  history: 'M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5V5H5M8 5v3l2 1.5',
-  search: 'M7 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM10.6 10.6L14 14',
-  panel: 'M2.5 2.5h11v11h-11zM10 2.5v11',
-  crop: 'M4.5 1.5v10h10M1.5 4.5h10v10',
-  adjust: 'M8 2a6 6 0 1 0 0 12zM8 2a6 6 0 0 1 0 12',
-  flip: 'M8 1.5v13M6 4L2.5 12H6zM10 4l3.5 8H10z',
-  moon: 'M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z',
-  lock: 'M4 7.5h8v6H4zM5.5 7.5V5a2.5 2.5 0 0 1 5 0v2.5',
-  unlock: 'M4 7.5h8v6H4zM5.5 7.5V5a2.5 2.5 0 0 1 5 0',
-} as const;
+/** A rounded rectangle as path data (the filled icons are built from these). */
+const rr = (x: number, y: number, w: number, h: number, r: number) =>
+  `M${x + r} ${y}h${w - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${h - 2 * r}a${r} ${r} 0 0 1 -${r} ${r}h-${w - 2 * r}a${r} ${r} 0 0 1 -${r} -${r}v-${h - 2 * r}a${r} ${r} 0 0 1 ${r} -${r}z`;
+const dot = (x: number, y: number, r: number) => `M${x - r} ${y}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 -${2 * r} 0z`;
 
-export function Icon({ name }: { name: keyof typeof PATHS }) {
+/**
+ * V1 (2026-10-25, owner: "modern solid icons"): a 16 px set. `f` is filled (glyphs with a body: bin, picture,
+ * eye, lock…), `s` is a bold rounded stroke (line glyphs: ×, +, ✓, arrows). Some use both.
+ */
+const ICONS = {
+  eye: { f: 'M8 3C3.6 3 1 8 1 8s2.6 5 7 5 7-5 7-5-2.6-5-7-5zm0 2.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6z' + dot(8, 8, 1.3) },
+  'eye-off': { s: 'M2.5 2.5l11 11M6.4 3.4A6.6 6.6 0 0 1 8 3.2c4.3 0 6.8 4.8 6.8 4.8a11.6 11.6 0 0 1-2.1 2.7M4.3 5A11.8 11.8 0 0 0 1.2 8s2.5 4.8 6.8 4.8c1 0 1.9-.2 2.7-.6' },
+  plus: { s: 'M8 3.25v9.5M3.25 8h9.5' },
+  minus: { s: 'M3.25 8h9.5' },
+  trash: { f: 'M6.5 1.25h3a1 1 0 0 1 1 1V3h3.25a.75.75 0 0 1 0 1.5H2.25a.75.75 0 0 1 0-1.5H5.5v-.75a1 1 0 0 1 1-1zM3.4 5.6h9.2l-.68 8.05A1.5 1.5 0 0 1 10.43 15H5.57a1.5 1.5 0 0 1-1.49-1.35z' },
+  grip: { f: dot(6, 4, 1.25) + dot(10, 4, 1.25) + dot(6, 8, 1.25) + dot(10, 8, 1.25) + dot(6, 12, 1.25) + dot(10, 12, 1.25) },
+  pencil: { f: 'M11.2 1.8a1.6 1.6 0 0 1 2.25 0l.75.75a1.6 1.6 0 0 1 0 2.25L5.6 13.4 1.75 14.25l.85-3.85z' },
+  library: { f: 'M4.5 1.5h7A1.5 1.5 0 0 1 13 3v11.25a.5.5 0 0 1-.78.42L8 11.9l-4.22 2.77A.5.5 0 0 1 3 14.25V3a1.5 1.5 0 0 1 1.5-1.5z' },
+  check: { s: 'M3.25 8.5l3 3 6.5-7' },
+  close: { s: 'M4 4l8 8M12 4l-8 8' },
+  back: { s: 'M10 3.25L5.25 8 10 12.75' },
+  undo: { s: 'M5.5 3.5l-3 3 3 3M2.75 6.5h6.75a4 4 0 0 1 0 8H7' },
+  redo: { s: 'M10.5 3.5l3 3-3 3M13.25 6.5H6.5a4 4 0 0 0 0 8H9' },
+  /** Replace a picture: two arrows turning. */
+  replace: { s: 'M13 6.25A5.2 5.2 0 0 0 3.7 4.6M3 9.75a5.2 5.2 0 0 0 9.3 1.65M3.4 2.25v2.6H6M12.6 13.75v-2.6H10' },
+  /** Remove a picture but keep its slot. */
+  eraser: { f: 'M9.2 2.2a1.6 1.6 0 0 1 2.26 0l2.34 2.34a1.6 1.6 0 0 1 0 2.26L8.35 12.25h4.9a.75.75 0 0 1 0 1.5H5.6a1.6 1.6 0 0 1-1.13-.47L2.2 11.01a1.6 1.6 0 0 1 0-2.26zM4.6 8.4L3.26 9.75 5.85 12.3h1.4l1.06-1.06z' },
+  font: { s: 'M3 13L7 3h2l4 10M5 9.5h6' },
+  export: { f: 'M2.75 9.25a.75.75 0 0 1 .75.75v2.5h9V10a.75.75 0 0 1 1.5 0v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3a.75.75 0 0 1 .75-.75zM8 1.5l3.6 3.6-1.06 1.06-1.79-1.79V10h-1.5V4.37L5.46 6.16 4.4 5.1z' },
+  image: { f: 'M3 1.75h10A1.25 1.25 0 0 1 14.25 3v10A1.25 1.25 0 0 1 13 14.25H3A1.25 1.25 0 0 1 1.75 13V3A1.25 1.25 0 0 1 3 1.75zM3.25 3.25v9.5h9.5v-9.5zM3.75 12l3-3.9 2.2 2.6 1.5-1.6 1.8 2.9z' + dot(10.4, 5.6, 1.2) },
+  vector: { f: 'M8 1.5l6 6.5-6 6.5-6-6.5z' },
+  text: { s: 'M3.5 4.25V3h9v1.25M8 3v10M6 13h4' },
+  fill: { f: rr(2, 2.5, 12, 11, 2) },
+  preview: { f: 'M3 1.75h10A1.25 1.25 0 0 1 14.25 3v10A1.25 1.25 0 0 1 13 14.25H3A1.25 1.25 0 0 1 1.75 13V3A1.25 1.25 0 0 1 3 1.75zm1.5 3v4h7v-4zm0 6v1.5h7v-1.5z' },
+  output: { f: 'M4 1.5h8A1.5 1.5 0 0 1 13.5 3v10a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 13V3A1.5 1.5 0 0 1 4 1.5zm1.75 4v1.25h4.5V5.5zm0 3v1.25h4.5V8.5z' },
+  cursor: { f: 'M3.4 1.9a.6.6 0 0 1 .87-.68l9.1 5.25a.6.6 0 0 1-.13 1.1l-3.9 1.05-1.95 3.9a.6.6 0 0 1-1.12-.17z' },
+  hand: { s: 'M5.5 8V4a1 1 0 0 1 2 0v3.5M7.5 3.5v-1a1 1 0 0 1 2 0V7.5M9.5 4a1 1 0 0 1 2 0v4M11.5 6a1 1 0 0 1 2 0v3.5A4.5 4.5 0 0 1 9 14H8.5a4 4 0 0 1-3.2-1.6L3 9.5a1 1 0 0 1 1.6-1.2L5.5 9.5' },
+  marquee: { s: 'M2 5V2h3M7 2h2M11 2h3v3M14 7v2M14 11v3h-3M9 14H7M5 14H2v-3M2 9V7' },
+  list: { f: dot(3, 4, 1.25) + dot(3, 8, 1.25) + dot(3, 12, 1.25) + rr(5.75, 3.25, 8.5, 1.5, 0.75) + rr(5.75, 7.25, 8.5, 1.5, 0.75) + rr(5.75, 11.25, 8.5, 1.5, 0.75) },
+  grid: { f: rr(2, 2, 5.25, 5.25, 1.4) + rr(8.75, 2, 5.25, 5.25, 1.4) + rr(2, 8.75, 5.25, 5.25, 1.4) + rr(8.75, 8.75, 5.25, 5.25, 1.4) },
+  fit: { s: 'M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10' },
+  arrange: { s: 'M2.5 2.5v11', f: rr(4.75, 3, 9, 3.5, 1) + rr(4.75, 9.5, 6, 3.5, 1) },
+  map: { f: 'M1.75 3.9l3.75-1.6v10.3l-3.05 1.3a.5.5 0 0 1-.7-.46zM6.75 2.3l2.5 1.1v10.3l-2.5-1.1zM10.5 3.4l3.05-1.3a.5.5 0 0 1 .7.46v9.54l-3.75 1.6z' },
+  sun: { f: dot(8, 8, 2.9), s: 'M8 1.5v1.25M8 13.25v1.25M1.5 8h1.25M13.25 8h1.25M3.4 3.4l.9.9M11.7 11.7l.9.9M3.4 12.6l.9-.9M11.7 4.3l.9-.9' },
+  moon: { f: 'M13.7 9.6A5.8 5.8 0 0 1 6.4 2.3a.5.5 0 0 0-.66-.6 6.5 6.5 0 1 0 8.56 8.56.5.5 0 0 0-.6-.66z' },
+  more: { f: dot(3.25, 8, 1.5) + dot(8, 8, 1.5) + dot(12.75, 8, 1.5) },
+  history: { s: 'M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5V5H5M8 5v3l2 1.5' },
+  search: { s: 'M7 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM10.6 10.6L14 14' },
+  panel: { f: 'M3 1.75h10A1.25 1.25 0 0 1 14.25 3v10A1.25 1.25 0 0 1 13 14.25H3A1.25 1.25 0 0 1 1.75 13V3A1.25 1.25 0 0 1 3 1.75zM3.25 3.25v9.5h5.5v-9.5z' },
+  crop: { s: 'M4.5 1.5v10h10M1.5 4.5h10v10' },
+  adjust: { f: 'M8 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM8 3v10a5 5 0 0 0 0-10z' },
+  flip: { s: 'M8 1.5v13', f: 'M6.25 4v8.5H2.5zM9.75 4l3.75 8.5H9.75z' },
+  lock: { f: rr(2.75, 7, 10.5, 7.5, 1.6) + 'M5 7V5a3 3 0 0 1 6 0v2H9.5V5a1.5 1.5 0 0 0-3 0v2z' },
+  unlock: { f: rr(2.75, 7, 10.5, 7.5, 1.6) + 'M5 7V5a3 3 0 0 1 5.85-.94l-1.42.47A1.5 1.5 0 0 0 6.5 5v2z' },
+  comment: { f: 'M3 2h10a1.5 1.5 0 0 1 1.5 1.5v6.5A1.5 1.5 0 0 1 13 11.5H8.2l-3.4 2.7a.5.5 0 0 1-.8-.4v-2.3H3A1.5 1.5 0 0 1 1.5 10V3.5A1.5 1.5 0 0 1 3 2z' },
+} satisfies Record<string, { f?: string; s?: string }>;
+
+export type IconName = keyof typeof ICONS;
+
+export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
+  const icon: { f?: string; s?: string } = ICONS[name];
   return (
-    <svg className={`sc-icon sc-icon--${name}`} viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={name === 'grip' || name === 'more' ? 2.4 : 1.4} strokeLinecap="round" strokeLinejoin="round">
-      <path d={PATHS[name]} />
+    <svg className={`sc-icon sc-icon--${name}`} viewBox="0 0 16 16" width={size} height={size} aria-hidden="true">
+      {icon.f && <path d={icon.f} fill="currentColor" fillRule="evenodd" />}
+      {icon.s && <path d={icon.s} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" />}
     </svg>
   );
 }

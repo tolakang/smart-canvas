@@ -91,9 +91,10 @@ describe.skipIf(!adminUrl)('canvas chrome (T13.5)', () => {
     const node = page.locator(`.react-flow__node-inputNode[data-id="src:${source.id}"]`);
     const box = await node.boundingBox();
     if (!main || !box) throw new Error('no nodes');
-    // Grab the input by its header and drop it below the master preview, 3 px right of its left edge.
+    // Grab the input by its header and drop it below the master preview, 1 px left of its left edge (the last move
+    // adds 1 px). Nearer than that, other edges of the wider V1 cards are as close.
     const grab = { x: box.x + 20, y: box.y + 10 };
-    const to = { x: main.x + 3 + 20, y: main.y + main.height + 80 + 10 };
+    const to = { x: main.x - 2 + 20, y: main.y + main.height + 80 + 10 };
     await page.mouse.move(grab.x, grab.y);
     await page.mouse.down();
     await page.mouse.move(grab.x + 1, grab.y + 1); // starts the drag (React Flow measures from here)

@@ -1,62 +1,42 @@
 import { deleteSource, renameSource, type InputSource } from '@smart-canvas/core';
-import { useState, type KeyboardEvent } from 'react';
 import { useBoard } from './context';
-import { confirmDelete, Icon } from './LayerRow';
+import { confirmDelete, Icon, type IconName } from './LayerRow';
+import { NodeHead } from './NodeHead';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
+const KIND_ICON: Record<InputSource['kind'], IconName> = { image: 'image', vector: 'vector', text: 'text', fill: 'fill' };
+const ROLE: Record<InputSource['behavesLike'], string> = { background: 'Vertical & horizontal', subject: 'Subject', text: 'Text', logo: 'Logo', decoration: 'Decoration' };
 
 /**
- * Input node title. Double-click renames it in place; hidden and library inputs show a small mark. The
- * actions (rename, show / hide, duplicate, save to library, delete) are in the inspector and the node's
- * right-click menu, and Delete / Backspace deletes the selected nodes.
+ * Input node title (V1: the shared NodeHead — the name, a quiet line under it, Delete in the ⋯ menu). Double-click
+ * renames it in place; hidden and library inputs show a small mark. The other actions (show / hide, duplicate,
+ * save to library) are in the inspector and the node's right-click menu, and Delete / Backspace deletes the
+ * selected nodes.
  */
 export function SourceHeader({ source }: { source: InputSource }) {
   const { readOnly, run } = useBoard();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(source.label);
-
-  function commit() {
-    setEditing(false);
-    if (draft.trim() && draft.trim() !== source.label) run((doc) => renameSource(doc, source.id, draft));
-  }
-  function onKey(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') commit();
-    if (e.key === 'Escape') setEditing(false);
-  }
-
   return (
-    <div className="sc-node__head">
-      {editing ? (
-        <input
-          className={`sc-rename ${NO_CANVAS}`}
-          aria-label="Input name"
-          value={draft}
-          autoFocus
-          maxLength={200}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={onKey}
-        />
-      ) : (
-        <div className="sc-node__title" title={readOnly ? source.label : `${source.label} — double-click to rename`} onDoubleClick={() => !readOnly && (setDraft(source.label), setEditing(true))}>
-          {source.label}
-        </div>
-      )}
-      {!source.visible && (
-        <span className="sc-node__mark" title="Hidden everywhere" aria-label="Hidden">
-          <Icon name="eye-off" />
-        </span>
-      )}
-      {source.libraryItemId && (
-        <span className="sc-node__mark" title="From the team library" aria-label="From library">
-          <Icon name="library" />
-        </span>
-      )}
-      {!readOnly && (
-        <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Delete ${source.label}`} title="Delete this node" onClick={() => confirmDelete(source.label) && run((doc) => deleteSource(doc, source.id))}>
-          <Icon name="trash" />
-        </button>
-      )}
-    </div>
+    <NodeHead
+      icon={source.behavesLike === 'background' ? 'fill' : KIND_ICON[source.kind]}
+      title={source.label}
+      sub={ROLE[source.behavesLike]}
+      onRename={readOnly ? undefined : (name) => run((doc) => renameSource(doc, source.id, name))}
+      renameLabel="Input name"
+      menuLabel={`${source.label} actions`}
+      menu={readOnly ? [] : [{ label: `Delete ${source.label}`, danger: true, onSelect: () => confirmDelete(source.label) && run((doc) => deleteSource(doc, source.id)) }]}
+      extra={
+        <>
+          {!source.visible && (
+            <span className="sc-node__mark" title="Hidden everywhere" aria-label="Hidden">
+              <Icon name="eye-off" size={14} />
+            </span>
+          )}
+          {source.libraryItemId && (
+            <span className="sc-node__mark" title="From the team library" aria-label="From library">
+              <Icon name="library" size={14} />
+            </span>
+          )}
+        </>
+      }
+    />
   );
 }

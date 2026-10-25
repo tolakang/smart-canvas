@@ -71,7 +71,7 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
     await page.getByRole('button', { name: /^Fit to screen/ }).click();
     await page.waitForTimeout(300);
     await dropFile(boardNode(page, 'Image').locator('.sc-node__head'), { name: 'subject.png', type: 'image/png', base64: png });
-    await expect.poll(() => boardNode(page, 'Image').locator('.sc-assets__pick img').count(), { timeout: 15_000 }).toBe(1);
+    await expect.poll(() => boardNode(page, 'Image').locator('.sc-slot__pick img').count(), { timeout: 15_000 }).toBe(1);
     await saved();
     const d = await doc();
     const added = d.sources.find((s) => s.label === 'subject');
@@ -82,7 +82,7 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
   it('a PNG or an SVG dropped on the Logo node adds a logo (D49: PNG, JPG, WebP and SVG)', async () => {
     await dropFile(boardNode(page, 'Logo').locator('.sc-node__head'), { name: 'mark.png', type: 'image/png', base64: png });
     await dropFile(boardNode(page, 'Logo').locator('.sc-node__head'), { name: 'mark.svg', type: 'image/svg+xml', text: SVG });
-    await expect.poll(() => boardNode(page, 'Logo').locator('.sc-assets__pick img').count(), { timeout: 15_000 }).toBe(2);
+    await expect.poll(() => boardNode(page, 'Logo').locator('.sc-slot__pick img').count(), { timeout: 15_000 }).toBe(2);
     await saved();
     const logos = (await doc()).sources.filter((s) => s.label === 'mark');
     expect(logos.map((s) => [s.kind, s.behavesLike]).sort()).toEqual([['image', 'logo'], ['vector', 'logo']]);
@@ -90,7 +90,7 @@ describe.skipIf(!adminUrl)('drop an image onto an input (T8.3)', () => {
 
   it('M3: a PDF dropped on the Image node adds its first page in vector (an SVG); an unreadable PDF says so', async () => {
     await dropFile(boardNode(page, 'Image').locator('.sc-node__head'), { name: 'flyer.pdf', type: 'application/pdf', text: onePagePdf() });
-    await expect.poll(() => boardNode(page, 'Image').locator('.sc-assets__pick img').count(), { timeout: 20_000 }).toBe(2);
+    await expect.poll(() => boardNode(page, 'Image').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(2);
     await saved();
     const added = (await doc()).sources.find((s) => s.label === 'flyer');
     expect(added).toMatchObject({ kind: 'vector', behavesLike: 'subject' });

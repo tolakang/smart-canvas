@@ -58,17 +58,19 @@ describe.skipIf(!adminUrl)('wires attach and detach (T8.5, D49)', () => {
       throw new Error('no empty spot');
     });
 
-  it('every asset node has one wire into the top of the Layer Comp group, each with a ✂ badge', async () => {
+  it('every asset node has one wire into the top of the Layer Comp group; no ✂ badge rests on them (V1)', async () => {
     const d = await doc();
     for (const s of d.sources) expect((await wired()).has(s.id)).toBe(true);
     // Logo, Headline, Text, Image (cards: one wire each) and Background.
     const edges = page.locator('.react-flow__edge');
     await expect.poll(() => edges.count()).toBe(5);
-    expect(await page.locator('.react-flow__edgelabel-renderer .sc-wire-cut--idle').count()).toBe(5);
+    expect(await page.locator('.react-flow__edgelabel-renderer .sc-wire-cut').count()).toBe(0);
   }, 30_000);
 
-  it('the ✂ badge cuts a card’s wire: every item of the card is disconnected', async () => {
+  it('a selected wire shows the ✂ badge; it cuts a card’s wire: every item of the card is disconnected', async () => {
     const card = await textCard();
+    // Selecting the wire (a tap on touch) brings its badge.
+    await page.locator(`.react-flow__edge[data-id="${await textWire()}"]`).dispatchEvent('click');
     await page.locator(`.react-flow__edgelabel-renderer [data-edge="${await textWire()}"]`).click();
     await saved();
     for (const id of card?.items ?? []) expect((await wired()).has(id)).toBe(false);
