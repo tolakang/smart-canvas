@@ -1,8 +1,10 @@
 /**
  * Headline cards (D44, PDF page 3 "Headline asset Node"): the same headline as a Khmer picture and an English
- * picture. Each is its own input — its own placement, fit and output overrides, so each keeps its adjusted
- * transform — and only the one in use is drawn (the master and its layouts, outputs, exports): switching the card swaps
- * every output. N3: a card can hold more pairs (`more`, each its own two layers); "Use" applies to all of them.
+ * picture, two inputs of which only the one in use is drawn (the master and its layouts, outputs, exports):
+ * switching the card swaps every output. V4 (2026-10-25, owner: "Both assets must use only one data, only asset
+ * switch between En and Kh"; amends D44): the pair shares one layout — switching hands the language coming in the
+ * place, size, rotation, editor history and every Preview's edits of the one going out, so only the picture
+ * changes. N3: a card can hold more pairs (`more`, each its own two layers); "Use" applies to all of them.
  * Pure; ids are passed in.
  */
 import { MAIN, withComposition } from './graph';
@@ -117,7 +119,44 @@ export function deletePairRow(doc: ProjectDoc, id: string, index: number): Sourc
 
 /** Switches which language every output draws. */
 export function setLanguage(doc: ProjectDoc, id: string, use: 'km' | 'en'): SourceResult {
-  return editPair(doc, id, (p) => (p.use === use ? p : { ...p, use }));
+  const pair = languagePairs(doc).find((p) => p.id === id);
+  if (!pair || pair.use === use) return editPair(doc, id, (p) => p);
+  // V4: one layout for the pair — the language coming in takes over the one going out's.
+  const next = pairRows(pair).reduce((d, r) => shareLayout(d, use === 'en' ? r.km : r.en, use === 'en' ? r.en : r.km), doc);
+  return editPair(next, id, (p) => ({ ...p, use }));
+}
+
+/**
+ * V4: `to` takes `from`'s layout everywhere it is kept — its frame in every composition (the master and its
+ * layouts; unfitted, so the other picture fits into the same box, D37), its editor history, and in every output its
+ * override, frozen frame and history. Where `from` has none, `to` has none either.
+ */
+export function shareLayout(doc: ProjectDoc, from: string, to: string): ProjectDoc {
+  const copy = <T>(rec: Record<string, T> | undefined, map: (v: T) => T = (v) => v): Record<string, T> | undefined => {
+    if (!rec) return rec;
+    const { [to]: _old, ...rest } = rec;
+    void _old;
+    return from in rec ? { ...rest, [to]: map(rec[from] as T) } : rest;
+  };
+  const unfit = <F extends { fitted?: true }>(f: F): F => {
+    const { fitted: _f, ...rest } = f;
+    void _f;
+    return rest as F;
+  };
+  const histories = <T extends { layers: Record<string, unknown> }>(t: T | undefined): T | undefined => (t ? { ...t, layers: copy(t.layers) ?? {} } : t);
+  return {
+    ...doc,
+    compositions: doc.compositions.map((c) => ({ ...c, placements: copy(c.placements, unfit) ?? {}, ...(c.transforms ? { transforms: histories(c.transforms) } : {}) })),
+    outputs: doc.outputs.map((o) => {
+      const own = o.overrides.find((x) => x.sourceId === from);
+      const overrides = [...o.overrides.filter((x) => x.sourceId !== to), ...(own ? [{ ...own, sourceId: to }] : [])];
+      const frozen = o.frozen && {
+        ...o.frozen,
+        items: [...o.frozen.items.filter((i) => i.sourceId !== to), ...o.frozen.items.filter((i) => i.sourceId === from).map((i) => ({ ...i, sourceId: to }))],
+      };
+      return { ...o, overrides, ...(frozen ? { frozen } : {}), ...(o.transforms ? { transforms: histories(o.transforms) } : {}) };
+    }),
+  };
 }
 
 export function renamePair(doc: ProjectDoc, id: string, label: string): SourceResult {

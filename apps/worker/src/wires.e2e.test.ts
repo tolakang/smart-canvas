@@ -113,8 +113,15 @@ describe.skipIf(!adminUrl)('wires attach and detach (T8.5, D49)', () => {
     await page.getByRole('button', { name: /^Fit to screen/ }).click();
     await page.waitForTimeout(300);
     const before = (await doc()).edges.length;
-    await drag(nodeHandle(boardNode(page, 'Logo')), page.locator('.react-flow__node-presetNode .react-flow__handle.target'));
-    await expect.poll(() => page.getByRole('alert').innerText()).toBe('An asset node wires into the Layer Comp.');
+    // Under load a drag can end before React Flow sees it over the port; drag again until the refusal shows
+    // (as the Preset-node test above does for its menu).
+    const alert = page.getByRole('alert').filter({ hasText: 'An asset node wires into the Layer Comp.' });
+    await expect
+      .poll(async () => {
+        if (!(await alert.count())) await drag(nodeHandle(boardNode(page, 'Logo')), page.locator('.react-flow__node-presetNode .react-flow__handle.target'));
+        return alert.count();
+      }, { timeout: 20_000 })
+      .toBe(1);
     expect((await doc()).edges.length).toBe(before);
   }, 60_000);
 });

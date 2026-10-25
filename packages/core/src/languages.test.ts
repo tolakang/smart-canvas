@@ -42,12 +42,39 @@ describe('Headline cards: Khmer / English (D44)', () => {
     expect(doc.sources.find((s) => s.id === 'hk')?.visible).toBe(true); // switched off by the card, not hidden
   });
 
-  it('each language keeps its own placement', () => {
+  it('V4: the pair shares one layout — switching hands the picture coming in the place of the one going out', () => {
     let doc = card();
-    const moved = { x: 0.2, y: 0.6, w: 0.5, h: 0.1 };
-    doc = { ...doc, compositions: doc.compositions.map((c) => (c.id === MAIN ? { ...c, placements: { ...c.placements, he: moved } } : c)) };
-    expect(mainComposition(ok(setLanguage(doc, 'h', 'en'))).placements.he).toEqual(moved);
-    expect(mainComposition(doc).placements.hk).not.toEqual(moved);
+    const moved = { x: 0.2, y: 0.6, w: 0.5, h: 0.1, rotation: 12, fitted: true as const };
+    const stale = { x: 0.9, y: 0.9, w: 0.05, h: 0.05 };
+    doc = { ...doc, compositions: doc.compositions.map((c) => (c.id === MAIN ? { ...c, placements: { ...c.placements, hk: moved, he: stale } } : c)) };
+    doc = ok(setLanguage(doc, 'h', 'en'));
+    // Same box and rotation; unfitted so the English picture fits into it (D37).
+    const { fitted: _f, ...box } = moved;
+    void _f;
+    expect(mainComposition(doc).placements.he).toEqual(box);
+    // And back: the English one's place (moved meanwhile) goes to Khmer.
+    const again = { x: 0.1, y: 0.1, w: 0.3, h: 0.2 };
+    doc = { ...doc, compositions: doc.compositions.map((c) => (c.id === MAIN ? { ...c, placements: { ...c.placements, he: again } } : c)) };
+    expect(mainComposition(ok(setLanguage(doc, 'h', 'km'))).placements.hk).toEqual(again);
+  });
+
+  it('V4: each Preview’s edit and frozen frame go with the switch too; a Preview without one has none after', () => {
+    let doc = card();
+    const edit = { sourceId: 'hk', frame: { x: 10, y: 20 }, updatedBy: 'u', updatedAt: '2026-10-25T00:00:00Z' };
+    const old = { ...edit, sourceId: 'he', frame: { x: 900, y: 900 } };
+    doc = { ...doc, outputs: doc.outputs.map((o) => ({ ...o, overrides: [edit, old], frozen: { items: [{ sourceId: 'hk', frame: { x: 1, y: 2, w: 3, h: 4 } }] } })) };
+    doc = ok(setLanguage(doc, 'h', 'en'));
+    const o = doc.outputs[0];
+    expect(o?.overrides.filter((x) => x.sourceId === 'he')).toEqual([{ ...edit, sourceId: 'he' }]);
+    expect(o?.frozen?.items.find((i) => i.sourceId === 'he')?.frame).toEqual({ x: 1, y: 2, w: 3, h: 4 });
+    // Back to Khmer with no English edit: Khmer's old edit goes (one layout, the current one).
+    doc = { ...doc, outputs: doc.outputs.map((x) => ({ ...x, overrides: x.overrides.filter((v) => v.sourceId !== 'he') })) };
+    expect(ok(setLanguage(doc, 'h', 'km')).outputs[0]?.overrides.some((x) => x.sourceId === 'hk')).toBe(false);
+  });
+
+  it('V4: choosing the language already in use changes nothing', () => {
+    const doc = card();
+    expect(ok(setLanguage(doc, 'h', 'km'))).toEqual(doc);
   });
 
   it('deleting the card deletes both; deleting one language leaves the other an ordinary input', () => {

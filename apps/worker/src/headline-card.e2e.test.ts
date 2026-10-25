@@ -62,8 +62,9 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
     if (process.env.SC_SHOTS) await page.screenshot({ path: `${process.env.SC_SHOTS}/headline-card.png` });
   }, 90_000);
 
-  it('switching the card to English swaps every output; each language keeps its own box', async () => {
+  it('switching the card to English swaps every output; English takes the Khmer one’s place (V4)', async () => {
     const before = await doc();
+    const was = mainComposition(before).placements;
     const [pair] = languagePairs(before);
     if (!pair) throw new Error('no card');
     // The card sits low on this canvas, under the toolbar: click the switch without a pointer.
@@ -81,6 +82,13 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
       return (q[pair.en]?.w ?? 0) / (q[pair.en]?.h ?? 1) > (q[pair.km]?.w ?? 0) / (q[pair.km]?.h ?? 1);
     }).toBe(true);
     expect(ratio(pair.en)).toBeGreaterThan(0);
+    // V4: one layout for the pair — the English picture sits where the Khmer one was (same centre, inside its box).
+    const km = was[pair.km];
+    const en = mainComposition(await doc()).placements[pair.en];
+    if (!km || !en) throw new Error('no boxes');
+    expect(en.x + en.w / 2).toBeCloseTo(km.x + km.w / 2, 3);
+    expect(en.y + en.h / 2).toBeCloseTo(km.y + km.h / 2, 3);
+    expect(en.w).toBeLessThanOrEqual(km.w + 1e-6);
   }, 60_000);
 
   it('N3: "Add headline" adds a second Khmer / English pair to the node; "Use" covers both; it can be deleted', async () => {
