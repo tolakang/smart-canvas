@@ -100,5 +100,16 @@ describe.skipIf(!adminUrl)('background pictures for vertical / horizontal output
     await expect.poll(() => node.locator('.sc-bg-slot--vertical').getAttribute('class')).toContain('sc-slot--focus');
     await node.getByRole('button', { name: 'Clear vertical background' }).waitFor({ state: 'visible' });
     expect(await node.locator('.sc-bg-slot--horizontal').getAttribute('class')).not.toContain('sc-slot--focus');
+    // Owner sketch: Horizontal across the top, Square and Vertical side by side below; the actions fit inside their tile.
+    const box = async (slot: string) => (await node.locator(`.sc-bg-slot--${slot} .sc-slot__tile`).boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+    const [h, sq, v] = [await box('horizontal'), await box('square'), await box('vertical')];
+    expect(sq.y).toBeGreaterThan(h.y + h.height - 1);
+    expect(v.x).toBeGreaterThan(sq.x + sq.width - 1);
+    expect(sq.width / sq.height).toBeCloseTo(1, 1);
+    expect(v.height).toBeGreaterThan(v.width);
+    const acts = (await node.locator('.sc-bg-slot--vertical .sc-slot__actions').boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+    expect(acts.x).toBeGreaterThanOrEqual(v.x);
+    expect(acts.x + acts.width).toBeLessThanOrEqual(v.x + v.width);
+    if (process.env.SC_SHOTS) await node.screenshot({ path: `${process.env.SC_SHOTS}/background-node.png` });
   }, 60_000);
 });

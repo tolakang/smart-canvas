@@ -240,7 +240,8 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
  * Pick or drop a file on a slot; × clears it.
  */
 type BgSlot = 'square' | 'vertical' | 'horizontal';
-const BG_SLOTS: readonly BgSlot[] = ['square', 'vertical', 'horizontal'];
+/** In reading order: Horizontal across the top, then Square and Vertical (owner sketch). */
+const BG_SLOTS: readonly BgSlot[] = ['horizontal', 'square', 'vertical'];
 const BG_LABEL: Record<BgSlot, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
 
 export function BackgroundSlots({ source, selected = true }: { source: InputSource; /** On the board: the node is selected (a tapped slot keeps its actions shown, as on the Headline node). */ selected?: boolean }) {
