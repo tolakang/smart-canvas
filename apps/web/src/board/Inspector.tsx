@@ -221,7 +221,7 @@ function InputActions({ source }: { source: InputSource }) {
 
 /** D44: a Headline card — its name, the language in use, and the picked language's input settings. */
 function HeadlineInspector({ pairId }: { pairId: string }) {
-  const { doc, run, readOnly, stackFocus } = useBoard();
+  const { doc, run, readOnly, stackFocus, layoutDeps } = useBoard();
   const pair = languagePairs(doc).find((p) => p.id === pairId);
   if (!pair) return null;
   const focusId = stackFocus && pairInputs(pair).includes(stackFocus) ? stackFocus : pair.use === 'km' ? pair.km : pair.en;
@@ -233,7 +233,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
         <div className="sc-seg" role="radiogroup" aria-label="Language every Preview uses">
           {(['km', 'en'] as const).map((lang) => (
             <label key={lang}>
-              <input type="radio" name={`inspector-use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang))} />
+              <input type="radio" name={`inspector-use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang, layoutDeps?.assets))} />
               {LANGUAGE_LABEL[lang]}
             </label>
           ))}

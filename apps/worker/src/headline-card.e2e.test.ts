@@ -82,13 +82,25 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
       return (q[pair.en]?.w ?? 0) / (q[pair.en]?.h ?? 1) > (q[pair.km]?.w ?? 0) / (q[pair.km]?.h ?? 1);
     }).toBe(true);
     expect(ratio(pair.en)).toBeGreaterThan(0);
-    // V4: one layout for the pair — the English picture sits where the Khmer one was (same centre, inside its box).
+    // V4: one layout for the pair — the English picture sits where the Khmer one was: same centre, same area.
     const km = was[pair.km];
     const en = mainComposition(await doc()).placements[pair.en];
     if (!km || !en) throw new Error('no boxes');
     expect(en.x + en.w / 2).toBeCloseTo(km.x + km.w / 2, 3);
     expect(en.y + en.h / 2).toBeCloseTo(km.y + km.h / 2, 3);
-    expect(en.w).toBeLessThanOrEqual(km.w + 1e-6);
+    expect(en.w * en.h).toBeCloseTo(km.w * km.h, 4);
+    // Switched back and forth: Khmer comes back exactly as it was — no shrinking.
+    const radio = (lang: string) => card().getByRole('radiogroup').getByText(lang, { exact: true });
+    for (const lang of ['Khmer', 'English', 'Khmer']) {
+      await radio(lang).dispatchEvent('click');
+      await saved();
+    }
+    await expect.poll(async () => languagePairs(await doc())[0]?.use).toBe('km');
+    const again = mainComposition(await doc()).placements[pair.km];
+    for (const k of ['x', 'y', 'w', 'h'] as const) expect(again?.[k]).toBeCloseTo(km[k], 4);
+    // English in use again for the next test.
+    await radio('English').dispatchEvent('click');
+    await saved();
   }, 60_000);
 
   it('N3: "Add headline" adds a second Khmer / English pair to the node; "Use" covers both; it can be deleted', async () => {

@@ -38,7 +38,7 @@ export function pictureIntoSlot(doc: ProjectDoc, s: InputSource, other: InputSou
 
 export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
   const { pair, rows } = data;
-  const { teamId, readOnly, run, rememberAsset, stackFocus, setStackFocus } = useBoard();
+  const { teamId, readOnly, run, rememberAsset, stackFocus, setStackFocus, layoutDeps } = useBoard();
   const [busy, setBusy] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
   const mine = new Set(rows.flatMap((r) => [r.km?.id, r.en?.id]));
@@ -127,7 +127,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
         <div className="sc-switch" role="radiogroup" aria-label={`${pair.label} language in use`}>
           {(['km', 'en'] as const).map((lang) => (
             <label key={lang} className={pair.use === lang ? 'sc-switch__on' : undefined}>
-              <input type="radio" name={`use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang))} />
+              <input type="radio" name={`use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang, layoutDeps?.assets))} />
               {LANGUAGE_LABEL[lang]}
             </label>
           ))}

@@ -7,8 +7,12 @@
  * changes. N3: a card can hold more pairs (`more`, each its own two layers); "Use" applies to all of them.
  * Pure; ids are passed in.
  */
+import { pictureAspect } from './fit';
 import { MAIN, withComposition } from './graph';
+import { layerSources } from './layers';
+import type { AssetSize } from './layout/types';
 import type { LanguagePair, ProjectDoc } from './model';
+import { sizeInDesignPx } from './render';
 import { connectSource } from './ports';
 import { addSource, deleteSource, type SourceResult } from './sources';
 
@@ -117,44 +121,82 @@ export function deletePairRow(doc: ProjectDoc, id: string, index: number): Sourc
   return { ok: true, doc: next };
 }
 
-/** Switches which language every output draws. */
-export function setLanguage(doc: ProjectDoc, id: string, use: 'km' | 'en'): SourceResult {
+/**
+ * Switches which language every output draws. `assets` (the pictures' measured sizes, as in LayoutDeps) lets the
+ * language coming in take the exact size of the one going out (`shareLayout`); without them its frames are left
+ * to be fitted by the board.
+ */
+export function setLanguage(doc: ProjectDoc, id: string, use: 'km' | 'en', assets?: Record<string, AssetSize>): SourceResult {
   const pair = languagePairs(doc).find((p) => p.id === id);
   if (!pair || pair.use === use) return editPair(doc, id, (p) => p);
   // V4: one layout for the pair — the language coming in takes over the one going out's.
-  const next = pairRows(pair).reduce((d, r) => shareLayout(d, use === 'en' ? r.km : r.en, use === 'en' ? r.en : r.km), doc);
+  const next = pairRows(pair).reduce((d, r) => shareLayout(d, use === 'en' ? r.km : r.en, use === 'en' ? r.en : r.km, assets), doc);
   return editPair(next, id, (p) => ({ ...p, use }));
+}
+
+type Box = { x: number; y: number; w: number; h: number };
+
+/**
+ * The frame `to`'s picture takes from `from`'s: the same centre, turn and lean, the same area and the same stretch
+ * (how far the frame is from the picture's own shape), in `to`'s own proportions. It maps back exactly, so switching
+ * Khmer → English → Khmer gives the first frame again — no drift. (`ka`, `kb`: the two pictures' visible aspects.)
+ */
+export function swapFrame<F extends Box & { fitted?: true }>(f: F, ka: number, kb: number): F {
+  const area = f.w * f.h;
+  const stretch = f.w / f.h / ka;
+  const aspect = kb * stretch;
+  const w = Math.sqrt(area * aspect);
+  const h = Math.sqrt(area / aspect);
+  return { ...f, x: f.x + f.w / 2 - w / 2, y: f.y + f.h / 2 - h / 2, w, h, fitted: true };
 }
 
 /**
  * V4: `to` takes `from`'s layout everywhere it is kept — its frame in every composition (the master and its
- * layouts; unfitted, so the other picture fits into the same box, D37), its editor history, and in every output its
- * override, frozen frame and history. Where `from` has none, `to` has none either.
+ * layouts), and in every output its override and frozen frame. With both pictures' sizes known the frames are
+ * `swapFrame`d (fitted, exact, reversible); otherwise they are handed over unfitted for the board to fit (D37).
+ * `to`'s editor histories are dropped (they described its old box). Where `from` has none, `to` has none either.
  */
-export function shareLayout(doc: ProjectDoc, from: string, to: string): ProjectDoc {
-  const copy = <T>(rec: Record<string, T> | undefined, map: (v: T) => T = (v) => v): Record<string, T> | undefined => {
-    if (!rec) return rec;
-    const { [to]: _old, ...rest } = rec;
-    void _old;
-    return from in rec ? { ...rest, [to]: map(rec[from] as T) } : rest;
+export function shareLayout(doc: ProjectDoc, from: string, to: string, assets?: Record<string, AssetSize>): ProjectDoc {
+  const layers = layerSources(doc);
+  const aspectOf = (id: string) => {
+    const l = layers.find((s) => s.id === id);
+    return l && assets ? pictureAspect(l, assets) : undefined;
   };
-  const unfit = <F extends { fitted?: true }>(f: F): F => {
+  const [ka, kb] = [aspectOf(from), aspectOf(to)];
+  /** A whole frame for `to`, in px of its scene (sx, sy: the scene's size; placements are 0..1). */
+  const take = <F extends Box & { fitted?: true }>(f: F, sx = 1, sy = 1): F => {
+    if (ka && kb && f.fitted) {
+      const g = swapFrame({ ...f, x: f.x * sx, y: f.y * sy, w: f.w * sx, h: f.h * sy }, ka, kb);
+      return { ...g, x: g.x / sx, y: g.y / sy, w: g.w / sx, h: g.h / sy };
+    }
     const { fitted: _f, ...rest } = f;
     void _f;
     return rest as F;
   };
-  const histories = <T extends { layers: Record<string, unknown> }>(t: T | undefined): T | undefined => (t ? { ...t, layers: copy(t.layers) ?? {} } : t);
+  const without = <T>(rec: Record<string, T>): Record<string, T> => {
+    const { [to]: _old, ...rest } = rec;
+    void _old;
+    return rest;
+  };
+  const dropHistory = <T extends { layers: Record<string, unknown> }>(t: T | undefined) => (t ? { transforms: { ...t, layers: without(t.layers) } } : {});
   return {
     ...doc,
-    compositions: doc.compositions.map((c) => ({ ...c, placements: copy(c.placements, unfit) ?? {}, ...(c.transforms ? { transforms: histories(c.transforms) } : {}) })),
+    compositions: doc.compositions.map((c) => {
+      const { width: W, height: H } = sizeInDesignPx(c.size);
+      const own = c.placements[from];
+      return { ...c, placements: { ...without(c.placements), ...(own ? { [to]: take(own, W, H) } : {}) }, ...dropHistory(c.transforms) };
+    }),
     outputs: doc.outputs.map((o) => {
       const own = o.overrides.find((x) => x.sourceId === from);
-      const overrides = [...o.overrides.filter((x) => x.sourceId !== to), ...(own ? [{ ...own, sourceId: to }] : [])];
+      const f = own?.frame;
+      // A whole frame is swapped; a partial one (a nudge, a hide) is handed over as it is.
+      const frame = f && f.x !== undefined && f.y !== undefined && f.w !== undefined && f.h !== undefined ? take({ ...f, x: f.x, y: f.y, w: f.w, h: f.h }) : f;
+      const overrides = [...o.overrides.filter((x) => x.sourceId !== to), ...(own ? [{ ...own, sourceId: to, ...(frame ? { frame } : {}) }] : [])];
       const frozen = o.frozen && {
         ...o.frozen,
-        items: [...o.frozen.items.filter((i) => i.sourceId !== to), ...o.frozen.items.filter((i) => i.sourceId === from).map((i) => ({ ...i, sourceId: to }))],
+        items: [...o.frozen.items.filter((i) => i.sourceId !== to), ...o.frozen.items.filter((i) => i.sourceId === from).map((i) => ({ ...i, sourceId: to, frame: take(i.frame) }))],
       };
-      return { ...o, overrides, ...(frozen ? { frozen } : {}), ...(o.transforms ? { transforms: histories(o.transforms) } : {}) };
+      return { ...o, overrides, ...(frozen ? { frozen } : {}), ...dropHistory(o.transforms) };
     }),
   };
 }
