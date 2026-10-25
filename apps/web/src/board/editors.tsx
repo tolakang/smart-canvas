@@ -243,9 +243,10 @@ type BgSlot = 'square' | 'vertical' | 'horizontal';
 const BG_SLOTS: readonly BgSlot[] = ['square', 'vertical', 'horizontal'];
 const BG_LABEL: Record<BgSlot, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
 
-export function BackgroundSlots({ source }: { source: InputSource }) {
+export function BackgroundSlots({ source, selected = true }: { source: InputSource; /** On the board: the node is selected (a tapped slot keeps its actions shown, as on the Headline node). */ selected?: boolean }) {
   const { teamId, readOnly, run, rememberAsset } = useBoard();
   const [busy, setBusy] = useState<BgSlot | null>(null);
+  const [focus, setFocus] = useState<BgSlot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const c = source.content;
   const picture = (slot: BgSlot) => (c.kind === 'image' || c.kind === 'vector' ? (slot === 'square' ? c.assetId : c.variants?.[slot]) : null);
@@ -285,8 +286,10 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
             src={id ? assetUrl(teamId, id) : null}
             alt={`${label} background`}
             busy={busy === family}
+            focused={selected && focus === family}
             readOnly={readOnly}
             accept={ACCEPT.image}
+            onSelect={() => setFocus(family)}
             emptyText={family === 'square' ? 'Add picture' : 'Same as square'}
             names={{ select: `${label} background`, file: `${label} background picture`, remove: `Clear ${label.toLowerCase()} background` }}
             onFile={(file) => void upload(family, file)}

@@ -93,5 +93,12 @@ describe.skipIf(!adminUrl)('background pictures for vertical / horizontal output
     await page.reload();
     await page.getByLabel('Preview Post', { exact: true }).waitFor();
     await expect.poll(() => bgOf('Post').getAttribute('src')).toContain(vertical ?? '-');
+    // Like the Headline node: a tapped slot is selected and keeps its Replace / Remove actions shown (touch has no hover).
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await page.waitForTimeout(300);
+    await node.getByRole('button', { name: 'Vertical background', exact: true }).click();
+    await expect.poll(() => node.locator('.sc-bg-slot--vertical').getAttribute('class')).toContain('sc-slot--focus');
+    await node.getByRole('button', { name: 'Clear vertical background' }).waitFor({ state: 'visible' });
+    expect(await node.locator('.sc-bg-slot--horizontal').getAttribute('class')).not.toContain('sc-slot--focus');
   }, 60_000);
 });

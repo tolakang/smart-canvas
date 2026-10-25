@@ -19,7 +19,7 @@ import { PresetNodeView } from './PresetNode';
  * card doesn't repeat it. Files can still be dropped on the card (T8.3), and an empty picture input has an
  * upload button.
  */
-function InputNodeView({ data }: NodeProps<InputFlowNode>) {
+function InputNodeView({ data, selected }: NodeProps<InputFlowNode>) {
   const { source } = data;
   const { readOnly } = useBoard();
   // T8.3: drop an image file anywhere on a picture input (or a photo on a fill background, D9).
@@ -28,7 +28,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
       {/* D43.1: a Background node is its square, vertical and horizontal slots; each output uses the one of its group. */}
-      {source.behavesLike === 'background' ? <BackgroundSlots source={source} /> : <NodePreview source={source} upload={upload} />}
+      {source.behavesLike === 'background' ? <BackgroundSlots source={source} selected={selected} /> : <NodePreview source={source} upload={upload} />}
       <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire into the Layer Comp" />
     </div>
   );
