@@ -27,7 +27,7 @@ function InputNodeView({ data }: NodeProps<InputFlowNode>) {
   return (
     <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
       <SourceHeader source={source} />
-      {/* D49 (page 3): a Background node is its vertical and horizontal slots; vertical outputs use one, horizontal the other. */}
+      {/* D43.1: a Background node is its square, vertical and horizontal slots; each output uses the one of its group. */}
       {source.behavesLike === 'background' ? <BackgroundSlots source={source} /> : <NodePreview source={source} upload={upload} />}
       <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire into the Layer Comp" />
     </div>

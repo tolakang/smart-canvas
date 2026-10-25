@@ -82,4 +82,16 @@ describe.skipIf(!adminUrl)('background pictures for vertical / horizontal output
     expect([data[0], data[1], data[2]].map((v) => Math.round((v ?? 0) / 10))).toEqual([2, 16, 9]);
     await dialog.getByRole('button', { name: 'Close' }).click();
   }, 120_000);
+  it('D43.1: the node shows Square · Vertical · Horizontal; a square Preview moved to Vertical draws the vertical picture', async () => {
+    const node = page.locator('.react-flow__node-inputNode').filter({ has: page.locator('.sc-node__title', { hasText: /^Background$/ }) });
+    for (const slot of ['square', 'vertical', 'horizontal']) await node.locator(`.sc-bg-slot--${slot}`).waitFor();
+    const cur = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
+    const bg = cur.doc.sources.find((s) => s.id === 'background');
+    const vertical = bg?.content.kind === 'image' ? bg.content.variants?.vertical : undefined;
+    const doc = { ...cur.doc, outputs: cur.doc.outputs.map((o) => (o.id === 'post' ? { ...o, layout: 'vertical' as const } : o)) };
+    expect((await page.request.put(url, { data: { rev: cur.rev, doc } })).status()).toBe(200);
+    await page.reload();
+    await page.getByLabel('Preview Post', { exact: true }).waitFor();
+    await expect.poll(() => bgOf('Post').getAttribute('src')).toContain(vertical ?? '-');
+  }, 60_000);
 });

@@ -123,19 +123,20 @@ export function addGuides(doc: ProjectDoc, masterId: string, ids: Partial<Record
 
 /**
  * D43: the picture an output of shape `trim` draws for this content — its vertical or horizontal slot when the
- * output's shape is that family and the slot is filled, else the main picture. Null when it has no picture.
+ * output is in that family and the slot is filled, else the main (square) picture. The family is the layout the
+ * output was moved to (`chosen`, D50) when it has one, else its shape's. Null when it has no picture.
  */
-export function pictureForShape(content: SourceContent, trim: { w: number; h: number }): string | null {
+export function pictureForShape(content: SourceContent, trim: { w: number; h: number }, chosen?: GuideFamily): string | null {
   if (content.kind !== 'image' && content.kind !== 'vector') return null;
-  const family = familyOfShape({ width: trim.w, height: trim.h });
+  const family = chosen ?? familyOfShape({ width: trim.w, height: trim.h });
   // Page 3: a background may have only its vertical and horizontal pictures; a square output uses either.
   return (family !== 'square' ? content.variants?.[family] : undefined) ?? content.assetId ?? content.variants?.horizontal ?? content.variants?.vertical ?? null;
 }
 
 /** A source with its picture for this output's shape in place of the main one (itself when that's the same). */
-export function withPictureForShape<T extends { content: SourceContent }>(source: T, trim: { w: number; h: number }): T {
+export function withPictureForShape<T extends { content: SourceContent }>(source: T, trim: { w: number; h: number }, chosen?: GuideFamily): T {
   const c = source.content;
   if (c.kind !== 'image' && c.kind !== 'vector') return source;
-  const id = pictureForShape(c, trim);
+  const id = pictureForShape(c, trim, chosen);
   return id === c.assetId ? source : { ...source, content: { ...c, assetId: id } };
 }

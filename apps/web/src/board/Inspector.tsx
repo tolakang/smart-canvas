@@ -176,8 +176,8 @@ function InputInspector({ source }: { source: InputSource }) {
         </div>
       </Section>
       {source.behavesLike === 'background' && source.content.kind !== 'text' && (
-        <Section title="For vertical and horizontal Previews">
-          <p className="sc-muted sc-inspector-panel__hint">Optional: a picture for vertical Previews and one for horizontal Previews. Each Preview uses the one for its shape; square Previews use the main picture.</p>
+        <Section title="Square, vertical and horizontal">
+          <p className="sc-muted sc-inspector-panel__hint">Each Preview uses the picture of its group (Square, Vertical or Horizontal). An empty slot uses the square picture.</p>
           <BackgroundSlots source={source} />
         </Section>
       )}

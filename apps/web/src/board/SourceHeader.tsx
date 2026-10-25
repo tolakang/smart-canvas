@@ -4,7 +4,7 @@ import { confirmDelete, Icon, type IconName } from './LayerRow';
 import { NodeHead } from './NodeHead';
 
 const KIND_ICON: Record<InputSource['kind'], IconName> = { image: 'image', vector: 'vector', text: 'text', fill: 'fill' };
-const ROLE: Record<InputSource['behavesLike'], string> = { background: 'Vertical & horizontal', subject: 'Subject', text: 'Text', logo: 'Logo', decoration: 'Decoration' };
+const ROLE: Record<InputSource['behavesLike'], string> = { background: 'Square, vertical & horizontal', subject: 'Subject', text: 'Text', logo: 'Logo', decoration: 'Decoration' };
 
 /**
  * Input node title (V1: the shared NodeHead — the name, a quiet line under it, Delete in the ⋯ menu). Double-click
