@@ -112,6 +112,15 @@ describe('background pictures for vertical / horizontal outputs (D43)', () => {
     expectFrame(bg(withVariants(project()), 1080, 1920)?.frame, { x: 0, y: -120, w: 1080, h: 2160 });
   });
 
+  it('an output moved to another group draws that group\'s picture (a square one in Horizontal: the horizontal picture)', () => {
+    const doc = withVariants(project());
+    const moved = (layout: 'square' | 'vertical' | 'horizontal', width: number, height: number) =>
+      computeLayout({ ...doc, outputs: [output({ size: { width, height, unit: 'px' }, layout })] }, 'o1', { measure: mockMeasure, assets: {} }).items.find((i) => i.sourceId === 'background')?.assetId;
+    expect(moved('horizontal', 2400, 2400)).toBe('wide');
+    expect(moved('vertical', 2400, 2400)).toBe('tall');
+    expect(moved('square', 1080, 1920)).toBeUndefined(); // the main (square) picture
+  });
+
   it('an empty slot falls back to the main picture', () => {
     const doc = { ...withVariants(project()), sources: withVariants(project()).sources.map((s) => (s.id === 'background' && s.content.kind === 'image' ? { ...s, content: { ...s.content, variants: { vertical: 'tall' } } } : s)) };
     expect(bg(doc, 728, 90)?.assetId).toBeUndefined();

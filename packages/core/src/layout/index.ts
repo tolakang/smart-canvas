@@ -49,8 +49,9 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
 
   const layers = layerSources(doc);
   const items: LayoutItem[] = [];
-  // D43: each picture input draws its slot for this output's shape (a background's vertical / horizontal picture).
-  const byId = new Map(layers.map((s) => [s.id, withPictureForShape(s, metrics.trim)]));
+  // D43: each picture input draws its slot for this output's family (a background's square / vertical / horizontal
+  // picture) — the group it was moved to, else its shape's.
+  const byId = new Map(layers.map((s) => [s.id, withPictureForShape(s, metrics.trim, output.layout)]));
   for (const source of [...comp.layers].reverse().flatMap((id) => byId.get(id) ?? [])) {
     const override = overrides.get(source.id);
     if (!source.visible || !wired.has(source.id) || override?.hidden) continue;

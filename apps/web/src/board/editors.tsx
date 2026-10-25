@@ -235,16 +235,24 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
 }
 
 /**
- * D43: a background's two extra slots — a picture for vertical outputs and one for horizontal outputs (each
- * output uses the slot of its shape, the main picture otherwise). Pick or drop a file on a slot; × clears it.
+ * D43: a background's three slots — Square (its main picture, also used by any output whose slot is empty),
+ * Vertical and Horizontal. Each output uses the slot of its group (the one it was moved to, else its shape's).
+ * Pick or drop a file on a slot; × clears it.
  */
+type BgSlot = 'square' | 'vertical' | 'horizontal';
+const BG_SLOTS: readonly BgSlot[] = ['square', 'vertical', 'horizontal'];
+const BG_LABEL: Record<BgSlot, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
+
 export function BackgroundSlots({ source }: { source: InputSource }) {
   const { teamId, readOnly, run, rememberAsset } = useBoard();
-  const [busy, setBusy] = useState<'vertical' | 'horizontal' | null>(null);
+  const [busy, setBusy] = useState<BgSlot | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const variants = source.content.kind === 'image' || source.content.kind === 'vector' ? (source.content.variants ?? {}) : {};
+  const c = source.content;
+  const picture = (slot: BgSlot) => (c.kind === 'image' || c.kind === 'vector' ? (slot === 'square' ? c.assetId : c.variants?.[slot]) : null);
+  const put = (slot: BgSlot, id: string | null) => (s: InputSource) =>
+    slot !== 'square' ? setVariant(s, slot, id) : id && s.content.kind === 'fill' ? photoBackground(s, id) : setAsset(s, id);
 
-  async function upload(family: 'vertical' | 'horizontal', file: File) {
+  async function upload(family: BgSlot, file: File) {
     if (readOnly) return;
     setError(null);
     if (file.size > LIMITS.maxUploadMB * 1024 * 1024) return setError(`File is larger than ${LIMITS.maxUploadMB} MB.`);
@@ -254,7 +262,7 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
       if (asset.kind !== 'image') setError('Use a PNG, JPEG, WebP or PDF file.');
       else {
         rememberAsset(asset);
-        run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, asset.id)) }));
+        run((d) => ({ ok: true, doc: withSource(d, source.id, put(family, asset.id)) }));
       }
     } catch (err) {
       if (!(err instanceof UploadCancelled)) setError(uploadMessage(err, 'image'));
@@ -264,10 +272,10 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
   }
 
   return (
-    <div className="sc-bg-slots" aria-label="Background for vertical and horizontal Previews">
-      {(['vertical', 'horizontal'] as const).map((family) => {
-        const id = variants[family];
-        const label = family === 'vertical' ? 'Vertical' : 'Horizontal';
+    <div className="sc-bg-slots" aria-label="Background for square, vertical and horizontal Previews">
+      {BG_SLOTS.map((family) => {
+        const id = picture(family);
+        const label = BG_LABEL[family];
         return (
           <Slot
             key={family}
@@ -279,10 +287,10 @@ export function BackgroundSlots({ source }: { source: InputSource }) {
             busy={busy === family}
             readOnly={readOnly}
             accept={ACCEPT.image}
-            emptyText="Same as main"
+            emptyText={family === 'square' ? 'Add picture' : 'Same as square'}
             names={{ select: `${label} background`, file: `${label} background picture`, remove: `Clear ${label.toLowerCase()} background` }}
             onFile={(file) => void upload(family, file)}
-            onRemovePicture={() => run((d) => ({ ok: true, doc: withSource(d, source.id, (s) => setVariant(s, family, null)) }))}
+            onRemovePicture={() => run((d) => ({ ok: true, doc: withSource(d, source.id, put(family, null)) }))}
           />
         );
       })}
