@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mainComposition, wiredLayers } from './graph';
 import type { ProjectDoc } from './model';
 import { createProjectDoc } from './project';
-import { addPicturesToStack, addStack, assetStacks, deleteStack, dropGrid, moveStackItem, stackCompositions } from './stacks';
+import { addPicturesToStack, addStack, assetStacks, connectStack, deleteStack, dropGrid, emptyCardWired, moveStackItem, setEmptyCardWired, stackCompositions } from './stacks';
 import { deleteSource, duplicateSource, type SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -62,5 +62,29 @@ describe('Assets cards (D40)', () => {
     expect(addPicturesToStack(withCard(), 'nope', pics('a'))).toEqual({ ok: false, error: 'not_found' });
     expect(addStack(withCard(), { id: 'st', board: { x: 0, y: 0 } })).toEqual({ ok: false, error: 'invalid' });
     expect(addStack(withCard(), { id: 'logo', board: { x: 0, y: 0 } })).toEqual({ ok: false, error: 'invalid' });
+  });
+});
+
+describe('An empty card keeps its own wire (D49.1)', () => {
+  it('emptied of its pictures, a card is still wired: new pictures go into the master preview', () => {
+    let doc = ok(addPicturesToStack(withCard(), 'st', pics('a')));
+    doc = ok(deleteSource(doc, 'a'));
+    const [st] = assetStacks(doc);
+    expect(st && emptyCardWired(st)).toBe(true);
+    doc = ok(addPicturesToStack(doc, 'st', pics('b')));
+    expect(wiredLayers(doc, 'main').has('b')).toBe(true);
+  });
+
+  it('its wire can be cut and drawn again; a cut empty card wires nothing it gets until wired', () => {
+    let doc = ok(setEmptyCardWired(withCard(), 'st', false));
+    expect(assetStacks(doc)[0]?.unwired).toBe(true);
+    expect(stackCompositions(doc, 'st')).toEqual([]);
+    const cut = ok(addPicturesToStack(doc, 'st', pics('a')));
+    expect(wiredLayers(cut, 'main').has('a')).toBe(false);
+    expect(assetStacks(cut)[0]?.unwired).toBeUndefined();
+    doc = ok(connectStack(doc, 'st', 'main'));
+    expect(assetStacks(doc)[0]?.unwired).toBeUndefined();
+    doc = ok(addPicturesToStack(doc, 'st', pics('b')));
+    expect(wiredLayers(doc, 'main').has('b')).toBe(true);
   });
 });

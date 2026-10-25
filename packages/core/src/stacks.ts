@@ -47,11 +47,24 @@ export function renameStack(doc: ProjectDoc, id: string, label: string): SourceR
   return editStack(doc, id, (st) => (clean ? { ...st, label: clean } : st));
 }
 
-/** The compositions a card feeds: where its items are wired; a card with none wired feeds the master preview. */
+/**
+ * The compositions a card feeds: where its items are wired; a card with none wired feeds the master preview —
+ * except an empty card whose own wire was cut (D49.1), which feeds none.
+ */
 export function stackCompositions(doc: ProjectDoc, stackId: string): string[] {
-  const items = new Set(assetStacks(doc).find((st) => st.id === stackId)?.items ?? []);
+  const stack = assetStacks(doc).find((st) => st.id === stackId);
+  const items = new Set(stack?.items ?? []);
   const comps = [...new Set(doc.edges.filter((e) => e.kind === 'layer' && items.has(e.from) && doc.compositions.some((c) => c.id === e.to)).map((e) => e.to))];
-  return comps.length ? comps : [MAIN];
+  if (comps.length) return comps;
+  return stack && !stack.items.length && stack.unwired ? [] : [MAIN];
+}
+
+/** D49.1: an empty card's own wire into the Layer Comp — drawn on the board while it has no pictures. */
+export const emptyCardWired = (st: AssetStack): boolean => !st.items.length && !st.unwired;
+
+/** D49.1: cuts (false) or restores (true) an empty card's wire; a card with pictures keeps its wires on them. */
+export function setEmptyCardWired(doc: ProjectDoc, stackId: string, wired: boolean): SourceResult {
+  return editStack(doc, stackId, (st) => (wired || st.items.length ? withoutUnwired(st) : { ...withoutUnwired(st), unwired: true }));
 }
 
 export interface StackPicture {
@@ -98,7 +111,14 @@ export function addPicturesToStack(doc: ProjectDoc, stackId: string, pictures: r
   }
   const cells = dropGrid(pictures.length);
   for (const comp of comps) next = withComposition(next, comp, (c) => ({ ...c, placements: { ...c.placements, ...Object.fromEntries(pictures.map((p, i) => [p.id, cells[i] as NFrame])) } }));
-  return editStack(next, stackId, (st) => ({ ...st, items: [...st.items, ...pictures.map((p) => p.id)] }));
+  return editStack(next, stackId, (st) => ({ ...withoutUnwired(st), items: [...st.items, ...pictures.map((p) => p.id)] }));
+}
+
+/** Once a card has items, their own wires say where it is wired. */
+function withoutUnwired(st: AssetStack): AssetStack {
+  const { unwired: _u, ...rest } = st;
+  void _u;
+  return rest;
 }
 
 /**
@@ -120,7 +140,7 @@ export function addTextToStack(doc: ProjectDoc, stackId: string, spec: { id: str
   const n = stack.items.length;
   const box: NFrame = { x: 0.1, y: Math.min(0.85, 0.1 + n * 0.12), w: 0.8, h: 0.1 };
   for (const comp of comps) next = withComposition(next, comp, (c) => ({ ...c, placements: { ...c.placements, [spec.id]: box } }));
-  return editStack(next, stackId, (st) => ({ ...st, items: [...st.items, spec.id] }));
+  return editStack(next, stackId, (st) => ({ ...withoutUnwired(st), items: [...st.items, spec.id] }));
 }
 
 /** Moves an item within its card (card order only; layer order is set on the master preview). */
@@ -137,6 +157,8 @@ export function moveStackItem(doc: ProjectDoc, stackId: string, sourceId: string
 export function connectStack(doc: ProjectDoc, stackId: string, compositionId: string): SourceResult {
   const stack = assetStacks(doc).find((st) => st.id === stackId);
   if (!stack) return { ok: false, error: 'not_found' };
+  // D49.1: an empty card keeps the wire itself.
+  if (!stack.items.length) return setEmptyCardWired(doc, stackId, true);
   let next = doc;
   for (const id of [...stack.items].reverse()) {
     const r = connectSource(next, id, undefined, compositionId);

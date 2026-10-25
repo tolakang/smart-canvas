@@ -6,6 +6,7 @@
 import { assetStacks, compositionById, languagePairs, presetSets, type ProjectDoc } from '@smart-canvas/core';
 import { ViewportPortal, type Node } from '@xyflow/react';
 import { compositionIdOfNode } from './flow';
+import { nameWithoutSize } from './OutputNode';
 import { approvalOf, type ApprovalState } from './review';
 
 /** Below this zoom the tags show. */
@@ -20,7 +21,11 @@ export function panelTitle(doc: ProjectDoc, nodeId: string): string | null {
   if (kind === 'hl') return languagePairs(doc).find((p) => p.id === id)?.label ?? null;
   if (kind === 'out') {
     const o = doc.outputs.find((x) => x.id === id);
-    return o ? `${o.label} · ${o.size.width} × ${o.size.height} ${o.size.unit}` : null;
+    if (!o) return null;
+    // Once: "GDN 1200×200", not "GDN 1200×200 · 1200 × 200 px" (owner: "redundant").
+    const size = `${o.size.width}×${o.size.height}${o.size.unit === 'px' ? '' : ` ${o.size.unit}`}`;
+    const name = nameWithoutSize(o.label);
+    return name ? `${name} ${size}` : size;
   }
   if (kind === 'set') {
     const s = presetSets(doc).find((x) => x.id === id);

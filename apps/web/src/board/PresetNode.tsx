@@ -14,14 +14,14 @@ import { setRowHandle, type SetFlowNode } from './flow';
 import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
-import { presetSettings } from './OutputNode';
+import { nameWithoutSize, presetSettings } from './OutputNode';
 import { TOUCH_NO_PAN } from './pinch';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** A row's name without its trailing size, or '' when what is left is just the preset's name. */
 export function rowName(label: string, setLabel: string): string {
-  const name = label.replace(/\s*\d+\s*[×x]\s*\d+(\s*(px|mm))?$/, '').trim();
+  const name = nameWithoutSize(label);
   return name === setLabel.trim() ? '' : name;
 }
 const ROW_DRAG = 'application/x-sc-preset-row';

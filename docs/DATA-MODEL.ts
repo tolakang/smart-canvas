@@ -202,6 +202,7 @@ export interface AssetStack {
   board: { x: number; y: number };
   items: string[];
   kind?: 'image' | 'logo' | 'text'; // D49: the Image (default), Logo or Text node
+  unwired?: true; // D49.1: an empty card's wire into the Layer Comp was cut (an empty card is wired by default)
 }
 
 // ---------- team-level records ----------

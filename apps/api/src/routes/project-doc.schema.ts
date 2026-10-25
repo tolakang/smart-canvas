@@ -144,6 +144,7 @@ const stack = {
     label: { type: 'string', maxLength: 200 },
     board: point,
     kind: { enum: ['image', 'logo', 'text'] }, // D49
+    unwired: { const: true }, // D49.1
     items: { type: 'array', maxItems: LIMITS.maxSources, items: id },
   },
 } as const;
