@@ -75,13 +75,9 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
       <Slot
         key={lang}
         shape="wide"
-        className={pair.use === lang ? 'sc-slot--in-use' : undefined}
-        caption={
-          <>
-            {LANGUAGE_LABEL[lang]}
-            {pair.use === lang && <span className="sc-slot__tag">In use</span>}
-          </>
-        }
+        // V4 (owner: no "In use" word — highlight the active one): the language in use stands out, the other steps back.
+        className={pair.use === lang ? 'sc-slot--in-use' : 'sc-slot--off'}
+        caption={LANGUAGE_LABEL[lang]}
         src={asset ? assetUrl(teamId, asset) : null}
         alt={nameOf(i, lang)}
         busy={busy === key}
@@ -102,7 +98,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
       <NodeHead
         icon="font"
         title={pair.label}
-        sub={`${rows.length} ${rows.length === 1 ? 'headline' : 'headlines'} · ${LANGUAGE_LABEL[pair.use]} in use`}
+        sub={`${rows.length} ${rows.length === 1 ? 'headline' : 'headlines'} · ${LANGUAGE_LABEL[pair.use]}`}
         menuLabel={`${pair.label} actions`}
         menu={readOnly ? [] : [{ label: `Delete ${pair.label}`, danger: true, onSelect: () => confirmDelete(pair.label) && run((d) => deletePair(d, pair.id)) }]}
       />

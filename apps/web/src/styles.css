@@ -1620,3 +1620,11 @@ details.sc-design__shortcuts--touch[open] > summary::after { transform: rotate(2
 }
 /* Touch: no browser tap flash — the app's own pressed and selected states show the tap. */
 button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent; }
+
+/* V4: the Headline's language in use — an accent outline and caption; the other language steps back. */
+.sc-slot--in-use .sc-slot__caption { color: var(--accent); }
+.sc-slot--in-use .sc-slot__caption::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.sc-slot--in-use .sc-slot__tile, .sc-slot--in-use.sc-slot--empty .sc-slot__tile { border: 2px solid var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+.sc-slot--off .sc-slot__pick img { opacity: 0.55; filter: saturate(0.6); transition: opacity var(--t-fast), filter var(--t-fast); }
+.sc-slot--off:hover .sc-slot__pick img { opacity: 0.85; filter: none; }
+.sc-switch label.sc-switch__on { background: var(--accent); color: var(--on-accent); box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--accent) 60%, transparent); }

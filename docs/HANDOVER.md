@@ -50,7 +50,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 **Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG. A PDF's page is kept as vector — a PDF of several pages asks which one first (D59, `ui/PdfPageDialog.tsx`): the API draws it as a sanitized SVG with Poppler (D55, `apps/api/src/assets/pdf.ts`, `?page=N`); slots that take only pixels, or a server without the converter, get the browser's PNG of the same page (D52, `apps/web/src/pdf.ts`). All go through `uploadAsset` (cancel = `UploadCancelled`, no error shown).
 - **Logo, Image and Text** are `AssetStack`s with `kind: 'logo' | 'image' | 'text'`. Logo items behave as logos (they get a minimum size).
 - **Text** slots are each their own text layer. You type on the card, and the slot grows with its text. `addTextToStack` adds one.
-- **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch. **Add headline** adds more pairs to the same node (D53: `more`, `addPairRow`, `deletePairRow`, `pairInputs`); **Use** switches them all.
+- **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch. **Add headline** adds more pairs to the same node (D53: `more`, `addPairRow`, `deletePairRow`, `pairInputs`); **Use** switches them all. Since V4 a pair shares one layout: switching hands the language coming in the place, size, rotation and Preview edits of the one going out (`shareLayout`), so only the picture changes.
 - **Background** is one input with vertical and horizontal slots (D43). A square output uses either slot.
 
 **Layer Comp.**
