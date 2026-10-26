@@ -11,7 +11,7 @@
     "build": "pnpm -r build",
     "test": "vitest run",
     "typecheck": "pnpm -r typecheck",
-    "lint": "eslint ."
+    "lint": "eslint . && node scripts/check-css.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
