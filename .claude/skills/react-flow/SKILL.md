@@ -93,6 +93,12 @@ catalogue (2026-10), mapped:
 | Node Search (`node-search`) | Find a node by name and fit the view to it | Not built yet. If asked: search `panelTitle(doc, id)` (ZoomLabels) and call `fitView({ nodes: [{ id }] })` |
 | DevTools (`devtools`) | Viewport data, each node's state, a log of change events | Debug only, never shipped. Logging `onNodesChange` locally does the same job |
 
+**Borrowing a React Flow UI component's markup:** rewrite every class. Our Tailwind theme is our tokens only: one
+spacing step is 1px (`p-4` is 4px, not 16px), Tailwind's default palette, sizes and fonts don't exist (`bg-white`,
+`shadow-sm`, `text-base` mean something else or nothing), shadcn's theme names (`bg-background`, `text-primary`) and
+its `cn()` / `tailwind-merge` aren't there. Use our colour tokens (`bg-surface`, `text-muted`, `border-line`), px
+spacing, and the class lists the board already has (`board/topbar.ts`).
+
 Core `@xyflow/react` components (no new dependency): `NodeToolbar`, `EdgeToolbar` (both in 12.12) and `NodeResizer`.
 None is used today. Actions live in the ⋯ menu and on hover (V1), and the editors have their own transform box (D36).
 
