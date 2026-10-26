@@ -213,7 +213,18 @@ Safety net while it ran: a CSS parity test compared every covered screen with a 
 - [x] C10 — History, Review panel and approval → `board/review.css` — [#173](https://github.com/tolakang/smart-canvas/pull/173)
 - [x] Put back the explanatory comments the area moves dropped — [#174](https://github.com/tolakang/smart-canvas/pull/174)
 - [x] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates — [#175](https://github.com/tolakang/smart-canvas/pull/175)
-- [ ] C12 — Guard against the same selector in two files; retire the frozen reference copy (this PR). `@layer` dropped: one layer per area flips about 95 rules that win across files on specificity
+- [x] C12 — Guard against the same selector in two files; retire the frozen reference copy — [#176](https://github.com/tolakang/smart-canvas/pull/176). `@layer` dropped: one layer per area flips about 95 rules that win across files on specificity
+
+## P28 Tailwind conversion (proposed; waits for the owner's yes on two dev packages) — plan: `TAILWIND-PLAN.md`
+Rule: nothing may look different; the CSS parity test comes back for the conversion and must match every screen.
+- [ ] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry
+- [ ] T2 — Dialogs, Projects home, sign-in → utilities; empty `ui/dialogs.css`, `shell/home.css`
+- [ ] T3 — Top bar, menus, inspector, side panels, canvas toolbar; most of `board/chrome.css`
+- [ ] T4 — Node card; Layer Comp, Core preset, Preset, Preview cards; `board/node.css`, `board/pipeline.css`
+- [ ] T5 — Asset nodes and slots; `board/assets.css`
+- [ ] T6 — History, comments, approval; `board/review.css`
+- [ ] T7 — Editors, incl. phone tabs; most of `editor/editor.css`
+- [ ] T8 — Optional: Preflight instead of our base styles; drop unused `sc-` modifiers; retire the parity test again
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`
