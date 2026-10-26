@@ -1,6 +1,6 @@
-# Handover — 2026-10-24 (after P24, review of Previews)
+# Handover — 2026-10-26 (P28 Tailwind conversion under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D63**), `docs/BACKLOG.md` (P15–P24 and **Next**) and `TASKS.md`. Everything below is merged to `main`. Nothing is open.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D65**), `docs/BACKLOG.md` (P15–P24 and **Next**) and `TASKS.md`. For any UI work, `docs/STYLING.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"). The conversion of the older CSS goes on area by area (`TAILWIND-PLAN.md`); the next step is the first unticked T row in `TASKS.md` P28.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -23,7 +23,11 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D6
 - **CI:** `.github/workflows/ci.yml` caches Playwright's Chromium (`~/.cache/ms-playwright`, keyed by the Playwright version) and gives the check job 25 minutes; a fresh browser download once took 11 minutes and cut the tests off (#128). The check job takes about 4–5 minutes with the cache.
 - **CI flakes seen:** e2e suites once timed out in `beforeAll` on a slow runner; a canvas test once read the doc before autosave (800 ms) had saved it — poll with a longer timeout rather than re-running.
 
-## What changed recently (P15–P24, #108–#143)
+## What changed recently (P15–P28, #108–#183)
+- **P25 (#145–#151, D64):** the UI refresh: tokens and Inter (U1), board chrome (U2), floating panels and new cards (U3), editors (U4), Projects home, sign-in and dialogs (U5, U6), real project thumbnails (U5b), one name per thing and AA contrast (U7).
+- **P26 (#153–#161):** asset and pipeline nodes redesigned (V1–V6): calm headers and solid icons, Core preset, phone editors' Layers | Design tabs, empty asset nodes keep their wire (D49.1).
+- **P27 (#163–#176):** CSS cleanup with no visual change: every colour a token, unused rules removed, one file per board area, the lint guard (`scripts/check-css.mjs`).
+- **P28 (#177–, D65):** Tailwind 4 on our tokens. T1 setup (#180: `tailwind.css`, cascade layers, the parity test back), dialogs (#181), Projects home and sign-in (#182), top bar and menus (#183). #179 fixed glass panels losing their blur in production builds.
 - **P15 (#108–#117):** N1 Inspector speaks the page-3 board. N2 PDF uploads (D52). N3 several Khmer / English pairs per Headline node (D53). N4 Preset placement + Tidy board. N5 preset families as data, Save as team preset (D54). N6 a Preset node exports one ZIP. N7 resizes snap. #115 replayed the transform history for the reset buttons; the owner said the in-place reset was right, so #116 reverted it. #117 removed code the board no longer reaches.
 - **P16 (#118, #119):** canvas tools (tooltips, Select / Hand, selection bar, Tidy icon, scissor badge) and the Projects screen (template cards, ⋯ menus, search / sort, New project dialog, rename).
 - **P17 (#120–#123):** M2 turned / leaned layers snap on resize. M3 PDF pages kept as vector (D55). M4 preset families in the Size presets dialog (rename / delete a team family). M6 large exports made and zipped on the server.
@@ -124,9 +128,11 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Projects screen (T16.2) | `apps/web/src/shell/Projects.tsx` (template cards, search / sort `shownProjects`, ⋯ menus via `board/ContextMenu.tsx` with ↑ ↓ keys, `NewProjectDialog`), `ui/AskDialog.tsx` (the app's own name / confirm dialog, instead of prompt / confirm); rename: `PATCH /teams/:teamId/projects/:projectId` (name + doc.name, new rev) |
 | API schema | `apps/api/src/routes/project-doc.schema.ts` (v3, plus v2 / v1 from clients that haven't reloaded, picked by `schema`; every new doc field must be added: `additionalProperties: false`) |
 | Export | `packages/core/src/exports.ts` (`exportRoute`, `zipOnServer`), `apps/web/src/board/ExportDialog.tsx`, API `routes/exports.ts` (jobs, file, streamed ZIP) |
+| Styling (D65) | Tokens: `apps/web/src/styles.css`; Tailwind theme: `tailwind.css`; shared class lists: `ui/tw.ts`, `ui/Brand.tsx`, `board/topbar.ts`; CSS left to convert: `board/*.css`, `editor/editor.css`; guard: `scripts/check-css.mjs`; rules: `docs/STYLING.md` |
 | e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` (the Layer Comp's buttons; the inspector has the same ones) |
 
 ## Testing tips (learned the hard way)
+- **CSS parity (P28):** `service postgresql start`, then `cd apps/worker && TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres timeout 700 npx vitest run src/css-parity.e2e.test.ts`. It compares every covered screen with main's built CSS; a conversion PR adds screens for the states it touches. The probe that lists what a sheet decides: `TAILWIND-PLAN.md`. If Postgres stopped (container restart), start it again.
 - **Off‑screen nodes:** press **Fit to screen** before clicking a node the test just added, or one placed by the conversion.
 - **Draggable rows:** a draggable row (HTML5 `draggable`) swallows wire drags that start on a handle inside it. Make only the grip draggable.
 - **Shared ports:** many wires meet at the Layer Comp's `layers` port. Grab a wire by its node end (`edgeupdater-source`).
@@ -142,4 +148,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next
-P1–P24 are done. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.
+P28 (Tailwind conversion, `TASKS.md`) is in progress: finish T3b–T7 one PR at a time, T8 optional. P1–P27 are done. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.

@@ -5,7 +5,7 @@
  * element. The same is done with :hover and :focus-visible forced (DevTools protocol), and where the sheet wins at
  * rest but not in a state, the state's value is recorded too: a utility would beat the rule that wins there, so the
  * utility needs a variant. Run through the parity test:
- *   SC_PROBE=ui/dialogs.css SC_PROBE_SCOPE='dialog, dialog *' SC_PROBE_OUT=/tmp/winners.jsonl [SC_PROBE_SCREENS=a,b]
+ *   SC_PROBE=board/review.css SC_PROBE_SCOPE='.sc-review, .sc-review *' SC_PROBE_OUT=/tmp/winners.jsonl [SC_PROBE_SCREENS=a,b]
  * Each screen the test compares adds one line per element that the sheet styles.
  */
 import { appendFileSync } from 'node:fs';

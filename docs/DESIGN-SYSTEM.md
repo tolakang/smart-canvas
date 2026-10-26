@@ -2,7 +2,8 @@
 
 The app's look is Figma-like and quiet: neutral greys, one blue accent, small type, and colour used for
 meaning (node type, state) rather than decoration. All values are CSS custom properties on `:root` in
-`apps/web/src/styles.css`. The editor screen (`.sc-fig`) has its own dark toolbar and maps `--accent` and the
+`apps/web/src/styles.css`, and the UI uses them through Tailwind utilities (`bg-surface`, `text-muted`, `rounded-lg`;
+D65): how to write those classes is in `STYLING.md`. The editor screen (`.sc-fig`) has its own dark toolbar and maps `--accent` and the
 other shared names onto its palette.
 
 ## Tokens (refreshed in U1, 2026-10-24)
@@ -18,7 +19,7 @@ other shared names onto its palette.
 | Elevation | `--shadow-1` (rest) · `--shadow-2` (hover, toolbars) · `--shadow-3` (dialogs, menus, floating panels) | Layered, soft shadows |
 | Size / motion | `--field-h` 28 px · `--t-fast` 140 ms · `--t-med` 200 ms (ease-out curve) | Motion is off for people who ask for reduced motion |
 
-**Component layer (U1):** the last block of `styles.css` makes focus (an accent outline on keyboard focus, a soft `--ring` halo on fields), buttons (primary with a slight inner highlight), fields, dropdowns (no native chrome; a chevron in the theme's colour), cards and dialogs (blurred backdrop, a short entrance), menus and scrollbars the same everywhere.
+**Component layer (U1):** the last block of `styles.css` (shared `sc-` components; they move to utilities as their areas are converted, `../TAILWIND-PLAN.md`) makes focus (an accent outline on keyboard focus, a soft `--ring` halo on fields), buttons (primary with a slight inner highlight), fields, dropdowns (no native chrome; a chevron in the theme's colour), cards and dialogs (blurred backdrop, a short entrance), menus and scrollbars the same everywhere.
 
 ## Components
 
@@ -37,10 +38,11 @@ other shared names onto its palette.
 
 ## Rules
 
-1. Use tokens; add a token rather than a one-off value.
+1. Use tokens (in classes: Tailwind utilities on the tokens, `STYLING.md`); add a token rather than a one-off value.
 2. Colour means something: node type, selection, warning, error. Inputs and outputs no longer have tinted backgrounds.
 3. One size for controls (28 px) and one icon style.
 4. Keep the accessible names when restyling (tests and screen readers use them).
+5. Build new UI with Tailwind utilities, not new CSS rules (`STYLING.md`; `pnpm lint` rejects a new `.css` file).
 
 ## Themes (T13.3, D34)
 
