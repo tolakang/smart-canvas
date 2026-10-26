@@ -141,7 +141,6 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 .sc-port { position: relative; display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-top: 1px solid var(--line); font-size: 12px; background: var(--surface); }
 .sc-port[draggable='true'] { cursor: grab; }
 .sc-port--drop { box-shadow: inset 0 2px 0 var(--accent); }
-.sc-port--hidden .sc-port__label { opacity: 0.5; }
 .sc-port--wired .sc-port__label { color: var(--fg); }
 /* T8.1 layer rows (main node list and editor Layers panel) */
 .sc-port__grip { display: inline-flex; color: var(--muted); cursor: grab; flex: none; }
@@ -150,17 +149,10 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 .sc-layer-thumb img { width: 100%; height: 100%; object-fit: contain; }
 .sc-thumb-fill { width: 100%; height: 100%; }
 .sc-thumb-text { font-size: 14px; font-weight: 700; color: var(--fg); background: var(--surface); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.sc-port__dot { flex: none; width: 16px; height: 20px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 11px; }
-.sc-port--wired .sc-port__dot { color: var(--fg); }
-.sc-port__dot:hover:not(:disabled) { color: var(--accent); }
 .sc-icon { display: block; margin: auto; }
 .sc-layer--drop { box-shadow: inset 0 2px 0 var(--accent); }
 .sc-layer[draggable='true'] { cursor: grab; }
 .sc-port__label { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-port__actions { display: flex; gap: 2px; }
-.sc-port__actions button { width: 22px; height: 22px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: none; color: var(--muted); font-size: 11px; line-height: 1; }
-.sc-port__actions button:hover:not(:disabled) { border-color: var(--line); color: var(--fg); }
-.sc-port__actions button:disabled { opacity: 0.3; }
 
 .sc-fonts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-height: 50vh; overflow: auto; }
 .sc-font__name { font-size: 12px; font-weight: 600; }
@@ -177,7 +169,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-editor__stage { flex: 1; position: relative; overflow: hidden; background: var(--fig-canvas, var(--canvas)); }
 .sc-editor__canvas { position: absolute; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 2px 12px rgb(0 0 0 / 0.12); background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; }
 .sc-editor__target { position: absolute; left: 0; top: 0; cursor: move; touch-action: none; }
-.sc-open-editor { font-size: 12px; padding: 2px 10px; }
 
 /* Layers panel */
 .sc-editor__body { flex: 1; display: flex; min-height: 0; }
@@ -382,23 +373,19 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-port { min-height: 36px; padding: var(--sp-1) var(--sp-3); border-top-color: var(--line); background: none; transition: background var(--t-fast); }
 .sc-port:hover { background: var(--surface-2); }
 .sc-port__label { color: var(--fg); }
-.sc-port--hidden .sc-port__label { color: var(--muted); }
-.sc-port__actions { opacity: 0; transition: opacity var(--t-fast); }
-.sc-port:hover .sc-port__actions, .sc-port__actions:focus-within { opacity: 1; }
 
 /* Buttons: one size, three variants (default, ghost, icon). Links in nodes become buttons. */
-.sc-btn, .sc-open-editor, .sc-upload, .sc-fill button, .sc-node .sc-link {
+.sc-btn, .sc-upload, .sc-fill button, .sc-node .sc-link {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1); height: var(--field-h); padding: 0 var(--sp-3);
   border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); line-height: 1; text-decoration: none; cursor: pointer; transition: background var(--t-fast), border-color var(--t-fast);
 }
 .sc-btn .sc-icon { margin: 0; } /* sits next to its label (the button centres it) */
-.sc-btn:hover:not(:disabled), .sc-open-editor:hover, .sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
-.sc-btn:focus-visible, .sc-open-editor:focus-visible, .sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sc-btn:hover:not(:disabled), .sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
+.sc-btn:focus-visible, .sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
 .sc-btn--ghost { border-color: transparent; background: none; color: var(--accent); padding: 0 var(--sp-2); }
 .sc-btn--ghost:hover:not(:disabled) { background: var(--accent-soft); }
 .sc-node > .sc-btn { justify-self: start; }
 .sc-node .sc-link { justify-self: start; }
-.sc-open-editor { font-weight: 500; }
 .sc-icon-btn { width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
 .sc-icon-btn:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); border-color: transparent; }
 
@@ -449,7 +436,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-topbar__add { padding: 2px; border-radius: var(--r-md); background: var(--surface-2); gap: 2px; }
 .sc-topbar__add button { height: 28px; }
 .sc-topbar__add button:hover:not(:disabled) { background: var(--surface); box-shadow: var(--shadow-1); }
-.sc-count { padding: 0 6px; border-radius: 99px; background: var(--line); color: var(--muted); font-size: var(--fs-xs); font-weight: 500; font-variant-numeric: tabular-nums; line-height: 16px; }
 .sc-topbar__ghost { color: var(--muted) !important; }
 .sc-topbar__ghost:hover:not(:disabled) { color: var(--fg) !important; }
 .sc-topbar .sc-topbar__primary { margin-left: var(--sp-1); background: var(--accent); color: var(--on-accent); }
@@ -630,18 +616,13 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 }
 @media (pointer: coarse) {
   .sc-canvasbar__btn, .sc-topbar__icon, .sc-icon-btn { min-width: 44px; min-height: 44px; }
-  .sc-menu__item, .sc-topbar__primary, .sc-open-editor { min-height: 44px; }
+  .sc-menu__item, .sc-topbar__primary { min-height: 44px; }
   /* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
   .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
   .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
 
-/* T12.5 process nodes */
-.sc-port__hint { flex: 1; color: var(--muted); font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-field--stack { flex-direction: column; align-items: stretch; }
 
-/* T12.8: a master preview's second out port, "use as a layer", sits near the bottom of the node */
-.react-flow__handle.sc-handle--nest { top: auto; bottom: 28px; }
 
 /* T13.7 board groups: a tinted frame behind its nodes, header to drag / rename / collapse / export */
 .react-flow__node-groupNode { padding: 0; border: 0; background: none; }
@@ -680,7 +661,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-layers__title .sc-muted { font-weight: 400; }
 /* Gestures on touch screens, keyboard shortcuts elsewhere. */
 .sc-design__touch { display: none; }
-.sc-design__hint { margin: 0; color: var(--fig-muted); line-height: 1.5; }
 @media (pointer: coarse) {
   .sc-design__touch { display: grid; }
   .sc-design__shortcuts { display: none; }
@@ -706,10 +686,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-wire-cut:hover { transform: scale(1.12); }
 .sc-wire-cut:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* Idle (wire not selected): small and quiet until hovered; the selected wire's badge is the full-size one. */
-.sc-wire-cut--idle { width: 18px; height: 18px; box-shadow: none; opacity: 0.7; }
-.sc-wire-cut--idle:hover { opacity: 1; }
 @media (pointer: coarse) { .sc-wire-cut { width: 40px; height: 40px; } }
-@media (pointer: coarse) { .sc-wire-cut--idle { width: 24px; height: 24px; } }
 
 /* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
    One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider
@@ -786,8 +763,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 @media (pointer: coarse) { .sc-more { width: 44px; height: 44px; } .sc-home .sc-search input { width: 100%; } }
 .sc-home__team { color: var(--muted); font-weight: 500; }
 .sc-home__tools { display: flex; gap: var(--sp-2); }
-.sc-home__new { display: flex; gap: var(--sp-2); }
-.sc-home__new input { flex: 1; }
 
 /* Rows: name over a muted line, actions on the right (under it on phones). */
 .sc-rows { gap: 0; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
@@ -825,8 +800,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
   .sc-dialog { max-width: calc(100vw - 16px); }
   .sc-dialog .sc-card { --card-pad: var(--sp-4); padding: var(--card-pad); }
   /* Visually hidden, still read: the heading stays "Studio · Projects". */
-  .sc-home__sep { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .sc-card .sc-btn, .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
+    .sc-card .sc-btn, .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
   .sc-card :is(input, select) { font-size: 16px; } /* iOS zooms into smaller fields */
 }
 
@@ -902,38 +876,19 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-assets__pick { width: 100%; height: 100%; aspect-ratio: 1; padding: 2px; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; cursor: pointer; border: 1px solid var(--line); border-radius: var(--r-md, 6px); background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 12px 12px; }
 .sc-assets__pick img { width: 100%; height: 100%; object-fit: contain; }
 .sc-assets__item--focus, .sc-assets__item--focus > .sc-assets__pick { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: var(--r-md, 6px); }
-.sc-assets__remove { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; padding: 0; display: none; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
-.sc-assets__item:hover .sc-assets__remove, .sc-assets__item:focus-within .sc-assets__remove { display: grid; }
-@media (pointer: coarse) { .sc-assets__remove { display: grid; } }
-.sc-assets__add { width: 100%; height: 100%; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: var(--r-md, 6px); color: var(--muted); cursor: pointer; }
-.sc-assets__add:hover { color: var(--fg); border-color: var(--accent); }
-.sc-assets__hint { margin: 6px 0 0; font-size: 12px; }
 
 /* D43: a background's vertical / horizontal slots. */
 .sc-bg-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'h h' 's v'; align-items: start; gap: 8px; }
 .sc-bg-slots > .sc-error { grid-column: 1 / -1; }
-.sc-bg-slot { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.sc-bg-slot__title { font-size: 11px; color: var(--muted); }
-.sc-bg-slot .sc-thumb { height: 72px; }
-.sc-bg-slot__actions { display: flex; gap: 8px; align-items: center; }
 
 /* D44: Headline card — Khmer / English slots and the language switch. */
 .sc-node--headline { width: 260px; }
 .sc-hl-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.sc-hl-slot { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 4px; border-radius: var(--r-md, 6px); border: 1px solid transparent; }
-.sc-hl-slot--use { border-color: var(--accent); }
-.sc-hl-slot__title { font-size: 11px; color: var(--muted); }
-.sc-hl-slot .sc-assets__pick { height: 72px; aspect-ratio: auto; }
-.sc-hl-use { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
 /* N3: several Khmer / English pairs, one row each, each with a small head (name, delete) when there are more. */
 .sc-hl-row + .sc-hl-row { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); }
 .sc-hl-row__head { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-bottom: 2px; }
 .sc-hl-add { margin-top: 8px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-/* D45: where each layer comp group starts in a master preview's rows. */
-.sc-port--group-start { position: relative; margin-top: 14px; }
-.sc-port--group-start::before { content: attr(data-group-label); position: absolute; left: 22px; top: -14px; font-size: 10px; line-height: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
-.sc-port--group-start:first-child { margin-top: 12px; }
 
 /* D46: Preset node — a list of media sizes, each row wired out to its own preview. */
 .sc-node--preset { width: 280px; }
@@ -946,16 +901,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 
 /* D47: Core Rule node — layer comp, preset guides and auto layout of a master preview. */
 .sc-node--rule { width: 300px; }
-.sc-rule__for select { max-width: 200px; }
-.sc-rule__section { display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
-.sc-rule__title { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
-.sc-rule__groups, .sc-rule__guides, .sc-rule__layers { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 12px; }
-.sc-rule__groups li, .sc-rule__layers li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 6px; }
-.sc-rule__groups .sc-muted, .sc-rule__layers .sc-muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-rule__group, .sc-rule__layer { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-rule__guides li { display: flex; align-items: center; gap: 6px; }
-.sc-rule__guides li > :first-child { min-width: 84px; font-weight: 600; }
-.sc-rule__guides .sc-open-editor { margin-left: auto; }
 
 /* Page 3: node headers by role — assets purple, master preview and core rules blue, previews mint, presets green. */
 .sc-node > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 6px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; border-bottom: 1px solid var(--line); }
@@ -963,16 +908,10 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-node--main > .sc-node__head, .sc-node--rule > .sc-node__head { background: color-mix(in srgb, var(--head-master) 16%, var(--surface)); }
 .sc-node--output > .sc-node__head { background: color-mix(in srgb, var(--head-preview) 16%, var(--surface)); }
 .sc-node--preset > .sc-node__head { background: color-mix(in srgb, var(--head-preset) 18%, var(--surface)); }
-.sc-node .sc-bg-slot .sc-thumb { height: 52px; object-fit: contain; }
 /* Page 3: the Assets card's list view (one row per picture). */
-.sc-assets__view { margin-left: auto; }
-.sc-assets__view button { padding: 0 6px; min-height: 22px; font-size: 12px; }
 .sc-assets--list { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .sc-assets--list .sc-assets__item { aspect-ratio: auto; display: flex; align-items: center; gap: 8px; }
 .sc-assets--list .sc-assets__pick { width: 40px; height: 40px; flex: none; }
-.sc-assets--list .sc-assets__label { flex: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-assets--list .sc-assets__remove { position: static; display: grid; }
-.sc-assets--list .sc-assets__add { height: 40px; display: flex; gap: 6px; justify-content: center; font-size: 12px; }
 
 /* D49 (page 3): the Layer Comp + Core Rule group — two cards in one dashed frame; asset wires land on its top,
    Preset nodes wire out of its bottom. */
@@ -991,9 +930,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 @media (pointer: coarse) { .sc-comp__moves { display: inline-flex; } }
 .sc-comp__moves .sc-icon-btn { width: 20px; height: 20px; font-size: 11px; }
 .sc-comp__layouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.sc-comp__layouts .sc-btn, .sc-rule__buttons .sc-btn { justify-content: center; }
-.sc-rule__buttons { display: grid; gap: 8px; }
-.sc-rule__buttons .sc-btn[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+.sc-comp__layouts .sc-btn { justify-content: center; }
 
 /* D49: Text node — its slots grow with their text. */
 .sc-node--text-node { width: 280px; }
@@ -1005,10 +942,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-text-slots__add { justify-content: center; }
 
 /* D49: asset node replace control, Preview header and Export pill, preset custom size. */
-.sc-assets__replace { position: absolute; left: -6px; top: -6px; width: 20px; height: 20px; display: none; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
-.sc-assets__item:hover .sc-assets__replace, .sc-assets__item:focus-within .sc-assets__replace { display: grid; }
-@media (pointer: coarse) { .sc-assets__replace { display: grid; } }
-.sc-assets--list .sc-assets__replace { position: static; display: grid; }
 .sc-preview__size { flex: 1; min-width: 0; font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sc-node--output > .sc-node__head { background: color-mix(in srgb, var(--tint-preview) 18%, var(--surface)); }
 .sc-preview__export { justify-self: center; padding: 4px 18px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--tint-preview) 22%, var(--surface)); color: var(--fg); font-weight: 600; cursor: pointer; }
@@ -1194,11 +1127,6 @@ h1, h2, h3 { letter-spacing: -0.011em; }
   .sc-save__long { display: none; }
   .sc-save__short { display: inline; }
 }
-/* Idle wire badges are small, quiet dots until the pointer is on them (a selected wire's badge, and touch, show the scissors). */
-@media (hover: hover) and (pointer: fine) {
-  .sc-wire-cut--idle { width: 12px; height: 12px; opacity: 0.45; transition: width var(--t-fast), height var(--t-fast), opacity var(--t-fast); }
-  .sc-wire-cut--idle:hover, .sc-wire-cut--idle:focus-visible { width: 22px; height: 22px; opacity: 1; }
-}
 
 /* ===== U3 (2026-10-24) visual redesign of the board: an ambient canvas with floating panels, cards with a
    coloured icon header, coloured wires and ports. Behaviour and markup are unchanged; this block sits last. ===== */
@@ -1253,8 +1181,7 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 .sc-node .sc-main-thumb { border-radius: 12px; overflow: hidden; background: var(--surface-2); }
 .sc-preview__export { padding: 6px 20px; border-radius: 999px; background: color-mix(in srgb, var(--head-preview) 14%, var(--surface)); color: color-mix(in srgb, var(--head-preview) 70%, var(--fg)); }
 .sc-preview__export:hover { background: color-mix(in srgb, var(--head-preview) 24%, var(--surface)); }
-.sc-node .sc-btn, .sc-node .sc-open-editor { border-radius: 9px; }
-.sc-open-editor { font-weight: 600; }
+.sc-node .sc-btn { border-radius: 9px; }
 
 /* The Layer Comp group: a soft tinted frame instead of a dashed line. */
 .sc-comp-group { border: 1px solid color-mix(in srgb, var(--head-master) 22%, transparent); border-radius: 26px; background: linear-gradient(180deg, color-mix(in srgb, var(--head-master) 7%, transparent), color-mix(in srgb, var(--head-preview) 5%, transparent)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4); }
@@ -1436,7 +1363,7 @@ details.sc-design__shortcuts > summary { cursor: pointer; list-style: none; disp
 details.sc-design__shortcuts > summary::after { content: ''; width: 6px; height: 6px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(45deg); transition: transform var(--t-fast); }
 details.sc-design__shortcuts[open] > summary::after { transform: rotate(225deg); }
 details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; }
-.sc-layers .sc-layer-row, .sc-layers li { border-radius: 10px; }
+.sc-layers li { border-radius: 10px; }
 @media (max-width: 767px) {
   .sc-fig__bar { margin: 6px 6px 0; }
 }
@@ -1464,7 +1391,6 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
 .sc-assets__item { aspect-ratio: auto; }
 .sc-slot { position: relative; display: grid; gap: 8px; min-width: 0; }
 .sc-slot__caption { display: flex; align-items: center; gap: 6px; min-height: 18px; font-size: 12px; font-weight: 600; color: var(--muted); }
-.sc-slot__tag { padding: 1px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 10.5px; font-weight: 700; letter-spacing: 0.01em; }
 .sc-slot__tile { position: relative; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); background: repeating-conic-gradient(color-mix(in srgb, var(--checker-a) 70%, transparent) 0 25%, transparent 0 50%) 0 0 / 14px 14px, var(--surface-2); overflow: hidden; transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast); }
 .sc-slot--square .sc-slot__tile { aspect-ratio: 1; }
 .sc-slot--wide .sc-slot__tile { height: 104px; }
