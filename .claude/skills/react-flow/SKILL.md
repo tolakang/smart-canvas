@@ -1,6 +1,6 @@
 ---
 name: react-flow
-description: How this project's flow board is built on @xyflow/react v12, and how to add or change nodes, handles, wires, menus, zoom and touch behaviour on it the project's way. Use for any change under apps/web/src/board (Board.tsx, nodes, edges, flow.ts) or any task that mentions the board, a node, a port or handle, a wire or edge, the canvas, the minimap, zoom, pan, Tidy, groups or React Flow. Also maps the React Flow UI catalogue (reactflow.dev/ui) and the examples (reactflow.dev/examples) onto what the board already has.
+description: How this project's flow board is built on @xyflow/react v12, and how to add or change nodes, handles, wires, menus, zoom and touch behaviour on it the project's way. Use for any change under apps/web/src/board (Board.tsx, nodes, edges, flow.ts) or any task that mentions the board, a node, a port or handle, a wire or edge, the canvas, the minimap, zoom, pan, Tidy, groups or React Flow. Also maps every React Flow UI component (reactflow.dev/ui) and example (reactflow.dev/examples) onto what the board already has.
 ---
 
 # React Flow on this board
@@ -68,45 +68,67 @@ Preview and export share `OutputRenderer` (CLAUDE.md).
 
 ## 6. React Flow UI (reactflow.dev/ui): what we use instead
 
-React Flow UI is a shadcn/ui registry: components are copied in with the shadcn CLI and styled with **Tailwind**. This project has no Tailwind and no shadcn ("no new dependency without saying why", and Tailwind is undecided). So **don't install these**. Take the idea and build it with our classes and tokens. Mapping:
+React Flow UI is a shadcn/ui registry: each component is copied into the app with the shadcn CLI and styled with
+**Tailwind CSS 4** and shadcn theming. This project has no Tailwind and no shadcn ("no new dependency without saying
+why"; Tailwind is undecided, see the CSS cleanup plan). So **don't install them**. Take the idea and build it with our
+classes and tokens. The full catalogue (2026-10), mapped:
 
-| React Flow UI component | Its idea | On this board |
+| Component (`/ui/components/…`) | What it is | On this board |
 |---|---|---|
-| Base Node (header / content / footer) | One card shell for every node | `NodeHead` + `.sc-node` / `.sc-node__head`; header colour per role via `--head-*` tokens |
-| Base Handle, Labeled Handle | A styled port, optionally with a label beside it | `.sc-port`, `.sc-port__label` rows (MainNode, PresetNode); typed colours (D32) |
-| Button Handle | A handle with a button attached (add the next node) | Not used: new nodes come from **+ Add**, the right-click menu, or by dragging a wire onto the canvas (`onConnectEnd`) |
-| Node Status Indicator | Loading / success / error ring on a node | `HealthBadge` (T13.1 layout health) and the Preview's approval state (D63) |
-| Placeholder Node | A ghost node you click to create a real one | The empty asset slots (`Slot`, "Add") and the empty-card wire (D49.1) |
-| Labeled Group Node | A group frame with a title | `GroupNode` (T13.7): derived frame, rename, collapse, export |
-| Zoom Slider, Zoom Select | Zoom controls | `CanvasToolbar` (− %, +, fit) |
-| Node Search | Find a node by name and fit to it | Not built yet. If asked: search `panelTitle(doc, id)` (ZoomLabels) and `fitView({ nodes: [{ id }] })` |
-| DevTools | Viewport, node state and change log for debugging | Debug only, never shipped. Logging `onNodesChange` locally does the same job |
-| Database Schema Node | Table-like node with a handle per row | Same pattern as our Preset node: one row, one `row:<id>` handle |
+| Base Node (`base-node`) | A node with basic styling (header / content / footer) | `NodeHead` + `.sc-node` / `.sc-node__head`; header colour per role (`--head-*` tokens) |
+| Base Handle (`base-handle`) | A handle with basic styling | `.sc-port` rows; typed colours (D32) |
+| Labeled Handle (`labeled-handle`) | A handle with a label | `.sc-port__label` (MainNode, PresetNode rows) |
+| Button Handle (`button-handle`) | A handle that adds a new node from a dropdown | Not used: new nodes come from **+ Add**, the right-click menu, or a wire dropped on the canvas (`onConnectEnd`) |
+| Node Status Indicator (`node-status-indicator`) | A wrapper with several states for a node's status | `HealthBadge` (T13.1) and the Preview approval state (D63) |
+| Node Tooltip (`node-tooltip`) | A tooltip on node hover | Native `title` and our `.sc-tip` tooltips; zoomed out, `ZoomLabels` |
+| Node Appendix (`node-appendix`) | Extra info in an absolutely positioned container beside a node | The Preview's approval / comment badges and the zoomed-out tags (ZoomLabels) |
+| Placeholder Node (`placeholder-node`) | A ghost node you click to create a real one | The empty asset slots (`Slot`, "Add") and the empty card's wire (D49.1) |
+| Labeled Group Node (`labeled-group-node`) | A group node with an optional label | `GroupNode` (T13.7): a derived frame you can rename, collapse and export |
+| Database Schema Node (`database-schema-node`) | A table-like node, one handle per row | Same pattern as the Preset node: one row, one `row:<id>` handle |
+| Button Edge (`button-edge`) | An edge with a button on it | `RoutedEdge`'s ✂ / Disconnect badge (`EdgeLabelRenderer`) |
+| Data Edge (`data-edge`) | An edge showing a value from the source node's data | Not used; a wire shows nothing but its state classes |
+| Animated SVG Edge (`animated-svg-edge`) | An SVG element moving along the edge | `.sc-edge--pulse` (a change runs downstream, T13.8) |
+| Zoom Slider (`zoom-slider`), Zoom Select (`zoom-select`) | Zoom controls | `CanvasToolbar` (−, %, +, fit) |
+| Node Search (`node-search`) | Find a node by name and fit the view to it | Not built yet. If asked: search `panelTitle(doc, id)` (ZoomLabels) and call `fitView({ nodes: [{ id }] })` |
+| DevTools (`devtools`) | Viewport data, each node's state, a log of change events | Debug only, never shipped. Logging `onNodesChange` locally does the same job |
 
-`NodeToolbar` and `NodeResizer` are core `@xyflow/react` components, not part of React Flow UI, so they can be used without a new dependency. Today no node uses them; actions live in the ⋯ menu and on hover (V1).
+Core `@xyflow/react` components (no new dependency): `NodeToolbar`, `EdgeToolbar` (both in 12.12) and `NodeResizer`.
+None is used today. Actions live in the ⋯ menu and on hover (V1), and the editors have their own transform box (D36).
 
 ## 7. Examples (reactflow.dev/examples) mapped to existing code
 
-Before building something from an example, check here. Most are already done the project's way.
+Check here before building something from an example: most are already done the project's way. Examples that need
+a new library (dagre, elkjs, d3-force, libavoid, yjs, html-to-image, Puppeteer) are **not** to be copied in. Use
+what is named instead.
 
-| Example | Here |
-|---|---|
-| Custom Nodes | Every `nodeTypes` entry |
-| Node Toolbar | Not used (see §6) |
-| Connection Limit, Validation | `connectionRefusal` in core, via `isValidConnection` (D32) |
-| Proximity Connect, Easy Connect | `connectionRadius={36}` |
-| Edge Types, Custom Edges, Edge Markers | `RoutedEdge` (bezier or reroute points) |
-| Reconnect Edge | `onReconnect*` in Board.tsx |
-| Edge with button / label | RoutedEdge ✂ and Disconnect badge (`EdgeLabelRenderer`) |
-| Context Menu | `ContextMenu.tsx`, `onNodeContextMenu` / `onPaneContextMenu` / `onSelectionContextMenu` |
-| Drag and Drop (sidebar → canvas) | Files dropped on the canvas become an Image node; **+ Add** places nodes (N4) |
-| Save and Restore | Autosave of the doc (`autosave.ts`) and version history (Q3, D62), not `toObject()` |
-| Undo and Redo, Copy and Paste | Doc history (`history.ts`) and the board's duplicate action, not React Flow state |
-| Helper Lines | `align()` guides in `onNodesChange` (T13.5) |
-| Auto Layout / Dynamic Layouting (dagre, elk) | **Tidy** (`tidy.ts`, D57). Don't add dagre or elkjs |
-| Sub Flows, Group nodes | Group frames (T13.7); nested parents (`parentId`) are not used |
-| Theming, Dark Mode | `colorMode={theme}` plus our tokens; React Flow's own classes are restyled in styles.css (`.react-flow__*`) |
-| Touch device | D58 (`usePinch`, `noPanClassName`, `nodeDragThreshold`) |
+| Category | Example (`/examples/…`) | Here |
+|---|---|---|
+| Nodes | `custom-node`, `update-node` | Every `nodeTypes` entry; data changes go through the doc (`run`) |
+| | `connection-limit` | `connectionRefusal` in core (D32), not `isConnectable` counts |
+| | `easy-connect`, `proximity-connect` | `connectionRadius={36}`; no auto-wiring on proximity |
+| | `add-node-on-edge-drop` | `onConnectEnd`: a wire dropped on the canvas offers a Preset node (N4) |
+| | `drag-handle` | Whole card drags; controls opt out with `NO_CANVAS` |
+| | `node-toolbar`, `node-resizer`, `rotatable-node` | Not on the board (see §6); rotation and resize live in the editors (D36) |
+| | `delete-middle-node`, `intersections`, `node-position-animation`, `shapes`, `stress` | Delete rules in `delete-nodes.ts`; Tidy glides panels (D57); one card shape |
+| Edges | `edge-types`, `custom-edges`, `editable-edge` | `RoutedEdge` (bezier, or through reroute points you drag, T13.8) |
+| | `edge-label-renderer`, `edge-toolbar` | ✂ / Disconnect badge via `EdgeLabelRenderer` |
+| | `reconnect-edge`, `delete-edge-on-drop` | `onReconnect*` in Board.tsx |
+| | `animating-edges` | `.sc-edge--pulse` |
+| | `markers`, `floating-edges`, `simple-floating-edges`, `custom-connectionline`, `multi-connection-line`, `temporary-edges`, `edge-intersection`, `edge-routing` | Not used: fixed typed ports, no arrows |
+| Interaction | `validation`, `prevent-cycles` | `connectionRefusal` (core) |
+| | `context-menu` | `ContextMenu.tsx` + `onNodeContextMenu` / `onPaneContextMenu` / `onSelectionContextMenu` |
+| | `drag-and-drop` | Files dropped on the canvas make an Image node; **+ Add** places nodes (N4) |
+| | `save-and-restore` | Autosave of the doc (`autosave.ts`) and versions (Q3, D62), not `toObject()` |
+| | `undo-redo`, `copy-paste` | Doc history (`history.ts`) and the board's duplicate action, not React Flow state |
+| | `helper-lines` | `align()` guides in `onNodesChange` (T13.5) |
+| | `touch-device` | D58 (`usePinch`, `noPanClassName`, `nodeDragThreshold`, larger touch targets) |
+| | `contextual-zoom` | Zoomed out, panels show name tags (`ZoomLabels`, `LABEL_ZOOM`) |
+| | `connection-events`, `computing-flows`, `collaborative` | Connections are handled in Board.tsx; data flow is core's layout engine; no live collaboration |
+| Layout | `auto-layout`, `dagre`, `elkjs`, `elkjs-multiple-handles`, `dynamic-layouting`, `horizontal`, `force-layout`, `node-collisions`, `expand-collapse` | **Tidy** (`tidy.ts`, D57) and N4 placement. No layout libraries |
+| Grouping | `sub-flows`, `parent-child-relation`, `selection-grouping` | Group frames (T13.7), derived; `parentId` is not used |
+| Styling | `dark-mode`, `base-style`, `tailwind`, `turbo-flow` | `colorMode={theme}` plus our tokens; React Flow's classes restyled in styles.css (`.react-flow__*`); no Tailwind |
+| Whiteboard | `lasso-selection`, `rectangle`, `freehand-draw`, `eraser` | Box selection only (`selectionOnDrag`, Select several on touch) |
+| Misc | `download-image`, `server-side-image-creation` | Export renders Previews with `OutputRenderer` in the worker (Playwright), never the board |
 
 ## 8. Tests
 
