@@ -1,0 +1,64 @@
+/* Dialogs: the shared dialog card and each dialog's own parts (CSS cleanup 9). */
+/* Dialogs (U6): a clear title, grouped content on soft panels, actions on the right, Close always in view. */
+.sc-dialog { border: 0; padding: 0; background: transparent; }
+.sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); }
+.sc-dialog__foot { padding-top: var(--sp-3); border-top: 1px solid var(--line); }
+@media (max-width: 767px) {
+  .sc-dialog { max-width: calc(100vw - 16px); }
+}
+.sc-dialog::backdrop { background: rgb(15 17 21 / 0.36); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.sc-dialog .sc-card > .sc-dialog__foot { margin: 0 calc(-1 * var(--sp-5)) calc(-1 * var(--sp-5)); padding: 14px var(--sp-5); background: color-mix(in srgb, var(--surface-2) 70%, transparent); border-top: 1px solid var(--line); }
+
+/* A question with a typed answer (rename, save as template). */
+.sc-ask { display: grid; gap: var(--sp-3); width: min(400px, calc(100vw - 32px)); }
+.sc-ask h2 { margin: 0; }
+.sc-ask p { margin: 0; }
+
+/* Export (T6.5, U6): the sizes as a soft list with checkboxes, the rest as a tidy form; jobs and approvals. */
+.sc-export form { display: grid; gap: 10px; }
+.sc-export__jobs { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
+.sc-export__approval { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 10px; border-left: 3px solid var(--warn); border-radius: var(--r-sm); background: var(--surface-2); font-size: var(--fs-sm); }
+.sc-export__approval button { margin-left: auto; }
+.sc-export { min-width: 0; }
+.sc-export__outputs { display: grid; border: 1px solid var(--line); gap: 2px; padding: 6px; border-radius: 12px; border-color: var(--line); background: var(--surface-2); max-height: 280px; overflow: auto; }
+.sc-export__outputs legend { padding: 0 6px; font-size: 12px; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.sc-export__outputs label { padding: 8px 10px; border-radius: 9px; background: var(--surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); cursor: pointer; }
+.sc-export__outputs label:hover { box-shadow: 0 0 0 1px var(--accent); }
+.sc-export__outputs label + label { margin-top: 4px; }
+.sc-export__outputs input[type='checkbox'] { width: 16px; height: 16px; }
+.sc-export form > label { font-weight: 500; }
+.sc-export__jobs li { display: grid; grid-template-columns: 1fr 120px 1fr; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); }
+
+/* Size presets (T4.8, M4): team preset families. */
+.sc-presets { max-width: 640px; overflow: auto; }
+.sc-presets form label { display: grid; gap: 2px; font-size: 13px; }
+.sc-presets .sc-families > li { align-items: flex-start; }
+.sc-family { flex: 1; min-width: 0; }
+.sc-family summary { display: flex; gap: 8px; align-items: baseline; cursor: pointer; padding: 2px 0; }
+.sc-family__sizes { list-style: none; margin: 4px 0 2px 16px; padding: 0; display: grid; gap: 2px; font-size: 13px; }
+.sc-presets .sc-dialog__foot, .sc-team .sc-dialog__foot { position: sticky; bottom: calc(-1 * var(--card-pad)); margin: 0 calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad)); padding: var(--sp-3) var(--card-pad) var(--card-pad); background: var(--surface); }
+.sc-presets, .sc-team { --card-pad: 24px; width: min(640px, calc(100vw - 24px)); max-height: 85dvh; }
+
+/* Fonts: each family as a sample card. */
+.sc-font__name { font-size: 12px; font-weight: 600; }
+.sc-fonts { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow: auto; display: grid; gap: 8px; }
+.sc-fonts > li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.sc-font__sample { font-size: 22px; line-height: 1.3; }
+
+/* Team: members and the invite link. */
+.sc-invite-link { display: flex; gap: var(--sp-2); }
+.sc-invite-link input { flex: 1; font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
+
+/* Team library (T7.1): saved assets. */
+.sc-lib { min-width: 460px; max-height: 85vh; overflow: auto; display: grid; gap: 10px; }
+.sc-lib__swatch, .sc-lib__img { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; object-fit: contain; display: inline-block; background: var(--swatch-bg); }
+.sc-lib__text { width: 40px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
+.sc-lib__name { display: grid; }
+
+/* Which page of a PDF (Q1). */
+.sc-pdfpages { width: min(560px, calc(100vw - 32px)); max-height: 85vh; display: grid; gap: var(--sp-2); grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.sc-pdfpages h2 { margin: 0; }
+.sc-pdfpages__grid { list-style: none; margin: 0; padding: 0; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--sp-2); }
+.sc-pdfpages__page { width: 100%; display: grid; gap: 4px; justify-items: center; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: inherit; font: inherit; font-size: var(--fs-sm); cursor: pointer; min-height: 44px; }
+.sc-pdfpages__page:hover, .sc-pdfpages__page:focus-visible { border-color: var(--accent); }
+.sc-pdfpages__page img, .sc-pdfpages__blank { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: var(--canvas); border-radius: var(--r-sm); }

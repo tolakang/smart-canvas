@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P24 are done. Proposed next work is BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P26 are done; P27 (CSS cleanup) is in progress — see below. After it, BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -175,6 +175,44 @@ Legend: `[x]` done · `[ ]` to do
 - [x] T24.1 — API and core: comments, approvals, fingerprint
 - [x] T24.2 — Comments on Previews: pins, Comments panel, node count
 - [x] T24.3 — Approval, Review panel, export warning
+
+## P25 UI refresh (U1–U7, D64)
+- [x] U1 — Design tokens, Inter, one component layer — [#145](https://github.com/tolakang/smart-canvas/pull/145)
+- [x] U2 — Board chrome: top bar, project overview, save label, quiet wires — [#146](https://github.com/tolakang/smart-canvas/pull/146)
+- [x] U3 — Board look: floating panels, new cards, name tags — [#147](https://github.com/tolakang/smart-canvas/pull/147)
+- [x] U5 + U6 — Projects home, sign-in and dialogs — [#148](https://github.com/tolakang/smart-canvas/pull/148)
+- [x] U4 — Editors in the new look — [#149](https://github.com/tolakang/smart-canvas/pull/149)
+- [x] U5b — Real project thumbnails on the home cards — [#150](https://github.com/tolakang/smart-canvas/pull/150)
+- [x] U7 — One name per thing, calm empty-layer badges, AA contrast — [#151](https://github.com/tolakang/smart-canvas/pull/151)
+- Also: delete a project's thumbnail with it; flaky test runs fixed — [#152](https://github.com/tolakang/smart-canvas/pull/152)
+
+## P26 Asset and pipeline nodes (V1–V6, owner feedback)
+- [x] V1 — Asset nodes redesigned: calm headers, roomy slots, actions on demand, solid icons — [#153](https://github.com/tolakang/smart-canvas/pull/153)
+- [x] V2 — Core Rule becomes Core preset; two-line headers on Layer Comp, Preset, Preview — [#154](https://github.com/tolakang/smart-canvas/pull/154)
+- [x] V3 — Phone editors: Layers | Design tabs — [#155](https://github.com/tolakang/smart-canvas/pull/155)
+- [x] V4 — Headline languages share one layout; the language in use highlighted — [#156](https://github.com/tolakang/smart-canvas/pull/156)
+- [x] Headline language switch keeps the exact size — [#157](https://github.com/tolakang/smart-canvas/pull/157)
+- [x] Background follows the output's group; Square slot (D43.1) — [#158](https://github.com/tolakang/smart-canvas/pull/158)
+- [x] Background slots show Replace / Remove when tapped — [#159](https://github.com/tolakang/smart-canvas/pull/159)
+- [x] Background node: Horizontal on top, Square and Vertical below; actions never cropped — [#160](https://github.com/tolakang/smart-canvas/pull/160)
+- [x] Empty asset nodes keep their wire (D49.1); Preview name tags name the size once (V6) — [#161](https://github.com/tolakang/smart-canvas/pull/161)
+- [x] Asset pictures fit their tiles instead of stretching; PDF page size independent of cairo — [#162](https://github.com/tolakang/smart-canvas/pull/162)
+- [x] React Flow project skill (`.claude/skills/react-flow`) — [#164](https://github.com/tolakang/smart-canvas/pull/164)
+
+## P27 CSS cleanup (plain CSS, one place per style; nothing may look different)
+Safety net: `apps/worker/src/css-parity.e2e.test.ts` compares every covered screen with a frozen copy of the original CSS (`apps/worker/src/test/css-reference/`). Each area file is imported right after `styles.css` in `apps/web/src/main.tsx`. Tailwind: decide after this cleanup.
+- [x] C1 — Safety net: CSS parity test against a frozen copy of today's CSS — [#163](https://github.com/tolakang/smart-canvas/pull/163)
+- [x] C2 — Every hex colour is a token; `scripts/check-css.mjs` in `pnpm lint` — [#165](https://github.com/tolakang/smart-canvas/pull/165)
+- [x] C3 — Remove unused CSS (75 rules); the guard rejects unused `sc-` classes — [#166](https://github.com/tolakang/smart-canvas/pull/166)
+- [x] C4 — Asset nodes → `board/assets.css` — [#167](https://github.com/tolakang/smart-canvas/pull/167)
+- [x] C5 — Pipeline cards (Layer Comp, Core preset, Preset, Preview) → `board/pipeline.css` — [#168](https://github.com/tolakang/smart-canvas/pull/168)
+- [x] C6 — Board chrome (top bar, menus, inspector, canvas, wires, groups, name tags, toolbar) → `board/chrome.css` — [#169](https://github.com/tolakang/smart-canvas/pull/169)
+- [x] C7 — Node card base (card, header, handles) → `board/node.css` — [#170](https://github.com/tolakang/smart-canvas/pull/170)
+- [x] C8 — Editors (incl. transform box and comments) → `editor/editor.css` — [#171](https://github.com/tolakang/smart-canvas/pull/171)
+- [ ] C9 — Projects home and sign-in → `shell/home.css`; dialogs → `ui/dialogs.css` (this PR)
+- [ ] C10 — History, Review panel and approval
+- [ ] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates
+- [ ] C12 — `@layer` order, guard against the same selector in two files; retire the frozen reference copy
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`
