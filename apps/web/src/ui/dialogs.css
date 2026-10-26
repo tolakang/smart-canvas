@@ -6,7 +6,7 @@
 @media (max-width: 767px) {
   .sc-dialog { max-width: calc(100vw - 16px); }
 }
-.sc-dialog::backdrop { background: rgb(15 17 21 / 0.36); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.sc-dialog::backdrop { background: rgb(15 17 21 / 0.36); backdrop-filter: blur(3px); }
 .sc-dialog .sc-card > .sc-dialog__foot { margin: 0 calc(-1 * var(--sp-5)) calc(-1 * var(--sp-5)); padding: 14px var(--sp-5); background: color-mix(in srgb, var(--surface-2) 70%, transparent); border-top: 1px solid var(--line); }
 
 /* A question with a typed answer (rename, save as template). */

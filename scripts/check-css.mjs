@@ -4,7 +4,9 @@
 // 2. Every `sc-` class a stylesheet names is used by the app's code, so styles for removed markup don't pile up.
 //    A class built at run time (`sc-slot--${shape}`) counts as used through its prefix; one named only inside
 //    `:not(…)` (a rule that matches everything without it) is not checked.
-// 3. A selector is styled in one stylesheet only, so what an element looks like is decided in one place and moving a
+// 3. No `-webkit-backdrop-filter`: the build adds it for Safari, and written after `backdrop-filter` it makes the
+//    minifier (lightningcss) drop the standard one, so Chrome and Firefox lose the blur.
+// 4. A selector is styled in one stylesheet only, so what an element looks like is decided in one place and moving a
 //    file in the import order can't change it.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -38,6 +40,8 @@ for (const file of cssFiles) {
   for (let m; (m = decls.exec(css)); ) {
     const decl = m[1] ?? '';
     if (/^\s*--[\w-]+\s*:/.test(decl)) continue;
+    if (/^\s*-webkit-backdrop-filter\s*:/.test(decl))
+      problems.push(`${at}:${lineAt(css, m.index + 1)}: -webkit-backdrop-filter — write backdrop-filter only; the build adds the prefix`);
     const hex = /#[0-9a-fA-F]{3,8}\b/.exec(decl);
     if (!hex || !decl.includes(':')) continue;
     problems.push(`${at}:${lineAt(css, m.index + 1 + decl.indexOf(hex[0]))}: ${hex[0]} inline — make it a token (--name: ${hex[0]}) and use var(--name)`);

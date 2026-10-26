@@ -129,7 +129,7 @@
    scrolls on the board. */
 .sc-board { height: 100dvh; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); box-sizing: border-box; background: var(--ambient); }
 .sc-board .sc-topbar { height: 60px; min-height: 60px; padding: 10px 12px 0; background: transparent; border-bottom: 0; }
-.sc-board .sc-topbar__group { height: 44px; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 14px; background: var(--glass); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow-2); }
+.sc-board .sc-topbar__group { height: 44px; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 14px; background: var(--glass); backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow-2); }
 .sc-board .sc-topbar__group:empty { display: none; }
 .sc-board .sc-topbar__name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
 .sc-board .sc-topbar__add { padding: 0 4px; }
@@ -143,7 +143,7 @@
 .sc-board__canvas { flex: 1; display: flex; min-height: 0; position: relative; padding: 10px 12px 12px; gap: 12px; }
 .sc-board__flow { flex: 1; min-width: 0; position: relative; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: color-mix(in srgb, var(--surface) 55%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), var(--shadow-1); overflow: hidden; }
 :root[data-theme='dark'] .sc-board__flow { background: color-mix(in srgb, var(--bg) 60%, transparent); box-shadow: var(--shadow-1); }
-.sc-board__canvas > .sc-inspector-panel:not(.sc-floating) { width: 320px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: var(--shadow-2); }
+.sc-board__canvas > .sc-inspector-panel:not(.sc-floating) { width: 320px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: var(--glass); backdrop-filter: blur(16px); box-shadow: var(--shadow-2); }
 @media (max-width: 767px) {
   .sc-board .sc-topbar { padding: 6px 6px 0; height: 54px; min-height: 54px; }
   .sc-board__canvas { padding: 6px; }
@@ -225,7 +225,7 @@
 .sc-canvasbar__zoom { min-width: 44px; text-align: center; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; color: var(--fg); }
 .sc-canvasbar__item { position: relative; display: inline-flex; }
 /* Two or more panels selected (Select tool, mouse or touch): group or delete them without shortcuts. */
-.sc-selbar { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
+.sc-selbar { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
 .sc-selbar__count { font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 /* Toolbar tooltips: above the button (the bar sits at the bottom), quick to appear, never in the way of the pointer. */
 .sc-tip { position: absolute; bottom: calc(100% + 10px); left: 50%; z-index: 20; display: flex; flex-direction: column; gap: 2px; width: max-content; max-width: min(240px, 70vw); padding: 6px 8px; border-radius: var(--r-md); background: var(--fg); color: var(--surface); font-size: var(--fs-sm); line-height: 1.35; text-align: left; box-shadow: var(--shadow-2); pointer-events: none; opacity: 0; visibility: hidden; transform: translate(-50%, 4px); transition: opacity var(--t-fast), transform var(--t-fast), visibility 0s linear var(--t-fast); }
@@ -243,7 +243,7 @@
 @media (max-width: 767px) {
   .sc-canvasbar { margin-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom)); }
 }
-.sc-canvasbar { display: flex; align-items: center; gap: 2px; border: 1px solid var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; padding: 6px; background: var(--glass); box-shadow: var(--shadow-3); }
+.sc-canvasbar { display: flex; align-items: center; gap: 2px; border: 1px solid var(--line); backdrop-filter: blur(12px); border-radius: 16px; padding: 6px; background: var(--glass); box-shadow: var(--shadow-3); }
 
 /* The pulse that runs down a wire after a change (T13.8). */
 @keyframes sc-wire-pulse { from { stroke-dashoffset: 54; stroke-width: 3; } to { stroke-dashoffset: 0; } }
