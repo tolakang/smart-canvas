@@ -133,7 +133,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-presets .sc-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
 
-.sc-export__outputs label, label.sc-check { display: flex; gap: 6px; align-items: center; }
+label.sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-button { display: inline-block; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: inherit; text-decoration: none; }
 
 .sc-lib .sc-list li { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; }
@@ -233,19 +233,11 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 .sc-theme-toggle .sc-icon { margin: 0; }
-
-
-
-/* D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
+/* Touch: icon buttons get a 44 px tap target, and the port a wire starts from a wider glow. */
 @media (pointer: coarse) {
-  .sc-canvasbar__btn, .sc-topbar__icon, .sc-icon-btn { min-width: 44px; min-height: 44px; }
-        .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
+  .sc-icon-btn { min-width: 44px; min-height: 44px; }
+  .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
-
-
-
-
-
 .sc-layers__title .sc-muted { font-weight: 400; }
 /* Tablets (and phones turned sideways): slimmer side panels so the canvas keeps most of the width. */
 
@@ -307,7 +299,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--sp-3); }
 .sc-fields label { display: grid; gap: var(--sp-1); min-width: 0; font-size: var(--fs-sm); color: var(--muted); }
 .sc-fields__wide { grid-column: 1 / -1; }
-.sc-form__actions, .sc-dialog__foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sp-2); }
+.sc-form__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sp-2); }
 
 @media (max-width: 767px) {
       .sc-rows > li { flex-wrap: wrap; }
@@ -324,7 +316,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-node__preview .sc-thumb--empty { height: 72px; text-align: center; padding: 0 var(--sp-2); }
 .sc-thumb--upload { cursor: pointer; border-style: dashed; }
 .sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
-.sc-node .sc-render--thumb, .sc-node .sc-main-thumb { max-width: 100%; }
+.sc-node .sc-render--thumb { max-width: 100%; }
 .sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }
 
 
@@ -354,18 +346,18 @@ input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color:
 h1, h2, h3 { letter-spacing: -0.011em; }
 
 /* Buttons: one height, one radius, a soft press. */
-.sc-btn, .sc-card button:not([class]), .sc-board__bar button, .sc-history .sc-btn {
+.sc-btn, .sc-card button:not([class]), .sc-history .sc-btn {
   border-radius: var(--r-md); transition: background var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
 }
 .sc-btn:active:not(:disabled), .sc-card button:not([class]):active:not(:disabled) { transform: translateY(0.5px); }
-.sc-btn--primary, .sc-card button[type='submit']:not([class]), .sc-topbar .sc-topbar__primary {
+.sc-btn--primary, .sc-card button[type='submit']:not([class]) {
   border-color: var(--accent); background: var(--accent); color: var(--on-accent); box-shadow: 0 1px 2px rgb(16 24 40 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.12);
 }
-.sc-btn--primary:hover:not(:disabled), .sc-card button[type='submit']:not([class]):hover:not(:disabled), .sc-topbar .sc-topbar__primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.sc-btn--primary:hover:not(:disabled), .sc-card button[type='submit']:not([class]):hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
 
 /* Fields: a quiet border, an accent ring on focus (not a heavy outline). */
 .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select, textarea),
-.sc-dialog select, .sc-inspector-panel :is(input:not([type='radio'], [type='checkbox'], [type='color'], [type='file']), select, textarea) {
+.sc-inspector-panel :is(input:not([type='radio'], [type='checkbox'], [type='color'], [type='file']), select, textarea) {
   border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
 .sc-card :is(input, select, textarea):focus-visible, .sc-dialog select:focus-visible, .sc-inspector-panel :is(input, select, textarea):focus-visible {

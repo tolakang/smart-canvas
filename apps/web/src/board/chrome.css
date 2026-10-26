@@ -4,7 +4,10 @@
 .sc-save { margin-left: auto; color: var(--muted); display: flex; gap: 8px; align-items: center; }
 .sc-save--conflict, .sc-save--error { color: var(--danger); }
 .sc-board__bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--line); min-height: 48px; font-size: var(--fs-sm); }
-.sc-board__bar button { height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); background: var(--surface); font-size: var(--fs-sm); }
+.sc-board__bar button {
+  height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); font-size: var(--fs-sm);
+  transition: background var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+}
 .sc-board__bar button:hover:not(:disabled) { background: var(--surface-2); }
 .sc-topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--sp-3); height: 48px; min-height: 48px; padding: 0 var(--sp-2); background: var(--surface); border-bottom: 1px solid var(--line); }
 .sc-topbar__group { display: flex; align-items: center; gap: var(--sp-1); min-width: 0; }
@@ -22,7 +25,11 @@
 .sc-topbar__add button:hover:not(:disabled) { background: var(--surface); box-shadow: var(--shadow-1); }
 .sc-topbar__ghost { color: var(--muted) !important; }
 .sc-topbar__ghost:hover:not(:disabled) { color: var(--fg) !important; }
-.sc-topbar .sc-topbar__primary { margin-left: var(--sp-1); }
+.sc-topbar .sc-topbar__primary {
+  margin-left: var(--sp-1); border-color: var(--accent); background: var(--accent); color: var(--on-accent);
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+.sc-topbar .sc-topbar__primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
 .sc-topbar .sc-topbar__primary:disabled { background: var(--accent-soft); color: var(--topbar-primary-disabled); }
 .sc-topbar .sc-save { margin-left: 0; gap: 6px; font-size: var(--fs-xs); white-space: nowrap; }
 .sc-save__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--type-output); flex: none; }
@@ -60,6 +67,7 @@
 .sc-menu__item--sep { margin-top: 4px; border-top: 1px solid var(--line); border-radius: 0 0 5px 5px; }
 @media (pointer: coarse) {
   .sc-menu__item, .sc-topbar__primary { min-height: 44px; }
+  .sc-canvasbar__btn, .sc-topbar__icon { min-width: 44px; min-height: 44px; }
 }
 /* Menus and floating panels share the elevated surface. */
 .sc-menu { position: fixed; z-index: 60; min-width: 200px; padding: 4px; background: var(--surface); display: grid; border-radius: var(--r-lg); box-shadow: var(--shadow-3); border: 1px solid var(--line); }
@@ -102,6 +110,7 @@
 .sc-overview__tips strong { color: var(--fg); font-weight: 600; }
 
 /* The board (T13.2, U3): the ambient backdrop, the canvas and its notices (Tidy undo, version shown read-only). */
+/* D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
 @media (pointer: coarse) {
   .sc-board__flow .react-flow { touch-action: none; }
 }

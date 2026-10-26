@@ -139,7 +139,7 @@ what is named instead.
   - `.react-flow__edge`, `.react-flow__pane`
   - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything
 - Seed a board through the API with core functions (`addOutput`, …) and `page.request.put`, as `comments.e2e.test.ts` does, rather than many UI clicks.
-- **CSS changes** must keep `apps/worker/src/css-parity.e2e.test.ts` green during the CSS cleanup (see `test/css-reference/README.md`).
+- **CSS changes**: each board area has its own file (`board/node.css`, `chrome.css`, `assets.css`, `pipeline.css`, `review.css`), imported right after `styles.css` in `main.tsx`; `pnpm lint` keeps each selector in one file, every colour a token and no unused `sc-` class.
 
 ## 9. Checklist: a new node type
 

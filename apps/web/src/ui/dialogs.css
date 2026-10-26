@@ -1,8 +1,8 @@
 /* Dialogs: the shared dialog card and each dialog's own parts (CSS cleanup 9). */
 /* Dialogs (U6): a clear title, grouped content on soft panels, actions on the right, Close always in view. */
 .sc-dialog { border: 0; padding: 0; background: transparent; }
-.sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); }
-.sc-dialog__foot { padding-top: var(--sp-3); border-top: 1px solid var(--line); }
+.sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast); }
+.sc-dialog__foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
 @media (max-width: 767px) {
   .sc-dialog { max-width: calc(100vw - 16px); }
 }
@@ -22,7 +22,7 @@
 .sc-export { min-width: 0; }
 .sc-export__outputs { display: grid; border: 1px solid var(--line); gap: 2px; padding: 6px; border-radius: 12px; border-color: var(--line); background: var(--surface-2); max-height: 280px; overflow: auto; }
 .sc-export__outputs legend { padding: 0 6px; font-size: 12px; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
-.sc-export__outputs label { padding: 8px 10px; border-radius: 9px; background: var(--surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); cursor: pointer; }
+.sc-export__outputs label { display: flex; gap: 6px; align-items: center; padding: 8px 10px; border-radius: 9px; background: var(--surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); cursor: pointer; }
 .sc-export__outputs label:hover { box-shadow: 0 0 0 1px var(--accent); }
 .sc-export__outputs label + label { margin-top: 4px; }
 .sc-export__outputs input[type='checkbox'] { width: 16px; height: 16px; }
