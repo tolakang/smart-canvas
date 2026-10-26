@@ -200,7 +200,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] React Flow project skill (`.claude/skills/react-flow`) — [#164](https://github.com/tolakang/smart-canvas/pull/164)
 
 ## P27 CSS cleanup (plain CSS, one place per style; nothing may look different)
-Safety net: `apps/worker/src/css-parity.e2e.test.ts` compares every covered screen with a frozen copy of the original CSS (`apps/worker/src/test/css-reference/`). Each area file is imported right after `styles.css` in `apps/web/src/main.tsx`. Tailwind: decide after this cleanup.
+Safety net while it ran: a CSS parity test compared every covered screen with a frozen copy of the original CSS (retired in C12). Each area file is imported right after `styles.css` in `apps/web/src/main.tsx`; `pnpm lint` keeps each selector in one file. Tailwind: decide after this cleanup.
 - [x] C1 — Safety net: CSS parity test against a frozen copy of today's CSS — [#163](https://github.com/tolakang/smart-canvas/pull/163)
 - [x] C2 — Every hex colour is a token; `scripts/check-css.mjs` in `pnpm lint` — [#165](https://github.com/tolakang/smart-canvas/pull/165)
 - [x] C3 — Remove unused CSS (75 rules); the guard rejects unused `sc-` classes — [#166](https://github.com/tolakang/smart-canvas/pull/166)
@@ -211,8 +211,9 @@ Safety net: `apps/worker/src/css-parity.e2e.test.ts` compares every covered scre
 - [x] C8 — Editors (incl. transform box and comments) → `editor/editor.css` — [#171](https://github.com/tolakang/smart-canvas/pull/171)
 - [x] C9 — Projects home and sign-in → `shell/home.css`; dialogs → `ui/dialogs.css` — [#172](https://github.com/tolakang/smart-canvas/pull/172)
 - [x] C10 — History, Review panel and approval → `board/review.css` — [#173](https://github.com/tolakang/smart-canvas/pull/173)
-- [ ] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates (this PR)
-- [ ] C12 — `@layer` order, guard against the same selector in two files; retire the frozen reference copy
+- [x] Put back the explanatory comments the area moves dropped — [#174](https://github.com/tolakang/smart-canvas/pull/174)
+- [x] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates — [#175](https://github.com/tolakang/smart-canvas/pull/175)
+- [ ] C12 — Guard against the same selector in two files; retire the frozen reference copy (this PR). `@layer` dropped: one layer per area flips about 95 rules that win across files on specificity
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`

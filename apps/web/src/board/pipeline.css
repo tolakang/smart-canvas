@@ -94,7 +94,7 @@
 .sc-preview__review { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px 12px 0; }
 .sc-node--output > .sc-node__head { background: color-mix(in srgb, var(--tint-preview) 18%, var(--surface)); --head: var(--head-preview); }
 .sc-node--frozen > .sc-node__head { --head: var(--head-frozen); }
-.sc-node .sc-main-thumb { margin-top: 0; border-color: var(--line); border-radius: 12px; overflow: hidden; background: var(--surface-2); }
+.sc-node .sc-main-thumb { max-width: 100%; margin-top: 0; border-color: var(--line); border-radius: 12px; overflow: hidden; background: var(--surface-2); }
 .sc-preview__export:hover { background: color-mix(in srgb, var(--head-preview) 24%, var(--surface)); }
 .sc-node--output.sc-node { width: 280px; }
 .sc-node--output .sc-preview__size { font-variant-numeric: tabular-nums; }

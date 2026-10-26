@@ -4,6 +4,8 @@
 // 2. Every `sc-` class a stylesheet names is used by the app's code, so styles for removed markup don't pile up.
 //    A class built at run time (`sc-slot--${shape}`) counts as used through its prefix; one named only inside
 //    `:not(…)` (a rule that matches everything without it) is not checked.
+// 3. A selector is styled in one stylesheet only, so what an element looks like is decided in one place and moving a
+//    file in the import order can't change it.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -27,6 +29,7 @@ const used = (c) => named.has(c) || prefixes.some((p) => c.startsWith(p));
 const lineAt = (text, i) => text.slice(0, i).split('\n').length;
 
 const problems = [];
+const owner = new Map(); // selector → the first file that styles it
 for (const file of cssFiles) {
   const css = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
   const at = relative(root, file);
@@ -49,6 +52,14 @@ for (const file of cssFiles) {
     }
     for (const c of new Set(sel.match(/(?<=\.)sc-[\w-]+/g) ?? []))
       if (!used(c)) problems.push(`${at}:${lineAt(css, m.index + (m[1] ?? '').length)}: .${c} is not used by the app — remove its rules`);
+    // Each selector in a list, split at the commas outside brackets, with its spaces normalized.
+    for (const one of (m[2] ?? '').split(/,(?![^()[\]]*[)\]])/)) {
+      const key = one.trim().replace(/\s+/g, ' ').replace(/\s*([>+~])\s*/g, ' $1 ');
+      if (!key || /^(from|to|[\d.]+%)$/.test(key)) continue;
+      const first = owner.get(key);
+      if (!first) owner.set(key, at);
+      else if (first !== at) problems.push(`${at}:${lineAt(css, m.index + (m[1] ?? '').length)}: ${key} is also styled in ${first} — keep its rules in one file`);
+    }
   }
 }
 if (problems.length) {
