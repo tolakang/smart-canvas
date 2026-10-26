@@ -1,4 +1,195 @@
-/* The app's CSS at 4c54069b7256d616a1f0b02bb7851fc1e45f54ab (origin/main), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at c831ae05ad02044574ad7231d4ebc0a08d48b36c (origin/main), built by scripts/css-reference.mjs. Do not edit. */
+/*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
+@layer properties {
+  @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
+    *, :before, :after, ::backdrop {
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
+      --tw-outline-style: solid;
+      --tw-blur: initial;
+      --tw-brightness: initial;
+      --tw-contrast: initial;
+      --tw-grayscale: initial;
+      --tw-hue-rotate: initial;
+      --tw-invert: initial;
+      --tw-opacity: initial;
+      --tw-saturate: initial;
+      --tw-sepia: initial;
+      --tw-drop-shadow: initial;
+      --tw-drop-shadow-color: initial;
+      --tw-drop-shadow-alpha: 100%;
+      --tw-drop-shadow-size: initial;
+    }
+  }
+}
+
+@layer reactflow, theme, base, app;
+
+@layer utilities {
+  .collapse {
+    visibility: collapse;
+  }
+
+  .invisible {
+    visibility: hidden;
+  }
+
+  .visible {
+    visibility: visible;
+  }
+
+  .absolute {
+    position: absolute;
+  }
+
+  .fixed {
+    position: fixed;
+  }
+
+  .relative {
+    position: relative;
+  }
+
+  .block {
+    display: block;
+  }
+
+  .grid {
+    display: grid;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .grow {
+    flex-grow: 1;
+  }
+
+  .transform {
+    transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
+  }
+
+  .resize {
+    resize: both;
+  }
+
+  .uppercase {
+    text-transform: uppercase;
+  }
+
+  .outline {
+    outline-style: var(--tw-outline-style);
+    outline-width: 1px;
+  }
+
+  .invert {
+    --tw-invert: invert(100%);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+}
+
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-outline-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
+
+@property --tw-blur {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-brightness {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-contrast {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-grayscale {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-hue-rotate {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-invert {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-opacity {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-saturate {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-sepia {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-drop-shadow {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-drop-shadow-color {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-drop-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+@property --tw-drop-shadow-size {
+  syntax: "*";
+  inherits: false
+}
+/* React Flow's own stylesheet in the lowest cascade layer (see tailwind.css), so the board's rules win over it. */
+@layer reactflow {
 /* this gets exported as style.css and can be used for the default theming */
 /* these are the necessary styles for React/Svelte Flow, they get used by base.css and style.css */
 .react-flow {
@@ -624,6 +815,7 @@ svg.react-flow__connectionline {
 .react-flow__edge-text {
   fill: var(--xy-edge-label-color, var(--xy-edge-label-color-default));
 }
+}
 /* inter-cyrillic-ext-wght-normal */
 @font-face {
   font-family: 'Inter Variable';
@@ -967,6 +1159,7 @@ svg.react-flow__connectionline {
   src: url(/assets/kantumruy-pro-latin-700-normal-CJYSeyEt.woff2) format('woff2'), url(/assets/kantumruy-pro-latin-700-normal-BRnJWN2X.woff) format('woff');
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
+@layer app {
 :root {
   /* T10.2 design tokens; U1 (2026-10-24) refreshed the values: cooler neutrals, an accent dark enough for white text
      (AA), softer layered shadows, rounder corners. Colour: neutrals, one accent, semantic types used as accents only. */
@@ -979,6 +1172,7 @@ svg.react-flow__connectionline {
   --line: #e4e7eb;
   --line-strong: #cfd4da;
   --accent: #0965cf; /* U7: 5.6:1 with white text, 4.7:1 as text on every light surface */
+  --wire-reconnecting: #777; /* React Flow's colour for a wire being dragged to a new port */
   --accent-hover: #0753ad;
   --on-accent: #fff; /* text and icons on a solid accent or status (ok, warn, danger) fill */
   --accent-soft: #e7f0fc;
@@ -1427,8 +1621,9 @@ body { margin: 0; background: var(--ambient); background-attachment: fixed; min-
 
 /* Touch: no browser tap flash — the app's own pressed and selected states show the tap. */
 button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent; }
-
+}
 /* Project history, the Review panel and approval (CSS cleanup 10). */
+@layer app {
 /* Project history (D62, Q3): the panel in the inspector's place, versions, Restore and Save version. */
 .sc-history__name { grid-template-columns: 1fr auto; align-items: center; }
 .sc-history__note { margin: 0; padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); line-height: 1.5; }
@@ -1452,7 +1647,9 @@ button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent;
 .sc-approval--on .sc-approval__state { color: var(--ok); }
 .sc-approval--changed .sc-approval__state { color: var(--warn); }
 .sc-fig__bar .sc-approval__approve { background: var(--ok); color: var(--on-accent); border-color: var(--ok); font-weight: 600; }
+}
 /* Dialogs: the shared dialog card and each dialog's own parts (CSS cleanup 9). */
+@layer app {
 /* Dialogs (U6): a clear title, grouped content on soft panels, actions on the right, Close always in view. */
 .sc-dialog { border: 0; padding: 0; background: transparent; }
 .sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast); }
@@ -1517,7 +1714,9 @@ button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent;
 .sc-pdfpages__page { width: 100%; display: grid; gap: 4px; justify-items: center; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: inherit; font: inherit; font-size: var(--fs-sm); cursor: pointer; min-height: 44px; }
 .sc-pdfpages__page:hover, .sc-pdfpages__page:focus-visible { border-color: var(--accent); }
 .sc-pdfpages__page img, .sc-pdfpages__blank { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: var(--canvas); border-radius: var(--r-sm); }
+}
 /* The Projects home and sign-in (CSS cleanup 9). */
+@layer app {
 /* Sign in and first run (U5): a brand panel with the promise and a small illustration, the form on the right. */
 .sc-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: var(--fg); }
 .sc-brand__mark { flex: none; filter: drop-shadow(0 4px 10px rgb(79 140 255 / 0.35)); }
@@ -1634,8 +1833,10 @@ button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent;
 .sc-tile--grey { --tile: var(--muted); }
 .sc-tile--thumb { --tile: var(--muted); overflow: hidden; padding: 0; background: var(--canvas, var(--surface-2)); }
 .sc-tile--thumb img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+}
 /* Editors: the Layer Comp and Preview editors — screen, bar, stage, Layers and Design panels, override inspector,
    phone tabs, the transform box and comments (CSS cleanup 8). */
+@layer app {
 /* The editor screen (T10.1, U4): Figma-style, compact 11 px panels, a grey canvas and blue selection. */
 .sc-editor-screen { position: fixed; inset: 0; height: 100dvh; z-index: 50; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); box-sizing: border-box; background: var(--bg); }
 .sc-fig__tools { display: inline-flex; gap: 2px; }
@@ -1902,7 +2103,9 @@ p.sc-comment__text { cursor: auto; }
 @media (pointer: coarse) {
   .sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 40px; padding: 0 12px; }
 }
+}
 /* The node card every board panel shares: card, header, handles (CSS cleanup 7). */
+@layer app {
 /* A node card (T10.2, U3, V1): white card, rounded, a lift on hover and a glow when selected; its preview and states. */
 /* Board cards fit their content (no thumbnail wider than the card) and show only a preview; settings live in
    the inspector. `minmax(0, 1fr)`: a grid column sized `auto` grows to an image's natural width. */
@@ -1983,8 +2186,10 @@ p.sc-comment__text { cursor: auto; }
 /* An input's behaviour picker (T8.7). */
 .sc-behavior { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--fg); }
 .sc-inspector-panel .sc-behavior { height: var(--field-h); font-size: var(--fs-sm); }
+}
 /* Board chrome: the top bar, menus, the floating inspector and overview, the canvas and its backdrop, wires, guides and grid,
    groups, zoomed-out name tags and the canvas toolbar (CSS cleanup 6). */
+@layer app {
 /* Top bar (T10.3, U2): navigation and history, + Add, then status, tools and Export; the save status. */
 .sc-save { margin-left: auto; color: var(--muted); display: flex; gap: 8px; align-items: center; }
 .sc-save--conflict, .sc-save--error { color: var(--danger); }
@@ -2138,6 +2343,16 @@ p.sc-comment__text { cursor: auto; }
 .sc-board .sc-topbar > .sc-topbar__end { justify-self: end; }
 
 /* React Flow, restyled: pane, edges, minimap and panels. */
+/* React Flow rules that out-ranked ours by specificity before its sheet went into the lowest cascade layer (see tailwind.css), kept so they still
+   do: no focus ring on a focused node, wire or selection box, and its colours for a focused wire and a wire being
+   reconnected. They sit ahead of the wire rules below, which still win where they tied before. */
+.react-flow__node.selectable:focus, .react-flow__node.selectable:focus-visible, .react-flow__edge.selected, .react-flow__edge:focus,
+.react-flow__edge:focus-visible, .react-flow__nodesselection-rect:focus, .react-flow__nodesselection-rect:focus-visible,
+.react-flow__selection:focus, .react-flow__selection:focus-visible { outline: none; }
+.react-flow__edge.selectable:focus .react-flow__edge-path, .react-flow__edge.selectable:focus-visible .react-flow__edge-path {
+  stroke: var(--xy-edge-stroke-selected, var(--xy-edge-stroke-selected-default));
+}
+.react-flow__edge.updating .react-flow__edge-path { stroke: var(--wire-reconnecting); }
 .react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
 .react-flow__edgeupdater { cursor: grab; }
 .react-flow__edge.sc-edge--layer .react-flow__edge-path { stroke: color-mix(in srgb, var(--type-input) 55%, var(--faint)); }
@@ -2232,7 +2447,9 @@ p.sc-comment__text { cursor: auto; }
 
 /* The pulse that runs down a wire after a change (T13.8). */
 @keyframes sc-wire-pulse { from { stroke-dashoffset: 54; stroke-width: 3; } to { stroke-dashoffset: 0; } }
+}
 /* Asset nodes: Logo, Image, Text, Headline and Background — their cards, slots, drop areas and lists (CSS cleanup 3). */
+@layer app {
 /* Logo and Image nodes (D40): the pictures grid, its list view (one row per picture) and the inspector grid. */
 .sc-assets { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .sc-assets--inspector { margin: 8px 0; }
@@ -2348,7 +2565,9 @@ p.sc-comment__text { cursor: auto; }
 .sc-bg-slots > .sc-bg-slot--horizontal .sc-slot__tile { height: auto; aspect-ratio: 7 / 4; }
 .sc-bg-slots > .sc-bg-slot--square .sc-slot__tile { height: auto; aspect-ratio: 1; }
 .sc-bg-slots > .sc-bg-slot--vertical .sc-slot__tile { height: auto; aspect-ratio: 5 / 8; }
+}
 /* The pipeline cards: Layer Comp, Core preset, Preset and Preview nodes, their ports and layout health (CSS cleanup 5). */
+@layer app {
 /* Layer Comp (D49): the layer order rows and the Square / Vertical / Horizontal layout buttons. */
 .sc-node--main { min-height: 120px; min-width: 260px; }
 .sc-node--main::before { background: var(--type-main); }
@@ -2476,4 +2695,5 @@ p.sc-comment__text { cursor: auto; }
 .sc-health__list strong { display: block; font-weight: 600; }
 .sc-inspector-panel__level.sc-health--ok { background: var(--ok-soft); color: var(--ok); }
 .sc-inspector-panel__level.sc-health--frozen, .sc-inspector-panel__level.sc-health--empty { background: var(--surface-2); color: var(--muted); }
+}
 

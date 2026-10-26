@@ -2,6 +2,7 @@ import { BUNDLED_FONTS, fontStack, LIMITS } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { ApiError, uploadAsset } from '../api';
 import type { TeamFont } from './loader';
+import { DIALOG } from '../ui/tw';
 
 const SAMPLE = 'Aa Bb 123 · សួស្តី កម្ពុជា';
 
@@ -53,21 +54,21 @@ export function FontsDialog(props: {
   }
 
   const row = (family: string, note: string) => (
-    <li key={`${note}:${family}`}>
-      <div className="sc-font__name">
+    <li key={`${note}:${family}`} className="rounded-[12px] border border-line bg-surface-2 px-14 py-12">
+      <div className="sc-font__name text-[12px] font-[600]">
         {family} <span className="sc-muted">{note}</span>
       </div>
-      <div className="sc-font__sample" style={{ fontFamily: fontStack(family) }}>
+      <div className="sc-font__sample text-[22px] leading-[1.3]" style={{ fontFamily: fontStack(family) }}>
         {SAMPLE}
       </div>
     </li>
   );
 
   return (
-    <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="fonts-title">
+    <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="fonts-title">
       <div className="sc-card sc-card--wide">
         <h1 id="fonts-title">Fonts</h1>
-        <ul className="sc-fonts" aria-label="Available fonts">
+        <ul className="sc-fonts m-0 grid max-h-[50vh] list-none gap-8 overflow-auto p-0" aria-label="Available fonts">
           {BUNDLED_FONTS.map((f) => row(f.family, 'bundled'))}
           {props.teamFonts.map((f) => row(f.family, 'team'))}
         </ul>

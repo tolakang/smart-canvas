@@ -4,6 +4,7 @@
  * Escape cancels), and the answer comes back through `onDone` (null = cancelled).
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { DIALOG } from './tw';
 
 export interface AskSpec {
   title: string;
@@ -14,7 +15,8 @@ export interface AskSpec {
   danger?: boolean;
 }
 
-export function AskDialog({ ask, onDone }: { ask: AskSpec; onDone: (value: string | null) => void }) {
+/** `fieldClass`: extra classes for the text field's label, so it matches the dialog it is asked from. */
+export function AskDialog({ ask, onDone, fieldClass = '' }: { ask: AskSpec; onDone: (value: string | null) => void; fieldClass?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [value, setValue] = useState(ask.input?.value ?? '');
   useEffect(() => {
@@ -26,12 +28,12 @@ export function AskDialog({ ask, onDone }: { ask: AskSpec; onDone: (value: strin
     onDone(ask.input ? value.trim() : '');
   };
   return (
-    <dialog ref={ref} className="sc-dialog" aria-labelledby="ask-title" onCancel={() => onDone(null)}>
-      <form className="sc-card sc-ask" onSubmit={submit}>
+    <dialog ref={ref} className={DIALOG} aria-labelledby="ask-title" onCancel={() => onDone(null)}>
+      <form className="sc-card sc-ask grid" onSubmit={submit}>
         <h2 id="ask-title">{ask.title}</h2>
-        {ask.message && <p className="sc-muted">{ask.message}</p>}
+        {ask.message && <p className="sc-muted m-0">{ask.message}</p>}
         {ask.input && (
-          <label className="sc-field sc-field--col">
+          <label className={`sc-field sc-field--col ${fieldClass}`}>
             {ask.input.label}
             <input value={value} autoFocus maxLength={200} onChange={(e) => setValue(e.target.value)} onFocus={(e) => e.currentTarget.select()} />
           </label>

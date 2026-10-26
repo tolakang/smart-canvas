@@ -12,6 +12,7 @@ import { Icon } from '../board/LayerRow';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
 import { PresetsDialog } from './PresetsDialog';
 import { TeamDialog } from './TeamDialog';
+import { DIALOG } from '../ui/tw';
 
 interface ProjectRow {
   id: string;
@@ -365,8 +366,8 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
     }
   }
   return (
-    <dialog ref={ref} className="sc-dialog" aria-labelledby="new-project-title" onCancel={props.onClose}>
-      <form className="sc-card sc-ask sc-newproj" onSubmit={submit}>
+    <dialog ref={ref} className={DIALOG} aria-labelledby="new-project-title" onCancel={props.onClose}>
+      <form className="sc-card sc-ask sc-newproj grid" onSubmit={submit}>
         <h2 id="new-project-title">New project</h2>
         <label className="sc-field sc-field--col">
           Name
@@ -386,7 +387,7 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
           </fieldset>
         )}
         {error && (
-          <p className="sc-error" role="alert">
+          <p className="sc-error m-0" role="alert">
             {error}
           </p>
         )}

@@ -6,6 +6,7 @@
 import type { TeamRole } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
+import { DIALOG, DIALOG_LONG_CARD, DIALOG_SELECT, DIALOG_STICKY_FOOT, PRESET_FIELD } from '../ui/tw';
 
 interface Member {
   userId: string;
@@ -112,8 +113,8 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
   }
 
   return (
-    <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="team-title">
-      <div className="sc-card sc-presets sc-team">
+    <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="team-title">
+      <div className={`sc-card sc-presets sc-team ${DIALOG_LONG_CARD}`}>
         <h1 id="team-title">{props.teamName} · Team</h1>
         <section aria-label="Members">
           <h2>Members</h2>
@@ -132,7 +133,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                   </span>
                   {props.isAdmin ? (
                     <span className="sc-rows__actions">
-                      <select aria-label={`Role of ${m.email}`} value={m.role} onChange={(e) => void changeRole(m, e.target.value as TeamRole)}>
+                      <select className={DIALOG_SELECT} aria-label={`Role of ${m.email}`} value={m.role} onChange={(e) => void changeRole(m, e.target.value as TeamRole)}>
                         {ROLES.map((r) => (
                           <option key={r} value={r}>
                             {ROLE_LABEL[r]}
@@ -157,9 +158,9 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
             <form className="sc-form" onSubmit={invite} aria-label="Invite">
               <h2>Invite someone</h2>
               <div className="sc-fields">
-                <label>
+                <label className={PRESET_FIELD}>
                   Role
-                  <select value={role} onChange={(e) => setRole(e.target.value as TeamRole)}>
+                  <select className={DIALOG_SELECT} value={role} onChange={(e) => setRole(e.target.value as TeamRole)}>
                     {ROLES.map((r) => (
                       <option key={r} value={r}>
                         {ROLE_LABEL[r]}
@@ -167,7 +168,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                     ))}
                   </select>
                 </label>
-                <label className="sc-fields__wide">
+                <label className={`sc-fields__wide ${PRESET_FIELD}`}>
                   Email
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={320} placeholder="Optional" aria-describedby="invite-email-hint" />
                 </label>
@@ -182,8 +183,8 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
               </div>
             </form>
             {link && (
-              <div className="sc-invite-link" role="group" aria-label="New invite link">
-                <input readOnly value={link} aria-label="Invite link" onFocus={(e) => e.currentTarget.select()} />
+              <div className="sc-invite-link flex gap-(--sp-2)" role="group" aria-label="New invite link">
+                <input className="flex-1" readOnly value={link} aria-label="Invite link" onFocus={(e) => e.currentTarget.select()} />
                 <button type="button" className="sc-btn sc-btn--primary" onClick={() => void copy()}>
                   {copied ? 'Copied ✓' : 'Copy'}
                 </button>
@@ -217,7 +218,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
             {error}
           </p>
         )}
-        <div className="sc-dialog__foot">
+        <div className={DIALOG_STICKY_FOOT}>
           <button type="button" className="sc-btn" onClick={() => ref.current?.close()}>
             Close
           </button>

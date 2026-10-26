@@ -69,9 +69,10 @@ Preview and export share `OutputRenderer` (CLAUDE.md).
 ## 6. React Flow UI (reactflow.dev/ui): what we use instead
 
 React Flow UI is a shadcn/ui registry: each component is copied into the app with the shadcn CLI and styled with
-**Tailwind CSS 4** and shadcn theming. This project has no Tailwind and no shadcn ("no new dependency without saying
-why"; Tailwind is undecided, see the CSS cleanup plan). So **don't install them**. Take the idea and build it with our
-classes and tokens. The full catalogue (2026-10), mapped:
+**Tailwind CSS 4** and shadcn theming. This project now has Tailwind 4 (D65, `TAILWIND-PLAN.md`) but not shadcn, and
+its Tailwind theme holds only our tokens. So **don't run the shadcn CLI**: take the idea (or a component's markup) and
+style it with our utilities (`bg-surface`, `border-line`, `rounded-md`, `text-sm`…) and our `sc-` classes. The full
+catalogue (2026-10), mapped:
 
 | Component (`/ui/components/…`) | What it is | On this board |
 |---|---|---|
@@ -126,7 +127,7 @@ what is named instead.
 | | `connection-events`, `computing-flows`, `collaborative` | Connections are handled in Board.tsx; data flow is core's layout engine; no live collaboration |
 | Layout | `auto-layout`, `dagre`, `elkjs`, `elkjs-multiple-handles`, `dynamic-layouting`, `horizontal`, `force-layout`, `node-collisions`, `expand-collapse` | **Tidy** (`tidy.ts`, D57) and N4 placement. No layout libraries |
 | Grouping | `sub-flows`, `parent-child-relation`, `selection-grouping` | Group frames (T13.7), derived; `parentId` is not used |
-| Styling | `dark-mode`, `base-style`, `tailwind`, `turbo-flow` | `colorMode={theme}` plus our tokens; React Flow's classes restyled in styles.css (`.react-flow__*`); no Tailwind |
+| Styling | `dark-mode`, `base-style`, `tailwind`, `turbo-flow` | `colorMode={theme}` plus our tokens; React Flow's classes restyled in `board/chrome.css` (`.react-flow__*`); Tailwind utilities on our own markup (D65) |
 | Whiteboard | `lasso-selection`, `rectangle`, `freehand-draw`, `eraser` | Box selection only (`selectionOnDrag`, Select several on touch) |
 | Misc | `download-image`, `server-side-image-creation` | Export renders Previews with `OutputRenderer` in the worker (Playwright), never the board |
 

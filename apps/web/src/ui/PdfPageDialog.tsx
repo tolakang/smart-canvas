@@ -6,10 +6,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { openPdf, PdfError, type OpenPdf } from '../pdf';
+import { DIALOG } from './tw';
 
 /** Pages drawn as thumbnails; a longer PDF lists the rest by number. */
 const THUMBS = 48;
 const THUMB_PX = 160;
+
+/** A page thumbnail, or its stand-in while pdf.js draws it. */
+const PAGE_THUMB = 'aspect-[3/4] w-full rounded-sm bg-canvas object-contain';
 
 function PdfPageDialog({ name, pdf, onDone }: { name: string; pdf: OpenPdf; onDone: (page: number | null) => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -31,17 +35,17 @@ function PdfPageDialog({ name, pdf, onDone }: { name: string; pdf: OpenPdf; onDo
     };
   }, [pdf]);
   return (
-    <dialog ref={ref} className="sc-dialog" aria-labelledby="pdf-page-title" onCancel={() => onDone(null)}>
-      <div className="sc-card sc-pdfpages">
+    <dialog ref={ref} className={DIALOG} aria-labelledby="pdf-page-title" onCancel={() => onDone(null)}>
+      <div className="sc-card sc-pdfpages grid grid-rows-[auto_auto_minmax(0,1fr)_auto]">
         <h2 id="pdf-page-title">Which page?</h2>
         <p className="sc-muted">
           {name} has {pdf.pages} pages. Pick the one to use.
         </p>
-        <ul className="sc-pdfpages__grid">
+        <ul className="sc-pdfpages__grid m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-(--sp-2) overflow-auto p-0">
           {Array.from({ length: pdf.pages }, (_, i) => i + 1).map((n) => (
             <li key={n}>
-              <button type="button" className="sc-pdfpages__page" aria-label={`Page ${n}`} onClick={() => onDone(n)}>
-                {thumbs[n] ? <img src={thumbs[n]} alt="" draggable={false} /> : <span className="sc-pdfpages__blank" aria-hidden="true" />}
+              <button type="button" className="sc-pdfpages__page grid min-h-44 w-full cursor-pointer justify-items-center gap-4 rounded-md border border-line bg-surface p-(--sp-1) text-sm leading-[inherit] text-inherit hover:border-accent focus-visible:border-accent" aria-label={`Page ${n}`} onClick={() => onDone(n)}>
+                {thumbs[n] ? <img className={PAGE_THUMB} src={thumbs[n]} alt="" draggable={false} /> : <span className={`sc-pdfpages__blank ${PAGE_THUMB}`} aria-hidden="true" />}
                 <span>{n}</span>
               </button>
             </li>

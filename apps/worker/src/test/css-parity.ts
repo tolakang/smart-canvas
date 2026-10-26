@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
+import { probeWinners } from './css-winners';
 
 const referencePath = fileURLToPath(new URL('./css-reference/styles.css', import.meta.url));
 export const referenceCss = () => readFileSync(referencePath, 'utf8');
@@ -135,6 +136,7 @@ async function stable(page: Page): Promise<Buffer> {
 export async function cssParity(page: Page, name: string, css = referenceCss()): Promise<CssParity> {
   for (let attempt = 0; ; attempt++) {
     const app = await stable(page);
+    if (attempt === 0) await probeWinners(page, name);
     await snapshot(page, '__scApp');
     await swapIn(page, css);
     await settle(page);

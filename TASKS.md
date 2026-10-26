@@ -217,8 +217,9 @@ Safety net while it ran: a CSS parity test compared every covered screen with a 
 
 ## P28 Tailwind conversion (approved 2026-10-26, D65) — plan: `TAILWIND-PLAN.md`
 Rule: nothing may look different; the CSS parity test comes back for the conversion and must match every screen.
-- [ ] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry (this PR)
-- [ ] T2 — Dialogs, Projects home, sign-in → utilities; empty `ui/dialogs.css`, `shell/home.css`
+- [x] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry — [#180](https://github.com/tolakang/smart-canvas/pull/180)
+- [ ] T2a — Dialogs → utilities; `ui/dialogs.css` removed (this PR)
+- [ ] T2b — Projects home, sign-in → utilities; empty `shell/home.css`
 - [ ] T3 — Top bar, menus, inspector, side panels, canvas toolbar; most of `board/chrome.css`
 - [ ] T4 — Main Comps, Export Group, Presets, Preview Cards; `board/node.css`, `board/pipeline.css`
 - [ ] T5 — Asset nodes and slots; `board/assets.css`

@@ -7,6 +7,7 @@ import type { PresetGroup, SizePreset, Unit } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
+import { DIALOG, DIALOG_LONG_CARD, DIALOG_SELECT, DIALOG_STICKY_FOOT, PRESET_FIELD } from '../ui/tw';
 
 interface Draft {
   id: string | null;
@@ -149,8 +150,8 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
     });
 
   return (
-    <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="presets-title">
-      <div className="sc-card sc-presets">
+    <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="presets-title">
+      <div className={`sc-card sc-presets ${DIALOG_LONG_CARD}`}>
         <h1 id="presets-title">Size presets</h1>
         <p className="sc-muted sc-lede">Sizes for new Previews. Built-in ones are fixed{props.isAdmin ? '; add your team’s own below.' : '; admins can add the team’s own.'}</p>
         {list !== null && familiesOf(list).length > 0 && (
@@ -158,15 +159,15 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
             <h2>Preset node families</h2>
             <ul className="sc-list sc-rows sc-families">
               {familiesOf(list).map((f) => (
-                <li key={f.name} data-family={f.name}>
-                  <details className="sc-family">
-                    <summary aria-label={`${f.name}: ${f.sizes.length} ${f.sizes.length === 1 ? 'size' : 'sizes'}`}>
+                <li key={f.name} className="items-start" data-family={f.name}>
+                  <details className="sc-family min-w-0 flex-1">
+                    <summary className="flex cursor-pointer items-baseline gap-8 px-0 py-2" aria-label={`${f.name}: ${f.sizes.length} ${f.sizes.length === 1 ? 'size' : 'sizes'}`}>
                       <span className="sc-rows__name">{f.name}</span>
                       <span className="sc-rows__meta">
                         {f.sizes.length} {f.sizes.length === 1 ? 'size' : 'sizes'}
                       </span>
                     </summary>
-                    <ul className="sc-family__sizes" aria-label={`${f.name} sizes`}>
+                    <ul className="sc-family__sizes mt-4 mr-0 mb-2 ml-16 grid list-none gap-2 p-0 text-[13px]" aria-label={`${f.name} sizes`}>
                       {f.sizes.map((p) => (
                         <li key={p.id}>
                           {p.name} <span className="sc-muted">{`${p.size.width} × ${p.size.height} ${p.size.unit}`}</span>
@@ -232,41 +233,41 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           <form className="sc-form" onSubmit={save} aria-label={draft.id ? 'Edit preset' : 'New preset'}>
             <h2>{draft.id ? `Edit “${draft.name}”` : 'New team preset'}</h2>
             <div className="sc-fields">
-              <label className="sc-fields__wide">
+              <label className={`sc-fields__wide ${PRESET_FIELD}`}>
                 Name
                 <input value={draft.name} onChange={(e) => set({ name: e.target.value })} required maxLength={120} placeholder="e.g. Shop banner" />
               </label>
-              <label className="sc-fields__wide">
+              <label className={`sc-fields__wide ${PRESET_FIELD}`}>
                 Preset node family
                 <input value={draft.family} onChange={(e) => set({ family: e.target.value })} maxLength={60} placeholder="e.g. GDN — sizes of one family are added together" />
               </label>
-              <label>
+              <label className={PRESET_FIELD}>
                 Group
-                <select value={draft.group} onChange={(e) => set({ group: e.target.value as PresetGroup })}>
+                <select className={DIALOG_SELECT} value={draft.group} onChange={(e) => set({ group: e.target.value as PresetGroup })}>
                   <option value="social">Social</option>
                   <option value="print">Print</option>
                 </select>
               </label>
-              <label>
+              <label className={PRESET_FIELD}>
                 Unit
-                <select value={draft.unit} onChange={(e) => set({ unit: e.target.value as Unit })}>
+                <select className={DIALOG_SELECT} value={draft.unit} onChange={(e) => set({ unit: e.target.value as Unit })}>
                   <option value="px">px</option>
                   <option value="mm">mm</option>
                 </select>
               </label>
-              <label>
+              <label className={PRESET_FIELD}>
                 Width
                 <input type="number" inputMode="decimal" required min={0.1} step="any" value={draft.width} onChange={(e) => set({ width: e.target.value })} />
               </label>
-              <label>
+              <label className={PRESET_FIELD}>
                 Height
                 <input type="number" inputMode="decimal" required min={0.1} step="any" value={draft.height} onChange={(e) => set({ height: e.target.value })} />
               </label>
-              <label>
+              <label className={PRESET_FIELD}>
                 DPI
                 <input type="number" inputMode="numeric" min={72} max={1200} step={1} placeholder={draft.unit === 'mm' ? '300' : 'Optional'} value={draft.dpi} onChange={(e) => set({ dpi: e.target.value })} />
               </label>
-              <label>
+              <label className={PRESET_FIELD}>
                 Bleed (mm)
                 <input type="number" inputMode="decimal" min={0} max={50} step="any" placeholder="0" value={draft.bleedMm} onChange={(e) => set({ bleedMm: e.target.value })} />
               </label>
@@ -291,13 +292,14 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
         {ask && (
           <AskDialog
             ask={ask}
+            fieldClass={PRESET_FIELD}
             onDone={(v) => {
               setAsk(null);
               ask.done(v);
             }}
           />
         )}
-        <div className="sc-dialog__foot">
+        <div className={DIALOG_STICKY_FOOT}>
           <button type="button" className="sc-btn" onClick={() => ref.current?.close()}>
             Close
           </button>
