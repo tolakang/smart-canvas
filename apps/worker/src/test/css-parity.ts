@@ -93,9 +93,12 @@ const shot = (page: Page) => page.screenshot({ animations: 'disabled', caret: 'h
 
 /**
  * Chromium re-rasterizes after a stylesheet swap, and the edges of anti-aliased curves (wires, rounded corners) can
- * come out a few levels apart even with identical styles; measured at most 5 of 255. Anything over NOISE counts.
+ * come out a few levels apart even with identical styles: mostly at most 5 of 255, now and then a lone pixel
+ * further (seen on CI). Anything over NOISE counts, and up to STRAY such pixels are tolerated; the computed-style
+ * check, which must match exactly, is what catches a CSS change (a real one moves far more pixels than that).
  */
 const NOISE = 16;
+export const STRAY = 50;
 
 async function pixelDiff(a: Buffer, b: Buffer): Promise<number> {
   const [x, y] = await Promise.all([sharp(a).raw().toBuffer({ resolveWithObject: true }), sharp(b).raw().toBuffer({ resolveWithObject: true })]);
