@@ -87,7 +87,7 @@ React Flow's sheet moves under ours. Five of its rules used to win on specificit
 | T1 | Setup: packages, `@theme inline`, `dark` variant, breakpoints, the layers above, parity test back, guard update, DECISIONS entry. No visual change. | — | low |
 | T2 | Dialogs, Projects home, sign-in | `ui/dialogs.css`, `shell/home.css` | low |
 | T3 | Top bar, menus, inspector, side panels, canvas toolbar | most of `board/chrome.css` | medium |
-| T4 | Node card; Layer Comp, Core preset, Preset, Preview cards | `board/node.css`, `board/pipeline.css` | medium |
+| T4 | Main Comps, Export Group, Presets, Preview Cards | `board/node.css`, `board/pipeline.css` | medium |
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high |
 | T6 | History, comments, approval | `board/review.css` | low |
 | T7 | Editors, including phone tabs | most of `editor/editor.css` | high |
