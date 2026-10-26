@@ -95,15 +95,8 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 .sc-error { color: var(--danger); margin: 0; }
 .sc-badge { padding: 2px 8px; border-radius: 99px; background: var(--line); font-size: 12px; }
 
-/* The visible height (dvh), not 100vh: on phones 100vh is taller than the screen while the browser's address
-   bar and bottom bar show, which pushed the top bar or the canvas toolbar out of view. The page itself never
-   scrolls on the board. */
-.sc-board { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); box-sizing: border-box; }
+/* The board page never scrolls; the board itself takes the visible height (dvh, see chrome.css). */
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
-.sc-board__bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--line); }
-.sc-board__canvas { flex: 1; }
-.sc-save { margin-left: auto; color: var(--muted); display: flex; gap: 8px; align-items: center; }
-.sc-save--conflict, .sc-save--error { color: var(--danger); }
 
 .sc-node { min-width: 160px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .sc-node--input { background: var(--input); }
@@ -228,24 +221,15 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-lib__text { width: 40px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
 .sc-lib__name { display: grid; }
 
-/* T8.2 / T8.4 board right-click menu */
-.sc-menu { position: fixed; z-index: 60; min-width: 200px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-2); display: grid; }
-.sc-menu__title { padding: 6px 10px 4px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.sc-menu__item { text-align: left; padding: 6px 10px; border: 0; border-radius: 5px; background: none; font-size: 13px; }
-.sc-menu__item:hover:not(:disabled), .sc-menu__item:focus-visible { background: var(--input); outline: none; }
-.sc-menu__item:disabled { color: var(--muted); }
-.sc-menu__item--danger { color: var(--danger); }
-.sc-menu__item--sep { margin-top: 4px; border-top: 1px solid var(--line); border-radius: 0 0 5px 5px; }
 
 /* T8.3 file dropped on an input */
 .sc-node--drop { outline: 2px dashed var(--accent); outline-offset: 2px; }
 
 /* T8.5 wires: bigger handles (with a wider invisible hit area) and a visible grab state */
+/* Handles in the accent colour. */
 .react-flow__handle { width: 10px; height: 10px; background: var(--surface); border: 2px solid var(--accent); }
 .react-flow__handle::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
 .react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); }
-.react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
-.react-flow__edgeupdater { cursor: grab; }
 
 /* T8.6 editor: bigger handles, zoom */
 .sc-editor__stage { min-width: 0; min-height: 0; }
@@ -328,9 +312,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-design .sc-inspector { border-bottom: 1px solid var(--fig-line); }
 
 /* T10.2 board: design-system pass. White node cards with a type stripe, one field style, one button style. */
-.sc-board__bar { min-height: 48px; font-size: var(--fs-sm); }
-.sc-board__bar button { height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); font-size: var(--fs-sm); transition: background var(--t-fast); }
-.sc-board__bar button:hover:not(:disabled) { background: var(--surface-2); }
 .react-flow__node { font-size: var(--fs-sm); }
 
 .sc-node { position: relative; padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-1); display: grid; gap: var(--sp-2); transition: box-shadow var(--t-fast), border-color var(--t-fast); }
@@ -382,38 +363,9 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 /* A chip: a small rounded label (a Preview's hand-edits count). */
 .sc-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--sp-2); border-radius: 99px; background: var(--warn-soft); color: var(--warn); font-size: var(--fs-xs); font-weight: 500; }
 
-/* Wires and handles in the accent colour */
-.react-flow__edge-path { stroke: var(--faint); stroke-width: 1.5; }
 .react-flow__handle { width: 10px; height: 10px; border: 2px solid var(--accent); background: var(--surface); }
 
-/* T10.3 top bar: three groups — navigation + history, add, status + tools + export */
-.sc-topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--sp-3); height: 48px; min-height: 48px; padding: 0 var(--sp-2); background: var(--surface); border-bottom: 1px solid var(--line); }
-.sc-topbar__group { display: flex; align-items: center; gap: var(--sp-1); min-width: 0; }
-.sc-topbar__end { justify-content: flex-end; grid-column: 3; } /* stays right when the middle group is hidden (phone) */
-.sc-topbar__name { font-size: var(--fs-md); font-weight: 600; padding: 0 var(--sp-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
-.sc-topbar__sep { width: 1px; height: 20px; margin: 0 var(--sp-1); background: var(--line); flex: none; }
-.sc-topbar button { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 var(--sp-3); border: 0; border-radius: var(--r-md); background: none; color: var(--fg); font-size: var(--fs-sm); font-weight: 500; white-space: nowrap; transition: background var(--t-fast), color var(--t-fast); }
-.sc-topbar button:hover:not(:disabled) { background: var(--surface-2); }
-.sc-topbar button:disabled { color: var(--faint); cursor: default; }
-.sc-topbar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.sc-topbar .sc-icon { margin: 0; }
-.sc-topbar__icon { width: 32px; padding: 0 !important; justify-content: center; color: var(--muted) !important; }
-.sc-topbar__icon:hover:not(:disabled) { color: var(--fg) !important; }
-.sc-topbar__add { padding: 2px; border-radius: var(--r-md); background: var(--surface-2); gap: 2px; }
-.sc-topbar__add button { height: 28px; }
-.sc-topbar__add button:hover:not(:disabled) { background: var(--surface); box-shadow: var(--shadow-1); }
-.sc-topbar__ghost { color: var(--muted) !important; }
-.sc-topbar__ghost:hover:not(:disabled) { color: var(--fg) !important; }
-.sc-topbar .sc-topbar__primary { margin-left: var(--sp-1); background: var(--accent); color: var(--on-accent); }
-.sc-topbar .sc-topbar__primary:hover:not(:disabled) { background: var(--topbar-primary-hover); }
-.sc-topbar .sc-topbar__primary:disabled { background: var(--accent-soft); color: var(--topbar-primary-disabled); }
-.sc-topbar .sc-save { margin-left: 0; gap: 6px; font-size: var(--fs-xs); white-space: nowrap; }
-.sc-save__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--type-output); flex: none; }
-.sc-save--pending .sc-save__dot, .sc-save--saving .sc-save__dot { background: var(--warn); }
-.sc-save--error .sc-save__dot, .sc-save--conflict .sc-save__dot { background: var(--danger); }
-.sc-save button { height: 24px !important; border: 1px solid var(--line-strong) !important; }
-.sc-topbar__counts { font-size: var(--fs-xs); }
-@media (max-width: 1100px) { .sc-topbar__ghost { font-size: 0 !important; gap: 0 !important; width: 32px; justify-content: center; padding: 0 !important; } .sc-topbar .sc-save { font-size: 0; } }
+ .sc-topbar .sc-icon { margin: 0; }
 
 
 
@@ -423,38 +375,13 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
 .react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
 .react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: var(--danger-soft); }
-.react-flow__edge.sc-edge--layer .react-flow__edge-path { stroke: color-mix(in srgb, var(--type-input) 55%, var(--faint)); }
-.react-flow__edge.sc-edge--composition .react-flow__edge-path { stroke: color-mix(in srgb, var(--type-main) 55%, var(--faint)); stroke-dasharray: none; }
-.react-flow__edge.sc-edge--layer.selected .react-flow__edge-path, .react-flow__edge.sc-edge--layer:hover .react-flow__edge-path { stroke: var(--type-input); }
-.react-flow__edge.sc-edge--composition.selected .react-flow__edge-path, .react-flow__edge.sc-edge--composition:hover .react-flow__edge-path { stroke: var(--type-main); }
 
-/* T13.2 right inspector: the selected node's settings; the canvas takes the rest */
-.sc-board__canvas { display: flex; min-height: 0; }
-.sc-board__flow { flex: 1; min-width: 0; position: relative; }
 /* D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
-@media (pointer: coarse) { .sc-board__flow .react-flow { touch-action: none; } }
 /* D58: the editor's touch gestures (pan, pinch) are its own on every device, touch laptops included. */
 .sc-editor__stage { touch-action: none; }
 /* Hand (or Space held): the board pans from anywhere, panels included; the cursor says so. */
 .sc-board__flow--hand .react-flow__pane, .sc-board__flow--hand .react-flow__node { cursor: grab; }
 .sc-board__flow--hand .react-flow__pane.dragging, .sc-board__flow--hand:active .react-flow__node { cursor: grabbing; }
-.sc-inspector-panel { width: 300px; flex: none; overflow: auto; background: var(--surface); border-left: 1px solid var(--line); font-size: var(--fs-sm); }
-.sc-inspector-panel__section { display: grid; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
-.sc-inspector-panel__title { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: var(--field-h); font-size: var(--fs-sm); font-weight: 600; }
-.sc-inspector-panel__hint { margin: 0; font-size: var(--fs-xs); line-height: 1.5; }
-.sc-inspector-panel__level { padding: 2px var(--sp-2); border-radius: 99px; font-size: var(--fs-xs); font-weight: 600; }
-.sc-inspector-panel__issues { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: var(--fs-xs); }
-.sc-inspector-panel__issues li { padding: 6px var(--sp-2); border-radius: var(--r-sm); border-left: 3px solid var(--warn); background: var(--surface-2); }
-.sc-inspector-panel__issues li[data-level='error'] { border-left-color: var(--danger); }
-.sc-inspector-panel__issues li[data-level='todo'] { border-left-color: var(--faint); }
-.sc-inspector-panel__issues strong { display: block; }
-.sc-inspector-panel__form { display: grid; gap: var(--sp-2); }
-/* The inspector reuses the node controls: give them the node field look there too */
-.sc-inspector-panel input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-inspector-panel select, .sc-inspector-panel textarea {
-  max-width: 100%; min-width: 0; font: inherit; font-size: var(--fs-sm); border: 1px solid transparent; border-radius: var(--r-md); background: var(--surface-2); color: var(--fg);
-}
-.sc-inspector-panel input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-inspector-panel select { height: var(--field-h); padding: 0 var(--sp-2); width: 100%; }
-.sc-inspector-panel input:focus, .sc-inspector-panel select:focus, .sc-inspector-panel textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
 .sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; display: inline-flex; }
 .sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
@@ -502,51 +429,10 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 :root[data-theme='dark'] .sc-fig { --fig-bar: #111; --fig-bar-hover: #2a2a2a; }
 .sc-theme-toggle .sc-icon { margin: 0; }
 
-/* T13.4 left node library: drag onto the canvas or click to add; collapses to a rail */
 
-/* T13.5 canvas chrome: floating glass toolbar and alignment guides */
-.sc-canvasbar { display: flex; align-items: center; gap: 2px; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--surface) 72%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
-.sc-canvasbar__btn { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: var(--r-md); background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
-.sc-canvasbar__btn:hover { background: var(--surface-2); color: var(--fg); }
-.sc-canvasbar__btn[aria-pressed='true'] { background: var(--accent-soft); color: var(--accent); }
-.sc-canvasbar__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.sc-canvasbar__sep { width: 1px; height: 20px; margin: 0 var(--sp-1); background: var(--line); }
-.sc-canvasbar__zoom { min-width: 44px; text-align: center; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; color: var(--fg); }
-.sc-canvasbar__item { position: relative; display: inline-flex; }
-/* Two or more panels selected (Select tool, mouse or touch): group or delete them without shortcuts. */
-.sc-selbar { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
-.sc-selbar__count { font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
-/* Toolbar tooltips: above the button (the bar sits at the bottom), quick to appear, never in the way of the pointer. */
-.sc-tip { position: absolute; bottom: calc(100% + 10px); left: 50%; z-index: 20; display: flex; flex-direction: column; gap: 2px; width: max-content; max-width: min(240px, 70vw); padding: 6px 8px; border-radius: var(--r-md); background: var(--fg); color: var(--surface); font-size: var(--fs-sm); line-height: 1.35; text-align: left; box-shadow: var(--shadow-2); pointer-events: none; opacity: 0; visibility: hidden; transform: translate(-50%, 4px); transition: opacity var(--t-fast), transform var(--t-fast), visibility 0s linear var(--t-fast); }
-.sc-tip--show { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity var(--t-fast), transform var(--t-fast); }
-.sc-canvasbar > .sc-canvasbar__item:first-of-type .sc-tip { left: 0; transform: translate(0, 4px); }
-.sc-canvasbar > .sc-canvasbar__item:first-of-type .sc-tip--show { transform: translate(0, 0); }
-.sc-canvasbar > .sc-canvasbar__item:last-of-type .sc-tip { left: auto; right: 0; transform: translate(0, 4px); }
-.sc-canvasbar > .sc-canvasbar__item:last-of-type .sc-tip--show { transform: translate(0, 0); }
-.sc-tip__name { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-.sc-tip__key { padding: 0 4px; border-radius: 4px; background: color-mix(in srgb, var(--surface) 22%, transparent); font: inherit; font-size: 11px; font-weight: 500; }
-.sc-tip__text { opacity: 0.82; }
-@media (prefers-reduced-motion: reduce) { .sc-tip, .sc-tip--show { transition: none; transform: translate(-50%, 0); } }
-.sc-guide { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--danger); z-index: 1000; }
-.sc-guide--v { width: 1px; height: 100000px; margin-top: -50000px; }
-.sc-guide--h { height: 1px; width: 100000px; margin-left: -50000px; }
 
-/* T13.6 responsive workspace (D33): tablet overlays, phone bottom sheets, touch targets */
-.sc-board__canvas { position: relative; }
-.sc-floating { z-index: 30; box-shadow: var(--shadow-2); }
-.sc-floating--overlay { position: absolute; top: var(--sp-2); bottom: var(--sp-2); max-width: calc(100% - 16px); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: auto; }
-.sc-floating--overlay.sc-floating--start { left: var(--sp-2); }
-.sc-floating--overlay.sc-floating--end { right: var(--sp-2); }
-.sc-floating--sheet { position: fixed; left: 0; right: 0; bottom: 0; width: auto !important; max-height: 62vh; max-height: 62dvh; overflow: auto; border: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; padding-bottom: env(safe-area-inset-bottom); }
-.sc-floating--sheet::before { content: ''; display: block; width: 36px; height: 4px; margin: 6px auto 0; border-radius: 2px; background: var(--line-strong); }
-.sc-floating__head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--line); background: var(--surface); font-weight: 600; }
 @media (max-width: 767px) {
-  .sc-topbar { gap: var(--sp-1); padding-left: var(--sp-1); padding-right: var(--sp-1); }
-  .sc-topbar__name { min-width: 0; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sc-topbar .sc-save { font-size: 0; }
-  .sc-topbar__primary { font-size: 0 !important; gap: 0 !important; }
-  .sc-canvasbar { margin-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom)); }
-  /* Editors: the canvas, with a bottom sheet under Layers | Design tabs (V3, below). */
+            /* Editors: the canvas, with a bottom sheet under Layers | Design tabs (V3, below). */
   /* Editor bar on a phone: one line, nothing scrolls sideways — the title truncates; size, the selection's
      name (it is in the sheet), "100%" and the bar's extra actions step aside. */
   .sc-fig__bar { gap: var(--sp-1); padding: 0 var(--sp-1); }
@@ -558,37 +444,14 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 }
 @media (pointer: coarse) {
   .sc-canvasbar__btn, .sc-topbar__icon, .sc-icon-btn { min-width: 44px; min-height: 44px; }
-  .sc-menu__item, .sc-topbar__primary { min-height: 44px; }
-  /* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
+    /* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
   .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
   .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
 
 
 
-/* T13.7 board groups: a tinted frame behind its nodes, header to drag / rename / collapse / export */
-.react-flow__node-groupNode { padding: 0; border: 0; background: none; }
-.sc-group { --group: var(--faint); width: 100%; height: 100%; border: 1.5px solid color-mix(in srgb, var(--group) 70%, transparent); border-radius: var(--r-lg); background: color-mix(in srgb, var(--group) 8%, transparent); }
-.sc-group--blue { --group: var(--type-input); }
-.sc-group--purple { --group: var(--type-main); }
-.sc-group--green { --group: var(--type-output); }
-.sc-group--orange { --group: var(--type-process); }
-.sc-group--red { --group: var(--danger); }
-.sc-group__head { display: flex; align-items: center; gap: var(--sp-2); height: 40px; padding: 0 var(--sp-2) 0 var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; background: color-mix(in srgb, var(--group) 18%, var(--surface)); cursor: grab; font-size: var(--fs-md); font-weight: 600; }
-.sc-group--collapsed .sc-group__head { border-radius: var(--r-lg); }
-.sc-group__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-group__count { padding: 0 6px; border-radius: 99px; background: var(--surface); color: var(--muted); font-size: var(--fs-xs); font-weight: 500; }
-.sc-group__actions { margin-left: auto; display: flex; gap: 2px; }
-.sc-group__swatch { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--group); }
-.react-flow__node-groupNode.selected .sc-group { box-shadow: 0 0 0 2px var(--accent); }
 
-/* T13.8 wire polish: dim what the selection doesn't touch, pulse a change downstream, reroute points */
-.react-flow__edge.sc-edge--dim { opacity: 0.18; transition: opacity var(--t-fast); }
-.react-flow__edge.sc-edge--pulse .react-flow__edge-path { stroke-dasharray: 10 8; animation: sc-wire-pulse 0.7s linear; }
-@keyframes sc-wire-pulse { from { stroke-dashoffset: 54; stroke-width: 3; } to { stroke-dashoffset: 0; } }
-@media (prefers-reduced-motion: reduce) { .react-flow__edge.sc-edge--pulse .react-flow__edge-path { animation: none; stroke-dasharray: none; } }
-.sc-reroute { fill: var(--surface); stroke: var(--accent); stroke-width: 2; cursor: move; pointer-events: all; }
-.sc-reroute:hover { fill: var(--accent-soft); }
 
 /* UI audit (after T13.8) — editor polish on every screen size */
 /* The bar never wraps: its parts keep their size, the title takes what is left and truncates. */
@@ -615,20 +478,8 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 /* Phone top bar: Export is a 36 px rounded icon button clear of the screen edge (it filled the bar's corner on
    devices); a 44 px invisible area keeps it easy to tap. The bar respects the notch / rounded corners. */
-@media (max-width: 767px) {
-  .sc-topbar { padding-right: calc(var(--sp-2) + env(safe-area-inset-right)); }
-  .sc-topbar .sc-topbar__primary { position: relative; width: 36px; height: 36px; min-height: 36px !important; padding: 0 !important; justify-content: center; border-radius: var(--r-md); }
-  .sc-topbar .sc-topbar__primary::after { content: ''; position: absolute; inset: -4px; }
-  .sc-topbar .sc-topbar__icon { position: relative; }
-}
 
-/* A selected wire's Disconnect button (touch screens have no Delete key). */
-.sc-wire-cut { position: absolute; top: 0; left: 0; z-index: 10; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 22%; background: transparent; box-shadow: var(--shadow-2); cursor: pointer; pointer-events: all; transition: transform var(--t-fast), opacity var(--t-fast); }
-.sc-wire-cut__icon { width: 100%; height: 100%; display: block; }
-.sc-wire-cut:hover { transform: scale(1.12); }
-.sc-wire-cut:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* Idle (wire not selected): small and quiet until hovered; the selected wire's badge is the full-size one. */
-@media (pointer: coarse) { .sc-wire-cut { width: 40px; height: 40px; } }
 
 /* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
    One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider
@@ -806,7 +657,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-node__text { font-size: var(--fs-md); line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .sc-node__mark { display: inline-flex; color: var(--muted); flex: none; }
 .sc-node .sc-render--thumb, .sc-node .sc-main-thumb { max-width: 100%; }
-.sc-inspector-panel__actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 .sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }
 
 
@@ -826,10 +676,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 /* D57: Tidy glides panels into place; a notice above the canvas toolbar offers Undo. */
 .sc-board__flow--tidying .react-flow__node { transition: transform 200ms cubic-bezier(0.2, 0, 0, 1); }
 @media (prefers-reduced-motion: reduce) { .sc-board__flow--tidying .react-flow__node { transition: none; } }
-.sc-board__toast.react-flow__panel { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: 72px; padding: 6px 6px 6px 14px; border-radius: var(--r-md); background: var(--fg); color: var(--surface); font-size: var(--fs-sm); box-shadow: var(--shadow-2); }
-.sc-board__toast button { min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: transparent; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
-.sc-board__toast button:hover { background: color-mix(in srgb, var(--surface) 15%, transparent); }
-@media (pointer: coarse) { .sc-board__toast button { min-height: 44px; } }
 
 /* Q1: which page of a PDF. */
 .sc-pdfpages { width: min(560px, calc(100vw - 32px)); max-height: 85vh; display: grid; gap: var(--sp-2); grid-template-rows: auto auto minmax(0, 1fr) auto; }
@@ -852,10 +698,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-history__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .sc-history__open .sc-muted { font-size: var(--fs-xs); }
 @media (pointer: coarse) { .sc-history__open { min-height: 44px; } }
-.sc-board__version { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); padding: 6px 12px; background: var(--accent-soft); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); }
-.sc-board__version-actions { display: flex; gap: var(--sp-2); margin-left: auto; }
-.sc-board__version button { height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); font: inherit; cursor: pointer; }
-.sc-board__version .sc-board__restore { border-color: var(--accent); background: var(--accent); color: var(--on-accent); font-weight: 600; }
 
 /* D63: comments on Previews — pins on the canvas, the Comments panel, the count on Preview nodes. */
 .sc-editor__point { position: absolute; inset: 0; z-index: 4; cursor: crosshair; touch-action: none; }
@@ -945,9 +787,6 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 @keyframes sc-pop { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
 .sc-dialog .sc-form__actions, .sc-dialog .sc-row:last-child { justify-content: flex-end; }
 
-/* Menus and floating panels share the elevated surface. */
-.sc-menu { border-radius: var(--r-lg); box-shadow: var(--shadow-3); border: 1px solid var(--line); }
-.sc-floating { box-shadow: var(--shadow-3); }
 
 /* Scrollbars: thin and quiet. */
 * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
@@ -960,23 +799,7 @@ h1, h2, h3 { letter-spacing: -0.011em; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
-/* U2: board chrome — the project overview in the side panel, the Review count, short save labels, quiet wires. */
-.sc-overview__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-lg); font-weight: 650; }
-.sc-overview__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); margin: var(--sp-1) 0; }
-.sc-overview__stats div { padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); }
-.sc-overview__stats dt { color: var(--muted); font-size: var(--fs-xs); }
-.sc-overview__stats dd { margin: 2px 0 0; font-size: var(--fs-xl); font-weight: 650; font-variant-numeric: tabular-nums; }
 .sc-overview .sc-btn--primary { justify-content: center; height: 34px; gap: var(--sp-2); }
-.sc-overview__tips { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--sp-2); color: var(--muted); font-size: var(--fs-sm); line-height: 1.5; }
-.sc-overview__tips strong { color: var(--fg); font-weight: 600; }
-.sc-topbar__review { position: relative; }
-.sc-topbar__count { position: absolute; top: 2px; right: 2px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px; background: var(--accent); color: var(--on-accent); font-size: 9px; font-weight: 700; line-height: 15px; text-align: center; }
-.sc-save__short { display: none; }
-@media (max-width: 1100px) {
-  .sc-topbar .sc-save { font-size: var(--fs-xs) !important; }
-  .sc-save__long { display: none; }
-  .sc-save__short { display: inline; }
-}
 
 /* ===== U3 (2026-10-24) visual redesign of the board: an ambient canvas with floating panels, cards with a
    coloured icon header, coloured wires and ports. Behaviour and markup are unchanged; this block sits last. ===== */
@@ -991,27 +814,6 @@ h1, h2, h3 { letter-spacing: -0.011em; }
   --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
-/* Shell: the whole board sits on the ambient backdrop; the bar, canvas and side panel float on it. */
-.sc-board { background: var(--ambient); }
-.sc-board .sc-topbar { height: 60px; min-height: 60px; padding: 10px 12px 0; background: transparent; border-bottom: 0; }
-.sc-board .sc-topbar__group { height: 44px; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 14px; background: var(--glass); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow-2); }
-.sc-board .sc-topbar__group:empty { display: none; }
-.sc-board .sc-topbar__name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
-.sc-board .sc-topbar__add { padding: 0 4px; }
-.sc-board .sc-topbar__add button { height: 34px; padding: 0 16px; border-radius: 10px; background: var(--fg); color: var(--bg); font-weight: 600; }
-.sc-board .sc-topbar__add button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 86%, var(--accent)); }
-.sc-board .sc-topbar .sc-topbar__primary { height: 34px; padding: 0 16px; border-radius: 10px; }
-.sc-board .sc-topbar__icon { width: 34px; height: 34px; border-radius: 10px; }
-.sc-board .sc-topbar button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.sc-board .sc-topbar button[aria-pressed='true'] { background: var(--accent-soft); color: var(--accent); }
-.sc-board .sc-save { padding: 0 6px; }
-.sc-board__canvas { padding: 10px 12px 12px; gap: 12px; }
-.sc-board__flow { border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: color-mix(in srgb, var(--surface) 55%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), var(--shadow-1); overflow: hidden; }
-:root[data-theme='dark'] .sc-board__flow { background: color-mix(in srgb, var(--bg) 60%, transparent); box-shadow: var(--shadow-1); }
-.sc-board__canvas > .sc-inspector-panel:not(.sc-floating) { width: 320px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: var(--shadow-2); }
-.sc-inspector-panel__section { border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent); }
-.sc-inspector-panel__section:last-child { border-bottom: 0; }
-.sc-bg:not(.sc-bg--grid) { --xy-background-pattern-color: color-mix(in srgb, var(--fg) 16%, transparent); }
 
 /* Cards: rounder, airy, a soft tinted header with a coloured icon chip, a lift on hover, a glow when selected. */
 .react-flow__node { font-size: 12.5px; }
@@ -1026,33 +828,13 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 .sc-node .sc-btn { border-radius: 9px; }
 
 
-/* Wires and ports: thicker, coloured, with a soft glow when selected. */
-.react-flow__edge-path { stroke: color-mix(in srgb, var(--head-master) 45%, var(--faint)); stroke-width: 2; }
-.react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2.5; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 45%, transparent)); }
+/* U3: ports thicker and coloured, with a soft glow on hover. */
 .react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
 .react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }
 
-/* Minimap and the canvas toolbar match the floating panels. */
-.react-flow__minimap { border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 14px; overflow: hidden; background: var(--glass) !important; backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
-.sc-canvasbar { border-radius: 16px; padding: 6px; background: var(--glass); box-shadow: var(--shadow-3); }
 
-/* Zoomed out (U3): a name tag above each panel, the same screen size at any zoom; it never takes a click. */
-.sc-zlabels { position: absolute; left: 0; top: 0; pointer-events: none; }
-.sc-zlabel { position: absolute; left: 0; top: 0; pointer-events: none; }
-.sc-zlabel__tag { position: absolute; left: 0; bottom: 0; display: inline-flex; align-items: center; gap: 6px; max-width: 320px; padding: 4px 9px; transform: scale(var(--zoom-inv, 1)); transform-origin: bottom left; margin-bottom: 6px; border-radius: 8px; background: var(--fg); color: var(--bg); font-size: 12px; font-weight: 600; white-space: nowrap; box-shadow: var(--shadow-2); }
-.sc-zlabel__name { overflow: hidden; text-overflow: ellipsis; }
-.sc-zlabel__mark { padding: 0 6px; border-radius: 6px; background: color-mix(in srgb, var(--bg) 18%, transparent); font-size: 11px; }
-.sc-zlabel__mark--ok { background: var(--ok); color: var(--on-accent); }
-.sc-zlabel__mark--warn { background: var(--warn); color: var(--on-accent); }
 
 /* Phones: the floating bar and canvas need less margin. */
-@media (max-width: 767px) {
-  .sc-board .sc-topbar { padding: 6px 6px 0; height: 54px; min-height: 54px; }
-  .sc-board__canvas { padding: 6px; }
-  .sc-board__flow { border-radius: 14px; }
-}
-.sc-board .sc-topbar > .sc-topbar__group:first-child { justify-self: start; max-width: 100%; }
-.sc-board .sc-topbar > .sc-topbar__end { justify-self: end; }
 
 /* ===== U5 (2026-10-24) projects home and sign-in: an app page on the ambient backdrop — brand bar, a large title
    with the main action, project cards with big covers; sign-in with a brand panel. ===== */
@@ -1237,9 +1019,6 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
 
 
 
-/* Wires: the ✂ badge only appears on hover or selection; on hover it is smaller. */
-.sc-wire-cut--hover { width: 24px; height: 24px; box-shadow: var(--shadow-1); }
-@media (pointer: coarse) { .sc-wire-cut--hover { width: 36px; height: 36px; } }
 
 
 /* A text action in a header (Edit, Export): a soft pill. */
