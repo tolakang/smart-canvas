@@ -69,6 +69,11 @@
   --field-h: 28px;
   --t-fast: 140ms cubic-bezier(0.2, 0, 0, 1);
   --t-med: 200ms cubic-bezier(0.2, 0, 0, 1);
+  /* U3: the ambient backdrop, glass panels and the per-role header colours */
+  --ambient: radial-gradient(1100px 620px at 12% -12%, #dfe9ff 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #efe4ff 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #e2f6ef 0, transparent 60%), #eef0f4;
+  --glass: color-mix(in srgb, var(--surface) 78%, transparent);
+  --panel-r: 18px;
+  --head-asset: #7c3aed; --head-master: #2563eb; --head-preview: #0d9488; --head-preset: #16a34a; --head-rule: #0891b2; --head-frozen: #94a3b8;
   color: var(--fg);
   background: var(--bg);
   font: 13px/1.45 var(--font-ui);
@@ -76,15 +81,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-* { box-sizing: border-box; }
-body { margin: 0; }
+* { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 #root { min-height: 100vh; min-height: 100dvh; }
 button { font: inherit; cursor: pointer; }
 input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
-.sc-card { max-width: 360px; margin: 10vh auto; padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 12px; }
 .sc-card--wide { max-width: 640px; }
-.sc-card h1 { margin: 0 0 4px; font-size: 18px; }
 .sc-card label { display: grid; gap: 4px; }
 .sc-row { display: flex; gap: 8px; }
 .sc-row input { flex: 1; }
@@ -99,18 +101,13 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 
-.sc-thumb { width: 100%; height: 110px; object-fit: contain; background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; border-radius: 6px; border: 1px solid var(--line); }
 .sc-thumb--empty { display: grid; place-items: center; color: var(--muted); font-size: 12px; }
-.sc-upload { justify-self: start; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); cursor: pointer; font-size: 12px; }
-.sc-swatch { height: 40px; border-radius: 6px; border: 1px solid var(--line); }
-.sc-fill { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 12px; }
-.sc-seg { display: flex; gap: 10px; }
+.sc-upload { justify-self: start; }
 .sc-field { display: flex; align-items: center; gap: 6px; }
 .sc-field input[type='number'] { width: 56px; padding: 2px 4px; }
 .sc-field input[type='color'] { width: 32px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 4px; }
-.sc-fill button { justify-self: start; font-size: 12px; }
+.sc-fill button { justify-self: start; }
 
-.sc-dialog .sc-card { margin: 0; min-width: min(320px, 100%); }
 
 /* T8.1 layer rows (main node list and editor Layers panel) */
 .sc-port__grip { display: inline-flex; color: var(--muted); cursor: grab; flex: none; }
@@ -129,10 +126,9 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 .sc-field--col { display: grid; gap: 4px; align-items: start; }
 
-.sc-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.sc-seg { gap: 10px; display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .sc-seg button { border: 0; border-radius: 0; padding: 3px 8px; background: var(--surface); font: inherit; }
 .sc-seg button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
-.sc-icon-btn { padding: 0 6px; line-height: 1.4; }
 
 .sc-presets .sc-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
@@ -154,7 +150,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-design__title .sc-muted { font-weight: 400; }
 
 
-.sc-thumb { border-radius: var(--r-md); border-color: var(--line); }
+.sc-thumb { width: 100%; height: 110px; object-fit: contain; background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; border: 1px solid var(--line); border-radius: var(--r-md); border-color: var(--line); }
 
 /* Buttons: one size, three variants (default, ghost, icon). Links in nodes become buttons. */
 .sc-btn, .sc-upload, .sc-fill button, .sc-node .sc-link {
@@ -168,16 +164,16 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-btn--ghost:hover:not(:disabled) { background: var(--accent-soft); }
 .sc-node > .sc-btn { justify-self: start; }
 .sc-node .sc-link { justify-self: start; }
-.sc-icon-btn { width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
+.sc-icon-btn { line-height: 1.4; width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
 .sc-icon-btn:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); border-color: transparent; }
 
 .sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; }
 .sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
-.sc-fill { font-size: var(--fs-xs); color: var(--muted); }
+.sc-fill { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; font-size: var(--fs-xs); color: var(--muted); }
 .sc-fill .sc-seg { display: inline-flex; gap: var(--sp-3); height: auto; background: none; padding: 0; border: 0; }
 .sc-fill .sc-field { color: var(--fg); }
-.sc-swatch { height: 48px; border-radius: var(--r-md); border-color: var(--line); }
+.sc-swatch { border: 1px solid var(--line); height: 48px; border-radius: var(--r-md); border-color: var(--line); }
 
 /* A chip: a small rounded label (a Preview's hand-edits count). */
 .sc-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--sp-2); border-radius: 99px; background: var(--warn-soft); color: var(--warn); font-size: var(--fs-xs); font-weight: 500; }
@@ -233,6 +229,8 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4);
   --shadow-2: 0 6px 20px rgb(0 0 0 / 0.5);
   --shadow-3: 0 16px 48px rgb(0 0 0 / 0.6);
+  --ambient: radial-gradient(1100px 620px at 12% -12%, #172447 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #2a1a47 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #0f2f26 0, transparent 60%), #0b0d11;
+  --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 .sc-theme-toggle .sc-icon { margin: 0; }
 
@@ -259,7 +257,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 /* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
    One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider
    than a phone: fields wrap into a grid, rows stack their actions under the name. */
-.sc-btn--primary { border-color: var(--accent); background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.sc-btn--primary { font-weight: 600; }
 .sc-btn--primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, black); }
 .sc-btn--danger { color: var(--danger); }
 .sc-btn--danger:hover:not(:disabled) { background: var(--danger-soft); }
@@ -314,7 +312,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 @media (max-width: 767px) {
       .sc-rows > li { flex-wrap: wrap; }
   .sc-rows__actions { margin-left: auto; }
-    .sc-dialog .sc-card { --card-pad: var(--sp-4); padding: var(--card-pad); }
+    .sc-dialog .sc-card { --card-pad: var(--sp-4); }
   /* Visually hidden, still read: the heading stays "Studio · Projects". */
     .sc-card .sc-btn, .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
   .sc-card :is(input, select) { font-size: 16px; } /* iOS zooms into smaller fields */
@@ -383,16 +381,14 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 }
 
 /* Cards and dialogs: rounder, layered shadow, a backdrop that blurs the board, and a gentle entrance. */
-.sc-card { border-radius: var(--r-xl); border-color: var(--line); box-shadow: var(--shadow-1); }
-.sc-card h1 { font-size: var(--fs-xl); font-weight: 650; }
-.sc-dialog .sc-card { padding: var(--sp-5); gap: var(--sp-4); box-shadow: var(--shadow-3); border: 1px solid var(--line); }
+.sc-card { max-width: 360px; margin: 10vh auto; padding: 24px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 12px; border-radius: var(--r-xl); border-color: var(--line); box-shadow: var(--shadow-1); }
+.sc-card h1 { margin: 0 0 4px; font-size: var(--fs-xl); font-weight: 650; }
 .sc-dialog[open] .sc-card { animation: sc-pop var(--t-med) both; }
 @keyframes sc-pop { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
 .sc-dialog .sc-form__actions, .sc-dialog .sc-row:last-child { justify-content: flex-end; }
 
 
 /* Scrollbars: thin and quiet. */
-* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--line-strong); border: 3px solid transparent; border-radius: 10px; background-clip: padding-box; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -404,18 +400,6 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 
 .sc-overview .sc-btn--primary { justify-content: center; height: 34px; gap: var(--sp-2); }
 
-/* ===== U3 (2026-10-24) visual redesign of the board: an ambient canvas with floating panels, cards with a
-   coloured icon header, coloured wires and ports. Behaviour and markup are unchanged; this block sits last. ===== */
-:root {
-  --ambient: radial-gradient(1100px 620px at 12% -12%, #dfe9ff 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #efe4ff 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #e2f6ef 0, transparent 60%), #eef0f4;
-  --glass: color-mix(in srgb, var(--surface) 78%, transparent);
-  --panel-r: 18px;
-  --head-asset: #7c3aed; --head-master: #2563eb; --head-preview: #0d9488; --head-preset: #16a34a; --head-rule: #0891b2; --head-frozen: #94a3b8;
-}
-:root[data-theme='dark'] {
-  --ambient: radial-gradient(1100px 620px at 12% -12%, #172447 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #2a1a47 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #0f2f26 0, transparent 60%), #0b0d11;
-  --glass: color-mix(in srgb, var(--surface) 72%, transparent);
-}
 
 
 .sc-node .sc-btn { border-radius: 9px; }
@@ -428,7 +412,7 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 
 /* ===== U5 (2026-10-24) projects home and sign-in: an app page on the ambient backdrop — brand bar, a large title
    with the main action, project cards with big covers; sign-in with a brand panel. ===== */
-body { background: var(--ambient); background-attachment: fixed; min-height: 100vh; }
+body { margin: 0; background: var(--ambient); background-attachment: fixed; min-height: 100vh; }
 .sc-btn--quiet { border-color: transparent; background: transparent; }
 .sc-btn--quiet:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
 
@@ -446,7 +430,7 @@ body { background: var(--ambient); background-attachment: fixed; min-height: 100
 
 
 /* ===== U6 (2026-10-24) dialogs: a clear title, grouped content on soft panels, actions on the right. ===== */
-.sc-dialog .sc-card { width: min(560px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 48px); overflow: auto; }
+.sc-dialog .sc-card { margin: 0; min-width: min(320px, 100%); padding: var(--sp-5); gap: var(--sp-4); box-shadow: var(--shadow-3); border: 1px solid var(--line); width: min(560px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 48px); overflow: auto; }
 .sc-dialog .sc-card h1 { margin: 0; font-size: 20px; }
 .sc-dialog .sc-card h2 { margin: 6px 0 0; font-size: 12px; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 /* The last row of buttons sits on the right, the main action last (Cancel, then Export). */
