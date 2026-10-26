@@ -1,4 +1,4 @@
-/* The app's CSS at c831ae05ad02044574ad7231d4ebc0a08d48b36c (origin/main), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at c73d01c8494b6cca8bfd9af3db9529dc85baba31 (origin/main), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -8,6 +8,10 @@
       --tw-rotate-z: initial;
       --tw-skew-x: initial;
       --tw-skew-y: initial;
+      --tw-border-style: solid;
+      --tw-leading: initial;
+      --tw-font-weight: initial;
+      --tw-tracking: initial;
       --tw-outline-style: solid;
       --tw-blur: initial;
       --tw-brightness: initial;
@@ -53,8 +57,56 @@
     position: relative;
   }
 
+  .sticky {
+    position: sticky;
+  }
+
+  .bottom-\[calc\(-1\*var\(--card-pad\)\)\] {
+    bottom: calc(-1 * var(--card-pad));
+  }
+
+  .m-0 {
+    margin: 0;
+  }
+
+  .-mx-\(--sp-5\) {
+    margin-inline: calc(var(--sp-5) * -1);
+  }
+
+  .mt-0 {
+    margin-top: 0;
+  }
+
+  .mt-4 {
+    margin-top: 4px;
+  }
+
+  .mr-0 {
+    margin-right: 0;
+  }
+
+  .-mb-\(--sp-5\) {
+    margin-bottom: calc(var(--sp-5) * -1);
+  }
+
+  .mb-2 {
+    margin-bottom: 2px;
+  }
+
+  .mb-12 {
+    margin-bottom: 12px;
+  }
+
+  .ml-16 {
+    margin-left: 16px;
+  }
+
   .block {
     display: block;
+  }
+
+  .flex {
+    display: flex;
   }
 
   .grid {
@@ -65,6 +117,52 @@
     display: none;
   }
 
+  .inline-block {
+    display: inline-block;
+  }
+
+  .aspect-\[3\/4\] {
+    aspect-ratio: 3 / 4;
+  }
+
+  .size-16 {
+    width: 16px;
+    height: 16px;
+  }
+
+  .size-40 {
+    width: 40px;
+    height: 40px;
+  }
+
+  .max-h-\[50vh\] {
+    max-height: 50vh;
+  }
+
+  .max-h-\[280px\] {
+    max-height: 280px;
+  }
+
+  .min-h-44 {
+    min-height: 44px;
+  }
+
+  .w-40 {
+    width: 40px;
+  }
+
+  .w-full {
+    width: 100%;
+  }
+
+  .min-w-0 {
+    min-width: 0;
+  }
+
+  .flex-1 {
+    flex: 1;
+  }
+
   .grow {
     flex-grow: 1;
   }
@@ -73,12 +171,302 @@
     transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
   }
 
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
   .resize {
     resize: both;
   }
 
+  .list-none {
+    list-style-type: none;
+  }
+
+  .grid-cols-\[1fr_120px_1fr\] {
+    grid-template-columns: 1fr 120px 1fr;
+  }
+
+  .grid-cols-\[repeat\(auto-fill\,minmax\(96px\,1fr\)\)\] {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  }
+
+  .grid-rows-\[auto_auto_minmax\(0\,1fr\)_auto\] {
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+
+  .items-baseline {
+    align-items: baseline;
+  }
+
+  .items-center {
+    align-items: center;
+  }
+
+  .items-start {
+    align-items: flex-start;
+  }
+
+  .justify-end {
+    justify-content: flex-end;
+  }
+
+  .justify-items-center {
+    justify-items: center;
+  }
+
+  .gap-\(--sp-2\) {
+    gap: var(--sp-2);
+  }
+
+  .gap-2 {
+    gap: 2px;
+  }
+
+  .gap-4 {
+    gap: 4px;
+  }
+
+  .gap-6 {
+    gap: 6px;
+  }
+
+  .gap-8 {
+    gap: 8px;
+  }
+
+  .gap-10 {
+    gap: 10px;
+  }
+
+  .overflow-auto {
+    overflow: auto;
+  }
+
+  .overflow-hidden {
+    overflow: hidden;
+  }
+
+  .rounded-\[6px\] {
+    border-radius: 6px;
+  }
+
+  .rounded-\[9px\] {
+    border-radius: 9px;
+  }
+
+  .rounded-\[10px\] {
+    border-radius: 10px;
+  }
+
+  .rounded-\[12px\] {
+    border-radius: 12px;
+  }
+
+  .rounded-md {
+    border-radius: var(--r-md);
+  }
+
+  .rounded-sm {
+    border-radius: var(--r-sm);
+  }
+
+  .border {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+
+  .border-t {
+    border-top-style: var(--tw-border-style);
+    border-top-width: 1px;
+  }
+
+  .border-l-3 {
+    border-left-style: var(--tw-border-style);
+    border-left-width: 3px;
+  }
+
+  .border-none {
+    --tw-border-style: none;
+    border-style: none;
+  }
+
+  .border-line {
+    border-color: var(--line);
+  }
+
+  .border-t-line {
+    border-top-color: var(--line);
+  }
+
+  .border-l-warn {
+    border-left-color: var(--warn);
+  }
+
+  .bg-\[color-mix\(in_srgb\,var\(--surface-2\)_70\%\,transparent\)\] {
+    background-color: var(--surface-2);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-\[color-mix\(in_srgb\,var\(--surface-2\)_70\%\,transparent\)\] {
+      background-color: color-mix(in srgb,var(--surface-2) 70%,transparent);
+    }
+  }
+
+  .bg-canvas {
+    background-color: var(--canvas);
+  }
+
+  .bg-surface {
+    background-color: var(--surface);
+  }
+
+  .bg-surface-2 {
+    background-color: var(--surface-2);
+  }
+
+  .bg-swatch-bg {
+    background-color: var(--swatch-bg);
+  }
+
+  .bg-transparent {
+    background-color: #0000;
+  }
+
+  .object-contain {
+    object-fit: contain;
+  }
+
+  .p-\(--sp-1\) {
+    padding: var(--sp-1);
+  }
+
+  .p-0 {
+    padding: 0;
+  }
+
+  .p-6 {
+    padding: 6px;
+  }
+
+  .px-\(--sp-5\) {
+    padding-inline: var(--sp-5);
+  }
+
+  .px-0 {
+    padding-inline: 0;
+  }
+
+  .px-6 {
+    padding-inline: 6px;
+  }
+
+  .px-10 {
+    padding-inline: 10px;
+  }
+
+  .px-14 {
+    padding-inline: 14px;
+  }
+
+  .py-2 {
+    padding-block: 2px;
+  }
+
+  .py-8 {
+    padding-block: 8px;
+  }
+
+  .py-12 {
+    padding-block: 12px;
+  }
+
+  .py-14 {
+    padding-block: 14px;
+  }
+
+  .text-\[11px\] {
+    font-size: 11px;
+  }
+
+  .text-\[12px\] {
+    font-size: 12px;
+  }
+
+  .text-\[13px\] {
+    font-size: 13px;
+  }
+
+  .text-\[22px\] {
+    font-size: 22px;
+  }
+
+  .text-sm {
+    font-size: var(--fs-sm);
+  }
+
+  .leading-\[1\.3\] {
+    --tw-leading: 1.3;
+    line-height: 1.3;
+  }
+
+  .leading-\[inherit\] {
+    --tw-leading: inherit;
+    line-height: inherit;
+  }
+
+  .font-\[500\] {
+    --tw-font-weight: 500;
+    font-weight: 500;
+  }
+
+  .font-\[600\] {
+    --tw-font-weight: 600;
+    font-weight: 600;
+  }
+
+  .font-\[650\] {
+    --tw-font-weight: 650;
+    font-weight: 650;
+  }
+
+  .tracking-\[0\.04em\] {
+    --tw-tracking: .04em;
+    letter-spacing: .04em;
+  }
+
+  .text-ellipsis {
+    text-overflow: ellipsis;
+  }
+
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
+
+  .text-inherit {
+    color: inherit;
+  }
+
+  .text-muted {
+    color: var(--muted);
+  }
+
   .uppercase {
     text-transform: uppercase;
+  }
+
+  .\[box-shadow\:0_0_0_1px_color-mix\(in_srgb\,var\(--line\)_60\%\,transparent\)\] {
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .\[box-shadow\:0_0_0_1px_color-mix\(in_srgb\,var\(--line\)_60\%\,transparent\)\] {
+      box-shadow: 0 0 0 1px color-mix(in srgb,var(--line) 60%,transparent);
+    }
   }
 
   .outline {
@@ -89,6 +477,55 @@
   .invert {
     --tw-invert: invert(100%);
     filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
+  .\[--card-pad\:24px\] {
+    --card-pad: 24px;
+  }
+
+  .\[font\:inherit\] {
+    font: inherit;
+  }
+
+  .backdrop\:bg-scrim::backdrop {
+    background-color: var(--scrim);
+  }
+
+  .backdrop\:\[backdrop-filter\:blur\(3px\)\]::backdrop {
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+
+  @media (hover: hover) {
+    .hover\:border-accent:hover {
+      border-color: var(--accent);
+    }
+
+    .hover\:\[box-shadow\:0_0_0_1px_var\(--accent\)\]:hover {
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+  }
+
+  .focus-visible\:border-accent:focus-visible {
+    border-color: var(--accent);
+  }
+
+  @media not all and (min-width: 768px) {
+    .max-md\:max-w-\[calc\(100vw-16px\)\] {
+      max-width: calc(100vw - 16px);
+    }
+
+    .max-md\:\[--card-pad\:var\(--sp-4\)\] {
+      --card-pad: var(--sp-4);
+    }
+  }
+
+  .\[\&\>button\]\:ml-auto > button {
+    margin-left: auto;
+  }
+
+  label + .\[label\+\&\]\:mt-4 {
+    margin-top: 4px;
   }
 }
 
@@ -113,6 +550,27 @@
 }
 
 @property --tw-skew-y {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
+
+@property --tw-leading {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-font-weight {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-tracking {
   syntax: "*";
   inherits: false
 }
@@ -817,348 +1275,103 @@ svg.react-flow__connectionline {
 }
 }
 /* inter-cyrillic-ext-wght-normal */
-@font-face {
-  font-family: 'Inter Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url(/assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2) format('woff2-variations');
-  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
-}
+
 
 /* inter-cyrillic-wght-normal */
-@font-face {
-  font-family: 'Inter Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url(/assets/inter-cyrillic-wght-normal-DqGufNeO.woff2) format('woff2-variations');
-  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
-}
+
 
 /* inter-greek-ext-wght-normal */
-@font-face {
-  font-family: 'Inter Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url(/assets/inter-greek-ext-wght-normal-DlzME5K_.woff2) format('woff2-variations');
-  unicode-range: U+1F00-1FFF;
-}
+
 
 /* inter-greek-wght-normal */
-@font-face {
-  font-family: 'Inter Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url(/assets/inter-greek-wght-normal-CkhJZR-_.woff2) format('woff2-variations');
-  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
-}
+
 
 /* inter-vietnamese-wght-normal */
-@font-face {
-  font-family: 'Inter Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url(/assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2) format('woff2-variations');
-  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
-}
+
 
 /* inter-latin-ext-wght-normal */
-@font-face {
-  font-family: 'Inter Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url(/assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2) format('woff2-variations');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-}
+
 
 /* inter-latin-wght-normal */
-@font-face {
-  font-family: 'Inter Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url(/assets/inter-latin-wght-normal-Dx4kXJAl.woff2) format('woff2-variations');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}/* Bundled fonts (OFL-1.1, via @fontsource). Keep in sync with BUNDLED_FONTS in packages/core/src/fonts.ts.
+/* Bundled fonts (OFL-1.1, via @fontsource). Keep in sync with BUNDLED_FONTS in packages/core/src/fonts.ts.
    Each family is split by unicode-range, so the Khmer face only downloads when Khmer text is used. *//* noto-sans-cyrillic-ext-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-cyrillic-ext-400-normal-BjDhGU6t.woff2) format('woff2'), url(/assets/noto-sans-cyrillic-ext-400-normal-d9FrwbiD.woff) format('woff');
-  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
-}
+
 
 /* noto-sans-cyrillic-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-cyrillic-400-normal-CHP_ranX.woff2) format('woff2'), url(/assets/noto-sans-cyrillic-400-normal-BDYvNhAR.woff) format('woff');
-  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
-}
+
 
 /* noto-sans-devanagari-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-devanagari-400-normal-C3FccbrF.woff2) format('woff2'), url(/assets/noto-sans-devanagari-400-normal-g9fsM2jL.woff) format('woff');
-  unicode-range: U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+20F0,U+25CC,U+A830-A839,U+A8E0-A8FF,U+11B00-11B09;
-}
+
 
 /* noto-sans-greek-ext-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-greek-ext-400-normal-i2oSBwXz.woff2) format('woff2'), url(/assets/noto-sans-greek-ext-400-normal-L11LEhi4.woff) format('woff');
-  unicode-range: U+1F00-1FFF;
-}
+
 
 /* noto-sans-greek-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-greek-400-normal-DCESwnT1.woff2) format('woff2'), url(/assets/noto-sans-greek-400-normal-Be2BcUUc.woff) format('woff');
-  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
-}
+
 
 /* noto-sans-vietnamese-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-vietnamese-400-normal-D2wP-Vm-.woff2) format('woff2'), url(/assets/noto-sans-vietnamese-400-normal-C3Al4sv4.woff) format('woff');
-  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
-}
+
 
 /* noto-sans-latin-ext-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-latin-ext-400-normal-CVf-LbaS.woff2) format('woff2'), url(/assets/noto-sans-latin-ext-400-normal-CNh9dRW_.woff) format('woff');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-}
+
 
 /* noto-sans-latin-400-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-latin-400-normal-BTkUljjl.woff2) format('woff2'), url(/assets/noto-sans-latin-400-normal-DPpKfCgK.woff) format('woff');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
+
 /* noto-sans-cyrillic-ext-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-cyrillic-ext-700-normal-OK-fZO_i.woff2) format('woff2'), url(/assets/noto-sans-cyrillic-ext-700-normal-D83T7awq.woff) format('woff');
-  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
-}
+
 
 /* noto-sans-cyrillic-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-cyrillic-700-normal-DYZmzPmX.woff2) format('woff2'), url(/assets/noto-sans-cyrillic-700-normal-D8UNalU-.woff) format('woff');
-  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
-}
+
 
 /* noto-sans-devanagari-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-devanagari-700-normal-DVs0dmkg.woff2) format('woff2'), url(/assets/noto-sans-devanagari-700-normal-CT12sGlc.woff) format('woff');
-  unicode-range: U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+20F0,U+25CC,U+A830-A839,U+A8E0-A8FF,U+11B00-11B09;
-}
+
 
 /* noto-sans-greek-ext-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-greek-ext-700-normal-Dq1WA5-1.woff2) format('woff2'), url(/assets/noto-sans-greek-ext-700-normal-BOmIwFkq.woff) format('woff');
-  unicode-range: U+1F00-1FFF;
-}
+
 
 /* noto-sans-greek-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-greek-700-normal-x3kNWF-0.woff2) format('woff2'), url(/assets/noto-sans-greek-700-normal-DDNJsN3F.woff) format('woff');
-  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
-}
+
 
 /* noto-sans-vietnamese-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-vietnamese-700-normal-DayJ0F-f.woff2) format('woff2'), url(/assets/noto-sans-vietnamese-700-normal-1GL2JyGE.woff) format('woff');
-  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
-}
+
 
 /* noto-sans-latin-ext-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-latin-ext-700-normal-BypTtJma.woff2) format('woff2'), url(/assets/noto-sans-latin-ext-700-normal-CgsG9aVh.woff) format('woff');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-}
+
 
 /* noto-sans-latin-700-normal */
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-latin-700-normal-CrvTEWhy.woff2) format('woff2'), url(/assets/noto-sans-latin-700-normal-ZyrKABVF.woff) format('woff');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
+
 /* noto-sans-khmer-khmer-400-normal */
-@font-face {
-  font-family: 'Noto Sans Khmer';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-khmer-khmer-400-normal-DnqNet9s.woff2) format('woff2'), url(/assets/noto-sans-khmer-khmer-400-normal-CfhpqDv8.woff) format('woff');
-  unicode-range: U+1780-17FF,U+19E0-19FF,U+200C-200D,U+25CC;
-}
+
 
 /* noto-sans-khmer-latin-ext-400-normal */
-@font-face {
-  font-family: 'Noto Sans Khmer';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-khmer-latin-ext-400-normal-DodaIRJA.woff2) format('woff2'), url(/assets/noto-sans-khmer-latin-ext-400-normal-Bd3ZAoRX.woff) format('woff');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-}
+
 
 /* noto-sans-khmer-latin-400-normal */
-@font-face {
-  font-family: 'Noto Sans Khmer';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/noto-sans-khmer-latin-400-normal-BLI6HyUZ.woff2) format('woff2'), url(/assets/noto-sans-khmer-latin-400-normal-Dek0CCYB.woff) format('woff');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
+
 /* noto-sans-khmer-khmer-700-normal */
-@font-face {
-  font-family: 'Noto Sans Khmer';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-khmer-khmer-700-normal-qwjLDidk.woff2) format('woff2'), url(/assets/noto-sans-khmer-khmer-700-normal-BUdGgDYy.woff) format('woff');
-  unicode-range: U+1780-17FF,U+19E0-19FF,U+200C-200D,U+25CC;
-}
+
 
 /* noto-sans-khmer-latin-ext-700-normal */
-@font-face {
-  font-family: 'Noto Sans Khmer';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-khmer-latin-ext-700-normal-D0NTkDRW.woff2) format('woff2'), url(/assets/noto-sans-khmer-latin-ext-700-normal-DTINSare.woff) format('woff');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-}
+
 
 /* noto-sans-khmer-latin-700-normal */
-@font-face {
-  font-family: 'Noto Sans Khmer';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/noto-sans-khmer-latin-700-normal-DuGo6TL7.woff2) format('woff2'), url(/assets/noto-sans-khmer-latin-700-normal-DlNc-L-D.woff) format('woff');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
+
 /* kantumruy-pro-khmer-400-normal */
-@font-face {
-  font-family: 'Kantumruy Pro';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/kantumruy-pro-khmer-400-normal-B-rMTF1Y.woff2) format('woff2'), url(/assets/kantumruy-pro-khmer-400-normal-D_zYNomk.woff) format('woff');
-  unicode-range: U+1780-17FF,U+19E0-19FF,U+200C-200D,U+25CC;
-}
+
 
 /* kantumruy-pro-latin-ext-400-normal */
-@font-face {
-  font-family: 'Kantumruy Pro';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(data:font/woff2;base64,d09GMgABAAAAAATwABAAAAAACkAAAASTAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGjAbgwIcQgZgP1NUQVRIAHwRCAqEHIMRCyIAATYCJAM0BCAFhHgHgR8MBxt8CACeBTmZazrCmUql/WWPi0Y4E88/v9+3tc99IyqoRvNGCeahjISOWMlUSIFUv//fb9p9zNQIVadqVHTFJU3FSHoIWTHR3/1SheeBw/V+RRBFlBbg4mEbNFoU2Lipt/V80uFtPWz0P4B//4ljxou0pGm0jncjKpFMigjaLEtwthuNR5nn/QH09uetf757oAexH6YXhOluzybKOGCdoEQnhoxpIhhUpQD3zLBrarBqy/bdEdupUjX4dc26FbE49AwwlMbAKT2DQBriO+WaFfGLjUDu1aop+hAQBcprpPntAVf9JpFhxIED8ZSkz64IQXxIQs3kaAiHhboX6h1ErXSIQXGHjhwn6czzEkAUb/MVlBJWCvoWFunDPO4k8n8tNHVlnu8BUVnFcVk8QQMAJaIjDQqmlKaxzGkcndOhLqItZWn6NO/xWYIFMDvpw+K7gLusMbsMU9xE3gH51bUj4Arocpvm6aOmhd6Ax+neaUBJWwTce8S/ebPeqjvOwb0ss2WHv0Db0SNAoCrCe8AmJmJQYZaAXcKoskon8KJvriNPxCyuiYoXgKChwmkedQsKDbOYYBb3HMzzwvQbs6mJdf4J+YwYZ66ybADqAH+xaMWfwvjtwzkVmuz2P/Gf2z96+w4E3jxyNOAJJgGbYAKfwA+sgllAqSMIgShzC/1nlrgr8+ZckjgP4tylj5u7a6m7m+Qp9pS6i4NMvU19e8w4EdBr8XHTzAdyMvFxz9dquejUA1IGztyOvbU4Y0vjT0x548AeAwiFSFvWPRKZcceOROQ0SNz41sxytX07TL4IHQQpI51R7AkP6GXKanNn3p0BWak1qTDXWpyKZddu/2thz00LPg9rD5fXsPv/PJqdahwQqeZGt04qSWz5H7HLn61//r7fcF9DDL4MuhUIkEGBzc/ygxH/135T8aBN2PzrNFgsxr7HjjmNlbDu1zd5B+qdCgdqRHYowOtusH7eoHkD0NPk9t1XF2HxZ7Ouale1mbqqM4QKCAPGUwIKmJiO88AiVJtNTp82SRCHh8Q5JYM8S765MvYO4P/mBtkgPt3o8CP9JtOvQHhsjTVpAdepHUQQGc5XKNCEoJjFe2MPdQR+5QqOQ6/WTOORDgZ6oSbCpCCCaUw+ANsZ9VmTkhv4k+Q8MZbjRSzjEYjNNZeInZNWEPssG0fsd1xvwriropkIRs0TOcYjED0xavixvCDiCRuVmVUbOrM61Sx6KVetUhUdvXRdPbsiGTLYWWiq1dPZpbOrViedjaZShk5aaq8dMyudg0rjMFxnGps0XZWr5FDHTNNTOW2c77KxkmVJlymTwnQy5CQr+r05ijXRUSvdFa+itKTamQubsak3nHZ17DIFRhWy7qWA8irHiNcoZ+lpb8JxbcVXrbudLPE6a4aG8XSVqluPcyiVzsJGvQsomyEay7zddRlqOSZNvT+JIBDYW4WLHm8S7LqOqySghRHHQZzImVzIldxIJJOLw1qdqWTnp1Mym2QKzbrK9uzMArcTnrSWHzck4Wa2OHSC16vrymQtzTke9eLTiWilKo1SkHyMjMn7+GwAAA==) format('woff2'), url(data:font/woff;base64,d09GRgABAAAAAAeIAA8AAAAAChQAAQABAAAAAAAAAAAAAAAAAAAAAAAAAABHREVGAAABWAAAACcAAAAwAFYAH0dQT1MAAAGAAAAA3QAAAXbjavj8R1NVQgAAAmAAAAA7AAAAQoQcnPhPUy8yAAACnAAAAEkAAABgWRXvHFNUQVQAAALoAAAAPAAAAEjndMwjY21hcAAAAyQAAABbAAAAfEVf6OZnYXNwAAADgAAAAAgAAAAIAAAAEGdseWYAAAOIAAABrgAAAhK7JEEpaGVhZAAABTgAAAAzAAAANiAYvg5oaGVhAAAFbAAAAB8AAAAkB1IEtWhtdHgAAAWMAAAAMAAAADQO7v5XbG9jYQAABbwAAAAiAAAAIgSCBA5tYXhwAAAF4AAAABwAAAAgACUBEG5hbWUAAAX8AAABGwAAAng4k15scG9zdAAABxgAAABuAAAAn2TIJeR42i3IsRUAEBAFsPyjoGAE+49J4aWLKBtw1BNdTEuTh6H+uAtNAHYAeNplyoFGQ1EYwPHfd+5d1ixmMhkmzAw9wgQmIUAvsFRWtw1rT9AThCDoLQLoOQa9RQDcjmuEfH7/4zs+gY5zj4r5xdW1cbVcbRw/LbZrYyXUtQIp928PzX778Lw1qe42a5PVYlM5XVWryhAhIQSNwodLbQd6QgfhJU+419UyNnKirytIr6Ku06cgfTX9bvquRGgLc0thqqs00Ms6wjp+RMyKG7npTQuDf4J8l4RDR0ja2UwntwemhpIiC6Fk/+YKaf9fNO0ryc6aGe3vkkIri3onZUUWWvXuFx4GKCMAAAB42mNgZGBg4GIwYXBgYHZx8wlhUMjOyC1iEMlJLMljMGJgYQCC//9BqmBsIMFYUJSaxsDBAAYAbxALLwB42mNgYWpinMDAysDA1MUUwcDA4A2hGeMYjBi9GJBAA1AQme/o5x7CcICBV0GBeca/PwwMzH8YrzBA1TCpMb0DUgoMzAAhOgxvAAAAeNoNx7ERQEAUBcB9n0BGcCVoTIQZ4c1oQ0GKY7MVMSk0hVXd+9GDs29XZjFqBlTGPNSLQf4vIHzRyQVIeNptyAEGgEAQQNG/OysVERKAvUUA9jLpWB2lAqAzBKIzxJhSBPrweYAHBGgQ3PPAALTUCBkVkcTI4jtxEiSP0Qw+n29H5HU7bbfJeku6aqmFuu3A8dsFjTsYYgAAAQAB//8AD3jaTZE1oNRAFEXvvKzhxIOsZLOKk5Bd3N29wzocWvq/De4NbiXytcGpcHeo8QZpsISH/9E779xxENygRVyS6iAhDqiyLedt2XbF1uCw6BXcD1oiN7+6bmQ5CBZAS2gn+9oCtlO0447qSZ5ES6aND56Pn/pl/rEP686epZ3BKjEtDH/7pRoVIADE0VEMBf7F6/7FO3EcEOGJsIzt4hM6A2a2UKwahudWfNmTtVgs0b1P507t80a6OLE88pHScWwHuY9P2e+Phk5IAwKlcK94zGdrxwPd0x2Zs+/5It/YOLG5mXbeHR5Y4tXwuwCFK2gidlE9e01Acg1diznZgj+g4rXSS6xk0jKTycd/eqpPmn/kn55PvIEmoEDvIAGS6RSL04YspnfHjjG5z2Ttb6J6cceesWQIEzCZxrvX0xWYTGK8WR9ysrG4U+HdU8QXrtZHfbd7IdlNNq3ooJjvdWPdmTVdGTFK76rnM386XmshzcNh2v5rF932DwdnaPuwYWDylF5imVT7u39y6rzBUm0/mCxnspv/O8bEKcadqrd7zJw5Y1bPpJerV+/DD2XUdOsAAHjaY2BkYADiZqGUwMp4fpuvDMzMLxiA4N5SW2Mo3fkn6J8OeyrzASCXjYEJJAoAUREMPgB42mNgZGBgnvHvDwMD+/k/QX/vs6cCRVABFwCxeQcOAHjaY/zCYMRUySABwwzv/q9j9GNggGEmRgYNBob/2f+7/1/57/s/7v+t/1kASnYRRgAAABUALQA5AEUAYwBjAGMAYwB5AJ4AqwC4AN4A6wD4AQkAAHjaY2BkYGAQYJjDwMtQxMAC5iEAMwMjABwXATZ42izMsRFAMBiG4fdPwh2Xi1SKlCqXAZTmMI4pFCYxgMFwvu6pHiBy4LHQAZdV2SiWZUcyJ3tWbjlQOeWGwi63zGxyYmH6bRAZ5fCd8kCkl/MreBojB9wIoCiKnqX8sGbcBrXNOGPbs/uetmPn4z7zjTJFopS4pSEWyBLnm6SYJqPM56lQ54g9T119TW1FaZ1dX5aCWFaaVv/MFQ/cY0wtmhSVN+nyIpbZMWOStJKCFjW+5GoYQ12JwAG77HsOmY4QejHCRIyhzzGnPHHNh9SKFUxw87Oe+yrytcFkghnN6gl8KEmK8/1z6uNqAqfKnauyGnX59akZt/GwS9pcWmofk4vjrtTWxZaaOOZUv0d+KusOFczKxg/hwF84AHjaY2BiAIP/cxiMGLABASBWYTjJcJyRiYGZkZmRhaGJkZWRjZGdkYORk5GLkZu9NC/TwMjYHEwbOBowOQeBmcYGFpzpRYllqcn5uUmcicmlJRBWSWZOCpgFVWXCB5fTS04sTuWBCBuBOQB3PyIfAAA=) format('woff');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-}
+
 
 /* kantumruy-pro-latin-400-normal */
-@font-face {
-  font-family: 'Kantumruy Pro';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url(/assets/kantumruy-pro-latin-400-normal-CjZAwuY-.woff2) format('woff2'), url(/assets/kantumruy-pro-latin-400-normal-Bxtv0w9f.woff) format('woff');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
+
 /* kantumruy-pro-khmer-700-normal */
-@font-face {
-  font-family: 'Kantumruy Pro';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/kantumruy-pro-khmer-700-normal-wdAZ07zF.woff2) format('woff2'), url(/assets/kantumruy-pro-khmer-700-normal-B1sAwXXo.woff) format('woff');
-  unicode-range: U+1780-17FF,U+19E0-19FF,U+200C-200D,U+25CC;
-}
+
 
 /* kantumruy-pro-latin-ext-700-normal */
-@font-face {
-  font-family: 'Kantumruy Pro';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(data:font/woff2;base64,d09GMgABAAAAAAUYABAAAAAACiQAAAS6AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGjAbgwIcQgZgP1NUQVREAHwRCAqEHIMUCyIAATYCJAM0BCAFhGAHgR8MBxtjCAC+BXBDBgP9qwwRw0Iq0kGbqZ90MViqq+RGgWdTf79/J4Jq7D97dvcRHjEGFAGqIxUAkPddEIVkhyoKyKXq+dDc6wuU7qfIKVIKjAPMD/FlJBxYdMS2IMwAjZzQc+N5/m943//UCSJP8o4XwS9LLJzPJjbtjNINdN0/8E3dgmPe1rZZ8yjKCmQ4qhAYVfN0FNVgozXR+lvBoxxfE8QAsYINOJh0OBCdxrvCypNfBs3iVk5SmQHP/7Hkf61Jpx18hCVS8S+y6M6yQM9me6PxKIrSo0EGPs/newOaDwBmcw1m5nq42IGoRfW3ZxOSLmAmVhKK0NCRhUBdsgLfmaadTNz+hbU91DfdCVGwXaMu6vEwIlQkeUfF6BoE2tDYlNBF48VWIO6WgzjLQEjIeHyyVx2WrqqP0UQ45phwDUHFfFVK5BEE6XVCfoX8BvnLQ76FglAX9qMYiwmKiXIUIcKT8a/E6ZxNO2YfoIKJaTND/BsLmCLztocRyXQ81mvEyoh6EoJhYGQQk4TPonOIR7FcOqt8mZOsImdHN5QKajwqRf8UyOtNKYpYKR30BPGra1dAOqDED+WNCulB5nmA0/D2cQmknAqhfITwL+5ZFvfwTGf2bO75/+T/MwSkhel3zMYJoS5hPBbzsfdqOmXA9cc1m8kWxuNlIUUfEAiIWvoEkJAxHicwHu86MFEOTlXHbNOe+apMOXLJ9dmz/xO0gS9Jcv4q6E1RQn43dPK/4HsPMSIMoA+YDXq4E7yK6WA8IEkjKiHY0oL8NUup50Ep7XYpk0upnZ+RWb8iM6Pda55D9siVxFHi/P69i+LwYa310CEqrXLkdGqQyuXIikvu7xz5pPngPo4eOrqncvYA3suJrHXXGiPrsTGwS3My+eHXn6uTJ6m5M+0KhHjAx0MO+OUcJnpO+fOjR6XZjodvLnvwUD7o/VI8zgovnk4w/5up7Kci5+0bZ9oZY8LZTttBPW4+nu1VwTHccvHN9d9oyg7puOazXc/w63w4+QmNX558gTA+33Wd25Dk/t8LBq1tl1WRhY0h2dZJvHshx29cbxvA2/c8sb8I4+TrUBfkG9yQX9SlhRjUdON0MOidjNVAIT3Dugdfh0E4ftbodb7ssf/45d/gx5elF1fvkv/cH5w4rCqB4K31pBc8cGRcgyAqzfjXyCGUUy7mjcqMmfAjpzNRCyMLBSlCVpqCQV8J1hAnvv/TaXtWFqWBD2Ko08JU/2hJ3Z+0bLMzWjHfA1rFVHdoVXMdUbs2quUJ2ibSaur+pPW0NS/TR3AGj+Ma1zKKRW0G2SGlrtHR9LeifJERXbpEZCGDj4p0ihhsnTwhTZdNC9asusZFxRyh2G1bQp4OMzy2pAOKUMTgcYl6dOrWTervFAtWtPR4tUZN27Boz+jMJjztPIOzPL7bwijERdJsVYlozwqUKceomxRyz/i0OIbQu9f1ouZ4wpuy3kljeB8Uu66TzONEG++5AeV5t6a6WIXYwc+3YAmNoxLWerw+mO+7T4ocOYpjUYlq1KIejWhGq3a3a3Trewdxi3a6m7lv59ho6B7KWMjJqrKqkEbGNTmmG4UadtLkGe7LatcvQsQhNEHJ0HzGGGWG5REAAAA=) format('woff2'), url(data:font/woff;base64,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) format('woff');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-}
+
 
 /* kantumruy-pro-latin-700-normal */
-@font-face {
-  font-family: 'Kantumruy Pro';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url(/assets/kantumruy-pro-latin-700-normal-CJYSeyEt.woff2) format('woff2'), url(/assets/kantumruy-pro-latin-700-normal-BRnJWN2X.woff) format('woff');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
+
 @layer app {
 :root {
   /* T10.2 design tokens; U1 (2026-10-24) refreshed the values: cooler neutrals, an accent dark enough for white text
@@ -1172,6 +1385,7 @@ svg.react-flow__connectionline {
   --line: #e4e7eb;
   --line-strong: #cfd4da;
   --accent: #0965cf; /* U7: 5.6:1 with white text, 4.7:1 as text on every light surface */
+  --scrim: rgb(15 17 21 / 0.36); /* behind an open dialog */
   --wire-reconnecting: #777; /* React Flow's colour for a wire being dragged to a new port */
   --accent-hover: #0753ad;
   --on-accent: #fff; /* text and icons on a solid accent or status (ok, warn, danger) fill */
@@ -1647,73 +1861,6 @@ button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent;
 .sc-approval--on .sc-approval__state { color: var(--ok); }
 .sc-approval--changed .sc-approval__state { color: var(--warn); }
 .sc-fig__bar .sc-approval__approve { background: var(--ok); color: var(--on-accent); border-color: var(--ok); font-weight: 600; }
-}
-/* Dialogs: the shared dialog card and each dialog's own parts (CSS cleanup 9). */
-@layer app {
-/* Dialogs (U6): a clear title, grouped content on soft panels, actions on the right, Close always in view. */
-.sc-dialog { border: 0; padding: 0; background: transparent; }
-.sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast); }
-.sc-dialog__foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
-@media (max-width: 767px) {
-  .sc-dialog { max-width: calc(100vw - 16px); }
-}
-.sc-dialog::backdrop { background: rgb(15 17 21 / 0.36); backdrop-filter: blur(3px); }
-.sc-dialog .sc-card > .sc-dialog__foot { margin: 0 calc(-1 * var(--sp-5)) calc(-1 * var(--sp-5)); padding: 14px var(--sp-5); background: color-mix(in srgb, var(--surface-2) 70%, transparent); border-top: 1px solid var(--line); }
-
-/* A question with a typed answer (rename, save as template). */
-.sc-ask { display: grid; gap: var(--sp-3); width: min(400px, calc(100vw - 32px)); }
-.sc-ask h2 { margin: 0; }
-.sc-ask p { margin: 0; }
-
-/* Export (T6.5, U6): the sizes as a soft list with checkboxes, the rest as a tidy form; jobs and approvals. */
-.sc-export form { display: grid; gap: 10px; }
-.sc-export__jobs { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
-.sc-export__approval { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 10px; border-left: 3px solid var(--warn); border-radius: var(--r-sm); background: var(--surface-2); font-size: var(--fs-sm); }
-.sc-export__approval button { margin-left: auto; }
-.sc-export { min-width: 0; }
-.sc-export__outputs { display: grid; border: 1px solid var(--line); gap: 2px; padding: 6px; border-radius: 12px; border-color: var(--line); background: var(--surface-2); max-height: 280px; overflow: auto; }
-.sc-export__outputs legend { padding: 0 6px; font-size: 12px; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
-.sc-export__outputs label { display: flex; gap: 6px; align-items: center; padding: 8px 10px; border-radius: 9px; background: var(--surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); cursor: pointer; }
-.sc-export__outputs label:hover { box-shadow: 0 0 0 1px var(--accent); }
-.sc-export__outputs label + label { margin-top: 4px; }
-.sc-export__outputs input[type='checkbox'] { width: 16px; height: 16px; }
-.sc-export form > label { font-weight: 500; }
-.sc-export__jobs li { display: grid; grid-template-columns: 1fr 120px 1fr; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); }
-
-/* Size presets (T4.8, M4): team preset families. */
-.sc-presets { max-width: 640px; overflow: auto; }
-.sc-presets form label { display: grid; gap: 2px; font-size: 13px; }
-.sc-presets .sc-families > li { align-items: flex-start; }
-.sc-family { flex: 1; min-width: 0; }
-.sc-family summary { display: flex; gap: 8px; align-items: baseline; cursor: pointer; padding: 2px 0; }
-.sc-family__sizes { list-style: none; margin: 4px 0 2px 16px; padding: 0; display: grid; gap: 2px; font-size: 13px; }
-/* Long dialogs keep Close in view: the footer sticks to the card's bottom edge. */
-.sc-presets .sc-dialog__foot, .sc-team .sc-dialog__foot { position: sticky; bottom: calc(-1 * var(--card-pad)); margin: 0 calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad)); padding: var(--sp-3) var(--card-pad) var(--card-pad); background: var(--surface); }
-.sc-presets, .sc-team { --card-pad: 24px; width: min(640px, calc(100vw - 24px)); max-height: 85dvh; }
-
-/* Fonts: each family as a sample card. */
-.sc-font__name { font-size: 12px; font-weight: 600; }
-.sc-fonts { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow: auto; display: grid; gap: 8px; }
-.sc-fonts > li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
-.sc-font__sample { font-size: 22px; line-height: 1.3; }
-
-/* Team: members and the invite link. */
-.sc-invite-link { display: flex; gap: var(--sp-2); }
-.sc-invite-link input { flex: 1; font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
-
-/* Team library (T7.1): saved assets. */
-.sc-lib { min-width: 460px; max-height: 85vh; overflow: auto; display: grid; gap: 10px; }
-.sc-lib__swatch, .sc-lib__img { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; object-fit: contain; display: inline-block; background: var(--swatch-bg); }
-.sc-lib__text { width: 40px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
-.sc-lib__name { display: grid; }
-
-/* Which page of a PDF (Q1). */
-.sc-pdfpages { width: min(560px, calc(100vw - 32px)); max-height: 85vh; display: grid; gap: var(--sp-2); grid-template-rows: auto auto minmax(0, 1fr) auto; }
-.sc-pdfpages h2 { margin: 0; }
-.sc-pdfpages__grid { list-style: none; margin: 0; padding: 0; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--sp-2); }
-.sc-pdfpages__page { width: 100%; display: grid; gap: 4px; justify-items: center; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: inherit; font: inherit; font-size: var(--fs-sm); cursor: pointer; min-height: 44px; }
-.sc-pdfpages__page:hover, .sc-pdfpages__page:focus-visible { border-color: var(--accent); }
-.sc-pdfpages__page img, .sc-pdfpages__blank { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: var(--canvas); border-radius: var(--r-sm); }
 }
 /* The Projects home and sign-in (CSS cleanup 9). */
 @layer app {

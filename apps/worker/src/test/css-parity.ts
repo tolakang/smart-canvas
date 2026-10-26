@@ -11,6 +11,15 @@ import sharp from 'sharp';
 import { probeWinners } from './css-winners';
 
 const referencePath = fileURLToPath(new URL('./css-reference/styles.css', import.meta.url));
+const areasPath = fileURLToPath(new URL('./css-reference/areas.json', import.meta.url));
+/** The rules this branch converts (scripts/css-reference.mjs): the elements they style had no utility classes at main. */
+const convertedSubjects = (): string[] => {
+  try {
+    return (JSON.parse(readFileSync(areasPath, 'utf8')) as { subjects: string[] }).subjects;
+  } catch {
+    return [];
+  }
+};
 export const referenceCss = () => readFileSync(referencePath, 'utf8');
 
 export interface CssParity {
@@ -66,21 +75,45 @@ const snapshot = (page: Page, key: string) =>
     (window as unknown as Record<string, Map<string, string>>)[key] = out;
   }, key);
 
-/** The app's own stylesheets (Vite serves each CSS file as a <style data-vite-dev-id>), Tailwind's and React Flow's (through board/reactflow.css) included; the bundled fonts are not ours. */
-const swapIn = (page: Page, css: string) =>
-  page.evaluate((css) => {
+/**
+ * The app's own stylesheets (Vite serves each CSS file as a <style data-vite-dev-id>), Tailwind's and React Flow's
+ * (through board/reactflow.css) included; the bundled fonts are not ours. The elements this branch converted lose
+ * their utility classes (the ones the app's Tailwind sheet defines) while the reference is drawn, as they were at main.
+ */
+const swapIn = (page: Page, css: string, subjects: string[]) =>
+  page.evaluate(({ css, subjects }) => {
     const ours = [...document.querySelectorAll<HTMLStyleElement>('style[data-vite-dev-id]')].filter((s) => {
       const id = s.dataset.viteDevId ?? '';
       return id.includes('/apps/web/src/') && !id.includes('/apps/web/src/fonts/');
     });
     if (!ours.length) throw new Error('no app stylesheets found');
+    const utilities = ours.find((s) => (s.dataset.viteDevId ?? '').endsWith('/apps/web/src/tailwind.css'))?.textContent ?? '';
+    const isUtility = (c: string) => utilities.includes(`.${CSS.escape(c)}`);
+    const stripped: [Element, string][] = [];
+    for (const sel of subjects) {
+      const els = (() => {
+        try {
+          return [...document.querySelectorAll(sel)];
+        } catch {
+          return []; // a selector only the stylesheet understands
+        }
+      })();
+      for (const el of els) {
+        if (stripped.some(([e]) => e === el)) continue;
+        const keep = [...el.classList].filter((c) => !isUtility(c));
+        if (keep.length === el.classList.length) continue;
+        stripped.push([el, el.getAttribute('class') ?? '']);
+        el.setAttribute('class', keep.join(' '));
+      }
+    }
+    (window as unknown as Record<string, [Element, string][]>).__scStripped = stripped;
     const ref = document.createElement('style');
     ref.id = 'sc-css-reference';
     ref.textContent = css;
     ours[0]?.before(ref);
     for (const s of ours) s.remove();
     (window as unknown as Record<string, HTMLStyleElement[]>).__scOurs = ours;
-  }, css);
+  }, { css, subjects });
 
 const swapBack = (page: Page) =>
   page.evaluate(() => {
@@ -88,6 +121,7 @@ const swapBack = (page: Page) =>
     const ref = document.getElementById('sc-css-reference');
     for (const s of ours) ref?.before(s);
     ref?.remove();
+    for (const [el, cls] of (window as unknown as Record<string, [Element, string][]>).__scStripped ?? []) el.setAttribute('class', cls);
   });
 
 const shot = (page: Page) => page.screenshot({ animations: 'disabled', caret: 'hide' });
@@ -135,10 +169,10 @@ async function stable(page: Page): Promise<Buffer> {
  */
 export async function cssParity(page: Page, name: string, css = referenceCss()): Promise<CssParity> {
   for (let attempt = 0; ; attempt++) {
+    if (attempt === 0) await probeWinners(page, name); // before the page settles: forcing states restarts transitions
     const app = await stable(page);
-    if (attempt === 0) await probeWinners(page, name);
     await snapshot(page, '__scApp');
-    await swapIn(page, css);
+    await swapIn(page, css, convertedSubjects());
     await settle(page);
     await snapshot(page, '__scRef');
     const ref = await shot(page);

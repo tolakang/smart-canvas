@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { api, type Me } from '../api';
 import { ContextMenu, type MenuItem, type MenuState } from '../board/ContextMenu';
-import { BrandMark, PRODUCT_NAME } from '../ui/Brand';
+import { BRAND, BrandMark, PRODUCT_NAME } from '../ui/Brand';
 import { Icon } from '../board/LayerRow';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
 import { PresetsDialog } from './PresetsDialog';
@@ -45,6 +45,55 @@ export function tileColor(name: string): (typeof TILE_COLORS)[number] {
   for (const c of name) h = (h * 31 + (c.codePointAt(0) ?? 0)) >>> 0;
   return TILE_COLORS[h % TILE_COLORS.length] ?? 'grey';
 }
+/** A tile's colour: the --tile its tints are mixed from. */
+const TILE_TONE: Record<(typeof TILE_COLORS)[number], string> = {
+  blue: '[--tile:var(--type-input)]',
+  purple: '[--tile:var(--type-main)]',
+  green: '[--tile:var(--type-output)]',
+  orange: '[--tile:var(--type-process)]',
+  red: '[--tile:var(--danger)]',
+  grey: '[--tile:var(--muted)]',
+};
+/** Where a tile sits: the team chip, a template card, or a project row (a big cover). */
+type TileSpot = 'chip' | 'card' | 'row';
+const TILE_SHAPE: Record<TileSpot, string> = {
+  chip: 'size-26 rounded-[8px] text-[12px] font-[700]',
+  card: 'size-44 rounded-[12px] text-[18px] font-[700] [grid-row:span_2]',
+  row: 'aspect-[16/10] h-auto w-full text-[44px] font-[800] tracking-[-0.04em] border-b border-b-[color-mix(in_srgb,var(--line)_70%,transparent)]',
+};
+/** A tile's classes: the initial on a tint of its colour, or (`thumb`) a stored thumbnail. */
+function tileClass(spot: TileSpot, tone: (typeof TILE_COLORS)[number] | 'thumb') {
+  const base = `grid flex-none place-items-center ${TILE_SHAPE[spot]}`;
+  if (tone === 'thumb') {
+    const back = spot === 'row' ? 'p-14 [background:var(--cover-backdrop)]' : 'p-0 [background:var(--canvas,var(--surface-2))]';
+    return `sc-tile sc-tile--thumb${spot === 'card' ? ' sc-tile--lg' : ''} [--tile:var(--muted)] overflow-hidden ${back} ${base} ${TILE_INK[spot]}`;
+  }
+  const tint = spot === 'row' ? TILE_COVER : 'bg-[color-mix(in_srgb,var(--tile)_16%,var(--surface))]';
+  return `sc-tile${spot === 'card' ? ' sc-tile--lg' : ''} sc-tile--${tone} ${TILE_TONE[tone]} ${tint} ${base} ${TILE_INK[spot]}`;
+}
+const TILE_INK: Record<TileSpot, string> = {
+  chip: 'text-[color:color-mix(in_srgb,var(--tile)_80%,var(--fg))]',
+  card: 'text-[color:color-mix(in_srgb,var(--tile)_80%,var(--fg))]',
+  row: 'text-[color:color-mix(in_srgb,var(--tile)_75%,var(--fg))]',
+};
+/** A project row's cover without a thumbnail: a light and a gradient in the tile's colour. */
+const TILE_COVER =
+  '[background:radial-gradient(120%_90%_at_20%_10%,color-mix(in_srgb,var(--tile)_34%,var(--surface)),transparent_60%),linear-gradient(135deg,color-mix(in_srgb,var(--tile)_22%,var(--surface)),color-mix(in_srgb,var(--tile)_8%,var(--surface)))]';
+/** A thumbnail inside its tile: the whole artwork in a row's cover, filling the tile in a template card. */
+const THUMB_IMG: Record<'card' | 'row', string> = {
+  card: 'pointer-events-none block size-full object-cover',
+  row: 'pointer-events-none block size-full rounded-[4px] object-contain [filter:drop-shadow(0_6px_14px_rgb(0_0_0/0.18))_drop-shadow(0_1px_2px_rgb(0_0_0/0.12))] [transition:transform_var(--t-med)] group-hover/row:[transform:scale(1.03)] group-focus-within/row:[transform:scale(1.03)]',
+};
+/** The ⋯ button: in a template card's corner, or floating on a row's cover until the row is hovered (always on touch). */
+const MORE: Record<'card' | 'row', string> = {
+  card: 'sc-icon-btn sc-more absolute top-(--sp-2) right-(--sp-2) size-32 flex-none pointer-coarse:size-44',
+  row: 'sc-icon-btn sc-more absolute top-10 right-10 size-32 flex-none rounded-[10px] bg-glass opacity-0 [backdrop-filter:blur(8px)] [box-shadow:var(--shadow-1)] [transition:opacity_var(--t-fast)] pointer-coarse:size-44 group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100',
+};
+/** A section's heading: small capitals. */
+const SECTION_TITLE = 'm-0 text-[13px] font-[650] tracking-[0.04em] text-muted uppercase';
+/** “No projects yet” / “Nothing matches”. */
+const EMPTY = 'sc-empty grid justify-items-center gap-12 rounded-[18px] border border-dashed border-line-strong bg-[color-mix(in_srgb,var(--surface)_60%,transparent)] px-24 py-48 text-center text-muted';
+
 const initialOf = (name: string) => [...name.trim()][0]?.toUpperCase() ?? '?';
 
 /** Projects filtered by `query` (name, any case) and sorted. */
@@ -174,26 +223,26 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
   const projects = useMemo(() => shownProjects(rows?.filter((p) => !p.isTemplate) ?? [], query, sort), [rows, query, sort]);
   const allProjects = rows?.filter((p) => !p.isTemplate).length ?? 0;
   const templates = useMemo(() => shownProjects(rows?.filter((p) => p.isTemplate) ?? [], '', 'name'), [rows]);
-  const more = (row: ProjectRow) => (
-    <button type="button" className="sc-icon-btn sc-more" aria-label={`More actions for ${row.name}`} aria-haspopup="menu" title="More actions" onClick={(e) => openMenu(row, e.currentTarget)}>
+  const more = (row: ProjectRow, spot: 'card' | 'row') => (
+    <button type="button" className={MORE[spot]} aria-label={`More actions for ${row.name}`} aria-haspopup="menu" title="More actions" onClick={(e) => openMenu(row, e.currentTarget)}>
       <Icon name="more" />
     </button>
   );
 
   return (
-    <section className="sc-home">
-      <nav className="sc-home__nav" aria-label="App">
-        <span className="sc-brand">
+    <section className="sc-home mx-auto my-0 max-w-[1180px] px-28 pt-18 pb-64 max-md:min-h-dvh max-md:[align-content:start] max-md:px-12 max-md:pt-10 max-md:pb-40">
+      <nav className="sc-home__nav flex h-56 items-center gap-14 rounded-[16px] border border-[color-mix(in_srgb,var(--line)_80%,transparent)] bg-glass py-0 pr-10 pl-14 [backdrop-filter:blur(16px)] [box-shadow:var(--shadow-2)]" aria-label="App">
+        <span className={BRAND}>
           <BrandMark />
           {PRODUCT_NAME}
         </span>
-        <span className="sc-home__team-chip" title="Your team">
-          <span className={`sc-tile sc-tile--${tileColor(team.name)}`} aria-hidden="true">
+        <span className="sc-home__team-chip ml-4 inline-flex items-center gap-8 border-l border-l-line py-4 pr-10 pl-14 font-[500] text-muted max-md:hidden" title="Your team">
+          <span className={tileClass('chip', tileColor(team.name))} aria-hidden="true">
             {initialOf(team.name)}
           </span>
           {team.name}
         </span>
-        <span className="sc-home__tools">
+        <span className="sc-home__tools ml-auto flex gap-4">
           <button type="button" className="sc-btn sc-btn--quiet" onClick={() => setShowTeam(true)}>
             Team
           </button>
@@ -202,14 +251,14 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
           </button>
         </span>
       </nav>
-      <header className="sc-home__head">
-        <div className="sc-home__title">
-          <span className="sc-home__team">{team.name}</span>
-          <h1>Projects</h1>
-          <p className="sc-muted sc-home__lede">Every campaign, every size. Open a board or start a new one.</p>
+      <header className="sc-home__head mx-4 mt-40 mb-8 flex flex-wrap items-end justify-between gap-x-(--sp-3) gap-y-(--sp-2) max-md:mt-24">
+        <div className="sc-home__title grid gap-6">
+          <span className="sc-home__team hidden text-sm font-[500] text-muted">{team.name}</span>
+          <h1 className="m-0 text-[36px] leading-[1.1] font-[750] tracking-[-0.03em] max-md:text-[28px]">Projects</h1>
+          <p className="sc-muted sc-home__lede m-0 text-[15px]">Every campaign, every size. Open a board or start a new one.</p>
         </div>
         {canEdit && (
-          <button type="button" className="sc-btn sc-btn--primary sc-home__new-btn" onClick={() => setCreating({ templateId: null })}>
+          <button type="button" className="sc-btn sc-btn--primary sc-home__new-btn h-44 gap-8 rounded-[12px] px-22 py-0 text-[14px] [box-shadow:0_8px_20px_-8px_color-mix(in_srgb,var(--accent)_70%,transparent),inset_0_1px_0_rgb(255_255_255/0.15)]" onClick={() => setCreating({ templateId: null })}>
             <Icon name="plus" /> New project
           </button>
         )}
@@ -220,35 +269,35 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
       ) : (
         <>
           {templates.length > 0 && (
-            <section className="sc-home__section" aria-labelledby="templates-title">
-              <h2 id="templates-title">Start from a template</h2>
-              <ul className="sc-tcards" aria-label="Templates">
+            <section className="sc-home__section mt-32 grid gap-14" aria-labelledby="templates-title">
+              <h2 id="templates-title" className={SECTION_TITLE}>Start from a template</h2>
+              <ul className="sc-tcards m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-14 p-0" aria-label="Templates">
                 {templates.map((t) => (
-                  <li key={t.id} className="sc-tcard" data-template={t.name}>
-                    <button type="button" className="sc-tcard__main" onClick={() => (canEdit ? setCreating({ templateId: t.id }) : props.onOpen(t.id))} aria-label={canEdit ? `New project from ${t.name}` : `View template ${t.name}`}>
-                      <Cover teamId={team.id} row={t} large />
-                      <span className="sc-tcard__name">{t.name}</span>
+                  <li key={t.id} className="sc-tcard relative rounded-[16px] border border-line bg-surface [box-shadow:var(--shadow-1)] [transition:transform_var(--t-med),box-shadow_var(--t-med)] hover:border-line-strong hover:[transform:translateY(-2px)] hover:[box-shadow:var(--shadow-3)]" data-template={t.name}>
+                    <button type="button" className="sc-tcard__main grid w-full grid-cols-[auto_1fr] items-center justify-items-start gap-x-12 gap-y-(--sp-1) rounded-[inherit] py-14 pr-44 pl-14 text-left text-inherit [background:none] [border:0]" onClick={() => (canEdit ? setCreating({ templateId: t.id }) : props.onOpen(t.id))} aria-label={canEdit ? `New project from ${t.name}` : `View template ${t.name}`}>
+                      <Cover teamId={team.id} row={t} spot="card" />
+                      <span className="sc-tcard__name max-w-full overflow-hidden font-[600] text-ellipsis whitespace-nowrap">{t.name}</span>
                       <span className="sc-rows__meta">{canEdit ? 'Use template' : 'Template'}</span>
                     </button>
-                    {more(t)}
+                    {more(t, 'card')}
                   </li>
                 ))}
               </ul>
             </section>
           )}
 
-          <section className="sc-home__section" aria-labelledby="projects-title">
-            <div className="sc-home__bar">
-              <h2 id="projects-title">
-                All projects <span className="sc-muted sc-home__count">{allProjects}</span>
+          <section className="sc-home__section mt-32 grid gap-14" aria-labelledby="projects-title">
+            <div className="sc-home__bar flex flex-wrap items-center justify-between gap-(--sp-2)">
+              <h2 id="projects-title" className={SECTION_TITLE}>
+                All projects <span className="sc-muted sc-home__count ml-4 rounded-[99px] bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] px-8 py-1 text-[11px] font-[500] tracking-[0] text-fg">{allProjects}</span>
               </h2>
               {allProjects > 0 && (
-                <span className="sc-home__filters">
-                  <label className="sc-search">
+                <span className="sc-home__filters flex flex-wrap gap-(--sp-2)">
+                  <label className="sc-search flex h-38 items-center gap-6 rounded-[10px] border border-line bg-surface px-12 text-muted [box-shadow:var(--shadow-1)] focus-within:border-accent focus-within:[box-shadow:0_0_0_3px_var(--ring)]">
                     <Icon name="search" />
-                    <input type="search" placeholder="Search projects" aria-label="Search projects" value={query} onChange={(e) => setQuery(e.target.value)} />
+                    <input className="w-[220px] min-w-0 rounded-none px-0 py-6 [border:0] text-fg [background:none] [outline:none] max-md:w-full" type="search" placeholder="Search projects" aria-label="Search projects" value={query} onChange={(e) => setQuery(e.target.value)} />
                   </label>
-                  <select aria-label="Sort projects" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+                  <select className="h-38 rounded-[10px] border border-line bg-surface px-8 py-6 text-fg [box-shadow:var(--shadow-1)] [font:inherit]" aria-label="Sort projects" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
                     <option value="edited">Last edited</option>
                     <option value="name">Name</option>
                   </select>
@@ -256,7 +305,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
               )}
             </div>
             {allProjects === 0 ? (
-              <div className="sc-empty">
+              <div className={EMPTY}>
                 <p>{canEdit ? 'No projects yet.' : 'No projects yet. An editor of the team can create one.'}</p>
                 {canEdit && (
                   <button type="button" className="sc-btn sc-btn--primary" onClick={() => setCreating({ templateId: null })}>
@@ -265,7 +314,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
                 )}
               </div>
             ) : projects.length === 0 ? (
-              <div className="sc-empty">
+              <div className={EMPTY}>
                 <p>No projects match “{query.trim()}”.</p>
                 <button type="button" className="sc-btn" onClick={() => setQuery('')}>
                   Clear search
@@ -274,9 +323,9 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
             ) : (
               <ul className="sc-list sc-rows" aria-label="Projects">
                 {projects.map((p) => (
-                  <li key={p.id} data-project={p.name}>
+                  <li key={p.id} className="group/row" data-project={p.name}>
                     <button type="button" className="sc-rows__main sc-rows__main--tile" onClick={() => props.onOpen(p.id)} aria-label={p.name} aria-describedby={`edited-${p.id}`}>
-                      <Cover teamId={team.id} row={p} />
+                      <Cover teamId={team.id} row={p} spot="row" />
                       <span className="sc-rows__text">
                         <span className="sc-rows__name">{p.name}</span>
                         <time id={`edited-${p.id}`} className="sc-rows__meta" dateTime={p.updatedAt} title={new Date(p.updatedAt).toLocaleString()}>
@@ -284,7 +333,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
                         </time>
                       </span>
                     </button>
-                    {more(p)}
+                    {more(p, 'row')}
                   </li>
                 ))}
               </ul>
@@ -325,19 +374,18 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
 }
 
 /** The card's picture: the project's thumbnail (D64) once the board has stored one, else its colour and letter. */
-function Cover(props: { teamId: string; row: ProjectRow; large?: boolean }) {
-  const { row } = props;
+function Cover(props: { teamId: string; row: ProjectRow; spot: 'card' | 'row' }) {
+  const { row, spot } = props;
   const [failed, setFailed] = useState(false);
-  const size = props.large ? ' sc-tile--lg' : '';
   if (row.thumbAt && !failed) {
     return (
-      <span className={`sc-tile sc-tile--thumb${size}`} aria-hidden="true">
-        <img src={`/api/teams/${props.teamId}/projects/${row.id}/thumbnail?v=${encodeURIComponent(row.thumbAt)}`} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setFailed(true)} />
+      <span className={tileClass(spot, 'thumb')} aria-hidden="true">
+        <img className={THUMB_IMG[spot]} src={`/api/teams/${props.teamId}/projects/${row.id}/thumbnail?v=${encodeURIComponent(row.thumbAt)}`} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setFailed(true)} />
       </span>
     );
   }
   return (
-    <span className={`sc-tile${size} sc-tile--${tileColor(row.name)}`} aria-hidden="true">
+    <span className={tileClass(spot, tileColor(row.name))} aria-hidden="true">
       {initialOf(row.name)}
     </span>
   );
@@ -374,8 +422,8 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
           <input placeholder="New project name" value={name} autoFocus maxLength={200} required onChange={(e) => setName(e.target.value)} />
         </label>
         {props.templates.length > 0 && (
-          <fieldset className="sc-newproj__from">
-            <legend>Start from</legend>
+          <fieldset className="sc-newproj__from m-0 grid gap-6 p-0 [border:0]">
+            <legend className="mb-4 text-sm text-muted">Start from</legend>
             <label className="sc-check">
               <input type="radio" name="from" checked={from === null} onChange={() => setFrom(null)} /> Blank board
             </label>

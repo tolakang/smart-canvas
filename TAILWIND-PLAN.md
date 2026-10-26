@@ -58,9 +58,10 @@ stay on plain CSS. Either way, nothing here may change how the app looks.
    browser tests' hooks and the parity test's old draw. States may use `data-*` attributes alongside.
 6. **One owner per element.** An element's CSS rules are deleted in the same PR its utilities arrive, never left side
    by side. Its `!important`s go with them (in a layer, our `!important` would beat Tailwind's `!` utilities).
-7. **Touch and hover:** `hover:` doesn't fire on touch screens, so the 5 `hover: none` rules that undo sticky hover
-   are no longer needed once their element is converted. The parity test's phone screens run as a touch device
-   (Playwright `hasTouch` and `isMobile`, which turn on `pointer: coarse` and `hover: none`) to confirm it.
+7. **Touch and hover:** `hover:` is plain `:hover` here (`@custom-variant hover` in `tailwind.css`, T2b), as our CSS
+   always had it; Tailwind's own only fires on devices that can hover, which changed the phone screens. The
+   `hover: none` rules stay, as `[@media(hover:none)]:` variants. The parity test's phone screens run as a touch device
+   (Playwright `hasTouch` and `isMobile`, which turn on `pointer: coarse` and `hover: none`).
 8. **No Preflight until T8**, because its `img` and `svg` defaults could shift the artwork.
 9. **No class helper packages:** a tiny local `cx()` instead of `clsx` or `tailwind-merge`.
 
@@ -103,10 +104,25 @@ sheet wins and becomes a utility on that element; one that doesn't change is dea
 screen reaches are checked the same way on a small static page. Never put a class on an element a rule finds by
 having none (`.sc-card button:not([class])`): style it from its parent (`[&>button]:ml-auto`).
 
+The reference is main's built CSS, which already has utilities of its own (`.border`, `.grid`…); drawn on this branch's
+DOM, they would style the elements this branch just converted. So `scripts/css-reference.mjs` also writes `areas.json`:
+the rules this branch removes. While the reference is drawn, the elements they style lose the utility classes the
+app's Tailwind sheet defines, as they were at main (found in T2b: without it the test passed or failed for the wrong
+reason).
+
+Tailwind utilities that are not what the old declaration was, and what to write instead:
+- `border-0` keeps the border style (`solid`) and colour: for `border: 0` write `[border:0]`;
+- `outline-none` sets only the style: for `outline: none` write `[outline:none]`;
+- `row-span-2` sets both grid lines: for `grid-row: span 2` write `[grid-row:span_2]`;
+- `content-start` is `flex-start`, not `start`; `shadow-*`, `scale-*`, `translate-*` and `drop-shadow-*` compose
+  through `--tw-*` variables (extra layers, other properties): write `[box-shadow:…]`, `[transform:…]`, `[filter:…]`;
+- two utilities for the same property on one element: which wins is Tailwind's order, not the class order — never
+  give one element both (build the list per case, as the Projects tiles do).
+
 Each PR: convert, delete the area's rules, parity test green on every screen, `pnpm lint`, `pnpm typecheck` and
 `pnpm build` clean; merge when CI is green; one PR at a time.
 
-Breakpoints (set in T1, `tailwind.css`): `md` 768px, `lg` 900px, `xl` 1100px, `2xl` 1280px. A phone is `max-md:`, a
+Breakpoints (set in T1, `tailwind.css`): `md` 768px, `lg` 901px, `xl` 1101px, `2xl` 1280px (`max-lg:` and `max-xl:` are the old `max-width: 900px` / `1100px` rules, which include those widths). A phone is `max-md:`, a
 tablet `md:max-2xl:`, a wide screen `2xl:`; no screen width moves.
 
 ## What stays plain CSS for good

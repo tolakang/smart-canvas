@@ -5,7 +5,7 @@
  * element. The same is done with :hover and :focus-visible forced (DevTools protocol), and where the sheet wins at
  * rest but not in a state, the state's value is recorded too: a utility would beat the rule that wins there, so the
  * utility needs a variant. Run through the parity test:
- *   SC_PROBE=ui/dialogs.css SC_PROBE_SCOPE='dialog, dialog *' SC_PROBE_OUT=/tmp/winners.jsonl
+ *   SC_PROBE=ui/dialogs.css SC_PROBE_SCOPE='dialog, dialog *' SC_PROBE_OUT=/tmp/winners.jsonl [SC_PROBE_SCREENS=a,b]
  * Each screen the test compares adds one line per element that the sheet styles.
  */
 import { appendFileSync } from 'node:fs';
@@ -15,6 +15,8 @@ export async function probeWinners(page: Page, screen: string) {
   const sheet = process.env.SC_PROBE;
   const out = process.env.SC_PROBE_OUT;
   if (!sheet || !out) return;
+  const screens = process.env.SC_PROBE_SCREENS?.split(','); // only these screens (all when unset)
+  if (screens && !screens.includes(screen)) return;
   const scope = process.env.SC_PROBE_SCOPE ?? '*';
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('DOM.enable');
@@ -28,9 +30,10 @@ export async function probeWinners(page: Page, screen: string) {
   const { root } = await cdp.send('DOM.getDocument', { depth: -1 });
   for (let i = 0; i < count; i++) {
     const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: `[data-sc-probe="${i}"]` });
+    if (!nodeId) continue; // gone since (a list that re-rendered)
     const result: Record<string, unknown> = {};
     for (const state of ['', 'hover', 'focus-visible']) {
-      if (state) await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [state] });
+      if (state) await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [state] }).catch(() => undefined);
       result[state || 'rest'] = await page.evaluate(
         ({ i, sheet }) => {
           const el = document.querySelector(`[data-sc-probe="${i}"]`);
@@ -76,7 +79,7 @@ export async function probeWinners(page: Page, screen: string) {
         },
         { i, sheet },
       );
-      if (state) await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] });
+      if (state) await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] }).catch(() => undefined);
     }
     if (result.rest || result.hover || result['focus-visible']) appendFileSync(out, `${JSON.stringify({ screen, ...result })}\n`);
   }
