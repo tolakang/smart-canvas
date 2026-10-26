@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { dimensions } from './dimensions';
 import { readFontFamily } from './font';
-import { isPdf, pdfPageToSvg, PdfRejected, PdfUnavailable } from './pdf';
+import { isPdf, pdfPageToSvg, PdfRejected, PdfUnavailable, userUnitSize } from './pdf';
 import { sniff } from './sniff';
 import { sanitizeCss, sanitizeSvg, SvgRejected } from './svg-sanitize';
 
@@ -164,6 +164,13 @@ describe('PDF → SVG (M3)', () => {
     expect(clean).toMatch(/<path d="M /);
     expect(clean).toMatch(/<use href="#glyph/);
     expect(dimensions(svgBytes(clean))).toEqual({ width: 200, height: 100 });
+  });
+  it('keeps a page size in bare numbers whichever cairo drew it (newer cairo writes points)', () => {
+    const svg = '<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="200pt" height="100pt" viewBox="0 0 200 100"><rect width="10pt" height="5"/></svg>';
+    const out = userUnitSize(svg);
+    expect(dimensions(svgBytes(out))).toEqual({ width: 200, height: 100 });
+    expect(out).toContain('<rect width="10pt" height="5"/>');
+    expect(userUnitSize('<svg width="200" height="100"></svg>')).toBe('<svg width="200" height="100"></svg>');
   });
   it('Q1: draws the page asked for, and rejects a page past the last', async () => {
     const two = fixture('two-pages.pdf');
