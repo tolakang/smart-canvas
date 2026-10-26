@@ -210,7 +210,7 @@ Safety net: `apps/worker/src/css-parity.e2e.test.ts` compares every covered scre
 - [x] C7 — Node card base (card, header, handles) → `board/node.css` — [#170](https://github.com/tolakang/smart-canvas/pull/170)
 - [x] C8 — Editors (incl. transform box and comments) → `editor/editor.css` — [#171](https://github.com/tolakang/smart-canvas/pull/171)
 - [x] C9 — Projects home and sign-in → `shell/home.css`; dialogs → `ui/dialogs.css` — [#172](https://github.com/tolakang/smart-canvas/pull/172)
-- [ ] C10 — History, Review panel and approval → `board/review.css` (this PR)
+- [x] C10 — History, Review panel and approval → `board/review.css` — [#173](https://github.com/tolakang/smart-canvas/pull/173)
 - [ ] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates
 - [ ] C12 — `@layer` order, guard against the same selector in two files; retire the frozen reference copy
 

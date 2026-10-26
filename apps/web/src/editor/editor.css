@@ -30,10 +30,14 @@
 /* The editor bar: back, title, zoom, the edited count, gesture hints (U4: a glass bar that follows the theme). */
 .sc-edited { margin-left: 6px; padding: 0 5px; border-radius: 4px; font-size: 10px; font-weight: 600; vertical-align: 1px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .sc-zoom button { min-width: 28px; }
+/* The bar never wraps: its parts keep their size, the title takes what is left and truncates. */
 .sc-fig__bar { flex: none; display: flex; align-items: center; gap: 12px; background: var(--fig-bar); color: var(--fig-bar-fg); overflow: hidden; white-space: nowrap; }
 .sc-fig__bar button { padding: 0 10px; border: 0; background: none; color: var(--fig-bar-fg); height: 34px; border-radius: 9px; font-size: 12px; font-weight: 500; }
 .sc-fig__bar button:hover:not(:disabled) { background: var(--fig-bar-hover); }
 @media (max-width: 767px) {
+  /* Editors: the canvas, with a bottom sheet under Layers | Design tabs (V3, below). */
+  /* Editor bar on a phone: one line, nothing scrolls sideways — the title truncates; size, the selection's
+     name (it is in the sheet), "100%" and the bar's extra actions step aside. */
   .sc-fig__bar { gap: var(--sp-1); }
   .sc-fig__bar button { padding: 0 8px; }
 }
@@ -70,9 +74,11 @@
 @media (pointer: coarse) {
   .sc-editor__resets button { width: 36px; height: 36px; }
 }
+/* M1: the dragged layer's spot in the other layouts. */
 .sc-editor__spot { position: absolute; left: 0; top: 0; outline: 1px dashed var(--fig-blue, var(--accent)); outline-offset: -1px; opacity: 0.7; pointer-events: none; transform-origin: center; }
 .sc-editor__spot span { position: absolute; left: 2px; top: 2px; font: 600 10px/1.2 system-ui, sans-serif; color: var(--fig-blue, var(--accent)); background: color-mix(in srgb, var(--surface) 80%, transparent); padding: 0 3px; border-radius: 2px; }
 .sc-editor { display: grid; margin-top: 0; gap: var(--sp-2); }
+/* D58: the editor's touch gestures (pan, pinch) are its own on every device, touch laptops included. */
 .sc-editor__stage { flex: 1; position: relative; overflow: hidden; background: var(--fig-canvas, var(--canvas)); min-width: 0; min-height: 0; touch-action: none; }
 @media (max-width: 767px) {
   .sc-editor__body { flex-direction: column; }
@@ -84,6 +90,7 @@
   .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side { width: 220px; }
 }
 .sc-editor__target.tb-target { cursor: move; touch-action: none; -webkit-touch-callout: none; user-select: none; }
+/* Hand tool / Space: the canvas pans; the handles let the press through. */
 .sc-editor__stage--hand .tb-handle, .sc-editor__stage--hand .tb-target { pointer-events: none; }
 .sc-editor__point { position: absolute; inset: 0; z-index: 4; cursor: crosshair; touch-action: none; }
 @media (min-width: 768px) {
@@ -101,9 +108,13 @@
   .sc-editor__body--sheet-layers > .sc-layers { display: block; width: auto; padding-bottom: env(safe-area-inset-bottom); border: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; background: var(--surface); box-shadow: var(--shadow-2); }
   .sc-editor__body--sheet-layers > .sc-design, .sc-editor__body--sheet-layers > .sc-editor__side { display: none; }
   .sc-editor__body--sheet-layers > .sc-layers .sc-layer { min-height: 52px; }
+  /* The canvas first, then the tabs, then the sheet (the Layers panel comes first in the page's order). */
   .sc-editor__body > .sc-editor__canvas, .sc-editor__body > .sc-editor__stage { order: 1; }
   .sc-editor__body > .sc-sheet-tabs { order: 2; }
   .sc-editor__body > .sc-layers, .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side { order: 3; }
+  /* One steady sheet height: the canvas above never jumps when the selection or the tab changes. */
+  /* The tabs are part of the sheet: tabs + panel together stay within the 45 % the sheet always had; a short panel
+     leaves the room to the canvas. */
   .sc-editor__body > .sc-design, .sc-editor__body > .sc-editor__side, .sc-editor__body--sheet-layers > .sc-layers { max-height: calc(45dvh - 52px); overflow: auto; }
 }
 
@@ -124,6 +135,7 @@
 .sc-layer__actions button { width: 22px; height: 22px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: none; color: var(--muted); font-size: 11px; }
 .sc-layer__actions button:hover:not(:disabled) { border-color: var(--line); color: var(--fg); }
 .sc-layer__actions button:disabled { opacity: 0.3; }
+/* The layers title and its hint ("top = front") read as two things. */
 .sc-layers__title { padding: 10px 12px; font-weight: 600; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 6px; }
 .sc-layers li { border-radius: 10px; }
 
@@ -158,6 +170,7 @@
 .sc-design .sc-props select, .sc-design .sc-props input[type='number'] { font-size: 11px; border-color: transparent; background: var(--fig-hover); border-radius: 5px; height: 28px; }
 .sc-design .sc-props select:focus, .sc-design .sc-props input[type='number']:focus { border-color: var(--fig-blue); background: var(--surface); outline: none; }
 .sc-design .sc-inspector { border-bottom: 1px solid var(--fig-line); }
+/* Gestures on touch screens, keyboard shortcuts elsewhere. */
 .sc-design__touch { display: none; }
 @media (pointer: coarse) {
   .sc-design__touch { display: grid; }
