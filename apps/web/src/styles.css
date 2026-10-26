@@ -98,13 +98,7 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 /* The board page never scrolls; the board itself takes the visible height (dvh, see chrome.css). */
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
-.sc-node { min-width: 160px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
-.sc-node--input { background: var(--input); }
-.sc-node--hidden { opacity: 0.5; }
-.sc-node__title { font-weight: 600; }
-.sc-node__meta { color: var(--muted); font-size: 12px; }
 
-.sc-node--input { width: 220px; }
 .sc-editor { display: grid; gap: 6px; margin-top: 8px; }
 .sc-thumb { width: 100%; height: 110px; object-fit: contain; background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; border-radius: 6px; border: 1px solid var(--line); }
 .sc-thumb--empty { display: grid; place-items: center; color: var(--muted); font-size: 12px; }
@@ -118,9 +112,6 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 .sc-field input[type='color'] { width: 32px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 4px; }
 .sc-fill button { justify-self: start; font-size: 12px; }
 
-.sc-node__head { display: flex; align-items: center; gap: 6px; }
-.sc-node__head .sc-node__title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-rename { flex: 1; min-width: 0; padding: 2px 6px; font-weight: 600; }
 .sc-dialog { border: 0; padding: 0; background: transparent; }
 .sc-dialog::backdrop { background: rgb(0 0 0 / 0.25); }
 .sc-dialog .sc-card { margin: 0; min-width: min(320px, 100%); }
@@ -222,14 +213,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-lib__name { display: grid; }
 
 
-/* T8.3 file dropped on an input */
-.sc-node--drop { outline: 2px dashed var(--accent); outline-offset: 2px; }
 
-/* T8.5 wires: bigger handles (with a wider invisible hit area) and a visible grab state */
-/* Handles in the accent colour. */
-.react-flow__handle { width: 10px; height: 10px; background: var(--surface); border: 2px solid var(--accent); }
-.react-flow__handle::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
-.react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); }
 
 /* T8.6 editor: bigger handles, zoom */
 .sc-editor__stage { min-width: 0; min-height: 0; }
@@ -238,8 +222,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-zoom button { min-width: 28px; }
 .sc-zoom__value { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; font-size: 11px; }
 
-/* T8.7 behaviour picker in the input node's meta line */
-.sc-behavior { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--fg); }
 
 /* T10.1 editor, Figma style: dark toolbar, grey canvas, compact 11 px panels, blue selection */
 .sc-fig {
@@ -311,18 +293,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-design .sc-props select:focus, .sc-design .sc-props input[type='number']:focus { border-color: var(--fig-blue); background: var(--surface); outline: none; }
 .sc-design .sc-inspector { border-bottom: 1px solid var(--fig-line); }
 
-/* T10.2 board: design-system pass. White node cards with a type stripe, one field style, one button style. */
-.react-flow__node { font-size: var(--fs-sm); }
 
-.sc-node { position: relative; padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-1); display: grid; gap: var(--sp-2); transition: box-shadow var(--t-fast), border-color var(--t-fast); }
-.sc-node::before { content: ''; position: absolute; left: -1px; right: -1px; top: -1px; height: 3px; border-radius: var(--r-lg) var(--r-lg) 0 0; background: var(--type-input); }
-.sc-node--input, .sc-node--output { background: var(--surface); }
-.sc-node--input { width: 240px; }
-.react-flow__node:hover .sc-node { box-shadow: var(--shadow-2); }
-.react-flow__node.selected .sc-node { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-2); }
-.sc-node__head { gap: var(--sp-1); min-height: var(--field-h); }
-.sc-node__title { font-size: var(--fs-md); font-weight: 600; }
-.sc-node__meta { font-size: var(--fs-xs); line-height: 1.5; }
 .sc-editor { margin-top: 0; gap: var(--sp-2); }
 .sc-thumb { border-radius: var(--r-md); border-color: var(--line); }
 
@@ -341,16 +312,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-icon-btn { width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
 .sc-icon-btn:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); border-color: transparent; }
 
-/* Fields: one look everywhere in nodes (filled, 28 px, blue focus); selects never overflow the card. */
-.sc-node input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-node select, .sc-node textarea {
-  max-width: 100%; min-width: 0; font: inherit; font-size: var(--fs-sm); border: 1px solid transparent; border-radius: var(--r-md); background: var(--surface-2); color: var(--fg); transition: border-color var(--t-fast), background var(--t-fast);
-}
-.sc-node input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-node select { height: var(--field-h); padding: 0 var(--sp-2); }
-.sc-node input:hover, .sc-node select:hover, .sc-node textarea:hover { border-color: var(--line-strong); }
-.sc-node input:focus, .sc-node select:focus, .sc-node textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
-.sc-node select { width: 100%; }
-.sc-node .sc-behavior { width: auto; height: 22px; padding: 0 var(--sp-1); font-size: var(--fs-xs); }
-.sc-node input[type='color'] { width: var(--field-h); height: var(--field-h); padding: 2px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
 .sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; }
 .sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
@@ -358,23 +319,15 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-fill .sc-seg { display: inline-flex; gap: var(--sp-3); height: auto; background: none; padding: 0; border: 0; }
 .sc-fill .sc-field { color: var(--fg); }
 .sc-swatch { height: 48px; border-radius: var(--r-md); border-color: var(--line); }
-.sc-rename { height: var(--field-h); font-size: var(--fs-md); }
 
 /* A chip: a small rounded label (a Preview's hand-edits count). */
 .sc-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--sp-2); border-radius: 99px; background: var(--warn-soft); color: var(--warn); font-size: var(--fs-xs); font-weight: 500; }
 
-.react-flow__handle { width: 10px; height: 10px; border: 2px solid var(--accent); background: var(--surface); }
 
  .sc-topbar .sc-icon { margin: 0; }
 
 
 
-/* T12.2 typed ports (D32): layer = blue, composition = purple; while wiring, valid targets glow, others fade */
-.react-flow__handle.sc-handle--layer { border-color: var(--type-input); }
-.react-flow__handle.sc-handle--composition { border-color: var(--type-main); border-radius: 3px; }
-.react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
-.react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
-.react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: var(--danger-soft); }
 
 /* D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
 /* D58: the editor's touch gestures (pan, pinch) are its own on every device, touch laptops included. */
@@ -386,7 +339,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
 .sc-inspector-panel .sc-upload, .sc-inspector-panel .sc-fill button, .sc-inspector-panel .sc-link { display: inline-flex; align-items: center; height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); justify-self: start; }
-.sc-inspector-panel .sc-behavior { height: var(--field-h); font-size: var(--fs-sm); }
 .sc-inspector-panel .sc-thumb { height: 160px; }
 
 /* T13.3 dark theme (D34): the same rules, other token values. The artwork itself (OutputRenderer, inline
@@ -444,9 +396,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 }
 @media (pointer: coarse) {
   .sc-canvasbar__btn, .sc-topbar__icon, .sc-icon-btn { min-width: 44px; min-height: 44px; }
-    /* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
-  .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
-  .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
+        .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
 
 
@@ -643,19 +593,11 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-editor__stage--hand .tb-handle, .sc-editor__stage--hand .tb-target { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .tb-handle::after { transition: none; } }
 
-/* Board cards fit their content (no thumbnail wider than the card) and show only a preview; settings live in
-   the inspector. `minmax(0, 1fr)`: a grid column sized `auto` grows to an image's natural width. */
-.sc-node { grid-template-columns: minmax(0, 1fr); }
-.sc-node > * { min-width: 0; }
-.sc-node__preview { display: grid; gap: var(--sp-1); justify-items: center; }
 .sc-node__preview .sc-thumb:not(.sc-thumb--empty) { display: block; width: auto; height: auto; max-width: 100%; max-height: 140px; }
 .sc-node__preview .sc-thumb--empty, .sc-node__preview .sc-swatch { width: 100%; }
 .sc-node__preview .sc-thumb--empty { height: 72px; text-align: center; padding: 0 var(--sp-2); }
 .sc-thumb--upload { cursor: pointer; border-style: dashed; }
 .sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
-.sc-node__busy { font-size: var(--fs-xs); color: var(--muted); }
-.sc-node__text { font-size: var(--fs-md); line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
-.sc-node__mark { display: inline-flex; color: var(--muted); flex: none; }
 .sc-node .sc-render--thumb, .sc-node .sc-main-thumb { max-width: 100%; }
 .sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }
 
@@ -665,17 +607,11 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 
 
 
-/* Page 3: node headers by role — assets purple, master preview and core rules blue, previews mint, presets green. */
-.sc-node > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 6px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; border-bottom: 1px solid var(--line); }
-.sc-node--input > .sc-node__head { background: color-mix(in srgb, var(--head-asset) 16%, var(--surface)); }
 
 
 
 
 
-/* D57: Tidy glides panels into place; a notice above the canvas toolbar offers Undo. */
-.sc-board__flow--tidying .react-flow__node { transition: transform 200ms cubic-bezier(0.2, 0, 0, 1); }
-@media (prefers-reduced-motion: reduce) { .sc-board__flow--tidying .react-flow__node { transition: none; } }
 
 /* Q1: which page of a PDF. */
 .sc-pdfpages { width: min(560px, calc(100vw - 32px)); max-height: 85vh; display: grid; gap: var(--sp-2); grid-template-rows: auto auto minmax(0, 1fr) auto; }
@@ -815,22 +751,9 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 }
 
 
-/* Cards: rounder, airy, a soft tinted header with a coloured icon chip, a lift on hover, a glow when selected. */
-.react-flow__node { font-size: 12.5px; }
-.sc-node { padding: 14px; gap: 10px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); background: var(--surface); box-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 6px 16px -6px rgb(16 24 40 / 0.12); }
-.sc-node::before { display: none; }
-.sc-node > .sc-node__head { --head: var(--head-asset); position: relative; margin: -14px -14px 0; padding: 10px 14px 10px 42px; min-height: 44px; border-radius: 16px 16px 0 0; border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--head) 12%, var(--surface)), color-mix(in srgb, var(--head) 4%, var(--surface))) !important; }
-.sc-node > .sc-node__head::before { content: ''; position: absolute; left: 14px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 7px; background: linear-gradient(135deg, color-mix(in srgb, var(--head) 70%, white), var(--head)); box-shadow: 0 2px 6px -1px color-mix(in srgb, var(--head) 55%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.35); }
-.sc-node--input > .sc-node__head { --head: var(--head-asset); }
-.sc-node__title { font-size: 13.5px; font-weight: 650; letter-spacing: -0.01em; }
-.react-flow__node:hover .sc-node { box-shadow: 0 2px 4px rgb(16 24 40 / 0.06), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
-.react-flow__node.selected .sc-node { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px var(--ring), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
 .sc-node .sc-btn { border-radius: 9px; }
 
 
-/* U3: ports thicker and coloured, with a soft glow on hover. */
-.react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
-.react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }
 
 
 
@@ -989,23 +912,7 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
   .sc-fig__bar { margin: 6px 6px 0; }
 }
 
-/* ───────────────────────── V1 (2026-10-25): asset nodes — calm headers, roomy slots, actions on demand ───────────────────────── */
-/* Owner: "make those clean modern and breathable everywhere"; "smart trigger for those to appear when need to replace or delete". */
-.sc-node--input { width: 280px; }
-.sc-node--input.sc-node { padding: 16px; gap: 14px; border-radius: 20px; }
 
-/* Header: a kind tile, the name on its own line and a quiet line under it, one ⋯ menu. */
-.sc-node > .sc-node__head.sc-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 12px 14px 16px; min-height: 64px; border-radius: 20px 20px 0 0; }
-.sc-node > .sc-node__head.sc-head::before { content: none; }
-.sc-head__icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: white; background: linear-gradient(140deg, color-mix(in srgb, var(--head) 78%, white), var(--head)); box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--head) 60%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.3); }
-.sc-head__text { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.sc-head__title { font-size: 14.5px; font-weight: 680; letter-spacing: -0.015em; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-head__sub { font-size: 12px; line-height: 1.3; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-head__more { flex: none; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
-.sc-head__more:hover, .sc-head__more[aria-expanded='true'] { background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); }
-.sc-head .sc-node__mark { color: var(--muted); display: grid; place-items: center; }
-.sc-head .sc-rename { flex: 1; min-width: 0; height: 30px; font-size: 14px; font-weight: 600; }
-@media (pointer: coarse) { .sc-head__more { width: 44px; height: 44px; } }
 
 
 
@@ -1021,10 +928,6 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
 
 
 
-/* A text action in a header (Edit, Export): a soft pill. */
-.sc-head__action { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: color-mix(in srgb, var(--head) 14%, var(--surface)); color: color-mix(in srgb, var(--head) 65%, var(--fg)); font-size: 12.5px; font-weight: 650; cursor: pointer; transition: background var(--t-fast); }
-.sc-head__action:hover { background: color-mix(in srgb, var(--head) 24%, var(--surface)); }
-@media (pointer: coarse) { .sc-head__action { height: 40px; padding: 0 14px; } }
 
 
 
