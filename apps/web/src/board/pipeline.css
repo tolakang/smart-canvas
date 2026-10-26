@@ -1,4 +1,5 @@
 /* The pipeline cards: Layer Comp, Core preset, Preset and Preview nodes, their ports and layout health (CSS cleanup 5). */
+@layer app {
 /* Layer Comp (D49): the layer order rows and the Square / Vertical / Horizontal layout buttons. */
 .sc-node--main { min-height: 120px; min-width: 260px; }
 .sc-node--main::before { background: var(--type-main); }
@@ -126,3 +127,4 @@
 .sc-health__list strong { display: block; font-weight: 600; }
 .sc-inspector-panel__level.sc-health--ok { background: var(--ok-soft); color: var(--ok); }
 .sc-inspector-panel__level.sc-health--frozen, .sc-inspector-panel__level.sc-health--empty { background: var(--surface-2); color: var(--muted); }
+}

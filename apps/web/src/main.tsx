@@ -1,10 +1,13 @@
+// First: the cascade layer order for every stylesheet, React Flow's (loaded through App) included.
+import './tailwind.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import '@fontsource-variable/inter';
 import './fonts/bundled.css';
-// Area stylesheets, newest first, right after styles.css: the rules each one took from styles.css keep their place
-// ahead of the older areas' rules, so the cascade is unchanged.
+// Our stylesheets, all in the `app` cascade layer (tailwind.css), so their order here still decides ties. Area
+// stylesheets go newest first, right after styles.css: the rules each one took from styles.css keep their place ahead
+// of the older areas' rules.
 import './styles.css';
 import './board/review.css';
 import './ui/dialogs.css';

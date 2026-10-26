@@ -1,3 +1,4 @@
+@layer app {
 :root {
   /* T10.2 design tokens; U1 (2026-10-24) refreshed the values: cooler neutrals, an accent dark enough for white text
      (AA), softer layered shadows, rounder corners. Colour: neutrals, one accent, semantic types used as accents only. */
@@ -10,6 +11,7 @@
   --line: #e4e7eb;
   --line-strong: #cfd4da;
   --accent: #0965cf; /* U7: 5.6:1 with white text, 4.7:1 as text on every light surface */
+  --wire-reconnecting: #777; /* React Flow's colour for a wire being dragged to a new port */
   --accent-hover: #0753ad;
   --on-accent: #fff; /* text and icons on a solid accent or status (ok, warn, danger) fill */
   --accent-soft: #e7f0fc;
@@ -458,4 +460,4 @@ body { margin: 0; background: var(--ambient); background-attachment: fixed; min-
 
 /* Touch: no browser tap flash — the app's own pressed and selected states show the tap. */
 button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent; }
-
+}

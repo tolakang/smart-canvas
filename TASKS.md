@@ -215,9 +215,9 @@ Safety net while it ran: a CSS parity test compared every covered screen with a 
 - [x] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates — [#175](https://github.com/tolakang/smart-canvas/pull/175)
 - [x] C12 — Guard against the same selector in two files; retire the frozen reference copy — [#176](https://github.com/tolakang/smart-canvas/pull/176). `@layer` dropped: one layer per area flips about 95 rules that win across files on specificity
 
-## P28 Tailwind conversion (proposed; waits for the owner's yes on two dev packages) — plan: `TAILWIND-PLAN.md`
+## P28 Tailwind conversion (approved 2026-10-26, D65) — plan: `TAILWIND-PLAN.md`
 Rule: nothing may look different; the CSS parity test comes back for the conversion and must match every screen.
-- [ ] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry
+- [ ] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry (this PR)
 - [ ] T2 — Dialogs, Projects home, sign-in → utilities; empty `ui/dialogs.css`, `shell/home.css`
 - [ ] T3 — Top bar, menus, inspector, side panels, canvas toolbar; most of `board/chrome.css`
 - [ ] T4 — Main Comps, Export Group, Presets, Preview Cards; `board/node.css`, `board/pipeline.css`

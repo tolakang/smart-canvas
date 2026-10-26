@@ -1,5 +1,6 @@
 /* Editors: the Layer Comp and Preview editors — screen, bar, stage, Layers and Design panels, override inspector,
    phone tabs, the transform box and comments (CSS cleanup 8). */
+@layer app {
 /* The editor screen (T10.1, U4): Figma-style, compact 11 px panels, a grey canvas and blue selection. */
 .sc-editor-screen { position: fixed; inset: 0; height: 100dvh; z-index: 50; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); box-sizing: border-box; background: var(--bg); }
 .sc-fig__tools { display: inline-flex; gap: 2px; }
@@ -265,4 +266,5 @@ p.sc-comment__text { cursor: auto; }
 .sc-comments__compose-actions .sc-comments__primary:disabled { opacity: 0.5; cursor: default; }
 @media (pointer: coarse) {
   .sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 40px; padding: 0 12px; }
+}
 }

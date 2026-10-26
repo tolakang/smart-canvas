@@ -1,4 +1,5 @@
 /* Asset nodes: Logo, Image, Text, Headline and Background — their cards, slots, drop areas and lists (CSS cleanup 3). */
+@layer app {
 /* Logo and Image nodes (D40): the pictures grid, its list view (one row per picture) and the inspector grid. */
 .sc-assets { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .sc-assets--inspector { margin: 8px 0; }
@@ -114,3 +115,4 @@
 .sc-bg-slots > .sc-bg-slot--horizontal .sc-slot__tile { height: auto; aspect-ratio: 7 / 4; }
 .sc-bg-slots > .sc-bg-slot--square .sc-slot__tile { height: auto; aspect-ratio: 1; }
 .sc-bg-slots > .sc-bg-slot--vertical .sc-slot__tile { height: auto; aspect-ratio: 5 / 8; }
+}

@@ -1,0 +1,90 @@
+/* Tailwind (P28, D65). This file comes first in main.tsx: it sets the cascade order of every stylesheet, lowest first.
+   - reactflow: React Flow's own sheet (board/reactflow.css).
+   - theme, base: Tailwind's (theme variables only; no Preflight reset, see TAILWIND-PLAN.md).
+   - app: all of our stylesheets, in their import order in main.tsx, as before Tailwind.
+   - utilities: Tailwind's classes, so a class in the markup wins over our CSS for the same property.
+   In a layer, `!important` works the other way round: an `!important` in `app` beats one in `utilities`. */
+@layer reactflow, theme, base, app, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* dark: matches our theme switch (D34), not the system setting. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Only our tokens exist: Tailwind's default palette, scales and breakpoints are cleared. `inline` makes each utility
+   use var(--token) itself, so it follows the dark theme. */
+@theme inline {
+  --*: initial;
+  /* Colours: our tokens only, so `bg-surface`, `text-muted` or `border-line` follow the theme (light or dark). */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-ring: var(--ring);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-type-input: var(--type-input);
+  --color-type-main: var(--type-main);
+  --color-type-output: var(--type-output);
+  --color-type-process: var(--type-process);
+  --color-input: var(--input);
+  --color-output: var(--output);
+  --color-canvas: var(--canvas);
+  --color-glass: var(--glass);
+  --color-checker-a: var(--checker-a);
+  --color-checker-b: var(--checker-b);
+  --color-placeholder-line: var(--placeholder-line);
+  --color-placeholder-fg: var(--placeholder-fg);
+  --color-frozen-fg: var(--frozen-fg);
+  --color-swatch-bg: var(--swatch-bg);
+  --color-head-asset: var(--head-asset);
+  --color-tint-rule: var(--tint-rule);
+  --color-tint-preview: var(--tint-preview);
+  --color-topbar-primary-hover: var(--topbar-primary-hover);
+  --color-topbar-primary-disabled: var(--topbar-primary-disabled);
+  --color-fig-bar-disabled: var(--fig-bar-disabled);
+  --color-fig-close-line: var(--fig-close-line);
+  --color-wire-reconnecting: var(--wire-reconnecting);
+  --color-auth-bg: var(--auth-bg);
+  --color-auth-glow-1: var(--auth-glow-1);
+  --color-auth-glow-2: var(--auth-glow-2);
+  --color-auth-art-1: var(--auth-art-1);
+  --color-auth-art-2: var(--auth-art-2);
+
+  /* Sizes: one spacing step is 1px, so `p-14` is 14px and `gap-6` is 6px, the values our CSS already uses; the
+     --sp-* steps are `p-(--sp-2)`. Names that would clash with our own tokens get Tailwind's: `font-sans` is
+     --font-ui, `shadow-sm` / `shadow-md` / `shadow-lg` are --shadow-1 / 2 / 3. */
+  --spacing: 1px;
+  --text-xs: var(--fs-xs);
+  --text-sm: var(--fs-sm);
+  --text-md: var(--fs-md);
+  --text-lg: var(--fs-lg);
+  --text-xl: var(--fs-xl);
+  --font-sans: var(--font-ui);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --shadow-sm: var(--shadow-1);
+  --shadow-md: var(--shadow-2);
+  --shadow-lg: var(--shadow-3);
+
+  /* The widths our CSS switches at: `max-md:` is a phone (under 768px), `md:max-2xl:` a tablet. */
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 900px;
+  --breakpoint-xl: 1100px;
+  --breakpoint-2xl: 1280px;
+}
