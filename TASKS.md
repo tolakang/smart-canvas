@@ -220,7 +220,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [ ] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry
 - [ ] T2 — Dialogs, Projects home, sign-in → utilities; empty `ui/dialogs.css`, `shell/home.css`
 - [ ] T3 — Top bar, menus, inspector, side panels, canvas toolbar; most of `board/chrome.css`
-- [ ] T4 — Node card; Layer Comp, Core preset, Preset, Preview cards; `board/node.css`, `board/pipeline.css`
+- [ ] T4 — Main Comps, Export Group, Presets, Preview Cards; `board/node.css`, `board/pipeline.css`
 - [ ] T5 — Asset nodes and slots; `board/assets.css`
 - [ ] T6 — History, comments, approval; `board/review.css`
 - [ ] T7 — Editors, incl. phone tabs; most of `editor/editor.css`
