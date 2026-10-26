@@ -107,10 +107,7 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 
 .sc-node { min-width: 160px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .sc-node--input { background: var(--input); }
-.sc-node--main { min-width: 220px; min-height: 120px; border-width: 2px; border-color: var(--accent); }
-.sc-node--output { background: var(--output); }
 .sc-node--hidden { opacity: 0.5; }
-.sc-node--frozen { border-style: dashed; }
 .sc-node__title { font-weight: 600; }
 .sc-node__meta { color: var(--muted); font-size: 12px; }
 
@@ -136,12 +133,6 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 .sc-dialog .sc-card { margin: 0; min-width: min(320px, 100%); }
 .sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
-.sc-node--main { min-width: 260px; }
-.sc-ports { list-style: none; margin: 8px -12px 0; padding: 0; }
-.sc-port { position: relative; display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-top: 1px solid var(--line); font-size: 12px; background: var(--surface); }
-.sc-port[draggable='true'] { cursor: grab; }
-.sc-port--drop { box-shadow: inset 0 2px 0 var(--accent); }
-.sc-port--wired .sc-port__label { color: var(--fg); }
 /* T8.1 layer rows (main node list and editor Layers panel) */
 .sc-port__grip { display: inline-flex; color: var(--muted); cursor: grab; flex: none; }
 .sc-layer-thumb { flex: none; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
@@ -152,7 +143,6 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 .sc-icon { display: block; margin: auto; }
 .sc-layer--drop { box-shadow: inset 0 2px 0 var(--accent); }
 .sc-layer[draggable='true'] { cursor: grab; }
-.sc-port__label { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .sc-fonts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-height: 50vh; overflow: auto; }
 .sc-font__name { font-size: 12px; font-weight: 600; }
@@ -160,7 +150,6 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 
 /* Renderer */
 .sc-render__placeholder { display: grid; place-items: center; border: 2px dashed var(--placeholder-line); color: var(--placeholder-fg); font: 600 48px/1.2 'Noto Sans', sans-serif; background: rgb(255 255 255 / 0.4); }
-.sc-main-thumb { margin-top: 8px; display: grid; place-items: center; background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 12px 12px; border: 1px solid var(--line); border-radius: 4px; min-height: 60px; }
 .sc-render--thumb { box-shadow: 0 0 0 1px var(--line); }
 html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }
 
@@ -196,12 +185,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-props input[type='color'] { width: 44px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 4px; }
 .sc-props .sc-text { margin-top: 0; font-size: 14px; }
 
-/* Output node (T4.7) */
-.sc-node--output { width: 260px; }
-.sc-output__settings { display: grid; gap: 6px; margin: 8px 0 4px; padding: 0; border: 0; font-size: 12px; }
-.sc-output__settings select { font: inherit; padding: 2px 4px; }
-.sc-output__row { display: flex; align-items: end; gap: 6px; }
-.sc-output__row .sc-field input[type='number'] { width: 64px; }
 .sc-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .sc-seg button { border: 0; border-radius: 0; padding: 3px 8px; background: var(--surface); font: inherit; }
 .sc-seg button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
@@ -216,7 +199,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-family { flex: 1; min-width: 0; }
 .sc-family summary { display: flex; gap: 8px; align-items: baseline; cursor: pointer; padding: 2px 0; }
 .sc-family__sizes { list-style: none; margin: 4px 0 2px 16px; padding: 0; display: grid; gap: 2px; font-size: 13px; }
-.sc-output__frozen { color: var(--frozen-fg); }
 .sc-props__note { margin: 0; font-size: 12px; }
 
 /* Override inspector (T5.2) */
@@ -355,24 +337,13 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-node::before { content: ''; position: absolute; left: -1px; right: -1px; top: -1px; height: 3px; border-radius: var(--r-lg) var(--r-lg) 0 0; background: var(--type-input); }
 .sc-node--input, .sc-node--output { background: var(--surface); }
 .sc-node--input { width: 240px; }
-.sc-node--main { width: 280px; border-width: 1px; border-color: var(--line); }
-.sc-node--main::before { background: var(--type-main); }
-.sc-node--output { width: 260px; }
-.sc-node--output::before { background: var(--type-output); }
-.sc-node--frozen { border-style: dashed; border-color: var(--line-strong); }
-.sc-node--frozen::before { background: var(--line-strong); }
 .react-flow__node:hover .sc-node { box-shadow: var(--shadow-2); }
 .react-flow__node.selected .sc-node { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-2); }
 .sc-node__head { gap: var(--sp-1); min-height: var(--field-h); }
 .sc-node__title { font-size: var(--fs-md); font-weight: 600; }
 .sc-node__meta { font-size: var(--fs-xs); line-height: 1.5; }
 .sc-editor { margin-top: 0; gap: var(--sp-2); }
-.sc-node .sc-main-thumb { margin-top: 0; border-radius: var(--r-md); border-color: var(--line); }
 .sc-thumb { border-radius: var(--r-md); border-color: var(--line); }
-.sc-ports { margin: 0 calc(-1 * var(--sp-3)); }
-.sc-port { min-height: 36px; padding: var(--sp-1) var(--sp-3); border-top-color: var(--line); background: none; transition: background var(--t-fast); }
-.sc-port:hover { background: var(--surface-2); }
-.sc-port__label { color: var(--fg); }
 
 /* Buttons: one size, three variants (default, ghost, icon). Links in nodes become buttons. */
 .sc-btn, .sc-upload, .sc-fill button, .sc-node .sc-link {
@@ -399,9 +370,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-node select { width: 100%; }
 .sc-node .sc-behavior { width: auto; height: 22px; padding: 0 var(--sp-1); font-size: var(--fs-xs); }
 .sc-node input[type='color'] { width: var(--field-h); height: var(--field-h); padding: 2px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
-.sc-output__settings { margin: 0; gap: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
-.sc-output__row { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: var(--sp-2); }
-.sc-output__row .sc-field input[type='number'] { width: 100%; }
 .sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; }
 .sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
@@ -411,10 +379,8 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-swatch { height: 48px; border-radius: var(--r-md); border-color: var(--line); }
 .sc-rename { height: var(--field-h); font-size: var(--fs-md); }
 
-/* Output header: hand-edits chip + reset; frozen note */
-.sc-node__overrides { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+/* A chip: a small rounded label (a Preview's hand-edits count). */
 .sc-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--sp-2); border-radius: 99px; background: var(--warn-soft); color: var(--warn); font-size: var(--fs-xs); font-weight: 500; }
-.sc-output__frozen { color: var(--warn); }
 
 /* Wires and handles in the accent colour */
 .react-flow__edge-path { stroke: var(--faint); stroke-width: 1.5; }
@@ -449,28 +415,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-topbar__counts { font-size: var(--fs-xs); }
 @media (max-width: 1100px) { .sc-topbar__ghost { font-size: 0 !important; gap: 0 !important; width: 32px; justify-content: center; padding: 0 !important; } .sc-topbar .sc-save { font-size: 0; } }
 
-/* T10.4: an output's input handle sits on its title row (where a dropped wire creates it), not mid-card */
-/* Side ports sit level with the title (where the node palette puts a new node's port: under the drop point). */
-.sc-node--output > .react-flow__handle { top: 26px; }
 
-/* T13.1 layout health (D35): status dot + count on nodes, issue list on click */
-.sc-health { position: relative; display: inline-flex; flex: none; }
-.sc-health__btn { display: inline-flex; align-items: center; gap: 4px; height: 20px; min-width: 20px; padding: 0 6px; border: 0; border-radius: 99px; background: none; cursor: default; font-size: var(--fs-xs); font-weight: 600; font-variant-numeric: tabular-nums; }
-.sc-health__btn[aria-expanded] { cursor: pointer; }
-.sc-health__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--type-output); }
-.sc-health--warning { background: var(--warn-soft); color: var(--warn); }
-.sc-health--warning .sc-health__dot { background: var(--warn); }
-.sc-health--error { background: var(--danger-soft); color: var(--danger); }
-.sc-health--error .sc-health__dot { background: var(--danger); }
-.sc-health--frozen .sc-health__dot { background: var(--faint); }
-/* D64: empty layers on a new project are a to-do, not a problem: quiet grey with the count. */
-.sc-health--empty { background: var(--surface-2); color: var(--muted); }
-.sc-health--empty .sc-health__dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
-.sc-health__list { position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; width: 240px; margin: 0; padding: var(--sp-1); list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-2); display: grid; gap: 2px; font-size: var(--fs-xs); }
-.sc-health__list li { padding: 6px var(--sp-2); border-radius: var(--r-sm); border-left: 3px solid var(--warn); background: var(--surface-2); }
-.sc-health__list li[data-level='error'] { border-left-color: var(--danger); }
-.sc-health__list li[data-level='todo'] { border-left-color: var(--faint); }
-.sc-health__list strong { display: block; font-weight: 600; }
 
 /* T12.2 typed ports (D32): layer = blue, composition = purple; while wiring, valid targets glow, others fade */
 .react-flow__handle.sc-handle--layer { border-color: var(--type-input); }
@@ -498,8 +443,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-inspector-panel__title { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: var(--field-h); font-size: var(--fs-sm); font-weight: 600; }
 .sc-inspector-panel__hint { margin: 0; font-size: var(--fs-xs); line-height: 1.5; }
 .sc-inspector-panel__level { padding: 2px var(--sp-2); border-radius: 99px; font-size: var(--fs-xs); font-weight: 600; }
-.sc-inspector-panel__level.sc-health--ok { background: var(--ok-soft); color: var(--ok); }
-.sc-inspector-panel__level.sc-health--frozen, .sc-inspector-panel__level.sc-health--empty { background: var(--surface-2); color: var(--muted); }
 .sc-inspector-panel__issues { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: var(--fs-xs); }
 .sc-inspector-panel__issues li { padding: 6px var(--sp-2); border-radius: var(--r-sm); border-left: 3px solid var(--warn); background: var(--surface-2); }
 .sc-inspector-panel__issues li[data-level='error'] { border-left-color: var(--danger); }
@@ -515,7 +458,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; display: inline-flex; }
 .sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
-.sc-inspector-panel .sc-output__settings { margin: 0; color: var(--muted); font-size: var(--fs-xs); }
 .sc-inspector-panel .sc-upload, .sc-inspector-panel .sc-fill button, .sc-inspector-panel .sc-link { display: inline-flex; align-items: center; height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); justify-self: start; }
 .sc-inspector-panel .sc-behavior { height: var(--field-h); font-size: var(--fs-sm); }
 .sc-inspector-panel .sc-thumb { height: 160px; }
@@ -871,68 +813,15 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 
 
 
-/* D46: Preset node — a list of media sizes, each row wired out to its own preview. */
-.sc-node--preset { width: 280px; }
-.sc-preset__rows .sc-port { padding-right: 18px; }
-.sc-preset__size { flex: none; min-width: 84px; font-variant-numeric: tabular-nums; font-weight: 600; }
-.sc-port--frozen { color: var(--muted); }
-.sc-preset__eye { margin-left: auto; }
-.sc-preset__eye[aria-pressed='true'] { color: var(--muted); }
-.sc-preset__add { margin-top: 8px; width: 100%; }
 
-/* D47: Core Rule node — layer comp, preset guides and auto layout of a master preview. */
-.sc-node--rule { width: 300px; }
 
 /* Page 3: node headers by role — assets purple, master preview and core rules blue, previews mint, presets green. */
 .sc-node > .sc-node__head { margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0; padding: 6px var(--sp-3); border-radius: var(--r-lg) var(--r-lg) 0 0; border-bottom: 1px solid var(--line); }
 .sc-node--input > .sc-node__head { background: color-mix(in srgb, var(--head-asset) 16%, var(--surface)); }
-.sc-node--main > .sc-node__head, .sc-node--rule > .sc-node__head { background: color-mix(in srgb, var(--head-master) 16%, var(--surface)); }
-.sc-node--output > .sc-node__head { background: color-mix(in srgb, var(--head-preview) 16%, var(--surface)); }
-.sc-node--preset > .sc-node__head { background: color-mix(in srgb, var(--head-preset) 18%, var(--surface)); }
-
-/* D49 (page 3): the Layer Comp + Core Rule group — two cards in one dashed frame; asset wires land on its top,
-   Preset nodes wire out of its bottom. */
-.sc-comp-group { position: relative; display: flex; gap: 16px; align-items: flex-start; padding: 22px 18px 18px; border: 2px dashed color-mix(in srgb, var(--fg) 22%, transparent); border-radius: 22px; background: color-mix(in srgb, var(--surface) 40%, transparent); }
-.sc-comp-group > .sc-node { width: 250px; }
-.sc-comp-group > .react-flow__handle-top, .sc-comp-group > .react-flow__handle-bottom { width: 14px; height: 14px; }
-.sc-node--rule > .sc-node__head { background: color-mix(in srgb, var(--tint-rule) 18%, var(--surface)); }
-.sc-comp__label { font-size: 12px; font-weight: 600; color: var(--muted); }
-.sc-comp__groups { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.sc-comp__group { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 13px; cursor: grab; }
-.sc-comp__group--drop { box-shadow: inset 0 2px 0 var(--accent); }
-.sc-comp__group-name { flex: 1; }
-.sc-comp__count { font-size: 11px; }
-.sc-comp__moves { display: none; gap: 2px; }
-.sc-comp__group:hover .sc-comp__moves, .sc-comp__group:focus-within .sc-comp__moves { display: inline-flex; }
-@media (pointer: coarse) { .sc-comp__moves { display: inline-flex; } }
-.sc-comp__moves .sc-icon-btn { width: 20px; height: 20px; font-size: 11px; }
-.sc-comp__layouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.sc-comp__layouts .sc-btn { justify-content: center; }
 
 
-/* D49: asset node replace control, Preview header and Export pill, preset custom size. */
-/* D49: the Preview header and its Export pill, a preset's custom size. */
-.sc-preview__size { flex: 1; min-width: 0; font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-node--output > .sc-node__head { background: color-mix(in srgb, var(--tint-preview) 18%, var(--surface)); }
-.sc-preview__export { justify-self: center; padding: 4px 18px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--tint-preview) 22%, var(--surface)); color: var(--fg); font-weight: 600; cursor: pointer; }
-.sc-preview__export:hover { background: color-mix(in srgb, var(--tint-preview) 35%, var(--surface)); }
-.sc-preset__custom { display: flex; gap: 4px; align-items: center; margin-top: 8px; }
-.sc-preset__custom input { width: 64px; }
-.sc-preset__add-custom { margin-top: 8px; width: 100%; justify-content: center; }
-.sc-preset__save { margin-top: 6px; width: 100%; }
-.sc-preset__note { margin: 6px 0 0; font-size: 11px; }
-.sc-node--preset .sc-port { cursor: grab; }
 
-/* D50: Core Preset Guide — outputs in their layout's section; drag a chip into another section. */
-.sc-node--rule:has(.sc-rule__sections) { width: 300px; }
-.sc-rule__sections { display: grid; gap: 6px; }
-.sc-rule__section-drop { padding: 6px; border: 1px dashed var(--line); border-radius: 8px; }
-.sc-rule__section-drop--over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
-.sc-rule__section-title { margin: 0 0 4px; font-size: 12px; font-weight: 600; }
-.sc-rule__chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; }
-.sc-rule__chip { cursor: grab; display: inline-flex; align-items: center; gap: 2px; }
-.sc-rule__chip--chosen { outline: 1px solid var(--accent); }
-.sc-rule__chip-reset { border: 0; background: none; padding: 0 2px; cursor: pointer; color: var(--muted); }
+
 
 /* D57: Tidy glides panels into place; a notice above the canvas toolbar offers Undo. */
 .sc-board__flow--tidying .react-flow__node { transition: transform 200ms cubic-bezier(0.2, 0, 0, 1); }
@@ -950,9 +839,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-pdfpages__page:hover, .sc-pdfpages__page:focus-visible { border-color: var(--accent); }
 .sc-pdfpages__page img, .sc-pdfpages__blank { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: var(--canvas); border-radius: var(--r-sm); }
 
-/* Q2: a Preset node's team family offers its new name or the sizes it gained. */
-.sc-preset__family { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 var(--sp-2) var(--sp-1); }
-.sc-preset__family .sc-btn { font-size: var(--fs-sm); }
 
 /* D62: project history — the panel (in the inspector's place) and the bar over a version shown read-only. */
 .sc-history__name { grid-template-columns: 1fr auto; align-items: center; }
@@ -1005,7 +891,6 @@ p.sc-comment__text { cursor: auto; }
 @media (pointer: coarse) { .sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 40px; padding: 0 12px; } }
 .sc-fig__tool--comment { position: relative; }
 .sc-fig__count { position: absolute; top: -4px; right: -4px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 7px; background: var(--accent); color: var(--on-accent); font-size: 9px; line-height: 14px; text-align: center; }
-.sc-preview__comments { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 6px; border: 0; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
 
 /* D63: approval — in the Preview editor's bar, on Preview nodes, in the Review panel and the export dialog. */
 .sc-approval { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
@@ -1013,14 +898,9 @@ p.sc-comment__text { cursor: auto; }
 .sc-approval--on .sc-approval__state { color: var(--ok); }
 .sc-approval--changed .sc-approval__state { color: var(--warn); }
 .sc-fig__bar .sc-approval__approve { background: var(--ok); color: var(--on-accent); border-color: var(--ok); font-weight: 600; }
-.sc-preview__approval { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-.sc-preview__approval--approved { background: var(--ok-soft); color: var(--ok); }
-.sc-preview__approval--changed { background: var(--warn-soft, var(--surface-2)); color: var(--warn); }
-.sc-preview__approval--none { background: var(--surface-2); color: var(--muted); }
 .sc-review__row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .sc-export__approval { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 10px; border-left: 3px solid var(--warn); border-radius: var(--r-sm); background: var(--surface-2); font-size: var(--fs-sm); }
 .sc-export__approval button { margin-left: auto; }
-.sc-preview__review { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px 12px 0; }
 
 /* ===== U1 (2026-10-24): one component layer over the rules above — focus, buttons, fields, dialogs, menus,
    scrollbars and motion look the same everywhere, in light and dark. Later rules win, so this sits last. ===== */
@@ -1140,22 +1020,11 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 .sc-node > .sc-node__head { --head: var(--head-asset); position: relative; margin: -14px -14px 0; padding: 10px 14px 10px 42px; min-height: 44px; border-radius: 16px 16px 0 0; border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--head) 12%, var(--surface)), color-mix(in srgb, var(--head) 4%, var(--surface))) !important; }
 .sc-node > .sc-node__head::before { content: ''; position: absolute; left: 14px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 7px; background: linear-gradient(135deg, color-mix(in srgb, var(--head) 70%, white), var(--head)); box-shadow: 0 2px 6px -1px color-mix(in srgb, var(--head) 55%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.35); }
 .sc-node--input > .sc-node__head { --head: var(--head-asset); }
-.sc-node--main > .sc-node__head { --head: var(--head-master); }
-.sc-node--rule > .sc-node__head { --head: var(--head-rule); }
-.sc-node--output > .sc-node__head { --head: var(--head-preview); }
-.sc-node--preset > .sc-node__head { --head: var(--head-preset); }
-.sc-node--frozen > .sc-node__head { --head: var(--head-frozen); }
 .sc-node__title { font-size: 13.5px; font-weight: 650; letter-spacing: -0.01em; }
 .react-flow__node:hover .sc-node { box-shadow: 0 2px 4px rgb(16 24 40 / 0.06), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
 .react-flow__node.selected .sc-node { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px var(--ring), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
-.sc-node .sc-main-thumb { border-radius: 12px; overflow: hidden; background: var(--surface-2); }
-.sc-preview__export { padding: 6px 20px; border-radius: 999px; background: color-mix(in srgb, var(--head-preview) 14%, var(--surface)); color: color-mix(in srgb, var(--head-preview) 70%, var(--fg)); }
-.sc-preview__export:hover { background: color-mix(in srgb, var(--head-preview) 24%, var(--surface)); }
 .sc-node .sc-btn { border-radius: 9px; }
 
-/* The Layer Comp group: a soft tinted frame instead of a dashed line. */
-.sc-comp-group { border: 1px solid color-mix(in srgb, var(--head-master) 22%, transparent); border-radius: 26px; background: linear-gradient(180deg, color-mix(in srgb, var(--head-master) 7%, transparent), color-mix(in srgb, var(--head-preview) 5%, transparent)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4); }
-.sc-comp__group { border-radius: 10px; }
 
 /* Wires and ports: thicker, coloured, with a soft glow when selected. */
 .react-flow__edge-path { stroke: color-mix(in srgb, var(--head-master) 45%, var(--faint)); stroke-width: 2; }
@@ -1372,58 +1241,15 @@ details.sc-design__shortcuts > summary::-webkit-details-marker { display: none; 
 .sc-wire-cut--hover { width: 24px; height: 24px; box-shadow: var(--shadow-1); }
 @media (pointer: coarse) { .sc-wire-cut--hover { width: 36px; height: 36px; } }
 
-/* ───────────────────────── V2 (2026-10-25): Layer Comp, Core preset, Preset and Preview — the same calm cards ───────────────────────── */
-.sc-comp-group { gap: 20px; padding: 26px 22px 22px; }
-.sc-comp-group > .sc-node { width: 280px; }
-.sc-node.sc-node--main, .sc-node.sc-node--rule, .sc-node.sc-node--preset, .sc-node.sc-node--output { padding: 16px; gap: 14px; border-radius: 20px; }
-.sc-node--output.sc-node { width: 280px; }
-.sc-node--preset.sc-node { width: 300px; }
 
 /* A text action in a header (Edit, Export): a soft pill. */
 .sc-head__action { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: color-mix(in srgb, var(--head) 14%, var(--surface)); color: color-mix(in srgb, var(--head) 65%, var(--fg)); font-size: 12.5px; font-weight: 650; cursor: pointer; transition: background var(--t-fast); }
 .sc-head__action:hover { background: color-mix(in srgb, var(--head) 24%, var(--surface)); }
 @media (pointer: coarse) { .sc-head__action { height: 40px; padding: 0 14px; } }
 
-/* Layer Comp: the layer order as soft rows; move arrows on hover. */
-.sc-comp__label { margin-top: 2px; font-size: 11.5px; font-weight: 650; letter-spacing: 0.02em; color: var(--muted); }
-.sc-comp__groups { gap: 6px; }
-.sc-comp__group { gap: 10px; min-height: 40px; padding: 6px 8px 6px 10px; border: 0; border-radius: 12px; background: var(--surface-2); font-size: 13px; font-weight: 550; transition: background var(--t-fast), box-shadow var(--t-fast); }
-.sc-comp__group:hover { background: color-mix(in srgb, var(--surface-3) 80%, var(--surface-2)); }
-.sc-comp__group--drop { box-shadow: inset 0 0 0 2px var(--accent); }
-.sc-comp__count { min-width: 22px; padding: 1px 7px; border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 650; text-align: center; }
-.sc-comp__moves .sc-icon-btn { width: 26px; height: 26px; border-radius: 8px; }
-.sc-comp__layouts { gap: 8px; }
-.sc-comp__layouts .sc-btn { height: 36px; border-radius: 11px; font-weight: 600; }
 
-/* Core preset: Square / Vertical / Horizontal, each with its Previews as chips — always shown. */
-.sc-rule__sections { display: grid; gap: 10px; }
-.sc-rule__section-drop { display: grid; gap: 8px; padding: 12px; border: 1px solid transparent; border-radius: 14px; background: var(--surface-2); transition: border-color var(--t-fast), background var(--t-fast); }
-.sc-rule__section-drop--over { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 70%, transparent); }
-.sc-rule__section-title { display: flex; align-items: center; justify-content: space-between; margin: 0; font-size: 12.5px; font-weight: 650; color: var(--fg); }
-.sc-rule__section-count { min-width: 22px; padding: 1px 7px; border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 650; text-align: center; }
-.sc-rule__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.sc-rule__chip.sc-chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 10px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 550; cursor: grab; box-shadow: 0 1px 1px rgb(16 24 40 / 0.04); }
-.sc-rule__chip--chosen.sc-chip { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); color: var(--accent); }
-.sc-rule__chip-reset { width: 18px; height: 18px; display: grid; place-items: center; padding: 0; margin-right: -4px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
-.sc-rule__chip-reset:hover { background: var(--accent-soft); }
-.sc-rule__empty { font-size: 12px; color: var(--muted); }
 
-/* Preset: rows with the size first, the actions on hover. */
-.sc-node--preset .sc-preset__rows { margin: 0 -16px; }
-.sc-node--preset .sc-port { min-height: 44px; padding: 6px 22px 6px 16px; gap: 10px; border-top-color: color-mix(in srgb, var(--line) 70%, transparent); }
-.sc-preset__size { min-width: 92px; font-size: 12.5px; }
-.sc-node--preset .sc-port__label { font-size: 12.5px; color: var(--muted); }
-.sc-node--preset .sc-preset__eye, .sc-node--preset .sc-preset__remove { opacity: 0; transition: opacity var(--t-fast); }
-.sc-node--preset .sc-port:hover :is(.sc-preset__eye, .sc-preset__remove), .sc-node--preset .sc-port:focus-within :is(.sc-preset__eye, .sc-preset__remove), .sc-node--preset .sc-preset__eye[aria-pressed='true'] { opacity: 1; }
-@media (hover: none) { .sc-node--preset .sc-preset__eye, .sc-node--preset .sc-preset__remove { opacity: 1; } }
 
-/* Preview: the name on its own line, "Preview · W × H" under it; the picture large; Export a soft full-width button. */
-.sc-node--output .sc-preview__size { font-variant-numeric: tabular-nums; }
-.sc-node--output .sc-main-thumb { min-height: 120px; padding: 10px; border: 0; border-radius: 14px; background: repeating-conic-gradient(color-mix(in srgb, var(--checker-a) 70%, transparent) 0 25%, transparent 0 50%) 0 0 / 14px 14px, var(--surface-2); }
-.sc-node--output .sc-node__meta { display: flex; flex-wrap: wrap; gap: 6px; }
-.sc-node--output .sc-node__meta > span { padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: 11.5px; font-weight: 600; }
-.sc-preview__export { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 38px; padding: 0 16px; border: 0; border-radius: 12px; font-size: 13px; font-weight: 650; cursor: pointer; }
-.sc-node--output > .react-flow__handle { top: 32px; }
 /* The global `.sc-icon { margin: auto }` centres a lone icon; beside a label it must sit next to it. */
 :is(.sc-preview__export, .sc-head__action, .sc-btn--soft, .sc-preview__comments, .sc-slot__state) .sc-icon { margin: 0; }
 
