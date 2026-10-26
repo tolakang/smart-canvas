@@ -1,4 +1,5 @@
 /* The node card every board panel shares: card, header, handles (CSS cleanup 7). */
+@layer app {
 /* A node card (T10.2, U3, V1): white card, rounded, a lift on hover and a glow when selected; its preview and states. */
 /* Board cards fit their content (no thumbnail wider than the card) and show only a preview; settings live in
    the inspector. `minmax(0, 1fr)`: a grid column sized `auto` grows to an image's natural width. */
@@ -79,3 +80,4 @@
 /* An input's behaviour picker (T8.7). */
 .sc-behavior { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--fg); }
 .sc-inspector-panel .sc-behavior { height: var(--field-h); font-size: var(--fs-sm); }
+}

@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   // pdf.js loads lazily (N2): pre-bundle it so the dev server doesn't discover it mid-session and reload the page.
   optimizeDeps: { include: ['pdfjs-dist'] },
   server: {

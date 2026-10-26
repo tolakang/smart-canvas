@@ -1,5 +1,6 @@
 /* Board chrome: the top bar, menus, the floating inspector and overview, the canvas and its backdrop, wires, guides and grid,
    groups, zoomed-out name tags and the canvas toolbar (CSS cleanup 6). */
+@layer app {
 /* Top bar (T10.3, U2): navigation and history, + Add, then status, tools and Export; the save status. */
 .sc-save { margin-left: auto; color: var(--muted); display: flex; gap: 8px; align-items: center; }
 .sc-save--conflict, .sc-save--error { color: var(--danger); }
@@ -153,6 +154,16 @@
 .sc-board .sc-topbar > .sc-topbar__end { justify-self: end; }
 
 /* React Flow, restyled: pane, edges, minimap and panels. */
+/* React Flow rules that out-ranked ours by specificity before its sheet went into the lowest cascade layer (see tailwind.css), kept so they still
+   do: no focus ring on a focused node, wire or selection box, and its colours for a focused wire and a wire being
+   reconnected. They sit ahead of the wire rules below, which still win where they tied before. */
+.react-flow__node.selectable:focus, .react-flow__node.selectable:focus-visible, .react-flow__edge.selected, .react-flow__edge:focus,
+.react-flow__edge:focus-visible, .react-flow__nodesselection-rect:focus, .react-flow__nodesselection-rect:focus-visible,
+.react-flow__selection:focus, .react-flow__selection:focus-visible { outline: none; }
+.react-flow__edge.selectable:focus .react-flow__edge-path, .react-flow__edge.selectable:focus-visible .react-flow__edge-path {
+  stroke: var(--xy-edge-stroke-selected, var(--xy-edge-stroke-selected-default));
+}
+.react-flow__edge.updating .react-flow__edge-path { stroke: var(--wire-reconnecting); }
 .react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
 .react-flow__edgeupdater { cursor: grab; }
 .react-flow__edge.sc-edge--layer .react-flow__edge-path { stroke: color-mix(in srgb, var(--type-input) 55%, var(--faint)); }
@@ -247,3 +258,4 @@
 
 /* The pulse that runs down a wire after a change (T13.8). */
 @keyframes sc-wire-pulse { from { stroke-dashoffset: 54; stroke-width: 3; } to { stroke-dashoffset: 0; } }
+}

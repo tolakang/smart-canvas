@@ -45,7 +45,7 @@ import {
   type NodeChange,
   type ReactFlowInstance,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+import './reactflow.css';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Autosave, type SaveState } from './autosave';

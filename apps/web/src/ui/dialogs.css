@@ -1,4 +1,5 @@
 /* Dialogs: the shared dialog card and each dialog's own parts (CSS cleanup 9). */
+@layer app {
 /* Dialogs (U6): a clear title, grouped content on soft panels, actions on the right, Close always in view. */
 .sc-dialog { border: 0; padding: 0; background: transparent; }
 .sc-dialog select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast); }
@@ -63,3 +64,4 @@
 .sc-pdfpages__page { width: 100%; display: grid; gap: 4px; justify-items: center; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: inherit; font: inherit; font-size: var(--fs-sm); cursor: pointer; min-height: 44px; }
 .sc-pdfpages__page:hover, .sc-pdfpages__page:focus-visible { border-color: var(--accent); }
 .sc-pdfpages__page img, .sc-pdfpages__blank { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: var(--canvas); border-radius: var(--r-sm); }
+}

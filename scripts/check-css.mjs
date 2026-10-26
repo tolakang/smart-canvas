@@ -8,6 +8,7 @@
 //    minifier (lightningcss) drop the standard one, so Chrome and Firefox lose the blur.
 // 4. A selector is styled in one stylesheet only, so what an element looks like is decided in one place and moving a
 //    file in the import order can't change it.
+// 4. No hex colour in a Tailwind class either (`bg-[#fff]`): classes use the tokens (`bg-surface`, tailwind.css).
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -22,9 +23,8 @@ const list = (d, keep, out = []) => {
   return out;
 };
 const cssFiles = list(web, (p) => p.endsWith('.css') && !p.includes('/fonts/'));
-const code = list(web, (p) => /\.tsx?$/.test(p) && !/\.test\.tsx?$/.test(p))
-  .map((p) => readFileSync(p, 'utf8'))
-  .join('\n');
+const codeFiles = list(web, (p) => /\.tsx?$/.test(p) && !/\.test\.tsx?$/.test(p));
+const code = codeFiles.map((p) => readFileSync(p, 'utf8')).join('\n');
 const named = new Set(code.match(/sc-[\w-]+/g) ?? []);
 const prefixes = [...code.matchAll(/(sc-[\w-]*?-)\$\{/g)].map((m) => m[1] ?? '');
 const used = (c) => named.has(c) || prefixes.some((p) => c.startsWith(p));
@@ -65,6 +65,11 @@ for (const file of cssFiles) {
       else if (first !== at) problems.push(`${at}:${lineAt(css, m.index + (m[1] ?? '').length)}: ${key} is also styled in ${first} — keep its rules in one file`);
     }
   }
+}
+for (const file of codeFiles) {
+  const text = readFileSync(file, 'utf8');
+  for (const m of text.matchAll(/[\w-]+-\[#[0-9a-fA-F]{3,8}\]/g))
+    problems.push(`${relative(root, file)}:${lineAt(text, m.index)}: ${m[0]} — use a colour token (tailwind.css) instead of a hex value`);
 }
 if (problems.length) {
   console.error(problems.join('\n'));

@@ -1,0 +1,2 @@
+/* React Flow's own stylesheet in the lowest cascade layer (see tailwind.css), so the board's rules win over it. */
+@import '@xyflow/react/dist/style.css' layer(reactflow);

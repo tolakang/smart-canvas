@@ -1,4 +1,5 @@
 /* Project history, the Review panel and approval (CSS cleanup 10). */
+@layer app {
 /* Project history (D62, Q3): the panel in the inspector's place, versions, Restore and Save version. */
 .sc-history__name { grid-template-columns: 1fr auto; align-items: center; }
 .sc-history__note { margin: 0; padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); line-height: 1.5; }
@@ -22,3 +23,4 @@
 .sc-approval--on .sc-approval__state { color: var(--ok); }
 .sc-approval--changed .sc-approval__state { color: var(--warn); }
 .sc-fig__bar .sc-approval__approve { background: var(--ok); color: var(--on-accent); border-color: var(--ok); font-weight: 600; }
+}

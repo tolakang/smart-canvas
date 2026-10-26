@@ -1,6 +1,6 @@
 # Tailwind conversion plan
 
-Status: **proposed, waiting for the owner's yes** (it adds two dev dependencies). Written 2026-10-26, after the CSS
+Status: **approved by the owner 2026-10-26 (D65); T1 in progress.** Written 2026-10-26, after the CSS
 cleanup (P27, C1–C12) finished.
 
 Recommendation: the cleanup already gives most of the robustness. Convert only if a lot of new UI is coming; otherwise
@@ -28,7 +28,7 @@ stay on plain CSS. Either way, nothing here may change how the app looks.
 | Tailwind puts its utilities in `@layer utilities`; CSS outside any layer always beats CSS in a layer | CSS cascade spec |
 | `@custom-variant`, `@theme inline` and the `pointer-coarse:` variant exist | package source |
 | `hover:` only applies on devices that can hover (`@media (hover: hover)`), unlike our plain `:hover` rules | package source |
-| `md` = 768px and `xl` = 1280px by default, so `max-md:` matches our `max-width: 767px` | default theme |
+| `max-md:` is `width < md`, so with `md` = 768px it matches our `max-width: 767px` | default theme |
 | `@import '…' layer(name)` for React Flow's sheet works in the Vite build | tried in C12 (`wip-c12a-layers`) |
 
 ## Before it starts: the owner's yes
@@ -47,8 +47,10 @@ stay on plain CSS. Either way, nothing here may change how the app looks.
 
    This works because the markup keeps its `sc-` classes (rule 5).
 2. **Same tokens only.** `@theme inline` maps our variables, so `bg-accent` or `border-line` give today's value and
-   follow the dark theme. Tailwind's default palette, spacing and radius scales are switched off (`--*: initial`), so
-   only our tokens exist. The CSS guard also rejects hex colours in `className` (`bg-[#fff]`).
+   follow the dark theme. Tailwind's default palette, scales and breakpoints are switched off (`--*: initial`), so
+   only our tokens exist. One spacing step is 1px (`--spacing: 1px`), so `p-14` is the 14px our CSS already uses;
+   names that would clash with our tokens take Tailwind's (`font-sans`, `shadow-sm` / `md` / `lg` for --shadow-1/2/3).
+   The CSS guard also rejects hex colours in `className` (`bg-[#fff]`).
 3. **Dark mode stays on `data-theme="dark"`** through `@custom-variant dark`.
 4. **Artwork never touched.** `OutputRenderer` keeps its inline styles, so Preview and export stay one rendering
    path. The Khmer and render parity tests must pass unchanged.
@@ -96,8 +98,8 @@ React Flow's sheet moves under ours. Five of its rules used to win on specificit
 Each PR: convert, delete the area's rules, parity test green on every screen, `pnpm lint`, `pnpm typecheck` and
 `pnpm build` clean; merge when CI is green; one PR at a time.
 
-Breakpoints map to `max-md:`, `md:max-xl:` and `xl:`. The 900px and 1100px ones become named breakpoints in `@theme`
-in T1, so no screen width moves.
+Breakpoints (set in T1, `tailwind.css`): `md` 768px, `lg` 900px, `xl` 1100px, `2xl` 1280px. A phone is `max-md:`, a
+tablet `md:max-2xl:`, a wide screen `2xl:`; no screen width moves.
 
 ## What stays plain CSS for good
 
