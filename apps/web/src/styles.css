@@ -342,28 +342,10 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 
 
 
-/* D62: project history — the panel (in the inspector's place) and the bar over a version shown read-only. */
-.sc-history__name { grid-template-columns: 1fr auto; align-items: center; }
-.sc-history__note { margin: 0; padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); line-height: 1.5; }
-.sc-history__day h3 { margin: 0; padding: var(--sp-3) var(--sp-4) var(--sp-1); font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
-.sc-history__day ul { margin: 0; padding: 0 var(--sp-2) var(--sp-2); list-style: none; display: grid; gap: 2px; }
-.sc-history__item { display: flex; align-items: center; gap: var(--sp-1); border-radius: var(--r-sm); }
-.sc-history__item:hover { background: var(--surface-2); }
-.sc-history__item--on { background: var(--accent-soft); }
-.sc-history__open { flex: 1; min-width: 0; display: grid; gap: 2px; padding: 6px var(--sp-2); border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
-.sc-history__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .sc-history__open .sc-muted { font-size: var(--fs-xs); }
-@media (pointer: coarse) { .sc-history__open { min-height: 44px; } }
 
 .sc-comment__meta .sc-muted { font-size: 11px; }
 
-/* D63: approval — in the Preview editor's bar, on Preview nodes, in the Review panel and the export dialog. */
-.sc-approval { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
-.sc-approval__state { font-size: 11px; font-weight: 600; }
-.sc-approval--on .sc-approval__state { color: var(--ok); }
-.sc-approval--changed .sc-approval__state { color: var(--warn); }
-.sc-fig__bar .sc-approval__approve { background: var(--ok); color: var(--on-accent); border-color: var(--ok); font-weight: 600; }
-.sc-review__row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 /* ===== U1 (2026-10-24): one component layer over the rules above — focus, buttons, fields, dialogs, menus,
    scrollbars and motion look the same everywhere, in light and dark. Later rules win, so this sits last. ===== */

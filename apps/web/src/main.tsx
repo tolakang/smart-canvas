@@ -6,6 +6,7 @@ import './fonts/bundled.css';
 // Area stylesheets, newest first, right after styles.css: the rules each one took from styles.css keep their place
 // ahead of the older areas' rules, so the cascade is unchanged.
 import './styles.css';
+import './board/review.css';
 import './ui/dialogs.css';
 import './shell/home.css';
 import './editor/editor.css';
