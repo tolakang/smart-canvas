@@ -35,8 +35,8 @@ stay on plain CSS. Either way, nothing here may change how the app looks.
 
 - Two **dev-only** packages: `tailwindcss` and `@tailwindcss/vite`. They run at build time; the browser gets only
   the generated CSS.
-- This breaks the "no new dependencies" rule, so it needs an explicit yes. T1 adds a DECISIONS entry, and its PR
-  description says why (CLAUDE.md).
+- CLAUDE.md allows a new dependency when the PR description says why. Switching the styling approach is still the
+  owner's call, so T1 starts only after an explicit yes, adds a DECISIONS entry and gives the reason in its PR.
 
 ## Rules for the whole conversion
 
