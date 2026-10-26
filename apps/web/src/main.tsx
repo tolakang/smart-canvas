@@ -6,6 +6,7 @@ import './fonts/bundled.css';
 import './styles.css';
 import './board/assets.css';
 import './board/pipeline.css';
+import './board/chrome.css';
 import { applyTheme } from './ui/theme';
 
 applyTheme(); // D34: before the first paint, so a dark-theme user never sees a light flash
