@@ -11,6 +11,7 @@
   --line: #e4e7eb;
   --line-strong: #cfd4da;
   --accent: #0965cf; /* U7: 5.6:1 with white text, 4.7:1 as text on every light surface */
+  --scrim: rgb(15 17 21 / 0.36); /* behind an open dialog */
   --wire-reconnecting: #777; /* React Flow's colour for a wire being dragged to a new port */
   --accent-hover: #0753ad;
   --on-accent: #fff; /* text and icons on a solid accent or status (ok, warn, danger) fill */

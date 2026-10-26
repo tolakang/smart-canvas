@@ -30,6 +30,10 @@ import { api, ApiError, assetUrl } from '../api';
 import { exportInBrowser, type BrowserFormat } from '../render/browserExport';
 import { browserExportSupported } from '../render/exportFile';
 import { zipStore } from '../ui/zip';
+import { DIALOG, DIALOG_SELECT } from '../ui/tw';
+
+/** “2 of 3 chosen Previews aren’t approved”, with its Only approved button on the right. */
+const APPROVAL = 'sc-export__approval m-0 flex flex-wrap items-center gap-8 rounded-sm border-l-3 border-l-warn bg-surface-2 px-10 py-8 text-sm [&>button]:ml-auto';
 
 const FORMAT_LABEL: Record<ExportFormat, string> = { png: 'PNG', jpg: 'JPG', webp: 'WebP', pdf: 'PDF (vector)', svg: 'SVG' };
 const POLL_MS = 1000;
@@ -230,18 +234,19 @@ export function ExportDialog(props: {
   const notApproved = approvals.size > 0 ? selected.filter((id) => !isApproved(id)) : [];
   const APPROVAL_NOTE = { approved: ' · approved', changed: ' · changed since approved', none: approvals.size > 0 ? ' · not approved' : '' } as const;
   return (
-    <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="export-title">
+    <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="export-title">
       <div className="sc-card sc-export">
         <h1 id="export-title">Export</h1>
         {rows === null ? (
-          <form onSubmit={start}>
-            <fieldset className="sc-export__outputs">
-              <legend>Previews</legend>
+          <form className="grid gap-10" onSubmit={start}>
+            <fieldset className="sc-export__outputs grid max-h-[280px] gap-2 overflow-auto rounded-[12px] border border-line bg-surface-2 p-6">
+              <legend className="px-6 text-[12px] font-[650] tracking-[0.04em] text-muted uppercase">Previews</legend>
               {listed.length === 0 && <p className="sc-muted">Add a Preview first.</p>}
               {listed.map((o) => (
-                <label key={o.id}>
+                <label key={o.id} className="flex cursor-pointer items-center gap-6 rounded-[9px] bg-surface px-10 py-8 [box-shadow:0_0_0_1px_color-mix(in_srgb,var(--line)_60%,transparent)] hover:[box-shadow:0_0_0_1px_var(--accent)] [label+&]:mt-4">
                   <input
                     type="checkbox"
+                    className="size-16"
                     checked={selected.includes(o.id)}
                     onChange={(e) => setSelected((s) => (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)))}
                   />
@@ -255,14 +260,14 @@ export function ExportDialog(props: {
               ))}
             </fieldset>
             {set && hidden.size > 0 && (
-              <label className="sc-check">
+              <label className="sc-check font-[500]">
                 <input type="checkbox" checked={[...hidden].every((id) => selected.includes(id))} onChange={(e) => setSelected((s) => (e.target.checked ? [...s.filter((id) => !hidden.has(id)), ...hidden] : s.filter((id) => !hidden.has(id))))} /> Include hidden
                 previews ({hidden.size})
               </label>
             )}
-            <label>
+            <label className="font-[500]">
               Format
-              <select value={format} onChange={(e) => setFormat(e.target.value as ExportFormat)}>
+              <select className={DIALOG_SELECT} value={format} onChange={(e) => setFormat(e.target.value as ExportFormat)}>
                 {EXPORT_FORMATS.map((f) => (
                   <option key={f} value={f}>
                     {FORMAT_LABEL[f]}
@@ -271,23 +276,23 @@ export function ExportDialog(props: {
               </select>
             </label>
             {(format === 'jpg' || format === 'webp') && (
-              <label>
+              <label className="font-[500]">
                 Quality
                 <input type="number" min={1} max={100} value={quality} onChange={(e) => setQuality(Number(e.target.value) || 90)} />
               </label>
             )}
             {hasBleed && (
-              <label className="sc-check">
+              <label className="sc-check font-[500]">
                 <input type="checkbox" checked={withBleed} onChange={(e) => setWithBleed(e.target.checked)} /> Include bleed (print sizes)
               </label>
             )}
             {format === 'svg' && (
-              <label className="sc-check" title="Text becomes shapes: the SVG needs no fonts, but the text can't be edited">
+              <label className="sc-check font-[500]" title="Text becomes shapes: the SVG needs no fonts, but the text can't be edited">
                 <input type="checkbox" checked={outlineText} onChange={(e) => setOutlineText(e.target.checked)} /> Outline text
               </label>
             )}
             {format === 'pdf' && hasBleed && (
-              <label className="sc-check">
+              <label className="sc-check font-[500]">
                 <input type="checkbox" checked={cropMarks} onChange={(e) => setCropMarks(e.target.checked)} /> Crop marks
               </label>
             )}
@@ -316,7 +321,7 @@ export function ExportDialog(props: {
               </p>
             )}
             {notApproved.length > 0 && (
-              <p className="sc-export__approval" role="status">
+              <p className={APPROVAL} role="status">
                 {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'Preview isn’t' : 'Previews aren’t'} approved.
                 {selected.length > notApproved.length && (
                   <button type="button" onClick={() => setSelected((s) => s.filter(isApproved))}>
@@ -341,9 +346,9 @@ export function ExportDialog(props: {
           </form>
         ) : (
           <>
-            <ul className="sc-export__jobs" aria-label="Export progress">
+            <ul className="sc-export__jobs m-0 mb-12 grid list-none gap-8 p-0" aria-label="Export progress">
               {rows.map((r) => (
-                <li key={r.outputId} data-status={r.status} data-where={r.where}>
+                <li key={r.outputId} className="grid grid-cols-[1fr_120px_1fr] items-center gap-8 rounded-[10px] bg-surface-2 px-10 py-8" data-status={r.status} data-where={r.where}>
                   <span>
                     {label(r.outputId)} <span className="sc-muted">· {format.toUpperCase()} · {r.where === 'browser' ? 'in your browser' : r.fellBack ? 'on the server (browser failed)' : 'on the server'}</span>
                   </span>
@@ -359,7 +364,7 @@ export function ExportDialog(props: {
               ))}
             </ul>
             {notApproved.length > 0 && (
-              <p className="sc-export__approval" role="status">
+              <p className={APPROVAL} role="status">
                 {notApproved.length} of {selected.length} chosen {selected.length === 1 ? 'Preview isn’t' : 'Previews aren’t'} approved.
                 {selected.length > notApproved.length && (
                   <button type="button" onClick={() => setSelected((s) => s.filter(isApproved))}>

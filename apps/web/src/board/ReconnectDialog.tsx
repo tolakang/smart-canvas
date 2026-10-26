@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { DIALOG } from '../ui/tw';
 
 /** D21: reconnecting an output that has overrides asks first. */
 export function ReconnectDialog(props: { label: string; overrides: number; onChoose: (choice: 'keep' | 'reset') => void; onClose: () => void }) {
@@ -7,7 +8,7 @@ export function ReconnectDialog(props: { label: string; overrides: number; onCho
     ref.current?.showModal();
   }, []);
   return (
-    <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="reconnect-title">
+    <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="reconnect-title">
       <div className="sc-card">
         <h1 id="reconnect-title">Reconnect “{props.label}”</h1>
         <p>

@@ -7,14 +7,18 @@ import { useEffect, useRef, useState } from 'react';
 import { api, assetUrl } from '../api';
 import { newId } from './ids';
 import { Icon } from './LayerRow';
+import { DIALOG } from '../ui/tw';
+
+/** An item's 40 px picture or colour. */
+const THUMB = 'inline-block size-40 rounded-[6px] border border-line bg-swatch-bg object-contain';
 
 const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 
 function Preview({ item, teamId }: { item: LibraryItem; teamId: string }) {
   const c = item.content;
-  if (c.kind === 'fill') return <span className="sc-lib__swatch" style={{ background: fillToCss(c.fill) }} />;
-  if (c.kind === 'text') return <span className="sc-lib__text">{c.text || '—'}</span>;
-  return c.assetId ? <img className="sc-lib__img" src={assetUrl(teamId, c.assetId)} alt="" /> : <span className="sc-lib__swatch" />;
+  if (c.kind === 'fill') return <span className={`sc-lib__swatch ${THUMB}`} style={{ background: fillToCss(c.fill) }} />;
+  if (c.kind === 'text') return <span className="sc-lib__text w-40 overflow-hidden text-[11px] text-ellipsis whitespace-nowrap">{c.text || '—'}</span>;
+  return c.assetId ? <img className={`sc-lib__img ${THUMB}`} src={assetUrl(teamId, c.assetId)} alt="" /> : <span className={`sc-lib__swatch ${THUMB}`} />;
 }
 
 export function LibraryDialog(props: {
@@ -56,8 +60,8 @@ export function LibraryDialog(props: {
   }
 
   return (
-    <dialog ref={ref} className="sc-dialog" onClose={props.onClose} aria-labelledby="library-title">
-      <div className="sc-card sc-lib">
+    <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="library-title">
+      <div className="sc-card sc-lib grid">
         <h1 id="library-title">Team library</h1>
         <input type="search" placeholder="Search name or tag" aria-label="Search library" value={query} onChange={(e) => setQuery(e.target.value)} />
         {items === null ? (
@@ -69,7 +73,7 @@ export function LibraryDialog(props: {
             {shown.map((item) => (
               <li key={item.id} data-library-item={item.name}>
                 <Preview item={item} teamId={props.teamId} />
-                <span className="sc-lib__name">
+                <span className="sc-lib__name grid">
                   {item.name}
                   <span className="sc-muted">
                     {' '}

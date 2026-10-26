@@ -87,13 +87,21 @@ React Flow's sheet moves under ours. Five of its rules used to win on specificit
 | PR | Area | CSS it empties | Risk |
 |---|---|---|---|
 | T1 | Setup: packages, `@theme inline`, `dark` variant, breakpoints, the layers above, parity test back, guard update, DECISIONS entry. No visual change. | — | low |
-| T2 | Dialogs, Projects home, sign-in | `ui/dialogs.css`, `shell/home.css` | low |
+| T2a | Dialogs (Export, Rename / New project, Size presets, Team, fonts, library, PDF page, reconnect) | `ui/dialogs.css` | low |
+| T2b | Projects home, sign-in | `shell/home.css` | low |
 | T3 | Top bar, menus, inspector, side panels, canvas toolbar | most of `board/chrome.css` | medium |
 | T4 | Main Comps, Export Group, Presets, Preview Cards | `board/node.css`, `board/pipeline.css` | medium |
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high |
 | T6 | History, comments, approval | `board/review.css` | low |
 | T7 | Editors, including phone tabs | most of `editor/editor.css` | high |
 | T8 | Optional: Preflight in place of our base styles, only if every parity check stays identical; then drop the `sc-` modifier classes no test uses, and retire the parity test again | part of `styles.css` | medium |
+
+How each PR finds what to convert: the parity test's probe (`apps/worker/src/test/css-winners.ts`; run with
+`SC_PROBE=<sheet> SC_PROBE_SCOPE=<selector> SC_PROBE_OUT=<file>`) reads every element's computed style with the
+area's stylesheet on and off, at rest and with :hover / :focus-visible forced. A property that changes is one the
+sheet wins and becomes a utility on that element; one that doesn't change is dead and is dropped. Selectors no
+screen reaches are checked the same way on a small static page. Never put a class on an element a rule finds by
+having none (`.sc-card button:not([class])`): style it from its parent (`[&>button]:ml-auto`).
 
 Each PR: convert, delete the area's rules, parity test green on every screen, `pnpm lint`, `pnpm typecheck` and
 `pnpm build` clean; merge when CI is green; one PR at a time.

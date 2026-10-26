@@ -4,12 +4,16 @@
  * dark theme, the Projects home and first-run screens, and a phone (as a touch device).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import { addOutput, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addOutput, libraryEntryOf, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { cssParity, referenceCss, STRAY } from './test/css-parity';
+import { twoPagePdf } from './test/pdf-fixture';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+
+// Probing which rules win (test/css-winners.ts) is slow; the time limits are only for the comparison.
+const limit = (ms: number) => (process.env.SC_PROBE_OUT ? 900_000 : ms);
 
 const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);
@@ -20,13 +24,14 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
   let stack: Stack;
   let page: Page;
   let board = '';
+  let api = ''; // the project's API url
 
   beforeAll(async () => {
     stack = await startStack();
     page = await stack.env.browser.newPage({ viewport: { width: 1600, height: 1000 } });
     // A fixed clock: "edited … ago" and dates read the same in both draws.
     await page.clock.setFixedTime(new Date('2026-10-26T09:00:00Z'));
-  }, 120_000);
+  }, limit(120_000));
   afterAll(async () => {
     await stack?.close();
   });
@@ -48,17 +53,18 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.goto(stack.env.webUrl);
     await page.getByText('First run? Set up the workspace').waitFor();
     await same('first-run');
-  }, 60_000);
+  }, limit(60_000));
 
   it('the check itself: a one-rule change to the reference is caught', async () => {
     const r = await cssParity(page, 'self-check', `${referenceCss()}\nbody * { outline: 1px solid red; }`);
     expect(r.styles.some((d) => d.includes(':: outline-style'))).toBe(true);
     expect(r.pixels).toBeGreaterThan(STRAY);
-  }, 60_000);
+  }, limit(60_000));
 
   it('board: every asset node with pictures and text, Previews in each group', async () => {
     const { teamId, projectId } = await setupAndCreateProject(page, stack.env.webUrl, 'Parity');
     const url = `${stack.env.webUrl}api/teams/${teamId}/projects/${projectId}`;
+    api = url;
     const p = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
     let doc = p.doc;
     for (const [id, label, width, height] of [
@@ -89,7 +95,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await fit();
     await imagesLoaded();
     await same('board');
-  }, 120_000);
+  }, limit(120_000));
 
   it('board states: a slot hovered, a node selected with its inspector, a wire selected', async () => {
     await node('Image').locator('.sc-slot__pick img').first().hover();
@@ -100,7 +106,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.locator('.react-flow__edge').first().click({ force: true });
     await same('wire-selected');
     await page.keyboard.press('Escape');
-  }, 60_000);
+  }, limit(60_000));
 
   it('menus: + Add and the canvas right-click menu', async () => {
     await page.getByRole('button', { name: '+ Add' }).click();
@@ -112,7 +118,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('menu').waitFor();
     await same('context-menu');
     await page.keyboard.press('Escape');
-  }, 60_000);
+  }, limit(60_000));
 
   it('side panels: History and Review', async () => {
     await page.getByRole('button', { name: 'History' }).click();
@@ -123,14 +129,46 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('complementary', { name: 'Review' }).waitFor();
     await same('review');
     await page.getByRole('button', { name: 'Review', exact: true }).click();
-  }, 60_000);
+  }, limit(60_000));
 
   it('dialogs: Export', async () => {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     await page.getByRole('dialog', { name: 'Export' }).waitFor();
     await same('export-dialog');
     await page.keyboard.press('Escape');
-  }, 60_000);
+  }, limit(60_000));
+
+  it('dialogs: Team fonts and Team library (the Assets menu), the PDF page picker', async () => {
+    // The library shows one item of each look: a picture, a text and a colour.
+    const doc = ((await (await page.request.get(api)).json()) as { doc: ProjectDoc }).doc;
+    const library = api.replace(/projects\/.*$/, 'library');
+    for (const kind of ['image', 'text'] as const) {
+      const source = doc.sources.find((x) => x.kind === kind);
+      if (source) expect((await page.request.post(library, { data: { ...libraryEntryOf(source), tags: [] } })).status()).toBe(201);
+    }
+    const fill = { name: 'Brand red', tags: ['brand'], kind: 'fill', behavesLike: 'background', content: { kind: 'fill', fill: { type: 'solid', color: '#cc0000' } } };
+    expect((await page.request.post(library, { data: fill })).status()).toBe(201);
+    for (const [item, name] of [
+      ['Team fonts', 'fonts-dialog'],
+      ['Team library', 'library-dialog'],
+    ] as const) {
+      await page.getByRole('button', { name: 'Assets' }).click();
+      await page.getByRole('menuitem', { name: item }).click();
+      await page.getByRole('dialog').waitFor();
+      await page.waitForTimeout(300);
+      await same(name);
+      await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
+      await page.getByRole('dialog').waitFor({ state: 'detached' });
+    }
+    await node('Image').locator('input[type=file][multiple]').first().setInputFiles({ name: 'two.pdf', mimeType: 'application/pdf', buffer: Buffer.from(twoPagePdf(), 'latin1') });
+    const pdf = page.getByRole('dialog', { name: 'Which page?' });
+    await pdf.waitFor({ timeout: 20_000 });
+    await expect.poll(() => pdf.locator('.sc-pdfpages__page img').count(), { timeout: 15_000 }).toBe(2);
+    await imagesLoaded();
+    await same('pdf-pages-dialog');
+    await pdf.getByRole('button', { name: 'Cancel' }).click();
+    await pdf.waitFor({ state: 'detached' });
+  }, limit(90_000));
 
   it('editors: Layer Comp, a Preview, its Comments panel', async () => {
     await page.locator('.react-flow__node-mainNode').getByRole('button', { name: /^(Edit|View) Square layout$/ }).click({ force: true });
@@ -149,7 +187,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await preview.getByRole('complementary', { name: 'Comments' }).waitFor();
     await same('comments');
     await preview.getByRole('button', { name: 'Close', exact: true }).click();
-  }, 90_000);
+  }, limit(90_000));
 
   it('dark theme: board and an editor', async () => {
     await page.getByRole('button', { name: 'Dark theme' }).click();
@@ -161,13 +199,24 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await same('preview-editor-dark');
     await preview.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Dark theme' }).click(); // the same toggle, pressed
-  }, 60_000);
+  }, limit(60_000));
 
   it('Projects home, the Team and Size presets dialogs', async () => {
     await page.goto(stack.env.webUrl);
     await page.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
     await imagesLoaded();
     await same('projects');
+    await page.getByRole('button', { name: /^More actions for / }).first().click();
+    await page.getByRole('menuitem', { name: 'Rename…' }).click();
+    await page.getByRole('dialog', { name: /^Rename/ }).waitFor();
+    await same('ask-dialog');
+    await page.keyboard.press('Escape');
+    await page.getByRole('dialog').waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: 'New project', exact: true }).click();
+    await page.getByRole('dialog', { name: 'New project' }).waitFor();
+    await same('new-project-dialog');
+    await page.keyboard.press('Escape');
+    await page.getByRole('dialog').waitFor({ state: 'detached' });
     await page.getByRole('button', { name: 'Team' }).click();
     await page.getByRole('dialog', { name: /Team/ }).waitFor();
     await same('team-dialog');
@@ -176,7 +225,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('dialog').waitFor();
     await same('presets-dialog');
     await page.keyboard.press('Escape');
-  }, 60_000);
+  }, limit(60_000));
 
   it('phone: the board and a Preview editor', async () => {
     // A touch phone: `pointer: coarse` and `hover: none` hold, as on a real one (Tailwind's hover: depends on it).
@@ -203,5 +252,5 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
       .toBe(true);
     await imagesLoaded();
     await same('phone-preview-editor');
-  }, 60_000);
+  }, limit(60_000));
 });

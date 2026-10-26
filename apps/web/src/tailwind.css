@@ -58,6 +58,7 @@
   --color-fig-bar-disabled: var(--fig-bar-disabled);
   --color-fig-close-line: var(--fig-close-line);
   --color-wire-reconnecting: var(--wire-reconnecting);
+  --color-scrim: var(--scrim);
   --color-auth-bg: var(--auth-bg);
   --color-auth-glow-1: var(--auth-glow-1);
   --color-auth-glow-2: var(--auth-glow-2);
