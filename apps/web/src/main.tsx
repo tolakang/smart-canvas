@@ -10,7 +10,6 @@ import './fonts/bundled.css';
 // of the older areas' rules.
 import './styles.css';
 import './board/review.css';
-import './shell/home.css';
 import './editor/editor.css';
 import './board/node.css';
 import './board/chrome.css';

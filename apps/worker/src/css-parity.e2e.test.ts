@@ -201,11 +201,24 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('button', { name: 'Dark theme' }).click(); // the same toggle, pressed
   }, limit(60_000));
 
-  it('Projects home, the Team and Size presets dialogs', async () => {
+  it('Projects home (a row and a template hovered, search, nothing found), the Team and Size presets dialogs', async () => {
+    // A template, so the Templates cards (and New project's "Start from") show.
+    expect((await page.request.post(`${api}/duplicate`, { data: { name: 'Summer template', isTemplate: true } })).ok()).toBe(true);
     await page.goto(stack.env.webUrl);
     await page.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
     await imagesLoaded();
     await same('projects');
+    await page.locator('.sc-home__section > .sc-rows > li').first().hover();
+    await same('projects-row-hover');
+    await page.locator('.sc-tcard').first().hover();
+    await same('template-hover');
+    const search = page.getByRole('searchbox', { name: 'Search projects' });
+    await search.click();
+    await same('projects-search');
+    await search.fill('nothing like this');
+    await same('projects-none');
+    await search.fill('');
+    await page.mouse.move(5, 5);
     await page.getByRole('button', { name: /^More actions for / }).first().click();
     await page.getByRole('menuitem', { name: 'Rename…' }).click();
     await page.getByRole('dialog', { name: /^Rename/ }).waitFor();
@@ -225,6 +238,18 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('dialog').waitFor();
     await same('presets-dialog');
     await page.keyboard.press('Escape');
+  }, limit(60_000));
+
+  it('sign-in screen', async () => {
+    const signedIn = page;
+    const out = await stack.env.browser.newContext({ viewport: { width: 1600, height: 1000 } });
+    page = await out.newPage();
+    await page.clock.setFixedTime(new Date('2026-10-26T09:00:00Z'));
+    await page.goto(stack.env.webUrl);
+    await page.getByRole('heading', { name: 'Sign in' }).waitFor();
+    await same('sign-in');
+    await out.close();
+    page = signedIn;
   }, limit(60_000));
 
   it('phone: the board and a Preview editor', async () => {
@@ -252,5 +277,15 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
       .toBe(true);
     await imagesLoaded();
     await same('phone-preview-editor');
+    await page.goto(stack.env.webUrl);
+    await page.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
+    await imagesLoaded();
+    await same('phone-projects');
+    const out = await stack.env.browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    page = await out.newPage();
+    await page.clock.setFixedTime(new Date('2026-10-26T09:00:00Z'));
+    await page.goto(stack.env.webUrl);
+    await page.getByRole('heading', { name: 'Sign in' }).waitFor();
+    await same('phone-sign-in');
   }, limit(60_000));
 });
