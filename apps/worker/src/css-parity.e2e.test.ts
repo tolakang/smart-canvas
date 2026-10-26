@@ -108,6 +108,27 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.keyboard.press('Escape');
   }, limit(60_000));
 
+  it('top bar: hovered buttons, keyboard focus, a hovered menu item', async () => {
+    for (const [name, screen] of [
+      ['History', 'topbar-hover-icon'],
+      ['+ Add', 'topbar-hover-add'],
+      ['Export', 'topbar-hover-export'],
+    ] as const) {
+      await page.getByRole('button', { name, exact: true }).hover();
+      await same(screen);
+    }
+    await page.getByRole('button', { name: /Assets/ }).hover();
+    await same('topbar-hover-ghost');
+    await page.getByRole('button', { name: 'Back to projects' }).focus();
+    await page.keyboard.press('Tab'); // focus-visible comes with the keyboard
+    await same('topbar-focus');
+    await page.mouse.move(5, 500);
+    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('menu').getByRole('menuitem').first().hover();
+    await same('menu-item-hover');
+    await page.keyboard.press('Escape');
+  }, limit(60_000));
+
   it('menus: + Add and the canvas right-click menu', async () => {
     await page.getByRole('button', { name: '+ Add' }).click();
     await page.getByRole('menu').waitFor();
@@ -199,6 +220,18 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await same('preview-editor-dark');
     await preview.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Dark theme' }).click(); // the same toggle, pressed
+  }, limit(60_000));
+
+  it('tablet width: the board, its top bar short (1100 px and narrower)', async () => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await fit();
+    await same('tablet-board');
+    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('menu').waitFor();
+    await same('tablet-add-menu');
+    await page.keyboard.press('Escape');
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await fit();
   }, limit(60_000));
 
   it('Projects home (a row and a template hovered, search, nothing found), the Team and Size presets dialogs', async () => {

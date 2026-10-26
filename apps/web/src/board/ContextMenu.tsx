@@ -5,6 +5,7 @@
  */
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { COARSE_QUERY } from '../ui/responsive';
+import { MENU, MENU_TITLE, menuItemClass } from './topbar';
 
 export interface MenuItem {
   label: string;
@@ -57,14 +58,14 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
   const row = window.matchMedia?.(COARSE_QUERY).matches ? 44 : 30; // T13.6: 44 px rows on touch
   const top = Math.max(8, Math.min(menu.y, window.innerHeight - 40 - menu.items.length * row));
   return (
-    <div ref={ref} className="sc-menu" role="menu" aria-label={menu.title ?? 'Menu'} style={{ left, top }} onContextMenu={(e) => e.preventDefault()}>
-      {menu.title && <div className="sc-menu__title">{menu.title}</div>}
+    <div ref={ref} className={MENU} role="menu" aria-label={menu.title ?? 'Menu'} style={{ left, top }} onContextMenu={(e) => e.preventDefault()}>
+      {menu.title && <div className={MENU_TITLE}>{menu.title}</div>}
       {menu.items.map((item) => (
         <button
           key={item.label}
           type="button"
           role="menuitem"
-          className={`sc-menu__item${item.danger ? ' sc-menu__item--danger' : ''}${item.separated ? ' sc-menu__item--sep' : ''}`}
+          className={menuItemClass(!!item.danger, !!item.separated)}
           disabled={item.disabled}
           onClick={() => {
             onClose();

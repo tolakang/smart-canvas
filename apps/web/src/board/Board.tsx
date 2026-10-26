@@ -109,6 +109,7 @@ import { openCounts, useApprovalStates, useReview } from './review';
 import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
+import { ADD, COUNT, COUNTS, GHOST, GROUP_ADD, GROUP_END, GROUP_START, ICON, NAME, PRIMARY, SAVE_BUTTON, SAVE_LONG, SAVE_SHORT, saveClass, saveDotClass, SEP, TOPBAR } from './topbar';
 
 interface Loaded {
   rev: number;
@@ -1294,41 +1295,41 @@ function BoardCanvas(props: {
 
   return (
     <div className="sc-board">
-      <header className="sc-board__bar sc-topbar">
-        <div className="sc-topbar__group">
-          <button type="button" className="sc-topbar__icon" onClick={props.onBack} aria-label="Back to projects" title="All projects">
+      <header className={TOPBAR}>
+        <div className={GROUP_START}>
+          <button type="button" className={ICON} onClick={props.onBack} aria-label="Back to projects" title="All projects">
             <Icon name="back" />
           </button>
-          <strong className="sc-topbar__name" title={initial.doc.name}>
+          <strong className={NAME} title={initial.doc.name}>
             {initial.doc.name}
           </strong>
           {readOnly && !props.history.previewing && <span className="sc-badge">View only</span>}
           {!readOnly && screen !== 'phone' && (
             <>
-              <span className="sc-topbar__sep" aria-hidden="true" />
-              <button type="button" className="sc-topbar__icon" onClick={undo} disabled={!canStep.undo} aria-label="Undo" title="Undo (Ctrl/⌘+Z)">
+              <span className={SEP} aria-hidden="true" />
+              <button type="button" className={ICON} onClick={undo} disabled={!canStep.undo} aria-label="Undo" title="Undo (Ctrl/⌘+Z)">
                 <Icon name="undo" />
               </button>
-              <button type="button" className="sc-topbar__icon" onClick={redo} disabled={!canStep.redo} aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)">
+              <button type="button" className={ICON} onClick={redo} disabled={!canStep.redo} aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)">
                 <Icon name="redo" />
               </button>
             </>
           )}
         </div>
         {!readOnly && screen !== 'phone' && (
-          <div className="sc-topbar__group sc-topbar__add" role="group" aria-label="Add">
+          <div className={GROUP_ADD} role="group" aria-label="Add">
             {/* D49: one menu for every node — the asset nodes and the Preset nodes (as right-click on the canvas). */}
-            <button type="button" aria-label="+ Add" aria-haspopup="menu" onClick={(e) => openAdd(e.currentTarget)} title="Add a node (or right-click the canvas)">
+            <button type="button" className={ADD} aria-label="+ Add" aria-haspopup="menu" onClick={(e) => openAdd(e.currentTarget)} title="Add a node (or right-click the canvas)">
               <Icon name="plus" /> Add
             </button>
           </div>
         )}
         {readOnly && screen !== 'phone' && (
-          <span className="sc-muted sc-topbar__counts">
+          <span className={COUNTS}>
             {sourceCount} inputs · {outputCount} outputs
           </span>
         )}
-        <div className="sc-topbar__group sc-topbar__end">
+        <div className={GROUP_END}>
           {notice && (
             <span className="sc-error" role="alert">
               {notice}
@@ -1336,40 +1337,40 @@ function BoardCanvas(props: {
           )}
           {/* D62: nothing is saved while a history version is shown. */}
           {!props.history.previewing && (
-            <span className={`sc-save sc-save--${saveState}`} role="status">
-              <span className="sc-save__dot" aria-hidden="true" />
-              <span className="sc-save__long">{STATE_LABEL[saveState]}</span>
-              <span className="sc-save__short" aria-hidden="true">
+            <span className={saveClass(saveState)} role="status">
+              <span className={saveDotClass(saveState)} aria-hidden="true" />
+              <span className={SAVE_LONG}>{STATE_LABEL[saveState]}</span>
+              <span className={SAVE_SHORT} aria-hidden="true">
                 {SHORT_LABEL[saveState]}
               </span>
               {saveState === 'conflict' && (
-                <button type="button" onClick={props.onReload}>
+                <button type="button" className={SAVE_BUTTON} onClick={props.onReload}>
                   Reload latest
                 </button>
               )}
             </span>
           )}
           {screen === 'phone' ? (
-            <button type="button" className="sc-topbar__icon" aria-label="More" aria-haspopup="menu" title="More" onClick={(e) => openMore(e.currentTarget)}>
+            <button type="button" className={ICON} aria-label="More" aria-haspopup="menu" title="More" onClick={(e) => openMore(e.currentTarget)}>
               <Icon name="more" />
             </button>
           ) : (
           <>
-          <span className="sc-topbar__sep" aria-hidden="true" />
+          <span className={SEP} aria-hidden="true" />
           {/* U2: the team's fonts and library under one Assets menu; History, Review and the theme as icons. */}
-          <button type="button" className="sc-topbar__ghost" aria-haspopup="menu" onClick={(e) => openAssets(e.currentTarget)} title="Team fonts and library">
+          <button type="button" className={GHOST} aria-haspopup="menu" onClick={(e) => openAssets(e.currentTarget)} title="Team fonts and library">
             <Icon name="library" /> Assets
           </button>
-          <button type="button" className="sc-topbar__icon" onClick={openHistory} aria-label="History" aria-pressed={props.history.open} title="History: earlier versions of this project">
+          <button type="button" className={ICON} onClick={openHistory} aria-label="History" aria-pressed={props.history.open} title="History: earlier versions of this project">
             <Icon name="history" />
           </button>
-          <button type="button" className="sc-topbar__icon sc-topbar__review" onClick={openReview} aria-label="Review" aria-pressed={reviewOpen} title="Review: approval and comments on every Preview">
+          <button type="button" className={`${ICON} sc-topbar__review relative`} onClick={openReview} aria-label="Review" aria-pressed={reviewOpen} title="Review: approval and comments on every Preview">
             <Icon name="check" />
-            {openComments > 0 && <span className="sc-topbar__count" aria-hidden="true">{openComments}</span>}
+            {openComments > 0 && <span className={COUNT} aria-hidden="true">{openComments}</span>}
           </button>
           <button
             type="button"
-            className="sc-topbar__icon sc-theme-toggle"
+            className={`${ICON} sc-theme-toggle`}
             onClick={toggleTheme}
             aria-label="Dark theme"
             aria-pressed={theme === 'dark'}
@@ -1378,7 +1379,7 @@ function BoardCanvas(props: {
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
           </button>
           {!floating && (
-            <button type="button" className="sc-topbar__icon" onClick={() => setInspectorHidden(!inspectorHidden)} aria-label="Side panel" aria-pressed={!inspectorHidden} title={inspectorHidden ? 'Show the side panel' : 'Hide the side panel'}>
+            <button type="button" className={ICON} onClick={() => setInspectorHidden(!inspectorHidden)} aria-label="Side panel" aria-pressed={!inspectorHidden} title={inspectorHidden ? 'Show the side panel' : 'Hide the side panel'}>
               <Icon name="panel" />
             </button>
           )}
@@ -1387,7 +1388,7 @@ function BoardCanvas(props: {
           {!readOnly && (
             <button
               type="button"
-              className="sc-topbar__primary"
+              className={PRIMARY}
               aria-label="Export"
               onClick={() => void autosave.flush().then(() => setExporting({}))}
               disabled={outputCount === 0}

@@ -90,7 +90,9 @@ React Flow's sheet moves under ours. Five of its rules used to win on specificit
 | T1 | Setup: packages, `@theme inline`, `dark` variant, breakpoints, the layers above, parity test back, guard update, DECISIONS entry. No visual change. | — | low |
 | T2a | Dialogs (Export, Rename / New project, Size presets, Team, fonts, library, PDF page, reconnect) | `ui/dialogs.css` | low |
 | T2b | Projects home, sign-in | `shell/home.css` | low |
-| T3 | Top bar, menus, inspector, side panels, canvas toolbar | most of `board/chrome.css` | medium |
+| T3a | Top bar and menus | the top bar's and menus' rules in `board/chrome.css` | medium |
+| T3b | Floating side panels, inspector, project overview, canvas notices | more of `board/chrome.css` | medium |
+| T3c | Canvas toolbar, selection bar, tooltips, name tags, groups (React Flow's own pane, wires, minimap and handles stay CSS) | the rest but React Flow's | medium |
 | T4 | Main Comps, Export Group, Presets, Preview Cards | `board/node.css`, `board/pipeline.css` | medium |
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high |
 | T6 | History, comments, approval | `board/review.css` | low |
@@ -118,6 +120,14 @@ Tailwind utilities that are not what the old declaration was, and what to write 
   through `--tw-*` variables (extra layers, other properties): write `[box-shadow:…]`, `[transform:…]`, `[filter:…]`;
 - two utilities for the same property on one element: which wins is Tailwind's order, not the class order — never
   give one element both (build the list per case, as the Projects tiles do).
+- `rounded-full` is a huge length, not `50%`: write `rounded-[50%]`; `justify-self-start` / `-end` are `flex-start` /
+  `flex-end`: write `[justify-self:start]`;
+- a button without `py-0` keeps the browser's 1px padding (the old `padding: 0 X` set all four sides);
+- `text-[0]` is ambiguous: write `text-[length:0px]`;
+- a shorthand and its longhand as two arbitrary properties (`[border:0] [border-top:…]`) also fall to Tailwind's order:
+  write the longhands (`[border-width:1px_0_0] [border-style:solid_none_none] …`);
+- when two state rules competed (`:hover:not(:disabled)` beat `[aria-pressed]` by weight), use arbitrary variants
+  with the same selectors (`[&:hover:not(:disabled)]:`), so the same one still wins.
 
 Each PR: convert, delete the area's rules, parity test green on every screen, `pnpm lint`, `pnpm typecheck` and
 `pnpm build` clean; merge when CI is green; one PR at a time.
