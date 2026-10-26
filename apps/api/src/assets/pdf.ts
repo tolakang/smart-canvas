@@ -40,6 +40,15 @@ export interface PdfOptions {
   maxBytes: number;
 }
 
+/**
+ * Newer cairo writes the page size in points (`width="200pt"`), older cairo as bare numbers. Keep the bare
+ * numbers on the root <svg> so a page's size in the app (1 PDF point = 1 design px, as before) doesn't depend
+ * on the server's cairo version; the viewBox already says the same size.
+ */
+export function userUnitSize(svg: string): string {
+  return svg.replace(/<svg\b[^>]*>/, (tag) => tag.replace(/\b(width|height)="([\d.]+)pt"/g, '$1="$2"'));
+}
+
 export function pdfPageToSvg(pdf: Uint8Array, { page = 1, bin = 'pdftocairo', timeoutMs = 30_000, maxBytes }: PdfOptions): Promise<string> {
   return slot(async () => {
     const dir = await mkdtemp(join(tmpdir(), 'sc-pdf-'));
@@ -64,7 +73,7 @@ export function pdfPageToSvg(pdf: Uint8Array, { page = 1, bin = 'pdftocairo', ti
       );
       if (size <= 0) throw new PdfRejected('no page');
       if (size > maxBytes) throw new PdfRejected('too large');
-      return await readFile(output, 'utf8');
+      return userUnitSize(await readFile(output, 'utf8'));
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
