@@ -102,6 +102,8 @@
 .sc-node--output .sc-node__meta { display: flex; flex-wrap: wrap; gap: 6px; }
 .sc-node--output .sc-node__meta > span { padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: 11.5px; font-weight: 600; }
 .sc-preview__export { justify-self: center; background: color-mix(in srgb, var(--head-preview) 14%, var(--surface)); color: color-mix(in srgb, var(--head-preview) 70%, var(--fg)); display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 38px; padding: 0 16px; border: 0; border-radius: 12px; font-size: 13px; font-weight: 650; cursor: pointer; }
+/* T10.4: an output's input handle sits on its title row (where a dropped wire creates it), not mid-card */
+/* Side ports sit level with the title (where the node palette puts a new node's port: under the drop point). */
 .sc-node--output > .react-flow__handle { top: 32px; }
 
 /* Layout health (T13.1): the status dot and count on a node, its issue list. */
@@ -114,6 +116,7 @@
 .sc-health--error { background: var(--danger-soft); color: var(--danger); }
 .sc-health--error .sc-health__dot { background: var(--danger); }
 .sc-health--frozen .sc-health__dot { background: var(--faint); }
+/* D64: empty layers on a new project are a to-do, not a problem: quiet grey with the count. */
 .sc-health--empty { background: var(--surface-2); color: var(--muted); }
 .sc-health--empty .sc-health__dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
 .sc-health__list { position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; width: 240px; margin: 0; padding: var(--sp-1); list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-2); display: grid; gap: 2px; font-size: var(--fs-xs); }

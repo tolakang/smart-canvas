@@ -1,5 +1,7 @@
 /* The node card every board panel shares: card, header, handles (CSS cleanup 7). */
 /* A node card (T10.2, U3, V1): white card, rounded, a lift on hover and a glow when selected; its preview and states. */
+/* Board cards fit their content (no thumbnail wider than the card) and show only a preview; settings live in
+   the inspector. `minmax(0, 1fr)`: a grid column sized `auto` grows to an image's natural width. */
 .sc-node { min-width: 160px; }
 .sc-node--hidden { opacity: 0.5; }
 .sc-node--input { width: 280px; }
@@ -60,7 +62,9 @@
 }
 
 /* Handles (ports, T12.2): typed colours, bigger with an invisible hit area, on the title row. */
+/* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
 .react-flow__handle::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+/* T12.2 typed ports (D32): layer = blue, composition = purple; while wiring, valid targets glow, others fade */
 .react-flow__handle.sc-handle--layer { border-color: var(--type-input); }
 .react-flow__handle.sc-handle--composition { border-color: var(--type-main); border-radius: 3px; }
 .react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }

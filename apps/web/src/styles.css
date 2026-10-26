@@ -238,6 +238,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 
 
+/* D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
 @media (pointer: coarse) {
   .sc-canvasbar__btn, .sc-topbar__icon, .sc-icon-btn { min-width: 44px; min-height: 44px; }
         .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
