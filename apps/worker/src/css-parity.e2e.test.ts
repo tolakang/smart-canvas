@@ -373,11 +373,12 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
 
     // A slot whose picture was removed keeps its Delete on hover.
     const logo = node('Logo');
+    const empties = await logo.locator('.sc-slot--empty').count();
     await logo.locator('.sc-slot').nth(1).hover();
     await logo.getByRole('button', { name: /^Remove picture from / }).nth(1).click({ force: true });
-    await expect.poll(() => logo.locator('.sc-slot--empty').count()).toBe(1);
+    await expect.poll(() => logo.locator('.sc-slot--empty').count()).toBe(empties + 1);
     await page.mouse.move(5, 500);
-    await logo.locator('.sc-slot--empty').hover();
+    await logo.locator('.sc-slot--empty').last().hover();
     await same('slot-empty-hover');
     await node('Background').locator('.sc-slot--empty').first().hover();
     await same('background-empty-hover');
