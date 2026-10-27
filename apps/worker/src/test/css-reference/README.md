@@ -1,10 +1,11 @@
 # CSS reference (Tailwind conversion safety net, P28)
 
 `styles.css` here is the app's built stylesheet as it was on `main` before the current PR, written by
-`node scripts/css-reference.mjs` (it names the commit in its first line). `css-parity.e2e.test.ts` sets up each
-screen and state in the real app, then draws it twice on the same page: once with the app's own stylesheets
-(Tailwind's included) and once with this copy in their place. Every element's computed style must match exactly,
-and the pixels too, so a conversion step can't change how anything looks.
+`node scripts/css-reference.mjs` (it names the commit in its first line). The parity test
+(`css-parity-*.e2e.test.ts`, helpers in `../parity-suite.ts`) sets up each screen and state in the real app, then
+draws it twice on the same page: once with the app's own stylesheets (Tailwind's included) and once with this copy in
+their place. The computed styles of the converted area must match exactly, and every pixel of the page too, so a
+conversion step can't change how anything looks.
 
 This works because the markup keeps its `sc-` classes during the conversion (TAILWIND-PLAN.md, rule 5): the old CSS
 still finds every element.

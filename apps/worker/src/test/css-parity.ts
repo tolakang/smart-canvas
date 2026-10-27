@@ -45,9 +45,14 @@ const settle = (page: Page) =>
     await frame();
   });
 
-/** Every element's computed style in the page, keyed by its place in the DOM; custom properties are skipped (their effect shows in the real ones). */
-const snapshot = (page: Page, key: string) =>
-  page.evaluate((key) => {
+/**
+ * The computed styles to compare, keyed by each element's place in the DOM; custom properties are skipped (their
+ * effect shows in the real ones). `scope` (the converted rules' selectors, areas.json) limits it to the elements those
+ * rules styled at main, their ancestors and their descendants (which inherit from them); with no scope, every element.
+ * The pixel diff always covers the whole page, so a change outside the scope still shows.
+ */
+const snapshot = (page: Page, key: string, scope: string[]) =>
+  page.evaluate(({ key, scope }) => {
     const out = new Map<string, string>();
     const pathOf = (el: Element): string => {
       const parts: string[] = [];
@@ -66,7 +71,24 @@ const snapshot = (page: Page, key: string) =>
     };
     // The off-screen frame a background export draws in (the project thumbnail, a few seconds after a save) is never
     // seen and comes and goes on its own timer, so it is left out.
+    let wanted: Set<Element> | null = null;
+    if (scope.length) {
+      wanted = new Set<Element>();
+      for (const sel of scope) {
+        let hits: Element[] = [];
+        try {
+          hits = [...document.querySelectorAll(sel)];
+        } catch {
+          // a selector only the stylesheet understands
+        }
+        for (const hit of hits) {
+          for (let e: Element | null = hit; e; e = e.parentElement) wanted.add(e);
+          for (const d of hit.querySelectorAll('*')) wanted.add(d);
+        }
+      }
+    }
     for (const el of [document.documentElement, ...document.querySelectorAll('body, body *')]) {
+      if (wanted && !wanted.has(el)) continue;
       if (el.closest('body > div[aria-hidden="true"]')) continue;
       const path = pathOf(el) || 'html';
       record(path, getComputedStyle(el));
@@ -76,7 +98,63 @@ const snapshot = (page: Page, key: string) =>
       }
     }
     (window as unknown as Record<string, Map<string, string>>)[key] = out;
-  }, key);
+  }, { key, scope });
+
+/** The elements to compare: those of the converted area (SC_PARITY_FULL=1, or no converted sheet: every element). */
+const snapshotScope = () => (process.env.SC_PARITY_FULL ? [] : convertedSubjects());
+
+/**
+ * While a screen is compared, timers of 300 ms or more and idle callbacks wait (the project thumbnail drawn after a
+ * save, the autosave, a notice's timeout): the page doesn't change under the comparison and start it over. They run
+ * afterwards, when they would have.
+ */
+const holdTimers = (page: Page) =>
+  page.evaluate(() => {
+    type Held = { run: () => void; due: number };
+    const w = window as unknown as Record<string, unknown>;
+    if (w.__scHold) return;
+    const st = window.setTimeout.bind(window);
+    const ct = window.clearTimeout.bind(window);
+    const ric = window.requestIdleCallback.bind(window);
+    const cic = window.cancelIdleCallback.bind(window);
+    const held = new Map<number, Held>();
+    let next = 2_000_000_000;
+    w.__scHold = { st, ct, ric, cic, held };
+    window.setTimeout = ((fn: TimerHandler, ms = 0, ...args: unknown[]) => {
+      if (typeof fn !== 'function' || ms < 300) return st(fn, ms, ...args);
+      const id = next++;
+      held.set(id, { run: () => (fn as (...a: unknown[]) => void)(...args), due: performance.now() + ms });
+      return id;
+    }) as typeof window.setTimeout;
+    window.clearTimeout = ((id?: number) => {
+      if (id === undefined || !held.delete(id)) ct(id);
+    }) as typeof window.clearTimeout;
+    window.requestIdleCallback = ((cb: IdleRequestCallback) => {
+      const id = next++;
+      held.set(id, { run: () => cb({ didTimeout: false, timeRemaining: () => 0 }), due: 0 });
+      return id;
+    }) as typeof window.requestIdleCallback;
+    window.cancelIdleCallback = ((id: number) => {
+      if (!held.delete(id)) cic(id);
+    }) as typeof window.cancelIdleCallback;
+  });
+
+/** Puts the timers back and starts the held ones, each for the time it had left (a later clear still cancels it). */
+const releaseTimers = (page: Page) =>
+  page.evaluate(() => {
+    type Held = { run: () => void; due: number };
+    const w = window as unknown as Record<string, unknown>;
+    const h = w.__scHold as { st: typeof setTimeout; ct: typeof clearTimeout; ric: typeof requestIdleCallback; cic: typeof cancelIdleCallback; held: Map<number, Held> } | undefined;
+    if (!h) return;
+    delete w.__scHold;
+    const real = new Map<number, number>();
+    const now = performance.now();
+    for (const [id, t] of h.held) real.set(id, h.st(t.run, Math.max(0, t.due - now)) as unknown as number);
+    window.setTimeout = h.st;
+    window.clearTimeout = ((id?: number) => h.ct(id === undefined ? id : (real.get(id) ?? id))) as typeof window.clearTimeout;
+    window.requestIdleCallback = h.ric;
+    window.cancelIdleCallback = ((id: number) => (real.has(id) ? h.ct(real.get(id)) : h.cic(id))) as typeof window.cancelIdleCallback;
+  });
 
 /**
  * The app's own stylesheets (Vite serves each CSS file as a <style data-vite-dev-id>), Tailwind's and React Flow's
@@ -173,11 +251,11 @@ async function pixelDiff(a: Buffer, b: Buffer): Promise<number> {
   return n;
 }
 
-/** Wait until the page stops changing on its own (a viewport glide, an image decoding, a debounced save). */
+/** Wait until the page stops changing on its own (a viewport glide, an image decoding): two equal draws in a row. */
 async function stable(page: Page): Promise<Buffer> {
   let last = await shot(page);
-  for (let i = 0; i < 30; i++) {
-    await page.waitForTimeout(150);
+  for (let i = 0; i < 90; i++) {
+    await page.waitForTimeout(50);
     await settle(page);
     const next = await shot(page);
     if (next.equals(last)) return next;
@@ -191,13 +269,23 @@ async function stable(page: Page): Promise<Buffer> {
  * started. If the page itself changed while being compared (its own draw before and after differ), it starts over.
  */
 export async function cssParity(page: Page, name: string, css = referenceCss()): Promise<CssParity> {
+  await probeWinners(page, name); // before the page settles: forcing states restarts transitions
+  await holdTimers(page);
+  try {
+    // Against any other CSS (the test's own self-check), every element counts.
+    return await compare(page, name, css, css === referenceCss() ? snapshotScope() : []);
+  } finally {
+    await releaseTimers(page);
+  }
+}
+
+async function compare(page: Page, name: string, css: string, scope: string[]): Promise<CssParity> {
   for (let attempt = 0; ; attempt++) {
-    if (attempt === 0) await probeWinners(page, name); // before the page settles: forcing states restarts transitions
     const app = await stable(page);
-    await snapshot(page, '__scApp');
+    await snapshot(page, '__scApp', scope);
     await swapIn(page, css, convertedSubjects());
     await settle(page);
-    await snapshot(page, '__scRef');
+    await snapshot(page, '__scRef', scope);
     const ref = await shot(page);
     const { styles, sameDom } = await page.evaluate(() => {
       const w = window as unknown as Record<string, Map<string, string>>;

@@ -132,7 +132,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` (the Layer Comp's buttons; the inspector has the same ones) |
 
 ## Testing tips (learned the hard way)
-- **CSS parity (P28):** `service postgresql start`, then `cd apps/worker && TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres timeout 700 npx vitest run src/css-parity.e2e.test.ts`. It compares every covered screen with main's built CSS; a conversion PR adds screens for the states it touches. The probe that lists what a sheet decides: `TAILWIND-PLAN.md`. If Postgres stopped (container restart), start it again.
+- **CSS parity (P28):** `service postgresql start`, then `cd apps/worker && TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres npx vitest run src/css-parity-` (six files that run side by side; `SC_PARITY_ONLY=word,word` compares only the screens whose name has one of the words, commands in `TAILWIND-PLAN.md`). It compares every covered screen with main's built CSS; a conversion PR adds screens for the states it touches. The probe that lists what a sheet decides: `TAILWIND-PLAN.md`. If Postgres stopped (container restart), start it again.
 - **Off‑screen nodes:** press **Fit to screen** before clicking a node the test just added, or one placed by the conversion.
 - **Draggable rows:** a draggable row (HTML5 `draggable`) swallows wire drags that start on a handle inside it. Make only the grip draggable.
 - **Shared ports:** many wires meet at the Layer Comp's `layers` port. Grab a wire by its node end (`edgeupdater-source`).
