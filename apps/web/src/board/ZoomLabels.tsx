@@ -12,6 +12,12 @@ import { approvalOf, type ApprovalState } from './review';
 /** Below this zoom the tags show. */
 export const LABEL_ZOOM = 0.6;
 
+/** A name tag: dark, above the panel's top-left corner, the same screen size at any zoom (--zoom-inv). */
+const TAG =
+  'sc-zlabel__tag absolute bottom-0 left-0 mb-6 inline-flex max-w-[320px] origin-bottom-left items-center gap-6 rounded-[8px] bg-fg px-9 py-4 text-[12px] font-[600] whitespace-nowrap text-bg [transform:scale(var(--zoom-inv,1))] [box-shadow:var(--shadow-2)]';
+/** A mark after the name: approved, changed since, or open comments. */
+const MARK = 'sc-zlabel__mark rounded-[6px] px-6 py-0 text-[11px]';
+
 /** The name a panel goes by on the board, or null for nodes without one (group frames have their own). */
 export function panelTitle(doc: ProjectDoc, nodeId: string): string | null {
   const [kind, ...rest] = nodeId.split(':');
@@ -43,7 +49,7 @@ export function ZoomLabels(props: {
 }) {
   return (
     <ViewportPortal>
-      <div className="sc-zlabels" aria-hidden="true">
+      <div className="sc-zlabels pointer-events-none absolute top-0 left-0" aria-hidden="true">
         {props.nodes.map((n) => {
           if (n.hidden || n.id.startsWith('grp:')) return null;
           const title = panelTitle(props.doc, n.id);
@@ -52,13 +58,13 @@ export function ZoomLabels(props: {
           const state = outputId ? approvalOf(props.approvals, outputId).state : 'none';
           const open = outputId ? (props.openComments.get(outputId) ?? 0) : 0;
           return (
-            <div key={n.id} className="sc-zlabel" style={{ transform: `translate(${n.position.x}px, ${n.position.y}px)`, width: n.measured?.width ?? n.width }}>
-              <span className="sc-zlabel__tag">
-                <span className="sc-zlabel__name">{title}</span>
-                {state === 'approved' && <span className="sc-zlabel__mark sc-zlabel__mark--ok">✓</span>}
-                {state === 'changed' && <span className="sc-zlabel__mark sc-zlabel__mark--warn">changed</span>}
+            <div key={n.id} className="sc-zlabel pointer-events-none absolute top-0 left-0" style={{ transform: `translate(${n.position.x}px, ${n.position.y}px)`, width: n.measured?.width ?? n.width }}>
+              <span className={TAG}>
+                <span className="sc-zlabel__name overflow-hidden text-ellipsis">{title}</span>
+                {state === 'approved' && <span className={`sc-zlabel__mark--ok ${MARK} bg-ok text-on-accent`}>✓</span>}
+                {state === 'changed' && <span className={`sc-zlabel__mark--warn ${MARK} bg-warn text-on-accent`}>changed</span>}
                 {open > 0 && (
-                  <span className="sc-zlabel__mark">
+                  <span className={`${MARK} bg-[color-mix(in_srgb,var(--bg)_18%,transparent)]`}>
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                       <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
                     </svg>{' '}

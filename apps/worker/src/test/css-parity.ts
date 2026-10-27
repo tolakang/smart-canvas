@@ -88,7 +88,13 @@ const swapIn = (page: Page, css: string, subjects: string[]) =>
     });
     if (!ours.length) throw new Error('no app stylesheets found');
     const utilities = ours.find((s) => (s.dataset.viteDevId ?? '').endsWith('/apps/web/src/tailwind.css'))?.textContent ?? '';
-    const isUtility = (c: string) => utilities.includes(`.${CSS.escape(c)}`);
+    // A whole class name in the sheet (`.bottom-0` is not `.bottom`, React Flow's). Our own hooks (`sc-…`) are never
+    // utilities, though a utility's selector can name one (`[.sc-canvasbar>…_&]:`).
+    const isUtility = (c: string) => {
+      const name = `.${CSS.escape(c)}`;
+      for (let i = utilities.indexOf(name); i >= 0; i = utilities.indexOf(name, i + 1)) if (!/[\w-]/.test(utilities[i + name.length] ?? '')) return !c.startsWith('sc-');
+      return false;
+    };
     const stripped: [Element, string][] = [];
     for (const sel of subjects) {
       const els = (() => {

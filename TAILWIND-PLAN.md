@@ -13,7 +13,7 @@ before that, area by area, with no visual change.
 | T2b | Projects home, sign-in | `shell/home.css` | low | ✅ #182 |
 | T3a | Top bar and menus | their rules in `board/chrome.css` | medium | ✅ #183 |
 | T3b | Floating side panels, inspector, project overview, canvas notices | more of `board/chrome.css` | medium | ✅ #185 |
-| T3c | Canvas toolbar, selection bar, tooltips, name tags, groups | the rest but React Flow's | medium | |
+| T3c | Canvas toolbar, selection bar, tooltips, name tags, groups | the rest but React Flow's | medium | this PR |
 | T4 | Main Comps, Export Group, Presets, Preview Cards | `board/node.css`, `board/pipeline.css` | medium | |
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high | |
 | T6 | History, comments, approval | `board/review.css` | low | |

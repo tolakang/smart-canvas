@@ -110,7 +110,7 @@ import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 import { ADD, COUNT, COUNTS, GHOST, GROUP_ADD, GROUP_END, GROUP_START, ICON, NAME, PRIMARY, SAVE_BUTTON, SAVE_LONG, SAVE_SHORT, saveClass, saveDotClass, SEP, TOPBAR } from './topbar';
-import { BOARD, CANVAS, FLOW, TOAST, TOAST_BUTTON, VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
+import { BOARD, CANVAS, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON, VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
 
 interface Loaded {
   rev: number;
@@ -1534,8 +1534,8 @@ function BoardCanvas(props: {
             />
             {coarse && <MultiSelect on={several} />}
             {!readOnly && activeTool === 'select' && (selectedCount >= 2 || several) && (
-              <Panel position="top-center" className="sc-selbar nodrag nopan nowheel" aria-label="Selection" role="toolbar">
-                <span className="sc-selbar__count">{selectedCount} selected</span>
+              <Panel position="top-center" className={`${SELBAR} nodrag nopan nowheel`} aria-label="Selection" role="toolbar">
+                <span className={SELBAR_COUNT}>{selectedCount} selected</span>
                 <button type="button" className="sc-btn" onClick={groupSelection} disabled={selectedCount < 2} title="Group the selected panels (Ctrl/⌘ + G)">
                   Group
                 </button>
@@ -1554,8 +1554,8 @@ function BoardCanvas(props: {
             )}
             {zoomedOut && <ZoomLabels nodes={flowNodes} doc={doc} approvals={approvals} openComments={openCommentCounts} />}
             <ViewportPortal>
-              {guides.vertical !== undefined && <div className="sc-guide sc-guide--v" style={{ transform: `translateX(${guides.vertical}px)` }} />}
-              {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}
+              {guides.vertical !== undefined && <div className={GUIDE_V} style={{ transform: `translateX(${guides.vertical}px)` }} />}
+              {guides.horizontal !== undefined && <div className={GUIDE_H} style={{ transform: `translateY(${guides.horizontal}px)` }} />}
             </ViewportPortal>
             {toast && (
               <Panel position="bottom-center" className={`${TOAST} nodrag nopan`} role="status">
