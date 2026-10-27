@@ -182,6 +182,81 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.mouse.move(5, 500);
   }, limit(90_000));
 
+  it('canvas: toolbar tips and focus, selection bar, a group, wire hover and reroute, zoomed-out name tags', async () => {
+    const bar = page.getByRole('toolbar', { name: 'Canvas tools' });
+    for (const [name, screen] of [
+      ['Select (V)', 'canvas-tip-first'],
+      ['Fit to screen (Shift+1)', 'canvas-tip'],
+      ['Minimap', 'canvas-tip-last'],
+    ] as const) {
+      await bar.getByRole('button', { name, exact: true }).hover();
+      await page.locator('.sc-tip--show').waitFor();
+      await page.waitForTimeout(300); // the tip's fade-in
+      await same(screen);
+    }
+    await page.mouse.move(5, 500);
+    await bar.getByRole('button', { name: 'Select (V)', exact: true }).focus();
+    await page.keyboard.press('Tab'); // focus-visible comes with the keyboard
+    await page.waitForTimeout(300);
+    await same('canvas-focus');
+    await page.keyboard.press('Escape');
+
+    await node('Text').locator('.sc-node__title').click();
+    await node('Logo').locator('.sc-node__title').click({ modifiers: ['Shift'] });
+    const selection = page.getByRole('toolbar', { name: 'Selection' });
+    await selection.waitFor();
+    await page.mouse.move(5, 500);
+    await same('selection-bar');
+    await selection.getByRole('button', { name: 'Group' }).click();
+    const group = page.locator('.sc-group');
+    await group.waitFor();
+    await page.keyboard.press('Escape');
+    await page.mouse.move(5, 500);
+    await same('group');
+    await group.locator('.sc-group__title').click();
+    await page.mouse.move(5, 500);
+    await same('group-selected');
+    await page.getByRole('button', { name: /^Collapse group/ }).click();
+    await page.mouse.move(5, 500);
+    await same('group-collapsed');
+    await page.getByRole('button', { name: /^Ungroup/ }).click();
+    await group.waitFor({ state: 'detached' });
+    await page.keyboard.press('Escape');
+    await saved();
+
+    // A wire hovered (its ✂ badge), then a reroute point on it.
+    const wire = await page.locator('.react-flow__edge').first().boundingBox();
+    const mid = { x: (wire?.x ?? 0) + (wire?.width ?? 0) / 2, y: (wire?.y ?? 0) + (wire?.height ?? 0) / 2 };
+    await page.mouse.move(mid.x, mid.y);
+    await page.locator('.sc-wire-cut--hover').waitFor();
+    await same('wire-hover');
+    await page.mouse.dblclick(mid.x, mid.y);
+    const point = page.locator('.sc-reroute').first();
+    await point.waitFor();
+    await point.hover();
+    await same('wire-reroute');
+    await point.dblclick();
+    await point.waitFor({ state: 'detached' });
+    await page.mouse.move(5, 500);
+    await saved();
+
+    // Zoomed out: name tags, with a comment count and a "changed" mark (approved before the Preview changed).
+    expect((await page.request.post(`${api}/review/comments`, { data: { outputId: 'banner', text: 'Bigger logo' } })).status()).toBe(201);
+    expect((await page.request.put(`${api}/review/approvals/sq`, { data: { fingerprint: 'before' } })).status()).toBe(200);
+    await page.reload();
+    await node('Image').waitFor();
+    await fit();
+    for (let i = 0; i < 4 && !(await page.locator('.sc-zlabels').count()); i++) {
+      await bar.getByRole('button', { name: 'Zoom out', exact: true }).click();
+      await page.waitForTimeout(300);
+    }
+    await page.locator('.sc-zlabel__mark--warn').waitFor();
+    await page.mouse.move(5, 500);
+    await imagesLoaded();
+    await same('zoomed-out');
+    await fit();
+  }, limit(120_000));
+
   it('dialogs: Export', async () => {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     await page.getByRole('dialog', { name: 'Export' }).waitFor();

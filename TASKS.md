@@ -221,7 +221,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] T2a — Dialogs → utilities; `ui/dialogs.css` removed — [#181](https://github.com/tolakang/smart-canvas/pull/181)
 - [x] T2b — Projects home, sign-in → utilities; `shell/home.css` removed — [#182](https://github.com/tolakang/smart-canvas/pull/182)
 - [x] T3a — Top bar and menus → `board/topbar.ts` — [#183](https://github.com/tolakang/smart-canvas/pull/183)
-- [x] T3b — Floating side panels, inspector, project overview, canvas notices → `board/panel.ts`, `board/frame.ts` (this PR)
+- [x] T3b — Floating side panels, inspector, project overview, canvas notices → `board/panel.ts`, `board/frame.ts` — [#185](https://github.com/tolakang/smart-canvas/pull/185)
 - [ ] T3c — Canvas toolbar, selection bar, tooltips, zoomed-out name tags, groups (React Flow's own pane, wires, minimap and handles stay in `board/chrome.css`)
 - [ ] T4 — Main Comps, Export Group, Presets, Preview Cards; `board/node.css`, `board/pipeline.css`
 - [ ] T5 — Asset nodes and slots; `board/assets.css`
