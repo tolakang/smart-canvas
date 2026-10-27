@@ -64,7 +64,10 @@ const snapshot = (page: Page, key: string) =>
         if (!prop.startsWith('--')) out.set(`${path} :: ${prop}`, cs.getPropertyValue(prop));
       }
     };
+    // The off-screen frame a background export draws in (the project thumbnail, a few seconds after a save) is never
+    // seen and comes and goes on its own timer, so it is left out.
     for (const el of [document.documentElement, ...document.querySelectorAll('body, body *')]) {
+      if (el.closest('body > div[aria-hidden="true"]')) continue;
       const path = pathOf(el) || 'html';
       record(path, getComputedStyle(el));
       for (const pseudo of ['::before', '::after', '::placeholder']) {
