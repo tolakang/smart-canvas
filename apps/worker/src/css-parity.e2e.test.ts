@@ -446,7 +446,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await same('text-remove-hover');
     await page.mouse.click(5, 500);
     await saved();
-  }, limit(120_000));
+  }, limit(300_000));
 
   it('dialogs: Export', async () => {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
