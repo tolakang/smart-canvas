@@ -69,7 +69,6 @@ export const sub = (p: Vec, q: Vec): Vec => ({ x: p.x - q.x, y: p.y - q.y });
 export const add = (p: Vec, q: Vec): Vec => ({ x: p.x + q.x, y: p.y + q.y });
 export const scaleVec = (p: Vec, k: number): Vec => ({ x: p.x * k, y: p.y * k });
 export const dot = (p: Vec, q: Vec) => p.x * q.x + p.y * q.y;
-export const cross = (p: Vec, q: Vec) => p.x * q.y - p.y * q.x;
 export const len = (p: Vec) => Math.hypot(p.x, p.y);
 export const norm = (p: Vec): Vec => {
   const l = len(p);

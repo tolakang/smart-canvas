@@ -8,8 +8,8 @@ import { MAX_SHEAR_DEG, type Frame, type InputSource, type RenderScene } from '@
 import type { ReactNode } from 'react';
 import { NumberField } from '../ui/NumberField';
 import { DESIGN, GESTURES_LIST, GRID, KEYS, LOCK, NUM, SECTION, SECTION_KEYS, SECTION_TOUCH, SUMMARY, TITLE } from './panels';
+import { KIND_LABEL } from '../board/LayerRow';
 
-const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 /** Shown values: whole design px (as the selection badge), rotation to 0.1°. Typed values are kept as typed. */
 const round = (n: number) => Math.round(n);
 const roundDeg = (n: number) => Math.round(n * 10) / 10;

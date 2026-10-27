@@ -17,8 +17,8 @@ import { newId } from './ids';
 import { confirmDelete, Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { Slot } from './Slot';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 type Lang = 'km' | 'en';
 
 /** The switch for the language in use: two segments, the one in use filled with the accent. */
@@ -113,7 +113,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
       {rows.map((_, i) => (
         <div
           key={i}
-          className={`sc-hl-row group/hl grid gap-10${i ? ' mt-4 pt-14 [border-top:1px_solid_color-mix(in_srgb,var(--line)_80%,transparent)]' : ''}`}
+          className={`sc-hl-row group/hl grid gap-10 ${i ? ' mt-4 pt-14 [border-top:1px_solid_color-mix(in_srgb,var(--line)_80%,transparent)]' : ''}`}
           role="group" aria-label={`Headline ${i + 1}`}>
           {rows.length > 1 && (
             <div className="sc-hl-row__head m-0 flex items-center justify-between text-[12px] font-[650] text-fg">

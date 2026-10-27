@@ -6,13 +6,12 @@ import { addSourceFromLibrary, fillToCss, LIMITS, type LibraryItem, type SourceR
 import { useEffect, useRef, useState } from 'react';
 import { api, assetUrl } from '../api';
 import { newId } from './ids';
-import { Icon } from './LayerRow';
+import { Icon, KIND_LABEL } from './LayerRow';
 import { DIALOG } from '../ui/tw';
 
 /** An item's 40 px picture or colour. */
 const THUMB = 'inline-block size-40 rounded-[6px] border border-line bg-swatch-bg object-contain';
 
-const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 
 function Preview({ item, teamId }: { item: LibraryItem; teamId: string }) {
   const c = item.content;

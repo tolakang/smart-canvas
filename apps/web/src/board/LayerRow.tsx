@@ -12,6 +12,9 @@ import { THUMB } from '../editor/panels';
 
 const DRAG_TYPE = 'application/x-sc-source';
 
+/** What each kind of input is called in lists and panels. */
+export const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
+
 /** Small preview of what the input holds: its image, a fill swatch or the first letters of its text. */
 export function LayerThumb({ source }: { source: InputSource }) {
   const { teamId } = useBoard();

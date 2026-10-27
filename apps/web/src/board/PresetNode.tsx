@@ -16,9 +16,8 @@ import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { nameWithoutSize, presetSettings } from './OutputNode';
-import { TOUCH_NO_PAN } from './pinch';
+import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** A row's name without its trailing size, or '' when what is left is just the preset's name. */
 /**

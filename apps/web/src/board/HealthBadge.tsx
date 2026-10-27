@@ -5,8 +5,8 @@
  */
 import type { Health } from '@smart-canvas/core';
 import { useEffect, useRef, useState } from 'react';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 export function healthSummary(h: Health): string {
   const n = h.issues.length;

@@ -6,9 +6,8 @@ import { useBoard } from './context';
 import { Slot } from './Slot';
 import { FIELDS } from '../editor/shell';
 import { BOARD_TEXT } from '../editor/panels';
+import { NO_CANVAS } from './pinch';
 
-// Interactive elements inside a node must not start a node drag, pan or zoom.
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 const ACCEPT: Record<'image' | 'vector', string> = {
   image: 'image/png,image/jpeg,image/webp,application/pdf,.pdf',

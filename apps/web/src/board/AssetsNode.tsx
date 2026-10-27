@@ -17,8 +17,8 @@ import { confirmDelete, Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { Slot } from './Slot';
 import { carriesFiles, filesOf, PICTURE_ACCEPT, usePictureDrop } from './stack-upload';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 const ITEM_DRAG = 'application/x-sc-stack-item';
 
 /** The card's one drop area: dashed, lit while hovered or while files are dragged over the card. */

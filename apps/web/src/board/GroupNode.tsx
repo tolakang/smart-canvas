@@ -9,8 +9,8 @@ import { useState } from 'react';
 import { useBoard } from './context';
 import type { GroupFlowNode } from './flow';
 import { Icon } from './LayerRow';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** A group (T13.7): a frame tinted in its colour behind its nodes, with a header to drag, rename, collapse or export. */
 const GROUP = 'size-full rounded-lg [border:1.5px_solid_color-mix(in_srgb,var(--group)_70%,transparent)] bg-[color-mix(in_srgb,var(--group)_8%,transparent)]';

@@ -94,7 +94,7 @@ The board (D49: asset nodes → Layer Comp + Core preset → Preset nodes → Pr
 - **Register a node type once**, in `nodeTypes` (`board/nodes.tsx`); edge types in `edgeTypes` (`Board.tsx`). — A new
   object each render remounts every node. Never name a type `input`, `output` or `default` (React Flow's built-ins).
 - **Type the node** in `flow.ts` (`Node<{…}, 'myNode'>`, added to `BoardNode`); components take `NodeProps<…>`.
-- **Controls inside a node carry `NO_CANVAS = 'nodrag nopan nowheel'`.** — A click or scroll doesn't drag the node or
+- **Controls inside a node carry `NO_CANVAS`** (`'nodrag nopan nowheel'`, from `board/pinch.ts`). — A click or scroll doesn't drag the node or
   pan the board. Touch grips use `TOUCH_NO_PAN` (`pinch.ts`); the board's `noPanClassName` switches on coarse pointers (D58).
 - **Ports are typed (D32).** Whether a wire may connect is `connectionRefusal(doc, connection)` (`flow.ts`), passed
   through `isValidConnection`; the drop handler explains a refusal. — No connection rules in components or CSS.

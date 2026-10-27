@@ -7,8 +7,8 @@ import { NumberField } from '../ui/NumberField';
 import { META } from './card';
 import { useBoard } from './context';
 import { presetSettings, unitSettings, withAutoLabel } from './OutputNode';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 const SCALES = [1, 2, 3, 4] as const;
 
 /** A row of an output's settings: two fields and a small control (unit, a note) at the end. */
