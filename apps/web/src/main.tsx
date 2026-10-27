@@ -9,7 +9,6 @@ import './fonts/bundled.css';
 // stylesheets go newest first, right after styles.css: the rules each one took from styles.css keep their place ahead
 // of the older areas' rules.
 import './styles.css';
-import './board/review.css';
 import './editor/editor.css';
 import './board/chrome.css';
 import { applyTheme } from './ui/theme';

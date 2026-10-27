@@ -149,6 +149,12 @@ function layerHistories(output: OutputNode, scene: { width: number; height: numb
  * D63: the Preview's approval in the editor's bar. Editors approve it as it looks now, approve it again after a
  * change, or withdraw; viewers see the state only.
  */
+/** The approval state in the editor bar: green once approved, amber once the Preview changed since. */
+const STATE = 'sc-approval__state text-[11px] font-[600]';
+/** Approve: solid green; the bar's own hover and disabled looks still win, as before. */
+const APPROVE =
+  'sc-approval__approve font-[600] border-ok [&:is(:not(:hover),:disabled)]:bg-ok [&:not(:disabled)]:text-on-accent';
+
 function Approval(props: { outputId: string; fingerprint: string; onApprove: (outputId: string, fingerprint: string | null) => Promise<void> }) {
   const { review, readOnly } = useBoard();
   const [busy, setBusy] = useState(false);
@@ -159,16 +165,16 @@ function Approval(props: { outputId: string; fingerprint: string; onApprove: (ou
     void props.onApprove(props.outputId, fingerprint).finally(() => setBusy(false));
   };
   return (
-    <span className={`sc-approval${approval ? (changed ? ' sc-approval--changed' : ' sc-approval--on') : ''}`} role="group" aria-label="Approval">
+    <span className={`sc-approval${approval ? (changed ? ' sc-approval--changed' : ' sc-approval--on') : ''} ml-8 inline-flex items-center gap-6`} role="group" aria-label="Approval">
       {approval ? (
-        <span className="sc-approval__state" title={`Approved by ${approval.approvedBy ?? 'someone'} on ${new Date(approval.approvedAt).toLocaleString()}`}>
+        <span className={`${STATE} ${changed ? 'text-warn' : 'text-ok'}`} title={`Approved by ${approval.approvedBy ?? 'someone'} on ${new Date(approval.approvedAt).toLocaleString()}`}>
           {changed ? 'Changed since approved' : `✓ Approved${approval.approvedBy ? ` by ${approval.approvedBy}` : ''}`}
         </span>
       ) : (
-        readOnly && <span className="sc-approval__state">Not approved</span>
+        readOnly && <span className={STATE}>Not approved</span>
       )}
       {!readOnly && (!approval || changed) && (
-        <button type="button" className="sc-approval__approve" disabled={busy || !props.fingerprint} onClick={() => act(props.fingerprint)}>
+        <button type="button" className={APPROVE} disabled={busy || !props.fingerprint} onClick={() => act(props.fingerprint)}>
           {approval ? 'Approve again' : 'Approve'}
         </button>
       )}

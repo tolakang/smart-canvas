@@ -17,7 +17,7 @@ before that, area by area, with no visual change.
 | T4a | Main Comps, Export Group, Presets, Preview Cards, their ports and layout health | `board/pipeline.css` | medium | ✅ #187 |
 | T4b | The card every node shares: card, header, fields, behaviour picker (React Flow's handles stay CSS) | `board/node.css` | medium | ✅ #188 |
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high | ✅ #189 |
-| T6 | History, comments, approval | `board/review.css` | low | |
+| T6 | History, comments, approval | `board/review.css` | low | this PR |
 | T7 | Editors, including phone tabs | most of `editor/editor.css` | high | |
 | T8 | Optional: Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
 
