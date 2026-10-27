@@ -322,7 +322,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-node__preview .sc-thumb:not(.sc-thumb--empty) { display: block; width: auto; height: auto; max-width: 100%; max-height: 140px; }
 .sc-node__preview .sc-thumb--empty, .sc-node__preview .sc-swatch { width: 100%; }
 .sc-node__preview .sc-thumb--empty { height: 72px; text-align: center; padding: 0 var(--sp-2); }
-.sc-thumb--upload { cursor: pointer; border-style: dashed; }
+.sc-thumb--upload { cursor: pointer; border-style: dashed; border-color: var(--muted); }
 .sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
 .sc-node .sc-render--thumb { max-width: 100%; }
 .sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }
