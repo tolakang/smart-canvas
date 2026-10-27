@@ -277,7 +277,7 @@ export function BackgroundSlots({ source, selected = true }: { source: InputSour
   }
 
   return (
-    <div className="sc-bg-slots grid grid-cols-[repeat(2,minmax(0,1fr))] items-start gap-12 [grid-template-areas:'h_h'_'s_v'] [&>.sc-error]:col-[1/-1]" aria-label="Background for square, vertical and horizontal Previews">
+    <div className="sc-bg-slots grid grid-cols-[repeat(2,minmax(0,1fr))] [align-items:start] gap-12 [grid-template-areas:'h_h'_'s_v'] [&>.sc-error]:col-[1/-1]" aria-label="Background for square, vertical and horizontal Previews">
       {BG_SLOTS.map((family) => {
         const id = picture(family);
         const label = BG_LABEL[family];
