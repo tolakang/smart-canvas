@@ -10,6 +10,7 @@ import { useState, type DragEvent } from 'react';
 import { useStoredFlag } from './board-keys';
 import { assetUrl, uploadAsset } from '../api';
 import { setAsset, setPicture, withSource } from './content';
+import { cardClass } from './card';
 import { useBoard } from './context';
 import type { StackFlowNode } from './flow';
 import { confirmDelete, Icon } from './LayerRow';
@@ -70,7 +71,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
   const noun = isLogo ? (n === 1 ? 'logo' : 'logos') : n === 1 ? 'picture' : 'pictures';
 
   return (
-    <div className={`sc-node sc-node--input sc-node--assets${over ? ' sc-node--drop' : ''}`} {...dropProps}>
+    <div className={`${cardClass('input', { drop: over })} sc-node--assets`} {...dropProps}>
       <NodeHead
         icon="image"
         title={stack.label}

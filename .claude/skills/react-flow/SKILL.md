@@ -43,7 +43,7 @@ Preset rows. Always use the helpers (`stackNodeId`, `outputIdOfNode`, `docIdOfNo
 3. **Inside a node, interactive elements carry `NO_CANVAS = 'nodrag nopan nowheel'`.** That covers buttons, inputs, slots, scroll areas and menus, so a click or a scroll doesn't drag the node or pan the board. Grips that should still allow a touch pan use `TOUCH_NO_PAN` (pinch.ts); `noPanClassName` switches between the two on coarse pointers (D58).
 4. **Handles are typed ports (D32).** Whether a wire may connect is decided by core (`connectionRefusal(doc, connection)`), through `isValidConnection`; the drop handler explains a refusal. Don't add connection rules in components or in CSS.
 5. **Changing a node's handles** (adding or removing a row, moving a port) means calling `useUpdateNodeInternals()(nodeId)` afterwards, as `PresetNode.tsx` does, or the wires attach to stale positions.
-6. **Header and look:** every card uses `NodeHead` (icon tile, name, quiet line, ⋯ menu; V1/D64) and the `sc-node` classes. Selected and hover states come from React Flow's `.selected` class and our CSS, so don't pass `selected` down to style things.
+6. **Header and look:** every card uses `NodeHead` (icon tile, name, quiet line, ⋯ menu; V1/D64) and `cardClass(kind)` (`board/card.ts`). Selected and hover states come from React Flow's `.selected` / `:hover` on its node through variants there, so don't pass `selected` down to style things.
 7. **Read-only (viewer):** nodes read `readOnly` from `useBoard()` and hide every edit control. React Flow's `nodesConnectable`, `nodesDraggable` and `edgesReconnectable` are already off on the board.
 8. **Performance:** keep node components pure functions of `data` plus `useBoard()`. Don't call `useNodes()` / `useEdges()` inside a node (that re-renders every node on every drag); select only what you need with `useStore(selector)` if you must. Stable callbacks (`useCallback`) for everything passed to `<ReactFlow>`.
 
@@ -146,7 +146,7 @@ what is named instead.
   - `.react-flow__edge`, `.react-flow__pane`
   - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything
 - Seed a board through the API with core functions (`addOutput`, …) and `page.request.put`, as `comments.e2e.test.ts` does, rather than many UI clicks.
-- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). The board areas not converted yet keep their files (`board/node.css`, `assets.css`, `review.css`), which the conversion empties one by one (`TAILWIND-PLAN.md`): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run `css-parity.e2e.test.ts`.
+- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). The board areas not converted yet keep their files (`assets.css`, `review.css`), which the conversion empties one by one (`TAILWIND-PLAN.md`): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run `css-parity.e2e.test.ts`.
 
 ## 9. Checklist: a new node type
 

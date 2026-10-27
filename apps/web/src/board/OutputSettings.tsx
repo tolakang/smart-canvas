@@ -4,6 +4,7 @@
  */
 import { BLEED_MM_MAX, DPI_RANGE, exceedsExportCap, exportPixels, LIMITS, outputDefaults, updateOutput, type OutputNode, type OutputSettings as Settings } from '@smart-canvas/core';
 import { NumberField } from '../ui/NumberField';
+import { META } from './card';
 import { useBoard } from './context';
 import { presetSettings, unitSettings, withAutoLabel } from './OutputNode';
 
@@ -119,7 +120,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
           {connected ? 'Disconnect' : 'Reconnect'}
         </button>
       )}
-      <div className={`sc-node__meta${overCap ? ' sc-error' : ''}`} role={overCap ? 'alert' : undefined}>
+      <div className={`${META}${overCap ? ' sc-error' : ''}`} role={overCap ? 'alert' : undefined}>
         Export {px.w} × {px.h} px{bleed > 0 && ' incl. bleed'}
         {overCap && ` — over the ${LIMITS.maxExportEdgePx} px limit; lower the size, ${mm ? 'DPI' : 'scale'} or bleed`}
       </div>

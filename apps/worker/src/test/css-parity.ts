@@ -81,24 +81,41 @@ const snapshot = (page: Page, key: string) =>
  * their utility classes (the ones the app's Tailwind sheet defines) while the reference is drawn, as they were at main.
  */
 /**
- * Elements an earlier step converted that a rule removed now also styled (T4a: the inspector's health pill took its tone
- * from pipeline.css). Their utilities were already on main, so they keep them while main's CSS is drawn.
+ * Elements an earlier step converted that a rule this branch removes also styled: their classes from main must stay
+ * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (T4b: node.css styled the
+ * card roots, headers and every direct child of a card, so the T4a pipeline cards are hit).
+ * - KEEP: unchanged since main: they keep every class.
+ * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const CONVERTED_BEFORE = ['.sc-inspector-panel__level'];
+const KEEP = [
+  ':is(.sc-comp-group, .react-flow__node-presetNode, .react-flow__node-outputNode) *:not(.sc-node, .sc-node__head, .sc-head__icon, .sc-head__text, .sc-head__text *, .sc-head__more, .sc-head__action, .sc-node__meta)',
+  '.sc-inspector-panel__level',
+];
+const MAIN_CLASSES: Record<string, string> = {
+  '.sc-node--main': 'w-280 min-w-260 min-h-120 gap-14 rounded-[20px] p-16 before:bg-type-main',
+  '.sc-node--rule, .sc-node--preset, .sc-node--output': 'w-280 w-300 gap-14 rounded-[20px] p-16 before:bg-type-output',
+  '.sc-node--frozen': 'border-line-strong [border-style:dashed] before:bg-line-strong',
+  '.sc-node__head': '[--head:var(--head-master)] [--head:var(--head-rule)] [--head:var(--head-preset)] [--head:var(--head-preview)] [--head:var(--head-frozen)]',
+  '.react-flow__node-outputNode .sc-node__meta':
+    'flex flex-wrap gap-6 [&>span]:rounded-[99px] [&>span]:bg-surface-2 [&>span]:px-8 [&>span]:py-2 [&>span]:text-[11.5px] [&>span]:font-[600] [&>span]:text-muted text-warn',
+};
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>
-  page.evaluate(({ css, subjects, before }) => {
+  page.evaluate(({ css, subjects, keepAll, mainClasses }) => {
     const ours = [...document.querySelectorAll<HTMLStyleElement>('style[data-vite-dev-id]')].filter((s) => {
       const id = s.dataset.viteDevId ?? '';
       return id.includes('/apps/web/src/') && !id.includes('/apps/web/src/fonts/');
     });
     if (!ours.length) throw new Error('no app stylesheets found');
     const utilities = ours.find((s) => (s.dataset.viteDevId ?? '').endsWith('/apps/web/src/tailwind.css'))?.textContent ?? '';
-    // A whole class name in the sheet (`.bottom-0` is not `.bottom`, React Flow's). Our own hooks (`sc-…`) are never
-    // utilities, though a utility's selector can name one (`[.sc-canvasbar>…_&]:`).
+    // A whole class name in the sheet (`.bottom-0` is not `.bottom`, React Flow's). Our own hooks (`sc-…`) and React
+    // Flow's classes are never utilities, though a utility's selector can name one (`[.sc-canvasbar>…_&]:`,
+    // `[.react-flow\_\_node.selected_&]:`).
+    const reactFlow = new Set(['selected', 'selectable', 'draggable', 'dragging', 'connectable', 'connectablestart', 'connectableend', 'connectionindicator', 'nodrag', 'nopan', 'nowheel', 'source', 'target', 'valid', 'connectingto', 'connectingfrom', 'updating', 'animated', 'inactive']);
     const isUtility = (c: string) => {
+      if (c.startsWith('sc-') || c.startsWith('react-flow') || reactFlow.has(c)) return false;
       const name = `.${CSS.escape(c)}`;
-      for (let i = utilities.indexOf(name); i >= 0; i = utilities.indexOf(name, i + 1)) if (!/[\w-]/.test(utilities[i + name.length] ?? '')) return !c.startsWith('sc-');
+      for (let i = utilities.indexOf(name); i >= 0; i = utilities.indexOf(name, i + 1)) if (!/[\w-]/.test(utilities[i + name.length] ?? '')) return true;
       return false;
     };
     const stripped: [Element, string][] = [];
@@ -111,8 +128,9 @@ const swapIn = (page: Page, css: string, subjects: string[]) =>
         }
       })();
       for (const el of els) {
-        if (stripped.some(([e]) => e === el) || before.some((b) => el.matches(b))) continue;
-        const keep = [...el.classList].filter((c) => !isUtility(c));
+        if (stripped.some(([e]) => e === el) || keepAll.some((b) => el.matches(b))) continue;
+        const fromMain = new Set(Object.entries(mainClasses).flatMap(([s, cls]) => (el.matches(s) ? cls.split(' ') : [])));
+        const keep = [...el.classList].filter((c) => !isUtility(c) || fromMain.has(c));
         if (keep.length === el.classList.length) continue;
         stripped.push([el, el.getAttribute('class') ?? '']);
         el.setAttribute('class', keep.join(' '));
@@ -125,7 +143,7 @@ const swapIn = (page: Page, css: string, subjects: string[]) =>
     ours[0]?.before(ref);
     for (const s of ours) s.remove();
     (window as unknown as Record<string, HTMLStyleElement[]>).__scOurs = ours;
-  }, { css, subjects, before: CONVERTED_BEFORE });
+  }, { css, subjects, keepAll: KEEP, mainClasses: MAIN_CLASSES });
 
 const swapBack = (page: Page) =>
   page.evaluate(() => {

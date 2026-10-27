@@ -1,4 +1,5 @@
 import { deleteSource, renameSource, type InputSource } from '@smart-canvas/core';
+import { HEAD_MARK } from './card';
 import { useBoard } from './context';
 import { confirmDelete, Icon, type IconName } from './LayerRow';
 import { NodeHead } from './NodeHead';
@@ -26,12 +27,12 @@ export function SourceHeader({ source }: { source: InputSource }) {
       extra={
         <>
           {!source.visible && (
-            <span className="sc-node__mark" title="Hidden everywhere" aria-label="Hidden">
+            <span className={HEAD_MARK} title="Hidden everywhere" aria-label="Hidden">
               <Icon name="eye-off" size={14} />
             </span>
           )}
           {source.libraryItemId && (
-            <span className="sc-node__mark" title="From the team library" aria-label="From library">
+            <span className={HEAD_MARK} title="From the team library" aria-label="From library">
               <Icon name="library" size={14} />
             </span>
           )}

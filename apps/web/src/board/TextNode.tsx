@@ -7,6 +7,7 @@
 import { addTextToStack, deleteSource, deleteStack, fontStack, renameStack } from '@smart-canvas/core';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { setText } from './content';
+import { cardClass } from './card';
 import { useBoard } from './context';
 import type { StackFlowNode } from './flow';
 import { newId } from './ids';
@@ -20,7 +21,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
   const { readOnly, run, editSource, stackFocus, setStackFocus } = useBoard();
 
   return (
-    <div className="sc-node sc-node--input sc-node--text-node" aria-label={`Text node ${stack.label}`}>
+    <div className={`${cardClass('input')} sc-node--text-node`} aria-label={`Text node ${stack.label}`}>
       <NodeHead
         icon="text"
         title={stack.label}
