@@ -163,13 +163,16 @@ const releaseTimers = (page: Page) =>
  */
 /**
  * Elements an earlier step converted that a rule this branch removes also styled: their classes from main must stay
- * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (T7a: the bar's rules for
- * none in T7b).
+ * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (T7c: the comments' rules
+ * reach the T7b Comments panel, its head and its "No comments yet" section).
  * - KEEP: unchanged since main: they keep every class.
  * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const KEEP: string[] = [];
-const MAIN_CLASSES: Record<string, string> = {};
+const KEEP: string[] = ['.sc-comments', '.sc-comments__head'];
+const MAIN_CLASSES: Record<string, string> = {
+  '.sc-comments__hint.sc-design__section':
+    'sc-muted sc-comments__hint sc-design__section gap-8 px-16 py-12 [:where(&)]:[border-bottom:1px_solid_var(--fig-line)] [border-bottom-color:color-mix(in_srgb,var(--line)_70%,transparent)] grid',
+};
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>
   page.evaluate(({ css, subjects, keepAll, mainClasses }) => {

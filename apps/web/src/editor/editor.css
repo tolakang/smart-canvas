@@ -1,5 +1,5 @@
-/* Editors: the transform box and comments (CSS cleanup 8). The screen, bar, stage and phone tabs (editor/shell.ts,
-   P28 T7a) and the panels (editor/panels.ts, T7b) are Tailwind classes. */
+/* Editors: the transform box (D36), placed by math, stays CSS. The screen, bar, stage and phone tabs
+   (editor/shell.ts, P28 T7a), the panels and the comments (editor/panels.ts, T7b, T7c) are Tailwind classes. */
 @layer app {
 /* The transform box's target, and its handles under the Hand tool (editor/shell.ts draws the stage). */
 .sc-editor__target.tb-target { cursor: move; touch-action: none; -webkit-touch-callout: none; user-select: none; }
@@ -34,40 +34,5 @@
 .tb-small-x [data-tb-handle='n'], .tb-small-x [data-tb-handle='s'], .tb-small-y [data-tb-handle='e'], .tb-small-y [data-tb-handle='w'] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .tb-handle::after { transition: none; }
-}
-
-/* Comments on a Preview (D63): pins on the canvas and the Comments panel in the Design panel's place. */
-.sc-pin { position: absolute; z-index: 5; display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; margin: -24px 0 0 0; border: 2px solid white; border-radius: 12px 12px 12px 2px; background: var(--accent); color: var(--on-accent); font: 600 11px/1 var(--font, inherit); box-shadow: var(--shadow-2); cursor: pointer; }
-.sc-pin--on { background: var(--fg); outline: 2px solid var(--accent); }
-.sc-pin--resolved { background: var(--muted); }
-.sc-pin--new { background: var(--warn); pointer-events: none; }
-.sc-pin--inline { position: static; margin: 0; min-width: 18px; height: 18px; border-width: 0; font-size: 10px; box-shadow: none; cursor: default; }
-@media (pointer: coarse) {
-  .sc-pin:not(.sc-pin--inline) { min-width: 32px; height: 32px; margin-top: -32px; border-radius: 16px 16px 16px 3px; }
-}
-.sc-comments { width: 300px; display: flex; flex-direction: column; }
-.sc-comments__head { justify-content: space-between; align-items: center; }
-.sc-comments__toggle { display: inline-flex; align-items: center; gap: 4px; font-weight: 400; font-size: 11px; color: var(--muted); }
-.sc-comments__hint { margin: 0; font-size: 11px; line-height: 1.5; }
-.sc-comments__list { margin: 0; padding: 0; list-style: none; flex: 1; overflow: auto; }
-.sc-comments__thread { padding: 10px 16px; border-bottom: 1px solid var(--fig-line); display: grid; gap: 6px; }
-.sc-comments__thread--on { background: var(--accent-soft); }
-.sc-comments__thread--resolved { opacity: 0.7; }
-.sc-comments__reply { margin-left: 14px; padding-left: 10px; border-left: 2px solid var(--fig-line); }
-.sc-comment { display: grid; gap: 4px; font-size: 12px; }
-.sc-comment__meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.sc-comment__text { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; cursor: pointer; }
-p.sc-comment__text { cursor: auto; }
-.sc-comment__resolved { margin: 0; font-size: 11px; }
-.sc-comment__actions, .sc-comments__compose-actions { display: flex; gap: 6px; justify-content: flex-end; }
-.sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 24px; padding: 0 8px; border: 1px solid var(--fig-line); border-radius: var(--r-sm); background: var(--fig-panel); font: inherit; font-size: 11px; color: inherit; cursor: pointer; }
-.sc-comments__reply-btn { justify-self: start; }
-.sc-comments__compose { display: grid; gap: 6px; }
-.sc-comments__compose textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 48px; padding: 6px 8px; border: 1px solid var(--fig-line); border-radius: var(--r-sm); background: var(--surface); color: inherit; font: inherit; font-size: 12px; }
-.sc-comments__compose textarea:focus { outline: none; border-color: var(--accent); }
-.sc-comments__compose-actions .sc-comments__primary { border-color: var(--accent); background: var(--accent); color: var(--on-accent); font-weight: 600; }
-.sc-comments__compose-actions .sc-comments__primary:disabled { opacity: 0.5; cursor: default; }
-@media (pointer: coarse) {
-  .sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 40px; padding: 0 12px; }
 }
 }

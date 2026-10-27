@@ -8,7 +8,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { useBoard } from '../board/context';
 import { mayOnComment, threadsOf, type ReviewComment, type Thread } from '../board/review';
-import { COMMENTS, COMMENTS_HEAD, SECTION } from './panels';
+import { COMMENT, COMMENT_ACTIONS, COMMENT_META, COMMENT_RESOLVED, COMMENT_TEXT_BUTTON, COMMENT_TEXT_PLAIN, COMMENTS, COMMENTS_HEAD, COMMENTS_HINT, COMMENTS_LIST, COMMENTS_TOGGLE, COMPOSE, COMPOSE_ACTIONS, PIN_INLINE, PIN_NEW, pinClass, REPLY, REPLY_BUTTON, SECTION, threadClass } from './panels';
 
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -31,7 +31,7 @@ export function CommentPins(props: {
           <button
             key={t.comment.id}
             type="button"
-            className={`sc-pin${t.comment.id === props.active ? ' sc-pin--on' : ''}${t.comment.resolvedAt ? ' sc-pin--resolved' : ''}`}
+            className={pinClass(t.comment.id === props.active, !!t.comment.resolvedAt)}
             style={at(t.comment.pinX ?? 0, t.comment.pinY ?? 0)}
             aria-label={`Comment ${t.n}`}
             onPointerDown={(e) => e.stopPropagation()}
@@ -44,7 +44,7 @@ export function CommentPins(props: {
           </button>
         ))}
       {props.pending && (
-        <span className="sc-pin sc-pin--new" style={at(props.pending.x, props.pending.y)} aria-hidden="true">
+        <span className={PIN_NEW} style={at(props.pending.x, props.pending.y)} aria-hidden="true">
           +
         </span>
       )}
@@ -85,7 +85,7 @@ export function CommentsPanel(props: {
       <section className={SECTION}>
         <div className={COMMENTS_HEAD}>
           Comments
-          <label className="sc-comments__toggle">
+          <label className={COMMENTS_TOGGLE}>
             <input type="checkbox" checked={props.showResolved} onChange={(e) => props.onShowResolved(e.target.checked)} /> Show resolved
           </label>
         </div>
@@ -100,7 +100,7 @@ export function CommentsPanel(props: {
             }}
           />
         ) : (
-          <p className="sc-muted sc-comments__hint">Click or tap the Preview to pin a comment there.</p>
+          <p className={`sc-muted ${COMMENTS_HINT}`}>Click or tap the Preview to pin a comment there.</p>
         )}
         {error && (
           <p className="sc-error" role="alert">
@@ -108,10 +108,10 @@ export function CommentsPanel(props: {
           </p>
         )}
       </section>
-      {threads.length === 0 && <p className={`sc-muted sc-comments__hint ${SECTION}`}>No comments yet.</p>}
-      <ol className="sc-comments__list">
+      {threads.length === 0 && <p className={`sc-muted ${COMMENTS_HINT} ${SECTION}`}>No comments yet.</p>}
+      <ol className={COMMENTS_LIST}>
         {threads.map((t) => (
-          <li key={t.comment.id} className={`sc-comments__thread${t.comment.id === props.active ? ' sc-comments__thread--on' : ''}${t.comment.resolvedAt ? ' sc-comments__thread--resolved' : ''}`}>
+          <li key={t.comment.id} className={threadClass(t.comment.id === props.active, !!t.comment.resolvedAt)}>
             <CommentView
               c={t.comment}
               n={t.comment.pinX !== null ? t.n : undefined}
@@ -121,7 +121,7 @@ export function CommentsPanel(props: {
               url={url}
             />
             {t.replies.map((r) => (
-              <div key={r.id} className="sc-comments__reply">
+              <div key={r.id} className={REPLY}>
                 <CommentView c={r} may={mayOnComment(r, { userId, role })} send={send} url={url} />
               </div>
             ))}
@@ -148,9 +148,9 @@ function CommentView(props: {
   const [editing, setEditing] = useState(false);
   const path = `${props.url}/${c.id}`;
   return (
-    <div className="sc-comment">
-      <div className="sc-comment__meta">
-        {props.n !== undefined && <span className="sc-pin sc-pin--inline">{props.n}</span>}
+    <div className={COMMENT}>
+      <div className={COMMENT_META}>
+        {props.n !== undefined && <span className={PIN_INLINE}>{props.n}</span>}
         <strong>{c.author ?? 'Someone'}</strong>
         <span className="sc-muted">{when(c.createdAt)}</span>
       </div>
@@ -165,15 +165,15 @@ function CommentView(props: {
           }}
         />
       ) : props.onSelect ? (
-        <button type="button" className="sc-comment__text" onClick={props.onSelect}>
+        <button type="button" className={COMMENT_TEXT_BUTTON} onClick={props.onSelect}>
           {c.text}
         </button>
       ) : (
-        <p className="sc-comment__text">{c.text}</p>
+        <p className={COMMENT_TEXT_PLAIN}>{c.text}</p>
       )}
-      {c.resolvedAt && <p className="sc-muted sc-comment__resolved">Resolved{c.resolvedBy ? ` by ${c.resolvedBy}` : ''}</p>}
+      {c.resolvedAt && <p className={`sc-muted ${COMMENT_RESOLVED}`}>Resolved{c.resolvedBy ? ` by ${c.resolvedBy}` : ''}</p>}
       {!editing && (may.edit || may.resolve || may.remove) && (
-        <div className="sc-comment__actions">
+        <div className={COMMENT_ACTIONS}>
           {may.resolve && (
             <button type="button" onClick={() => void props.send('PATCH', path, { resolved: !c.resolvedAt })}>
               {c.resolvedAt ? 'Reopen' : 'Resolve'}
@@ -199,7 +199,7 @@ function Reply({ onSubmit }: { onSubmit: (text: string) => Promise<boolean> }) {
   const [open, setOpen] = useState(false);
   if (!open)
     return (
-      <button type="button" className="sc-comments__reply-btn" onClick={() => setOpen(true)}>
+      <button type="button" className={REPLY_BUTTON} onClick={() => setOpen(true)}>
         Reply
       </button>
     );
@@ -230,7 +230,7 @@ function Compose(props: { label: string; placeholder?: string; initial?: string;
     setText('');
   }
   return (
-    <form className="sc-comments__compose" aria-label={props.label} onSubmit={(e) => void submit(e)}>
+    <form className={COMPOSE} aria-label={props.label} onSubmit={(e) => void submit(e)}>
       <textarea
         aria-label={props.label}
         placeholder={props.placeholder}
@@ -245,7 +245,7 @@ function Compose(props: { label: string; placeholder?: string; initial?: string;
           if (e.key === 'Escape') props.onCancel?.();
         }}
       />
-      <span className="sc-comments__compose-actions">
+      <span className={COMPOSE_ACTIONS}>
         {props.onCancel && (
           <button type="button" onClick={props.onCancel}>
             Cancel

@@ -146,7 +146,7 @@ what is named instead.
   - `.react-flow__edge`, `.react-flow__pane`
   - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything
 - Seed a board through the API with core functions (`addOutput`, …) and `page.request.put`, as `comments.e2e.test.ts` does, rather than many UI clicks.
-- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). The areas not converted yet keep their files (none left on the board; `editor/editor.css` in the editors), which the conversion empties one by one (`TAILWIND-PLAN.md`): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run the parity test (`css-parity-*.e2e.test.ts`, commands in `TAILWIND-PLAN.md`).
+- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). Every area is converted (`TAILWIND-PLAN.md`); `editor/editor.css` keeps only the editors' transform box (D36): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run the parity test (`css-parity-*.e2e.test.ts`, commands in `TAILWIND-PLAN.md`).
 
 ## 9. Checklist: a new node type
 

@@ -1,6 +1,6 @@
 /**
  * The editors' panels as Tailwind classes (P28 T7b): Layers (left), Design (right) with the text properties and a
- * Preview's override inspector, and the parts of the Comments panel it shares with Design. Every panel sits in the
+ * Preview's override inspector, the Comments panel and the comments' pins (T7c). Every panel sits in the
  * editor (`.sc-fig`, editor/shell.ts), and the text properties and the inspector always sit in the Design panel, so
  * each class is what the old rules gave an element there.
  *
@@ -87,3 +87,38 @@ export const INSPECTOR_NOTE = `${NOTE} px-12 py-4`;
 export const INSPECTOR_TABLE =
   'sc-inspector__table mx-12 my-4 w-[calc(100%-24px)] border-collapse text-[12px] [&_:is(td,th)]:px-4 [&_:is(td,th)]:py-2 [&_:is(td,th)]:[border-bottom:1px_solid_var(--line)] [&_th]:text-left [&_th]:font-[600] [&_th]:text-muted';
 export const INSPECTOR_ACTIONS = 'sc-inspector__actions px-12 py-4';
+
+/** D63: a comment's pin on the canvas (numbered; the open one dark, a resolved one grey), or the new one's "+". */
+const PIN =
+  'sc-pin absolute z-5 inline-grid h-24 min-w-24 cursor-pointer place-items-center rounded-[12px_12px_12px_2px] mx-0 mt-[-24px] mb-0 px-6 py-0 [color:var(--on-accent)] [border:2px_solid_white] [font:600_11px/1_var(--font,inherit)] [box-shadow:var(--shadow-2)] pointer-coarse:h-32 pointer-coarse:min-w-32 pointer-coarse:mt-[-32px] pointer-coarse:rounded-[16px_16px_16px_3px]';
+export const pinClass = (on: boolean, resolved: boolean) =>
+  `${PIN} ${on ? 'sc-pin--on [outline:2px_solid_var(--accent)]' : ''} ${resolved ? 'sc-pin--resolved [background:var(--muted)]' : on ? '[background:var(--fg)]' : '[background:var(--accent)]'}`;
+export const PIN_NEW = `${PIN} sc-pin--new pointer-events-none [background:var(--warn)]`;
+/** The pin's number in front of its comment. */
+export const PIN_INLINE =
+  'sc-pin sc-pin--inline static z-5 inline-grid h-18 min-w-18 cursor-default place-items-center rounded-[12px_12px_12px_2px] m-0 px-6 py-0 text-[10px] [color:var(--on-accent)] [background:var(--accent)] [:where(&)]:[border:2px_solid_white] [border-width:0] [:where(&)]:[font:600_11px/1_var(--font,inherit)] [box-shadow:none]';
+
+/** The Comments panel: "Show resolved", the hint, the threads, the box for a new comment. */
+export const COMMENTS_TOGGLE = 'sc-comments__toggle inline-flex items-center gap-4 text-[11px] font-[400] text-muted';
+export const COMMENTS_HINT = 'sc-comments__hint m-0 text-[11px] leading-[1.5]';
+export const COMMENTS_LIST = 'sc-comments__list m-0 flex-1 overflow-auto p-0 [list-style:none]';
+export const threadClass = (on: boolean, resolved: boolean) =>
+  `sc-comments__thread grid gap-6 px-16 py-10 [border-bottom:1px_solid_var(--fig-line)] ${on ? 'sc-comments__thread--on [background:var(--accent-soft)]' : ''} ${resolved ? 'sc-comments__thread--resolved opacity-70' : ''}`;
+export const REPLY = 'sc-comments__reply ml-14 pl-10 [border-left:2px_solid_var(--fig-line)]';
+export const COMMENT = 'sc-comment grid gap-4 text-[12px]';
+export const COMMENT_META = 'sc-comment__meta flex flex-wrap items-center gap-6';
+/** The comment's text: a button that opens its pin, or plain text for a reply. */
+const COMMENT_TEXT =
+  'sc-comment__text m-0 p-0 text-left whitespace-pre-wrap [overflow-wrap:anywhere] [color:inherit] [font:inherit] [background:none] [border:0]';
+export const COMMENT_TEXT_BUTTON = `${COMMENT_TEXT} cursor-pointer`;
+export const COMMENT_TEXT_PLAIN = `${COMMENT_TEXT} cursor-auto`;
+export const COMMENT_RESOLVED = 'sc-comment__resolved m-0 text-[11px]';
+/** Small buttons: Resolve / Edit / Delete, Cancel / Post, Reply; taller on touch. */
+const SMALL_BUTTONS =
+  '[&_button]:min-h-24 [&_button]:cursor-pointer [&_button]:rounded-sm [&_button]:px-8 [&_button]:py-0 [&_button]:text-[11px] [&_button]:[color:inherit] [:where(&)_button]:[font:inherit] [&_button]:[background:var(--fig-panel)] [&_button]:[border:1px_solid_var(--fig-line)] pointer-coarse:[&_button]:min-h-40 pointer-coarse:[&_button]:px-12';
+export const COMMENT_ACTIONS = `sc-comment__actions flex justify-end gap-6 ${SMALL_BUTTONS}`;
+export const COMPOSE_ACTIONS = String.raw`sc-comments__compose-actions flex justify-end gap-6 ${SMALL_BUTTONS} [&_.sc-comments\_\_primary]:font-[600] [&_.sc-comments\_\_primary]:text-on-accent [&_.sc-comments\_\_primary]:border-accent [&_.sc-comments\_\_primary]:[background:var(--accent)] [&_.sc-comments\_\_primary:disabled]:cursor-default [&_.sc-comments\_\_primary:disabled]:opacity-50`;
+export const REPLY_BUTTON =
+  'sc-comments__reply-btn min-h-24 cursor-pointer rounded-sm px-8 py-0 text-[11px] [justify-self:start] [color:inherit] [:where(&)]:[font:inherit] [background:var(--fig-panel)] [border:1px_solid_var(--fig-line)] pointer-coarse:min-h-40 pointer-coarse:px-12';
+export const COMPOSE =
+  'sc-comments__compose grid gap-6 [&_textarea]:box-border [&_textarea]:min-h-48 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-sm [&_textarea]:px-8 [&_textarea]:py-6 [&_textarea]:text-[12px] [&_textarea]:[color:inherit] [:where(&)_textarea]:[font:inherit] [&_textarea]:[background:var(--surface)] [&_textarea]:[border:1px_solid_var(--fig-line)] [&_textarea:focus]:border-accent [&_textarea:focus]:[outline:none]';
