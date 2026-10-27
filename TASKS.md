@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P26 are done; P27 (CSS cleanup) is in progress — see below. After it, BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P27 are done; P28 (Tailwind conversion) is in progress — see below. New UI is built with Tailwind (`docs/STYLING.md`). After it, BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -200,7 +200,7 @@ Legend: `[x]` done · `[ ]` to do
 - [x] React Flow project skill (`.claude/skills/react-flow`) — [#164](https://github.com/tolakang/smart-canvas/pull/164)
 
 ## P27 CSS cleanup (plain CSS, one place per style; nothing may look different)
-Safety net while it ran: a CSS parity test compared every covered screen with a frozen copy of the original CSS (retired in C12). Each area file is imported right after `styles.css` in `apps/web/src/main.tsx`; `pnpm lint` keeps each selector in one file. Tailwind: decide after this cleanup.
+Safety net while it ran: a CSS parity test compared every covered screen with a frozen copy of the original CSS (retired in C12). Each area file is imported right after `styles.css` in `apps/web/src/main.tsx`; `pnpm lint` keeps each selector in one file. Afterwards Tailwind was decided (P28, D65).
 - [x] C1 — Safety net: CSS parity test against a frozen copy of today's CSS — [#163](https://github.com/tolakang/smart-canvas/pull/163)
 - [x] C2 — Every hex colour is a token; `scripts/check-css.mjs` in `pnpm lint` — [#165](https://github.com/tolakang/smart-canvas/pull/165)
 - [x] C3 — Remove unused CSS (75 rules); the guard rejects unused `sc-` classes — [#166](https://github.com/tolakang/smart-canvas/pull/166)
@@ -215,12 +215,12 @@ Safety net while it ran: a CSS parity test compared every covered screen with a 
 - [x] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates — [#175](https://github.com/tolakang/smart-canvas/pull/175)
 - [x] C12 — Guard against the same selector in two files; retire the frozen reference copy — [#176](https://github.com/tolakang/smart-canvas/pull/176). `@layer` dropped: one layer per area flips about 95 rules that win across files on specificity
 
-## P28 Tailwind conversion (approved 2026-10-26, D65) — plan: `TAILWIND-PLAN.md`
+## P28 Tailwind conversion (approved 2026-10-26, D65) — plan: `TAILWIND-PLAN.md`, how to write classes: `docs/STYLING.md`
 Rule: nothing may look different; the CSS parity test comes back for the conversion and must match every screen.
 - [x] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry — [#180](https://github.com/tolakang/smart-canvas/pull/180)
 - [x] T2a — Dialogs → utilities; `ui/dialogs.css` removed — [#181](https://github.com/tolakang/smart-canvas/pull/181)
 - [x] T2b — Projects home, sign-in → utilities; `shell/home.css` removed — [#182](https://github.com/tolakang/smart-canvas/pull/182)
-- [ ] T3a — Top bar and menus → `board/topbar.ts` (this PR)
+- [x] T3a — Top bar and menus → `board/topbar.ts` — [#183](https://github.com/tolakang/smart-canvas/pull/183)
 - [ ] T3b — Floating side panels, inspector, project overview, canvas notices
 - [ ] T3c — Canvas toolbar, selection bar, tooltips, zoomed-out name tags, groups (React Flow's own pane, wires, minimap and handles stay in `board/chrome.css`)
 - [ ] T4 — Main Comps, Export Group, Presets, Preview Cards; `board/node.css`, `board/pipeline.css`

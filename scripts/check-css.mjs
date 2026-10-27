@@ -8,7 +8,9 @@
 //    minifier (lightningcss) drop the standard one, so Chrome and Firefox lose the blur.
 // 4. A selector is styled in one stylesheet only, so what an element looks like is decided in one place and moving a
 //    file in the import order can't change it.
-// 4. No hex colour in a Tailwind class either (`bg-[#fff]`): classes use the tokens (`bg-surface`, tailwind.css).
+// 5. No hex colour in a Tailwind class either (`bg-[#fff]`): classes use the tokens (`bg-surface`, tailwind.css).
+// 6. No new stylesheet: the UI is built with Tailwind utilities (D65, docs/STYLING.md). The list below only shrinks
+//    as areas are converted.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -31,6 +33,14 @@ const used = (c) => named.has(c) || prefixes.some((p) => c.startsWith(p));
 const lineAt = (text, i) => text.slice(0, i).split('\n').length;
 
 const problems = [];
+const STYLESHEETS = new Set([
+  'styles.css', 'tailwind.css', 'board/reactflow.css', 'board/chrome.css', // tokens, base; Tailwind; React Flow
+  'board/node.css', 'board/pipeline.css', 'board/assets.css', 'board/review.css', 'editor/editor.css', // not converted yet
+]);
+for (const file of cssFiles) {
+  const name = relative(web, file);
+  if (!STYLESHEETS.has(name)) problems.push(`${relative(root, file)}: a new stylesheet — style the markup with Tailwind utilities instead (docs/STYLING.md)`);
+}
 const owner = new Map(); // selector → the first file that styles it
 for (const file of cssFiles) {
   const css = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));

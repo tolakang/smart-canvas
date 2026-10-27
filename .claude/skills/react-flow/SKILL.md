@@ -69,7 +69,7 @@ Preview and export share `OutputRenderer` (CLAUDE.md).
 ## 6. React Flow UI (reactflow.dev/ui): what we use instead
 
 React Flow UI is a shadcn/ui registry: each component is copied into the app with the shadcn CLI and styled with
-**Tailwind CSS 4** and shadcn theming. This project now has Tailwind 4 (D65, `TAILWIND-PLAN.md`) but not shadcn, and
+**Tailwind CSS 4** and shadcn theming. This project is built with Tailwind 4 (D65, `docs/STYLING.md`) but has no shadcn, and
 its Tailwind theme holds only our tokens. So **don't run the shadcn CLI**: take the idea (or a component's markup) and
 style it with our utilities (`bg-surface`, `border-line`, `rounded-md`, `text-sm`…) and our `sc-` classes. The full
 catalogue (2026-10), mapped:
@@ -146,7 +146,7 @@ what is named instead.
   - `.react-flow__edge`, `.react-flow__pane`
   - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything
 - Seed a board through the API with core functions (`addOutput`, …) and `page.request.put`, as `comments.e2e.test.ts` does, rather than many UI clicks.
-- **CSS changes**: each board area has its own file (`board/node.css`, `chrome.css`, `assets.css`, `pipeline.css`, `review.css`), imported right after `styles.css` in `main.tsx`; `pnpm lint` keeps each selector in one file, every colour a token and no unused `sc-` class. Tailwind (D65, `TAILWIND-PLAN.md`) is replacing them area by area: React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run `css-parity.e2e.test.ts`.
+- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). The board areas not converted yet keep their files (`board/node.css`, `assets.css`, `pipeline.css`, `review.css`, the rest of `chrome.css`), which the conversion empties one by one (`TAILWIND-PLAN.md`): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run `css-parity.e2e.test.ts`.
 
 ## 9. Checklist: a new node type
 
