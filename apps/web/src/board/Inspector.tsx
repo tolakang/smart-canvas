@@ -48,6 +48,7 @@ import { confirmDelete, Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
 import { FAMILY_LABEL, useOpenLayout } from './MainNode';
 import { OutputSettings } from './OutputSettings';
+import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
 
 const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
 
@@ -60,9 +61,9 @@ export function Inspector({ selected, floating, onClose, onHide }: { selected: s
   const stack = assetStacks(doc).find((st) => stackNodeId(st.id) === selected);
   const pair = languagePairs(doc).find((p) => pairNodeId(p.id) === selected);
   return (
-    <aside className={`sc-inspector-panel${floating ? ` sc-floating sc-floating--${floating} sc-floating--end` : ''}`} aria-label="Inspector">
+    <aside className={panelClass(floating)} aria-label="Inspector">
       {floating && (
-        <div className="sc-floating__head">
+        <div className={PANEL_HEAD}>
           <span>Inspector</span>
           <button type="button" className="sc-icon-btn" onClick={onClose} aria-label="Close inspector" title="Close">
             <Icon name="close" />
@@ -88,8 +89,8 @@ export function Inspector({ selected, floating, onClose, onHide }: { selected: s
 
 function Section({ title, children, aside }: { title: ReactNode; children: ReactNode; aside?: ReactNode }) {
   return (
-    <section className="sc-inspector-panel__section">
-      <div className="sc-inspector-panel__title">
+    <section className={SECTION}>
+      <div className={SECTION_TITLE}>
         <span>{title}</span>
         {aside}
       </div>
@@ -118,8 +119,8 @@ function NameField({ label, value, onCommit }: { label: string; value: string; o
 
 function HealthSection({ health }: { health: Health }) {
   return (
-    <Section title="Layout health" aside={<span className={`sc-inspector-panel__level sc-health--${health.level}`}>{healthSummary(health)}</span>}>
-      {health.issues.length > 0 ? <HealthIssues health={health} className="sc-inspector-panel__issues" /> : null}
+    <Section title="Layout health" aside={<span className={`${LEVEL} sc-health--${health.level}`}>{healthSummary(health)}</span>}>
+      {health.issues.length > 0 ? <HealthIssues health={health} className={ISSUES} /> : null}
     </Section>
   );
 }
@@ -135,13 +136,13 @@ function OutputInspector({ output }: { output: OutputNode }) {
       </Section>
       {health && <HealthSection health={health} />}
       <Section title="Size and export">
-        <div className="sc-inspector-panel__form">
+        <div className={FORM}>
           <OutputSettings output={output} connected={connected} />
         </div>
       </Section>
       {output.overrides.length > 0 && (
         <Section title="Edited by hand">
-          <p className="sc-muted sc-inspector-panel__hint">
+          <p className={`sc-muted ${HINT}`}>
             {output.overrides.length} {output.overrides.length === 1 ? 'layer differs' : 'layers differ'} from the automatic layout on this Preview.
           </p>
           {!readOnly && (
@@ -171,13 +172,13 @@ function InputInspector({ source }: { source: InputSource }) {
         </label>
       </Section>
       <Section title="Content">
-        <div className="sc-inspector-panel__form" {...upload.dropProps}>
+        <div className={FORM} {...upload.dropProps}>
           <SourceEditor source={source} upload={upload} />
         </div>
       </Section>
       {source.behavesLike === 'background' && source.content.kind !== 'text' && (
         <Section title="Square, vertical and horizontal">
-          <p className="sc-muted sc-inspector-panel__hint">Each Preview uses the picture of its group (Square, Vertical or Horizontal). An empty slot uses the square picture.</p>
+          <p className={`sc-muted ${HINT}`}>Each Preview uses the picture of its group (Square, Vertical or Horizontal). An empty slot uses the square picture.</p>
           <BackgroundSlots source={source} />
         </Section>
       )}
@@ -203,7 +204,7 @@ function InputActions({ source }: { source: InputSource }) {
   }
   return (
     <Section title="Actions">
-      <div className="sc-inspector-panel__actions">
+      <div className={ACTIONS}>
         <button type="button" className="sc-btn" disabled={full} title={full ? `${LIMITS.maxSources} inputs max` : undefined} aria-label={`Duplicate ${source.label}`} onClick={() => run((d) => duplicateSource(d, source.id, newId()))}>
           <Icon name="plus" /> Duplicate
         </button>
@@ -214,7 +215,7 @@ function InputActions({ source }: { source: InputSource }) {
           <Icon name="trash" /> Delete
         </button>
       </div>
-      <p className="sc-muted sc-inspector-panel__hint">Or select nodes and press Delete.</p>
+      <p className={`sc-muted ${HINT}`}>Or select nodes and press Delete.</p>
     </Section>
   );
 }
@@ -238,7 +239,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
             </label>
           ))}
         </div>
-        <p className="sc-inspector-panel__hint">Every Preview draws the language in use. Each language keeps its own position and size.</p>
+        <p className={HINT}>Every Preview draws the language in use. Each language keeps its own position and size.</p>
         {!readOnly && (
           <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and edits on Previews go with them.`) && run((d) => deletePair(d, pair.id))}>
             <Icon name="trash" /> Delete node
@@ -262,7 +263,7 @@ function AssetsInspector({ stackId }: { stackId: string }) {
     <>
       <Section title={`${STACK_LABEL[kind]} node`}>
         <NameField label={`${STACK_LABEL[kind]} node name`} value={stack.label} onCommit={(label) => run((d) => renameStack(d, stack.id, label))} />
-        <p className="sc-inspector-panel__hint">
+        <p className={HINT}>
           {items.length} {kind === 'text' ? (items.length === 1 ? 'text slot' : 'text slots') : items.length === 1 ? 'picture' : 'pictures'}, each its own layer.{kind === 'text' ? ' Add slots on the node.' : ' Drop more files on the node.'}
         </p>
         {items.length > 0 && (
@@ -300,17 +301,17 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
   return (
     <>
       <Section title="Layer Comp">
-        <p className="sc-inspector-panel__hint">
+        <p className={HINT}>
           {wired.size} of {comp.layers.length} layers wired · {outputs} {outputs === 1 ? 'size follows' : 'sizes follow'} it
         </p>
-        <div className="sc-inspector-panel__actions" role="group" aria-label="Layouts">
+        <div className={ACTIONS} role="group" aria-label="Layouts">
           {GUIDE_FAMILIES.map((f) => (
             <button key={f} type="button" className="sc-btn" onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
               {FAMILY_LABEL[f]}
             </button>
           ))}
         </div>
-        <p className="sc-muted sc-inspector-panel__hint">Each size uses the layout closest to its shape; change that in the Core preset.</p>
+        <p className={`sc-muted ${HINT}`}>Each size uses the layout closest to its shape; change that in the Core preset.</p>
       </Section>
       <HealthSection health={health} />
       <Section title="Square layout size">
@@ -340,9 +341,9 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
   ];
   return (
     <>
-      <section className="sc-inspector-panel__section sc-overview">
-        <div className="sc-inspector-panel__title">
-          <span className="sc-overview__name" title={doc.name}>
+      <section className={`${SECTION} sc-overview`}>
+        <div className={SECTION_TITLE}>
+          <span className={OVERVIEW_NAME} title={doc.name}>
             {doc.name}
           </span>
           {onHide && (
@@ -351,12 +352,12 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
             </button>
           )}
         </div>
-        <p className="sc-muted sc-inspector-panel__hint">Nothing selected. Click a panel on the board to see its settings here.</p>
-        <dl className="sc-overview__stats">
+        <p className={`sc-muted ${HINT}`}>Nothing selected. Click a panel on the board to see its settings here.</p>
+        <dl className={STATS}>
           {stats.map((s) => (
-            <div key={s.label}>
-              <dt>{s.label}</dt>
-              <dd>{s.value}</dd>
+            <div key={s.label} className={STAT}>
+              <dt className={STAT_LABEL}>{s.label}</dt>
+              <dd className={STAT_VALUE}>{s.value}</dd>
             </div>
           ))}
         </dl>
@@ -367,17 +368,17 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
         )}
       </section>
       {!readOnly && (
-        <section className="sc-inspector-panel__section">
-          <div className="sc-inspector-panel__title">Add to the board</div>
-          <ul className="sc-overview__tips">
+        <section className={SECTION}>
+          <div className={SECTION_TITLE}>Add to the board</div>
+          <ul className={TIPS}>
             <li>
-              <strong>+ Add</strong> in the top bar, or right-click the canvas: asset nodes and Preset nodes.
+              <strong className={TIP_KEY}>+ Add</strong> in the top bar, or right-click the canvas: asset nodes and Preset nodes.
             </li>
             <li>
-              <strong>Drag a wire</strong> out of the Layer Comp group: a Preset node of sizes.
+              <strong className={TIP_KEY}>Drag a wire</strong> out of the Layer Comp group: a Preset node of sizes.
             </li>
             <li>
-              <strong>Drop pictures</strong> on the canvas: an Image node with them.
+              <strong className={TIP_KEY}>Drop pictures</strong> on the canvas: an Image node with them.
             </li>
           </ul>
         </section>

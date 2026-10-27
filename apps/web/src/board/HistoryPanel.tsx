@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Icon } from './LayerRow';
+import { PANEL_HEAD, panelClass, SECTION } from './panel';
 
 export type VersionKind = 'auto' | 'before-delete' | 'before-restore' | 'named';
 export interface Version {
@@ -99,15 +100,15 @@ export function HistoryPanel(props: {
   }
   const { floating } = props;
   return (
-    <aside className={`sc-inspector-panel sc-history${floating ? ` sc-floating sc-floating--${floating} sc-floating--end` : ''}`} aria-label="History">
-      <div className="sc-floating__head">
+    <aside className={panelClass(floating, 'sc-history')} aria-label="History">
+      <div className={PANEL_HEAD}>
         <span>History</span>
         <button type="button" className="sc-icon-btn" onClick={props.onClose} aria-label="Close history" title="Close">
           <Icon name="close" />
         </button>
       </div>
       {!props.readOnly && !props.previewing && (
-        <form className="sc-inspector-panel__section sc-history__name" onSubmit={(e) => void name(e)}>
+        <form className={`${SECTION} sc-history__name`} onSubmit={(e) => void name(e)}>
           <input aria-label="Version name" placeholder="Name this version, e.g. Sent to client" maxLength={100} value={naming} onChange={(e) => setNaming(e.target.value)} />
           <button type="submit" className="sc-btn" disabled={!naming.trim()}>
             Save version
