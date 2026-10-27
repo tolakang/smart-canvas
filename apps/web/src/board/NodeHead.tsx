@@ -24,6 +24,8 @@ export function NodeHead(props: {
   menuLabel?: string;
   /** Marks or badges at the right, before the menu (hidden, from library, health…). */
   extra?: ReactNode;
+  /** The card kind's header colour, as a class setting `--head` (e.g. `[--head:var(--head-preview)]`). */
+  tone?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(props.title);
@@ -33,7 +35,7 @@ export function NodeHead(props: {
     if (draft.trim() && draft.trim() !== (props.renameValue ?? props.title)) props.onRename?.(draft.trim());
   };
   return (
-    <div className="sc-node__head sc-head">
+    <div className={`sc-node__head sc-head${props.tone ? ` ${props.tone}` : ''}`}>
       <span className="sc-head__icon" aria-hidden="true">
         <Icon name={props.icon} size={15} />
       </span>

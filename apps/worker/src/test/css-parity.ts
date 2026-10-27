@@ -80,8 +80,14 @@ const snapshot = (page: Page, key: string) =>
  * (through board/reactflow.css) included; the bundled fonts are not ours. The elements this branch converted lose
  * their utility classes (the ones the app's Tailwind sheet defines) while the reference is drawn, as they were at main.
  */
+/**
+ * Elements an earlier step converted that a rule removed now also styled (T4a: the inspector's health pill took its tone
+ * from pipeline.css). Their utilities were already on main, so they keep them while main's CSS is drawn.
+ */
+const CONVERTED_BEFORE = ['.sc-inspector-panel__level'];
+
 const swapIn = (page: Page, css: string, subjects: string[]) =>
-  page.evaluate(({ css, subjects }) => {
+  page.evaluate(({ css, subjects, before }) => {
     const ours = [...document.querySelectorAll<HTMLStyleElement>('style[data-vite-dev-id]')].filter((s) => {
       const id = s.dataset.viteDevId ?? '';
       return id.includes('/apps/web/src/') && !id.includes('/apps/web/src/fonts/');
@@ -105,7 +111,7 @@ const swapIn = (page: Page, css: string, subjects: string[]) =>
         }
       })();
       for (const el of els) {
-        if (stripped.some(([e]) => e === el)) continue;
+        if (stripped.some(([e]) => e === el) || before.some((b) => el.matches(b))) continue;
         const keep = [...el.classList].filter((c) => !isUtility(c));
         if (keep.length === el.classList.length) continue;
         stripped.push([el, el.getAttribute('class') ?? '']);
@@ -119,7 +125,7 @@ const swapIn = (page: Page, css: string, subjects: string[]) =>
     ours[0]?.before(ref);
     for (const s of ours) s.remove();
     (window as unknown as Record<string, HTMLStyleElement[]>).__scOurs = ours;
-  }, { css, subjects });
+  }, { css, subjects, before: CONVERTED_BEFORE });
 
 const swapBack = (page: Page) =>
   page.evaluate(() => {

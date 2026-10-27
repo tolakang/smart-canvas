@@ -10,6 +10,9 @@ import { presetSettings, unitSettings, withAutoLabel } from './OutputNode';
 const NO_CANVAS = 'nodrag nopan nowheel';
 const SCALES = [1, 2, 3, 4] as const;
 
+/** A row of an output's settings: two fields and a small control (unit, a note) at the end. */
+export const OUTPUT_ROW = 'sc-output__row grid grid-cols-[1fr_1fr_auto] [align-items:end] gap-(--sp-2) [&_.sc-field_input[type=number]]:w-full';
+
 export function OutputSettings({ output, connected }: { output: OutputNode; connected: boolean }) {
   const { readOnly, run, presets, disconnectOutput, reconnectOutput } = useBoard();
   const set = (patch: Settings) => run((d) => updateOutput(d, output.id, withAutoLabel(output, presets, patch)));
@@ -20,7 +23,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
   const step = mm ? 0.1 : 1;
   return (
     <>
-      <fieldset className={`sc-output__settings ${NO_CANVAS}`} disabled={readOnly}>
+      <fieldset className={`sc-output__settings m-0 grid gap-(--sp-2) p-0 text-xs text-muted [border:0] ${NO_CANVAS}`} disabled={readOnly}>
         {presets.length > 0 && (
           <label className="sc-field sc-field--col">
             Preset
@@ -46,7 +49,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
             </select>
           </label>
         )}
-        <div className="sc-output__row">
+        <div className={OUTPUT_ROW}>
           <NumberField
             label="Width"
             value={output.size.width}
@@ -73,7 +76,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
             ))}
           </div>
         </div>
-        <div className="sc-output__row">
+        <div className={OUTPUT_ROW}>
           {mm ? (
             <NumberField
               label="DPI"

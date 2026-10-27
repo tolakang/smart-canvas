@@ -12,7 +12,7 @@ of the older CSS is tracked in `../TAILWIND-PLAN.md`.
 | Tailwind's theme: which tokens are classes, breakpoints, `dark:` and `hover:` | `apps/web/src/tailwind.css` (imported first in `main.tsx`) |
 | Shared class lists | `ui/tw.ts` (dialogs), `ui/Brand.tsx` (brand), `board/topbar.ts` (top bar, menus), `board/panel.ts` (side panels, inspector), `board/frame.ts` (board frame, notices), `shell/Projects.tsx` (tiles) |
 | CSS that stays CSS | `styles.css` (tokens, base, keyframes, shared `sc-` components not converted yet), `board/chrome.css` (React Flow's pane, wires, minimap, handles), `board/reactflow.css` (React Flow's own sheet, lowest layer), fonts |
-| Areas not converted yet | `board/node.css`, `board/pipeline.css`, `board/assets.css`, `board/review.css`, `editor/editor.css` (`TAILWIND-PLAN.md`) |
+| Areas not converted yet | `board/node.css`, `board/assets.css`, `board/review.css`, `editor/editor.css` (`TAILWIND-PLAN.md`) |
 
 ## Writing classes
 

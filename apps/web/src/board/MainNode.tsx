@@ -36,6 +36,23 @@ const OUTPUT_DRAG = 'application/x-sc-output-layout';
 export const FAMILY_LABEL: Record<GuideFamily, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
 
 /** Opens one of the master's layout editors; a missing layout is added first (then opened). */
+/** The Layer Comp + Core preset group (D49, D50): one soft frame around both cards. */
+const GROUP =
+  "sc-comp-group relative flex items-start gap-20 rounded-[26px] px-22 pt-26 pb-22 [border:1px_solid_color-mix(in_srgb,var(--head-master)_22%,transparent)] [background:linear-gradient(180deg,color-mix(in_srgb,var(--head-master)_7%,transparent),color-mix(in_srgb,var(--head-preview)_5%,transparent))] [box-shadow:inset_0_0_0_1px_rgb(255_255_255/0.4)]";
+const LABEL = 'sc-comp__label mt-2 text-[11.5px] font-[650] tracking-[0.02em] text-muted';
+/** A layer-order row: drag it, or use its ↑ ↓ buttons (shown on hover or focus; always on touch). */
+const ROW =
+  'group/row flex min-h-40 cursor-grab items-center gap-10 rounded-[12px] bg-surface-2 py-6 pr-8 pl-10 text-[13px] font-[550] [border:0] [transition:background_var(--t-fast),box-shadow_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--surface-3)_80%,var(--surface-2))]';
+const MOVE = 'size-26 rounded-[8px] text-[11px]';
+/** How many layers a row holds, or Previews a section has. */
+const COUNT = 'min-w-22 rounded-[99px] bg-surface px-7 py-1 text-center text-[11px] font-[650] text-muted';
+/** A layout's section in the Core preset: drop a Preview chip here to choose it by hand. */
+const SECTION = 'grid gap-8 rounded-[14px] border p-12 [transition:border-color_var(--t-fast),background_var(--t-fast)]';
+const CHIP =
+  'inline-flex max-w-full cursor-grab items-center gap-4 rounded-[99px] border bg-surface px-10 py-5 text-[12px] font-[550] [box-shadow:0_1px_1px_rgb(16_24_40/0.04)]';
+const CHIP_RESET =
+  'sc-rule__chip-reset mr-[-4px] grid size-18 cursor-pointer place-items-center rounded-[50%] bg-transparent p-0 [color:inherit] [border:0] hover:bg-accent-soft';
+
 export function useOpenLayout(compositionId: string) {
   const { readOnly, run, openMainEditor, doc } = useBoard();
   return (family: GuideFamily) => {
@@ -66,17 +83,17 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
   const dropGroup = (group: LayerGroup, to: number) => run((d) => ({ ok: true, doc: moveLayerGroup(d, group, to) }));
 
   return (
-    <div className="sc-comp-group" aria-label="Layer comp and core preset">
+    <div className={GROUP} aria-label="Layer comp and core preset">
       <Handle type="target" position={Position.Top} id={LAYERS_HANDLE} isConnectable={!readOnly} className="sc-handle--layer" title="Asset nodes wire in here" />
-      <section className="sc-node sc-node--main" aria-label="Layer comp">
-        <NodeHead icon="arrange" title="Layer Comp" sub={`${layerCount} ${layerCount === 1 ? 'layer' : 'layers'} · front to back`} extra={<HealthBadge health={health} />} />
-        <div className="sc-comp__label">Layer order</div>
-        <ol className={`sc-comp__groups ${NO_DRAG}`} aria-label="Layer order (front first)">
+      <section className="sc-node sc-node--main w-280 min-w-260 min-h-120 gap-14 rounded-[20px] p-16 before:bg-type-main" aria-label="Layer comp">
+        <NodeHead icon="arrange" tone="[--head:var(--head-master)]" title="Layer Comp" sub={`${layerCount} ${layerCount === 1 ? 'layer' : 'layers'} · front to back`} extra={<HealthBadge health={health} />} />
+        <div className={LABEL}>Layer order</div>
+        <ol className={`sc-comp__groups m-0 grid list-none gap-6 p-0 ${NO_DRAG}`} aria-label="Layer order (front first)">
           {groups.map((g, i) => (
             <li
               key={g.group}
               data-group={g.group}
-              className={`sc-comp__group${dropAt === i ? ' sc-comp__group--drop' : ''}`}
+              className={`sc-comp__group ${ROW}${dropAt === i ? ' sc-comp__group--drop [box-shadow:inset_0_0_0_2px_var(--accent)]' : ''}`}
               draggable={!readOnly}
               onDragStart={(e) => e.dataTransfer.setData(GROUP_DRAG, g.group)}
               onDragOver={(e) => {
@@ -98,16 +115,16 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
                   <Icon name="grip" />
                 </span>
               )}
-              <span className="sc-comp__group-name">{LAYER_GROUP_LABEL[g.group]}</span>
-              <span className="sc-muted sc-comp__count" title={g.layers.map((l) => l.label).join(', ')}>
+              <span className="sc-comp__group-name flex-1">{LAYER_GROUP_LABEL[g.group]}</span>
+              <span className={`sc-muted sc-comp__count ${COUNT}`} title={g.layers.map((l) => l.label).join(', ')}>
                 {g.layers.length}
               </span>
               {!readOnly && (
-                <span className="sc-comp__moves">
-                  <button type="button" className="sc-icon-btn" aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} up`} disabled={i === 0} onClick={() => dropGroup(g.group, i - 1)}>
+                <span className="sc-comp__moves hidden gap-2 group-focus-within/row:inline-flex group-hover/row:inline-flex pointer-coarse:inline-flex">
+                  <button type="button" className={`sc-icon-btn ${MOVE}`} aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} up`} disabled={i === 0} onClick={() => dropGroup(g.group, i - 1)}>
                     <Icon name="up" size={14} />
                   </button>
-                  <button type="button" className="sc-icon-btn" aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} down`} disabled={i === groups.length - 1} onClick={() => dropGroup(g.group, i + 1)}>
+                  <button type="button" className={`sc-icon-btn ${MOVE}`} aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} down`} disabled={i === groups.length - 1} onClick={() => dropGroup(g.group, i + 1)}>
                     <Icon name="down" size={14} />
                   </button>
                 </span>
@@ -115,27 +132,27 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
             </li>
           ))}
         </ol>
-        <div className="sc-comp__label">Layouts</div>
-        <div className={`sc-comp__layouts ${NO_DRAG}`} role="group" aria-label="Layouts">
+        <div className={LABEL}>Layouts</div>
+        <div className={`sc-comp__layouts grid grid-cols-[repeat(3,1fr)] gap-8 ${NO_DRAG}`} role="group" aria-label="Layouts">
           {GUIDE_FAMILIES.map((f) => (
-            <button key={f} type="button" className="sc-btn" onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
+            <button key={f} type="button" className="sc-btn h-36 justify-center rounded-[11px] font-[600]" onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
               {FAMILY_LABEL[f]}
             </button>
           ))}
         </div>
       </section>
 
-      <section className="sc-node sc-node--rule" aria-label="Core preset">
-        <NodeHead icon="grid" title="Core preset" sub={`${previewCount} ${previewCount === 1 ? 'Preview' : 'Previews'} · sorted by shape`} />
+      <section className="sc-node sc-node--rule w-280 gap-14 rounded-[20px] p-16" aria-label="Core preset">
+        <NodeHead icon="grid" tone="[--head:var(--head-rule)]" title="Core preset" sub={`${previewCount} ${previewCount === 1 ? 'Preview' : 'Previews'} · sorted by shape`} />
         {/* D50: each Preview in its layout's section (closest shape, or as chosen); drag one into another section. */}
-        <div className={`sc-rule__sections ${NO_DRAG}`} role="list" aria-label="Core preset">
+        <div className={`sc-rule__sections grid gap-10 ${NO_DRAG}`} role="list" aria-label="Core preset">
           {guides.map((g) => (
             <section
               key={g.family}
               role="listitem"
               data-family={g.family}
               aria-label={`${FAMILY_LABEL[g.family]} layout`}
-              className={`sc-rule__section-drop${overFamily === g.family ? ' sc-rule__section-drop--over' : ''}`}
+              className={`sc-rule__section-drop ${SECTION} ${overFamily === g.family ? 'sc-rule__section-drop--over border-accent bg-[color-mix(in_srgb,var(--accent-soft)_70%,transparent)]' : 'border-transparent bg-surface-2'}`}
               onDragOver={(e) => {
                 if (readOnly || !e.dataTransfer.types.includes(OUTPUT_DRAG)) return;
                 e.preventDefault();
@@ -150,22 +167,22 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
                 run((d) => setOutputLayout(d, id, g.family, newId()));
               }}
             >
-              <h4 className="sc-rule__section-title">
+              <h4 className="sc-rule__section-title m-0 flex items-center justify-between text-[12.5px] font-[650] text-fg">
                 {FAMILY_LABEL[g.family]}
-                <span className="sc-rule__section-count">{g.outputs.length}</span>
+                <span className={`sc-rule__section-count ${COUNT}`}>{g.outputs.length}</span>
               </h4>
-              <ul className="sc-rule__chips">
+              <ul className="sc-rule__chips m-0 flex list-none flex-wrap gap-6 p-0 text-[11px]">
                 {g.outputs.map((o) => (
-                  <li key={o.id} className={`sc-chip sc-rule__chip${o.chosen ? ' sc-rule__chip--chosen' : ''}`} draggable={!readOnly} onDragStart={(e) => e.dataTransfer.setData(OUTPUT_DRAG, o.id)} data-output={o.id} title={o.chosen ? 'Chosen by hand' : 'Closest to its shape'}>
+                  <li key={o.id} className={`sc-chip sc-rule__chip ${CHIP} ${o.chosen ? 'sc-rule__chip--chosen border-[color-mix(in_srgb,var(--accent)_45%,var(--line))] text-accent [outline:1px_solid_var(--accent)]' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)]'}`} draggable={!readOnly} onDragStart={(e) => e.dataTransfer.setData(OUTPUT_DRAG, o.id)} data-output={o.id} title={o.chosen ? 'Chosen by hand' : 'Closest to its shape'}>
                     {o.label}
                     {o.chosen && !readOnly && (
-                      <button type="button" className="sc-rule__chip-reset" aria-label={`${o.label}: back to the closest layout`} title="Back to the closest layout" onClick={() => run((d) => setOutputLayout(d, o.id, null, newId()))}>
+                      <button type="button" className={CHIP_RESET} aria-label={`${o.label}: back to the closest layout`} title="Back to the closest layout" onClick={() => run((d) => setOutputLayout(d, o.id, null, newId()))}>
                         <Icon name="close" size={12} />
                       </button>
                     )}
                   </li>
                 ))}
-                {g.outputs.length === 0 && <li className="sc-rule__empty">Drop a Preview here</li>}
+                {g.outputs.length === 0 && <li className="sc-rule__empty text-[12px] text-muted">Drop a Preview here</li>}
               </ul>
             </section>
           ))}
