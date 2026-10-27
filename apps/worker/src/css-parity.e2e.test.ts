@@ -305,6 +305,29 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await gdn.getByRole('button', { name: 'Cancel' }).click();
   }, limit(120_000));
 
+  it('node cards: the ⋯ button and its menu, a header action, renaming, a field hovered and focused', async () => {
+    const text = node('Text');
+    await text.locator('.sc-head__more').hover();
+    await same('node-more-hover');
+    await text.locator('.sc-head__more').click();
+    await page.getByRole('menu').waitFor();
+    await same('node-menu');
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Edit Preview Banner' }).hover();
+    await same('node-action-hover');
+    const preset = page.locator('.react-flow__node-presetNode').first();
+    await preset.locator('.sc-node__title').dblclick();
+    await preset.getByRole('textbox', { name: 'Preset name' }).waitFor();
+    await same('node-rename');
+    await page.keyboard.press('Escape');
+    await page.mouse.move(5, 500);
+    await text.getByRole('textbox').first().hover();
+    await same('node-field-hover');
+    await text.getByRole('textbox').first().focus();
+    await same('node-field-focus');
+    await page.mouse.click(5, 500);
+  }, limit(60_000));
+
   it('dialogs: Export', async () => {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     await page.getByRole('dialog', { name: 'Export' }).waitFor();
