@@ -9,7 +9,7 @@
 // 4. A selector is styled in one stylesheet only, so what an element looks like is decided in one place and moving a
 //    file in the import order can't change it.
 // 5. No hex colour in a Tailwind class either (`bg-[#fff]`): classes use the tokens (`bg-surface`, tailwind.css).
-// 6. No new stylesheet: the UI is built with Tailwind utilities (D65, docs/STYLING.md). The list below only shrinks
+// 6. No new stylesheet: the UI is built with Tailwind utilities (D65, docs/FRONTEND.md). The list below only shrinks
 //    as areas are converted.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -39,7 +39,7 @@ const STYLESHEETS = new Set([
 ]);
 for (const file of cssFiles) {
   const name = relative(web, file);
-  if (!STYLESHEETS.has(name)) problems.push(`${relative(root, file)}: a new stylesheet — style the markup with Tailwind utilities instead (docs/STYLING.md)`);
+  if (!STYLESHEETS.has(name)) problems.push(`${relative(root, file)}: a new stylesheet — style the markup with Tailwind utilities instead (docs/FRONTEND.md)`);
 }
 const owner = new Map(); // selector → the first file that styles it
 for (const file of cssFiles) {

@@ -1,6 +1,6 @@
 # Handover — 2026-10-26 (P28 Tailwind conversion under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D65**), `docs/BACKLOG.md` (P15–P24 and **Next**) and `TASKS.md`. For any UI work, `docs/STYLING.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"). The conversion of the older CSS goes on area by area (`TAILWIND-PLAN.md`); the next step is the first unticked T row in `TASKS.md` P28.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D65**), `docs/BACKLOG.md` (P15–P24 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -128,7 +128,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Projects screen (T16.2) | `apps/web/src/shell/Projects.tsx` (template cards, search / sort `shownProjects`, ⋯ menus via `board/ContextMenu.tsx` with ↑ ↓ keys, `NewProjectDialog`), `ui/AskDialog.tsx` (the app's own name / confirm dialog, instead of prompt / confirm); rename: `PATCH /teams/:teamId/projects/:projectId` (name + doc.name, new rev) |
 | API schema | `apps/api/src/routes/project-doc.schema.ts` (v3, plus v2 / v1 from clients that haven't reloaded, picked by `schema`; every new doc field must be added: `additionalProperties: false`) |
 | Export | `packages/core/src/exports.ts` (`exportRoute`, `zipOnServer`), `apps/web/src/board/ExportDialog.tsx`, API `routes/exports.ts` (jobs, file, streamed ZIP) |
-| Styling (D65) | Tokens: `apps/web/src/styles.css`; Tailwind theme: `tailwind.css`; shared class lists: `ui/tw.ts`, `ui/Brand.tsx`, `board/topbar.ts`, `board/panel.ts`, `board/frame.ts`, `board/card.ts`, `editor/shell.ts`, `editor/panels.ts`; CSS left as CSS: tokens and base (`styles.css`), React Flow's DOM (`board/chrome.css`, `board/reactflow.css`), the transform box (`editor/editor.css`); guard: `scripts/check-css.mjs`; rules: `docs/STYLING.md` |
+| Styling (D65) | Tokens: `apps/web/src/styles.css`; Tailwind theme: `tailwind.css`; shared class lists: `ui/tw.ts`, `ui/Brand.tsx`, `board/topbar.ts`, `board/panel.ts`, `board/frame.ts`, `board/card.ts`, `editor/shell.ts`, `editor/panels.ts`; CSS left as CSS: tokens and base (`styles.css`), React Flow's DOM (`board/chrome.css`, `board/reactflow.css`), the transform box (`editor/editor.css`); guard: `scripts/check-css.mjs`; rules: `docs/FRONTEND.md` |
 | e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` (the Layer Comp's buttons; the inspector has the same ones) |
 
 ## Testing tips (learned the hard way)

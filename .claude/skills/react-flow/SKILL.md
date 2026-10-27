@@ -8,6 +8,8 @@ description: How this project's flow board is built on @xyflow/react v12, and ho
 The board (D49: asset nodes → Layer Comp + Core preset → Preset nodes → Previews) is React Flow v12 (`@xyflow/react`
 ^12.12, `apps/web/package.json`). Read this before touching `apps/web/src/board/`. Locked decisions in
 `docs/DECISIONS.md` win over anything here; the ones that matter most are named inline (D32, D36, D49, D57, D58, D64).
+This skill is the board's rules; how to style anything (Tailwind on our tokens, what stays CSS, the checks) is in
+`docs/FRONTEND.md`.
 
 ## 1. The shape of the board
 
@@ -41,7 +43,7 @@ Preset rows. Always use the helpers (`stackNodeId`, `outputIdOfNode`, `docIdOfNo
 1. **Register a type once**, in `nodeTypes` (nodes.tsx). Never create `nodeTypes` / `edgeTypes` inside a component: a new object every render makes React Flow re-mount every node. Never name a type `input`, `output` or `default`: those are React Flow built-ins with their own CSS.
 2. **Type the node** in flow.ts: `Node<{ … }, 'myNode'>`, add it to `BoardNode`, and build it in `docToNodes`. Components take `NodeProps<MyFlowNode>`.
 3. **Inside a node, interactive elements carry `NO_CANVAS = 'nodrag nopan nowheel'`.** That covers buttons, inputs, slots, scroll areas and menus, so a click or a scroll doesn't drag the node or pan the board. Grips that should still allow a touch pan use `TOUCH_NO_PAN` (pinch.ts); `noPanClassName` switches between the two on coarse pointers (D58).
-4. **Handles are typed ports (D32).** Whether a wire may connect is decided by core (`connectionRefusal(doc, connection)`), through `isValidConnection`; the drop handler explains a refusal. Don't add connection rules in components or in CSS.
+4. **Handles are typed ports (D32).** Whether a wire may connect is decided by `connectionRefusal(doc, connection)` (`flow.ts`), through `isValidConnection`; the drop handler explains a refusal. Don't add connection rules in components or in CSS.
 5. **Changing a node's handles** (adding or removing a row, moving a port) means calling `useUpdateNodeInternals()(nodeId)` afterwards, as `PresetNode.tsx` does, or the wires attach to stale positions.
 6. **Header and look:** every card uses `NodeHead` (icon tile, name, quiet line, ⋯ menu; V1/D64) and `cardClass(kind)` (`board/card.ts`). Selected and hover states come from React Flow's `.selected` / `:hover` on its node through variants there, so don't pass `selected` down to style things.
 7. **Read-only (viewer):** nodes read `readOnly` from `useBoard()` and hide every edit control. React Flow's `nodesConnectable`, `nodesDraggable` and `edgesReconnectable` are already off on the board.
@@ -69,10 +71,9 @@ Preview and export share `OutputRenderer` (CLAUDE.md).
 ## 6. React Flow UI (reactflow.dev/ui): what we use instead
 
 React Flow UI is a shadcn/ui registry: each component is copied into the app with the shadcn CLI and styled with
-**Tailwind CSS 4** and shadcn theming. This project is built with Tailwind 4 (D65, `docs/STYLING.md`) but has no shadcn, and
-its Tailwind theme holds only our tokens. So **don't run the shadcn CLI**: take the idea (or a component's markup) and
-style it with our utilities (`bg-surface`, `border-line`, `rounded-md`, `text-sm`…) and our `sc-` classes. The full
-catalogue (2026-10), mapped:
+**Tailwind CSS 4** and shadcn theming. We have no shadcn, so **don't run the shadcn CLI**: take the idea (or a
+component's markup) and rewrite every class on our tokens (`docs/FRONTEND.md`: 1px spacing, no default palette, no
+`cn()`). The full catalogue (2026-10), mapped:
 
 | Component (`/ui/components/…`) | What it is | On this board |
 |---|---|---|
@@ -92,12 +93,6 @@ catalogue (2026-10), mapped:
 | Zoom Slider (`zoom-slider`), Zoom Select (`zoom-select`) | Zoom controls | `CanvasToolbar` (−, %, +, fit) |
 | Node Search (`node-search`) | Find a node by name and fit the view to it | Not built yet. If asked: search `panelTitle(doc, id)` (ZoomLabels) and call `fitView({ nodes: [{ id }] })` |
 | DevTools (`devtools`) | Viewport data, each node's state, a log of change events | Debug only, never shipped. Logging `onNodesChange` locally does the same job |
-
-**Borrowing a React Flow UI component's markup:** rewrite every class. Our Tailwind theme is our tokens only: one
-spacing step is 1px (`p-4` is 4px, not 16px), Tailwind's default palette, sizes and fonts don't exist (`bg-white`,
-`shadow-sm`, `text-base` mean something else or nothing), shadcn's theme names (`bg-background`, `text-primary`) and
-its `cn()` / `tailwind-merge` aren't there. Use our colour tokens (`bg-surface`, `text-muted`, `border-line`), px
-spacing, and the class lists the board already has (`board/topbar.ts`).
 
 Core `@xyflow/react` components (no new dependency): `NodeToolbar`, `EdgeToolbar` (both in 12.12) and `NodeResizer`.
 None is used today. Actions live in the ⋯ menu and on hover (V1), and the editors have their own transform box (D36).
@@ -133,7 +128,7 @@ what is named instead.
 | | `connection-events`, `computing-flows`, `collaborative` | Connections are handled in Board.tsx; data flow is core's layout engine; no live collaboration |
 | Layout | `auto-layout`, `dagre`, `elkjs`, `elkjs-multiple-handles`, `dynamic-layouting`, `horizontal`, `force-layout`, `node-collisions`, `expand-collapse` | **Tidy** (`tidy.ts`, D57) and N4 placement. No layout libraries |
 | Grouping | `sub-flows`, `parent-child-relation`, `selection-grouping` | Group frames (T13.7), derived; `parentId` is not used |
-| Styling | `dark-mode`, `base-style`, `tailwind`, `turbo-flow` | `colorMode={theme}` plus our tokens; React Flow's classes restyled in `board/chrome.css` (`.react-flow__*`); Tailwind utilities on our own markup (D65) |
+| Styling | `dark-mode`, `base-style`, `tailwind`, `turbo-flow` | `colorMode={theme}` plus our tokens: `docs/FRONTEND.md` |
 | Whiteboard | `lasso-selection`, `rectangle`, `freehand-draw`, `eraser` | Box selection only (`selectionOnDrag`, Select several on touch) |
 | Misc | `download-image`, `server-side-image-creation` | Export renders Previews with `OutputRenderer` in the worker (Playwright), never the board |
 
@@ -146,7 +141,7 @@ what is named instead.
   - `.react-flow__edge`, `.react-flow__pane`
   - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything
 - Seed a board through the API with core functions (`addOutput`, …) and `page.request.put`, as `comments.e2e.test.ts` does, rather than many UI clicks.
-- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). Every area is converted (`TAILWIND-PLAN.md`); `editor/editor.css` keeps only the editors' transform box (D36): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run the parity test (`css-parity-*.e2e.test.ts`, commands in `TAILWIND-PLAN.md`).
+- **Styling** and the parity test: `docs/FRONTEND.md`.
 
 ## 9. Checklist: a new node type
 
@@ -154,7 +149,7 @@ what is named instead.
 2. flow.ts: id helpers, a `Node<…>` type, add it to `BoardNode`, build it in `docToNodes` (and edges in `docToEdges`).
 3. Component `XNode.tsx`: `NodeHead`, `Handle`s with typed ids, `NO_CANVAS` on controls, `readOnly` respected.
 4. Register it in `nodeTypes` (nodes.tsx). Add it to the + Add menu and the right-click menu if users create it.
-5. Connections: extend `connectionRefusal` in core, and `onConnect` in Board.tsx if it wires specially.
+5. Connections: extend `connectionRefusal` (`flow.ts`), and `onConnect` in Board.tsx if it wires specially.
 6. Delete: `delete-nodes.ts`. Zoomed-out tag: `panelTitle` in ZoomLabels. Inspector section if it has settings.
 7. Tests: a unit test for the doc ↔ flow mapping, and one e2e test that adds, wires and deletes it.
 8. Run `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the tests (with Postgres).

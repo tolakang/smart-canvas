@@ -1,7 +1,7 @@
 # Tailwind conversion
 
 Decided: **the web app is built with Tailwind** (D65; owner 2026-10-26: "build with tailwind"). New UI is written in
-utilities from the start, following `docs/STYLING.md`. This file tracks only the conversion of the CSS written
+utilities from the start, following `docs/FRONTEND.md`. This file tracks only the conversion of the CSS written
 before that, area by area, with no visual change.
 
 ## Status
@@ -40,7 +40,7 @@ the artwork renderer (`OutputRenderer`, inline styles, shared by Preview and exp
    becomes a utility on that element; one that doesn't is dead and is dropped. Selectors no screen reaches are checked
    on a small static page.
 2. **Convert and delete together.** Utilities arrive and the element's rules (and their `!important`s) go in the same
-   PR, never side by side. The `sc-` classes stay in the markup. Write the classes by `docs/STYLING.md`, including its
+   PR, never side by side. The `sc-` classes stay in the markup. Write the classes by `docs/FRONTEND.md`, including its
    table of utilities that are not what they look like.
 3. **Prove nothing moved.** The parity test draws each screen twice on the same page, with this branch's CSS and with
    main's (`test/css-reference/`, built by `scripts/css-reference.mjs`), and compares computed styles and pixels.
