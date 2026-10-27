@@ -3,8 +3,8 @@
 The app's look is Figma-like and quiet: neutral greys, one blue accent, small type, and colour used for
 meaning (node type, state) rather than decoration. All values are CSS custom properties on `:root` in
 `apps/web/src/styles.css`, and the UI uses them through Tailwind utilities (`bg-surface`, `text-muted`, `rounded-lg`;
-D65): how to write those classes is in `FRONTEND.md`. The editor screen (`.sc-fig`) has its own dark toolbar and maps `--accent` and the
-other shared names onto its palette.
+D65): how to write those classes is in `FRONTEND.md`. The editor screen (`.sc-fig`) names its colours `--fig-*`; they take the page tokens
+(`--fig-line` is `--line`, `--fig-muted` is `--muted`), so the editors follow the theme like the board (Q9).
 
 ## Tokens (refreshed in U1, 2026-10-24)
 
