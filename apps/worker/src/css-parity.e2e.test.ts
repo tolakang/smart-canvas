@@ -12,8 +12,9 @@ import { cssParity, referenceCss, STRAY } from './test/css-parity';
 import { twoPagePdf } from './test/pdf-fixture';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
 
-// Probing which rules win (test/css-winners.ts) is slow; the time limits are only for the comparison.
-const limit = (ms: number) => (process.env.SC_PROBE_OUT ? 900_000 : ms);
+// Probing which rules win (test/css-winners.ts) is slow; the time limits are only for the comparison. CI runners can be
+// several times slower than a laptop (each screen is drawn and compared twice), so they get more room.
+const limit = (ms: number) => (process.env.SC_PROBE_OUT ? 900_000 : process.env.CI ? ms * 3 : ms);
 
 const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);

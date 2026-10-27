@@ -16,7 +16,7 @@ before that, area by area, with no visual change.
 | T3c | Canvas toolbar, selection bar, tooltips, name tags, groups | the rest but React Flow's | medium | ✅ #186 |
 | T4a | Main Comps, Export Group, Presets, Preview Cards, their ports and layout health | `board/pipeline.css` | medium | ✅ #187 |
 | T4b | The card every node shares: card, header, fields, behaviour picker (React Flow's handles stay CSS) | `board/node.css` | medium | ✅ #188 |
-| T5 | Asset nodes and slots (many states) | `board/assets.css` | high | this PR |
+| T5 | Asset nodes and slots (many states) | `board/assets.css` | high | ✅ #189 |
 | T6 | History, comments, approval | `board/review.css` | low | |
 | T7 | Editors, including phone tabs | most of `editor/editor.css` | high | |
 | T8 | Optional: Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |

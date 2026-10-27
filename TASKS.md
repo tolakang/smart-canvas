@@ -225,7 +225,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] T3c — Canvas toolbar, selection bar, tooltips, zoomed-out name tags, groups (React Flow's own pane, wires, minimap and handles stay in `board/chrome.css`) — [#186](https://github.com/tolakang/smart-canvas/pull/186)
 - [x] T4a — Main Comps, Export Group, Presets, Preview Cards, their ports and layout health; `board/pipeline.css` — [#187](https://github.com/tolakang/smart-canvas/pull/187)
 - [x] T4b — The card every node shares (card, header, fields, behaviour picker); `board/node.css` (React Flow's handles stay CSS) → `board/card.ts` — [#188](https://github.com/tolakang/smart-canvas/pull/188)
-- [x] T5 — Asset nodes and slots; `board/assets.css` → their components (`Slot.tsx` holds every slot state) (this PR)
+- [x] T5 — Asset nodes and slots; `board/assets.css` → their components (`Slot.tsx` holds every slot state) — [#189](https://github.com/tolakang/smart-canvas/pull/189)
 - [ ] T6 — History, comments, approval; `board/review.css`
 - [ ] T7 — Editors, incl. phone tabs; most of `editor/editor.css`
 - [ ] T8 — Optional: Preflight instead of our base styles; drop unused `sc-` modifiers; retire the parity test again
