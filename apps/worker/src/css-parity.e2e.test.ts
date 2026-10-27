@@ -328,7 +328,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.mouse.click(5, 500);
   }, limit(60_000));
 
-  it('asset slots: drop targets, empty and hidden slots, the list view, uploading, Headline pairs and the language switch, text slots', async () => {
+  it('asset slots: drop targets, slot actions, empty and hidden slots', async () => {
     // A second text slot and a second headline pair; then the second logo and the second text hidden (seeded).
     await node('Text').getByRole('button', { name: 'Add text' }).click();
     await node('Headline').getByRole('button', { name: 'Add headline' }).click();
@@ -384,6 +384,11 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await same('background-empty-hover');
     await page.mouse.move(5, 500);
 
+  }, limit(300_000));
+
+  it('asset slots: the list view, uploading, upload errors', async () => {
+    const image = node('Image');
+    const logo = node('Logo');
     // The list view, a row hovered and one selected.
     await image.locator('.sc-head__more').click();
     await page.getByRole('menuitem', { name: 'List view' }).click();
@@ -421,6 +426,9 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await node('Background').locator('.sc-error').waitFor();
     await same('upload-errors');
 
+  }, limit(300_000));
+
+  it('asset slots: Headline pairs and the language switch, text slots', async () => {
     // Headline: two pairs, a pair hovered with its Delete, English in use by keyboard, the other language hovered.
     const headline = node('Headline');
     await headline.locator('.sc-hl-row').nth(1).hover();
