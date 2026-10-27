@@ -16,6 +16,13 @@ import { NodeHead } from './NodeHead';
 
 const NO_CANVAS = 'nodrag nopan nowheel';
 
+/** Its Delete: shown on hover or while typing (on touch: while typing, or once the slot is selected). */
+const REMOVE =
+  'sc-text-slot__remove absolute top-30 right-7 grid size-28 cursor-pointer place-items-center rounded-[8px] bg-transparent p-0 text-muted opacity-0 [border:0] [transition:opacity_var(--t-fast),background_var(--t-fast),color_var(--t-fast)] group-hover/text:opacity-100 group-focus-within/text:opacity-100 hover:bg-danger-soft hover:text-danger';
+/** The field grows with its text (the card's field look underneath). */
+const INPUT =
+  'sc-text-slot__input min-h-42 w-full resize-none overflow-hidden pt-10 pr-40 pb-10 pl-12 [field-sizing:content] focus:[box-shadow:0_0_0_3px_var(--ring)]';
+
 export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
   const { stack, items } = data;
   const { readOnly, run, editSource, stackFocus, setStackFocus } = useBoard();
@@ -31,16 +38,19 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         menuLabel={`${stack.label} actions`}
         menu={readOnly ? [] : [{ label: `Delete ${stack.label}`, danger: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]}
       />
-      <ol className={`sc-text-slots ${NO_CANVAS}`} aria-label={`${stack.label} slots`}>
+      <ol className={`sc-text-slots m-0 grid list-none gap-12 p-0 ${NO_CANVAS}`} aria-label={`${stack.label} slots`}>
         {items.map((s) => {
           if (s.content.kind !== 'text') return null;
           const { style, text } = s.content;
           const focused = selected && stackFocus === s.id;
           return (
-            <li key={s.id} className={`sc-text-slot${focused ? ' sc-assets__item--focus' : ''}${s.visible ? '' : ' sc-assets__item--hidden'}`}>
-              <span className="sc-text-slot__label">{s.label}</span>
+            <li
+              key={s.id}
+              className={`sc-text-slot group/text relative grid gap-6 rounded-[8px] p-0${focused ? ' sc-assets__item--focus [outline:2px_solid_var(--accent)] outline-offset-1' : ''}${s.visible ? '' : ' sc-assets__item--hidden opacity-45'}`}
+            >
+              <span className="sc-text-slot__label text-[12px] font-[600] text-muted">{s.label}</span>
               <textarea
-                className="sc-text-slot__input"
+                className={INPUT}
                 aria-label={`${s.label} text`}
                 value={text}
                 readOnly={readOnly}
@@ -53,7 +63,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
                 onChange={(e) => editSource(s.id, (x) => setText(x, e.target.value))}
               />
               {!readOnly && (
-                <button type="button" className="sc-text-slot__remove" aria-label={`Delete ${s.label}`} title="Delete this text" onClick={() => confirmDelete(s.label) && run((d) => deleteSource(d, s.id))}>
+                <button type="button" className={`${REMOVE}${focused ? ' [@media(hover:none)]:opacity-100' : ''}`} aria-label={`Delete ${s.label}`} title="Delete this text" onClick={() => confirmDelete(s.label) && run((d) => deleteSource(d, s.id))}>
                   <Icon name="trash" size={14} />
                 </button>
               )}
@@ -62,7 +72,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         })}
       </ol>
       {!readOnly && (
-        <button type="button" className={`sc-btn sc-btn--soft sc-text-slots__add ${NO_CANVAS}`} onClick={() => run((d) => addTextToStack(d, stack.id, { id: newId() }))}>
+        <button type="button" className={`sc-btn sc-btn--soft sc-text-slots__add w-full justify-center ${NO_CANVAS}`} onClick={() => run((d) => addTextToStack(d, stack.id, { id: newId() }))}>
           <Icon name="plus" /> Add text
         </button>
       )}

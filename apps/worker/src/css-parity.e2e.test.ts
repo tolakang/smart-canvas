@@ -328,6 +328,138 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.mouse.click(5, 500);
   }, limit(60_000));
 
+  it('asset slots: drop targets, slot actions, empty and hidden slots', async () => {
+    // A second text slot and a second headline pair; then the second logo and the second text hidden (seeded).
+    await node('Text').getByRole('button', { name: 'Add text' }).click();
+    await node('Headline').getByRole('button', { name: 'Add headline' }).click();
+    await saved();
+    const p = (await (await page.request.get(api)).json()) as { rev: number; doc: ProjectDoc };
+    const items = (label: string) => p.doc.stacks?.find((s) => s.label === label)?.items ?? [];
+    const hide = new Set([items('Logo')[1], items('Text')[1]]);
+    const doc = { ...p.doc, sources: p.doc.sources.map((s) => (hide.has(s.id) ? { ...s, visible: false } : s)) };
+    expect((await page.request.put(api, { data: { rev: p.rev, doc } })).status()).toBe(200);
+    await page.reload();
+    await node('Image').waitFor();
+    await fit();
+    await imagesLoaded();
+    await same('assets-hidden');
+
+    const image = node('Image');
+    await image.locator('.sc-dropzone').hover();
+    await same('dropzone-hover');
+    // A file dragged over a slot, then over the card.
+    const files = await page.evaluateHandle(() => {
+      const d = new DataTransfer();
+      d.items.add(new File(['x'], 'a.png', { type: 'image/png' }));
+      return d;
+    });
+    await page.mouse.move(5, 500);
+    await image.locator('.sc-slot').first().dispatchEvent('dragover', { dataTransfer: files });
+    await same('slot-drop-over');
+    await image.locator('.sc-slot').first().dispatchEvent('dragleave', { dataTransfer: files });
+    await image.locator('.sc-dropzone').dispatchEvent('dragover', { dataTransfer: files });
+    await same('card-drop-over');
+    await image.dispatchEvent('dragleave', { dataTransfer: files });
+
+    await image.locator('.sc-slot').first().hover();
+    await image.getByRole('button', { name: /^Delete / }).first().hover({ force: true });
+    await same('slot-delete-hover');
+    await image.getByRole('button', { name: /^Remove picture from / }).first().hover({ force: true });
+    await same('slot-act-hover');
+    await page.mouse.move(5, 500);
+    await image.getByRole('button', { name: /^Select / }).first().focus();
+    await same('slot-focus-within');
+    await page.mouse.click(5, 500);
+
+    // A slot whose picture was removed keeps its Delete on hover.
+    const logo = node('Logo');
+    const empties = await logo.locator('.sc-slot--empty').count();
+    await logo.locator('.sc-slot').nth(1).hover();
+    await logo.getByRole('button', { name: /^Remove picture from / }).nth(1).click({ force: true });
+    await expect.poll(() => logo.locator('.sc-slot--empty').count()).toBe(empties + 1);
+    await page.mouse.move(5, 500);
+    await logo.locator('.sc-slot--empty').last().hover();
+    await same('slot-empty-hover');
+    await node('Background').locator('.sc-slot--empty').first().hover();
+    await same('background-empty-hover');
+    await page.mouse.move(5, 500);
+
+  }, limit(300_000));
+
+  it('asset slots: the list view, uploading, upload errors', async () => {
+    const image = node('Image');
+    const logo = node('Logo');
+    // The list view, a row hovered and one selected.
+    await image.locator('.sc-head__more').click();
+    await page.getByRole('menuitem', { name: 'List view' }).click();
+    await image.locator('.sc-slot--row').first().hover();
+    await same('assets-list-hover');
+    await page.mouse.move(5, 500);
+    await image.getByRole('button', { name: /^Select / }).nth(1).click({ force: true });
+    await page.mouse.move(5, 500);
+    await same('assets-list-selected');
+    await image.locator('.sc-head__more').click();
+    await page.getByRole('menuitem', { name: 'Grid view' }).click();
+    await page.mouse.click(5, 500);
+
+    // Uploading: the card's drop area and a slot being replaced, while the upload waits.
+    let release = () => {};
+    const held = new Promise<void>((r) => (release = r));
+    let failed = 0;
+    await page.route('**/api/teams/*/assets', async (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      await held;
+      await route.fulfill({ status: 500, json: { error: 'held' } });
+      failed++;
+    });
+    const png = { name: 'c.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 20, height: 20, channels: 4, background: '#888' } }).png().toBuffer() };
+    await image.locator('input[type=file][multiple]').setInputFiles(png);
+    await logo.locator('.sc-slot input[type=file]').first().setInputFiles(png);
+    await image.locator('.sc-dropzone--busy').waitFor();
+    await same('uploading');
+    release();
+    await expect.poll(() => failed).toBe(2);
+    await page.unroute('**/api/teams/*/assets');
+    await image.locator('.sc-dropzone--busy').waitFor({ state: 'detached' });
+    // A file the Background can't use: its error spans the slots.
+    await node('Background').locator('input[type=file]').first().setInputFiles({ name: 'note.txt', mimeType: 'text/plain', buffer: Buffer.from('not a picture') });
+    await node('Background').locator('.sc-error').waitFor();
+    await same('upload-errors');
+
+  }, limit(300_000));
+
+  it('asset slots: Headline pairs and the language switch, text slots', async () => {
+    // Headline: two pairs, a pair hovered with its Delete, English in use by keyboard, the other language hovered.
+    const headline = node('Headline');
+    await headline.locator('.sc-hl-row').nth(1).hover();
+    await same('headline-row-hover');
+    await headline.getByRole('button', { name: 'Delete headline 2' }).hover({ force: true });
+    await same('headline-delete-hover');
+    await page.mouse.move(5, 500);
+    await headline.getByRole('radio', { name: 'Khmer' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => headline.getByRole('radio', { name: 'English' }).isChecked()).toBe(true);
+    await saved();
+    await same('headline-english-key');
+    await headline.locator('.sc-slot--off img').first().hover();
+    await same('headline-off-hover');
+    await headline.getByRole('radio', { name: 'English' }).focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(() => headline.getByRole('radio', { name: 'Khmer' }).isChecked()).toBe(true);
+    await page.mouse.click(5, 500);
+
+    // Text slots: one hovered, one being typed in, its Delete hovered.
+    const text = node('Text');
+    await text.locator('.sc-text-slot').first().hover();
+    await same('text-slot-hover');
+    await text.getByRole('textbox').first().focus();
+    await same('text-slot-focus');
+    await text.getByRole('button', { name: /^Delete / }).first().hover({ force: true });
+    await same('text-remove-hover');
+    await page.mouse.click(5, 500);
+    await saved();
+  }, limit(300_000));
+
   it('dialogs: Export', async () => {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     await page.getByRole('dialog', { name: 'Export' }).waitFor();
@@ -475,6 +607,9 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await node('Image').waitFor();
     await imagesLoaded();
     await same('phone-board');
+    await node('Text').getByRole('textbox').first().focus();
+    await same('phone-text-focus');
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.getByRole('button', { name: 'Inspector', exact: true }).click();
     await page.getByRole('complementary', { name: 'Inspector' }).waitFor();
     await page.waitForTimeout(400);

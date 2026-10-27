@@ -35,7 +35,7 @@ const lineAt = (text, i) => text.slice(0, i).split('\n').length;
 const problems = [];
 const STYLESHEETS = new Set([
   'styles.css', 'tailwind.css', 'board/reactflow.css', 'board/chrome.css', // tokens, base; Tailwind; React Flow
-  'board/assets.css', 'board/review.css', 'editor/editor.css', // not converted yet
+  'board/review.css', 'editor/editor.css', // not converted yet
 ]);
 for (const file of cssFiles) {
   const name = relative(web, file);

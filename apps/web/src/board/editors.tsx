@@ -242,6 +242,9 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
 type BgSlot = 'square' | 'vertical' | 'horizontal';
 /** In reading order: Horizontal across the top, then Square and Vertical (owner sketch). */
 const BG_SLOTS: readonly BgSlot[] = ['horizontal', 'square', 'vertical'];
+/** Horizontal across the top, Square and Vertical side by side below (owner sketch 2026-10-25), each tile in its own shape. */
+const BG_PLACE: Record<BgSlot, string> = { horizontal: '[grid-area:h]', square: '[grid-area:s]', vertical: '[grid-area:v]' };
+const BG_TILE: Record<BgSlot, string> = { horizontal: 'h-auto aspect-[7/4]', square: 'h-auto aspect-square', vertical: 'h-auto aspect-[5/8]' };
 const BG_LABEL: Record<BgSlot, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
 
 export function BackgroundSlots({ source, selected = true }: { source: InputSource; /** On the board: the node is selected (a tapped slot keeps its actions shown, as on the Headline node). */ selected?: boolean }) {
@@ -274,7 +277,7 @@ export function BackgroundSlots({ source, selected = true }: { source: InputSour
   }
 
   return (
-    <div className="sc-bg-slots" aria-label="Background for square, vertical and horizontal Previews">
+    <div className="sc-bg-slots grid grid-cols-[repeat(2,minmax(0,1fr))] [align-items:start] gap-12 [grid-template-areas:'h_h'_'s_v'] [&>.sc-error]:col-[1/-1]" aria-label="Background for square, vertical and horizontal Previews">
       {BG_SLOTS.map((family) => {
         const id = picture(family);
         const label = BG_LABEL[family];
@@ -282,7 +285,8 @@ export function BackgroundSlots({ source, selected = true }: { source: InputSour
           <Slot
             key={family}
             shape="wide"
-            className={`sc-bg-slot--${family}`}
+            className={`sc-bg-slot--${family} ${BG_PLACE[family]}`}
+            tileClass={BG_TILE[family]}
             caption={label}
             src={id ? assetUrl(teamId, id) : null}
             alt={`${label} background`}

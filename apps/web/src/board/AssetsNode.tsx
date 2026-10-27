@@ -21,6 +21,12 @@ import { carriesFiles, filesOf, PICTURE_ACCEPT, usePictureDrop } from './stack-u
 const NO_CANVAS = 'nodrag nopan nowheel';
 const ITEM_DRAG = 'application/x-sc-stack-item';
 
+/** The card's one drop area: dashed, lit while hovered or while files are dragged over the card. */
+const DROPZONE =
+  'sc-dropzone flex items-center gap-12 rounded-[14px] px-14 py-12 border-[1.5px] border-dashed text-fg [transition:border-color_var(--t-fast),background_var(--t-fast)] hover:border-accent hover:bg-[color-mix(in_srgb,var(--accent-soft)_75%,transparent)]';
+const DROPZONE_ICON = 'sc-dropzone__icon grid size-34 flex-none place-items-center rounded-[11px] bg-accent-soft text-accent';
+const DROPZONE_TEXT = 'sc-dropzone__text grid min-w-0 gap-1 [&_strong]:text-[13px] [&_strong]:font-[650] [&_span]:text-[11.5px] [&_span]:text-muted';
+
 export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
   const { stack, items } = data;
   const { teamId, readOnly, run, stackFocus, setStackFocus, rememberAsset } = useBoard();
@@ -84,12 +90,12 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
           ...(readOnly ? [] : [{ label: `Delete ${stack.label}`, danger: true, separated: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]),
         ]}
       />
-      <ul className={`sc-assets${list ? ' sc-assets--list' : ''} ${NO_CANVAS}`} aria-label={`${stack.label} pictures`}>
+      <ul className={`sc-assets m-0 grid list-none p-0 ${list ? 'sc-assets--list grid-cols-[minmax(0,1fr)] gap-8' : 'grid-cols-[repeat(2,minmax(0,1fr))] gap-12'} ${NO_CANVAS}`} aria-label={`${stack.label} pictures`}>
         {items.map((s, i) => {
           const asset = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null;
           const focused = selected && (stackFocus === s.id || (!items.some((x) => x.id === stackFocus) && i === 0));
           return (
-            <li key={s.id} className="sc-assets__item">
+            <li key={s.id} className={`sc-assets__item relative min-w-0 ${list ? 'flex items-center gap-8' : ''}`}>
               <Slot
                 src={asset ? assetUrl(teamId, asset) : null}
                 alt={`${s.label} preview`}
@@ -123,11 +129,13 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
       </ul>
       {!readOnly && (
         // One drop area: click to pick, or drop files anywhere on the card.
-        <label className={`sc-dropzone ${NO_CANVAS}${drop.busy ? ' sc-dropzone--busy' : ''}`}>
-          <span className="sc-dropzone__icon" aria-hidden="true">
+        <label
+          className={`${DROPZONE} ${over ? 'border-accent bg-[color-mix(in_srgb,var(--accent-soft)_75%,transparent)]' : 'border-line-strong bg-[color-mix(in_srgb,var(--surface-2)_55%,transparent)]'} ${drop.busy ? 'sc-dropzone--busy cursor-progress' : 'cursor-pointer'} ${NO_CANVAS}`}
+        >
+          <span className={DROPZONE_ICON} aria-hidden="true">
             {drop.busy ? <span className="sc-spinner" /> : <Icon name="plus" />}
           </span>
-          <span className="sc-dropzone__text">
+          <span className={DROPZONE_TEXT}>
             <strong>{drop.busy ? 'Uploading…' : isLogo ? 'Add or drop logos' : 'Add or drop pictures'}</strong>
             <span>PNG, JPG, WebP, SVG, PDF</span>
           </span>

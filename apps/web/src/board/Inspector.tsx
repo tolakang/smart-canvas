@@ -51,6 +51,9 @@ import { OUTPUT_ROW, OutputSettings } from './OutputSettings';
 import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
 
 const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
+/** A picture of an asset node, in the inspector's grid: contained on a checkerboard. */
+const PICK =
+  'sc-assets__pick grid aspect-square size-full cursor-pointer [grid-template:minmax(0,1fr)/minmax(0,1fr)] place-items-center rounded-md border border-line p-2 [background:repeating-conic-gradient(var(--checker-a)_0_25%,var(--checker-b)_0_50%)_0_0/12px_12px]';
 
 /** Docked on desktop; on tablets and phones (T13.6) an overlay or a bottom sheet with a close button. */
 export function Inspector({ selected, floating, onClose, onHide }: { selected: string | null; floating?: 'overlay' | 'sheet'; onClose?: () => void; onHide?: () => void }) {
@@ -267,12 +270,12 @@ function AssetsInspector({ stackId }: { stackId: string }) {
           {items.length} {kind === 'text' ? (items.length === 1 ? 'text slot' : 'text slots') : items.length === 1 ? 'picture' : 'pictures'}, each its own layer.{kind === 'text' ? ' Add slots on the node.' : ' Drop more files on the node.'}
         </p>
         {items.length > 0 && (
-          <div className="sc-assets sc-assets--inspector" role="list" aria-label={kind === 'text' ? 'Text slots' : 'Pictures'}>
+          <div className="sc-assets sc-assets--inspector my-8 grid list-none p-0 grid-cols-[repeat(2,minmax(0,1fr))] gap-12" role="list" aria-label={kind === 'text' ? 'Text slots' : 'Pictures'}>
             {items.map((s) => {
               const asset = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null;
               return (
-                <button key={s.id} type="button" role="listitem" className={`sc-assets__pick${s.id === focused?.id ? ' sc-assets__item--focus' : ''}`} title={s.label} aria-label={`Set ${s.label}`} onClick={() => setStackFocus(s.id)}>
-                  {asset ? <img src={assetUrl(teamId, asset)} alt="" draggable={false} /> : '?'}
+                <button key={s.id} type="button" role="listitem" className={`${PICK}${s.id === focused?.id ? ' sc-assets__item--focus [outline:2px_solid_var(--accent)] outline-offset-1 focus-visible:outline-offset-2' : ''}`} title={s.label} aria-label={`Set ${s.label}`} onClick={() => setStackFocus(s.id)}>
+                  {asset ? <img className="size-full object-contain" src={assetUrl(teamId, asset)} alt="" draggable={false} /> : '?'}
                 </button>
               );
             })}
