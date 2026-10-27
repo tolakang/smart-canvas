@@ -23,19 +23,28 @@ describe.skipIf(!adminUrl)('the board by keyboard (UX A1, A2, A7)', () => {
   });
 
   it('Enter and Space on a drop area or an empty slot open the file picker', async () => {
+    // One listener for the whole test: Playwright intercepts file pickers only while one is attached, and turning that
+    // on per press races the press. Each picker is closed with no file (Chromium opens no second one while it waits).
+    const pickers: boolean[] = [];
+    page.on('filechooser', (fc) => {
+      pickers.push(fc.isMultiple());
+      void fc.setFiles([]);
+    });
+    // Let the interception switch on before the first press.
+    await page.evaluate(() => new Promise((r) => setTimeout(r, 200)));
     const zone = boardNode(page, 'Image').locator('.sc-dropzone');
     await expect.poll(() => zone.getAttribute('tabindex')).toBe('0');
-    for (const key of ['Enter', ' ']) {
+    for (const key of ['Enter', 'Space']) {
+      const before = pickers.length;
       await zone.focus();
-      const chooser = page.waitForEvent('filechooser', { timeout: 5_000 });
-      await page.keyboard.press(key === ' ' ? 'Space' : key);
-      expect((await chooser).isMultiple()).toBe(true);
+      await page.keyboard.press(key);
+      await expect.poll(() => pickers.length, { timeout: 10_000 }).toBe(before + 1);
+      expect(pickers.at(-1)).toBe(true);
     }
-    const slot = page.locator('.react-flow__node .sc-slot--empty label.sc-slot__pick').first();
-    await slot.focus();
-    const chooser = page.waitForEvent('filechooser', { timeout: 5_000 });
+    const before = pickers.length;
+    await page.locator('.react-flow__node .sc-slot--empty label.sc-slot__pick').first().focus();
     await page.keyboard.press('Enter');
-    await chooser;
+    await expect.poll(() => pickers.length, { timeout: 10_000 }).toBe(before + 1);
   }, 60_000);
 
   it('a card reached with Tab shows the accent ring; wires and the credit link are not Tab stops', async () => {
