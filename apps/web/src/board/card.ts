@@ -33,7 +33,7 @@ const FIELDS = [
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:rounded-md',
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:text-fg',
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:[transition:border-color_var(--t-fast),background_var(--t-fast)]',
-  // UX A3 (F8): a field shows its edge (3:1 against the card, WCAG 1.4.11), not only its fill; hover darkens it.
+  // UX A3 (F8): a field shows a 1px edge, not only its fill; hover darkens it.
   '[&_input:not([type=radio],[type=checkbox],[type=color],[type=file]):not(:hover):not(:focus)]:border-line-strong',
   '[&_input:not([type=radio],[type=checkbox],[type=color],[type=file]):hover:not(:focus)]:border-muted',
   '[&_input:not([type=radio],[type=checkbox],[type=color],[type=file])]:bg-surface-2',
