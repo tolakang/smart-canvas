@@ -400,10 +400,12 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     // Uploading: the card's drop area and a slot being replaced, while the upload waits.
     let release = () => {};
     const held = new Promise<void>((r) => (release = r));
+    let failed = 0;
     await page.route('**/api/teams/*/assets', async (route) => {
       if (route.request().method() !== 'POST') return route.continue();
       await held;
-      await route.abort();
+      await route.fulfill({ status: 500, json: { error: 'held' } });
+      failed++;
     });
     const png = { name: 'c.png', mimeType: 'image/png', buffer: await sharp({ create: { width: 20, height: 20, channels: 4, background: '#888' } }).png().toBuffer() };
     await image.locator('input[type=file][multiple]').setInputFiles(png);
@@ -411,6 +413,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await image.locator('.sc-dropzone--busy').waitFor();
     await same('uploading');
     release();
+    await expect.poll(() => failed).toBe(2);
     await page.unroute('**/api/teams/*/assets');
     await image.locator('.sc-dropzone--busy').waitFor({ state: 'detached' });
     // A file the Background can't use: its error spans the slots.
