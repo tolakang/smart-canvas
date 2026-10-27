@@ -226,8 +226,10 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] T4a — Main Comps, Export Group, Presets, Preview Cards, their ports and layout health; `board/pipeline.css` — [#187](https://github.com/tolakang/smart-canvas/pull/187)
 - [x] T4b — The card every node shares (card, header, fields, behaviour picker); `board/node.css` (React Flow's handles stay CSS) → `board/card.ts` — [#188](https://github.com/tolakang/smart-canvas/pull/188)
 - [x] T5 — Asset nodes and slots; `board/assets.css` → their components (`Slot.tsx` holds every slot state) — [#189](https://github.com/tolakang/smart-canvas/pull/189)
-- [x] T6 — History, comments, approval; `board/review.css` → `board/panel.ts` (lists) and the approval in `OutputEditor.tsx` (this PR)
-- [ ] T7 — Editors, incl. phone tabs; most of `editor/editor.css`
+- [x] T6 — History, comments, approval; `board/review.css` → `board/panel.ts` (lists) and the approval in `OutputEditor.tsx` — [#192](https://github.com/tolakang/smart-canvas/pull/192)
+- [x] T7a — Editor shell: screen, bar, stage and its overlays, the panels' layout, phone tabs → `editor/shell.ts` (this PR)
+- [ ] T7b — Editor panels: Layers, Design, override inspector, text properties
+- [ ] T7c — Comments and pins (the transform box stays CSS)
 - [ ] T8 — Optional: Preflight instead of our base styles; drop unused `sc-` modifiers; retire the parity test again
 
 ## Next (see BACKLOG; proposals, the owner picks)

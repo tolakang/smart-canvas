@@ -14,6 +14,7 @@ import { CommentPins, CommentsPanel } from './CommentsPanel';
 import { LayersPanel } from './LayersPanel';
 import { OverrideInspector } from './OverrideInspector';
 import { TextPanel } from './TextPanel';
+import { COMMENT_TOOL, COUNT, LOADING } from './shell';
 
 export function OutputEditor({ outputId, comments = false, onClose }: { outputId: string; comments?: boolean; onClose: () => void }) {
   const { doc, run, layoutDeps, author, readOnly, review, reviewApprove } = useBoard();
@@ -61,7 +62,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
   const spotsOf = useCallback((id: string) => (master ? layerSpots(doc, master, id) : []), [doc, master]);
 
   if (!output) return null;
-  if (!scene) return <div className="sc-editor-screen sc-muted">Loading fonts…</div>;
+  if (!scene) return <div className={LOADING}>Loading fonts…</div>;
   const connected = isOutputConnected(doc, output.id);
   const openThreads = threadsOf(review, output.id).length;
   return (
@@ -105,7 +106,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       tools={
         <button
           type="button"
-          className="sc-fig__tool sc-fig__tool--comment"
+          className={COMMENT_TOOL}
           aria-label="Comment"
           title="Comment: pin a comment on the Preview"
           aria-pressed={commenting}
@@ -117,7 +118,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
             <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
           </svg>
-          {openThreads > 0 && <span className="sc-fig__count">{openThreads}</span>}
+          {openThreads > 0 && <span className={COUNT}>{openThreads}</span>}
         </button>
       }
       overlay={

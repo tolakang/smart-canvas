@@ -22,6 +22,7 @@ import { fitScale, NUDGE_STEP, resetRotation, resetTransform } from './geometry'
 import { frameOfState, sameFrame, snapMove, snapResize, snapTargets, syncDoc } from './transform/frame';
 import type { TransformDoc } from './transform/math';
 import { DOUBLE_TAP_DIST, DOUBLE_TAP_MS, TransformBox } from './transform/transform-box';
+import { BAR, bodyClass, CANVAS, CLOSE, FIG, HOVER, MUTED, PAN, POINT, RESET, RESETS, SELECTION, SIZE, SPOT, SPOT_NAME, stageClass, TABS, tabClass, TARGET, TITLE, TOOL, TOOLS, ZOOM, ZOOM_ACTUAL, ZOOM_VALUE } from './shell';
 
 /** Moves and resizes snap within this many screen px. */
 const SNAP_PX = 6;
@@ -414,15 +415,15 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
 
   const pct = Math.round(scale * 100);
   const toolButton = (t: Tool, name: string, key: string, icon: ReactNode) => (
-    <button type="button" className="sc-fig__tool" aria-label={`${name} (${key})`} title={`${name} (${key})`} aria-pressed={tool === t} onClick={() => setTool(t)}>
+    <button type="button" className={TOOL} aria-label={`${name} (${key})`} title={`${name} (${key})`} aria-pressed={tool === t} onClick={() => setTool(t)}>
       {icon}
     </button>
   );
 
   return (
-    <div className="sc-editor-screen sc-fig" role="dialog" aria-label={label}>
-      <header className="sc-fig__bar">
-        <span className="sc-fig__tools" role="group" aria-label="Tools">
+    <div className={FIG} role="dialog" aria-label={label}>
+      <header className={BAR}>
+        <span className={TOOLS} role="group" aria-label="Tools">
           {toolButton(
             'move',
             'Move tool',
@@ -441,18 +442,18 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
           )}
           {tools}
         </span>
-        <span className="sc-fig__title">{title}</span>
+        <span className={TITLE}>{title}</span>
         {selectedSource && (
-          <span className="sc-fig__muted sc-fig__selection" data-testid="selection">
+          <span className={SELECTION} data-testid="selection">
             Selected: {selectedSource.label}
           </span>
         )}
-        {readOnly && <span className="sc-fig__muted">View only</span>}
-        <span className="sc-zoom" role="group" aria-label="Zoom">
+        {readOnly && <span className={MUTED}>View only</span>}
+        <span className={ZOOM} role="group" aria-label="Zoom">
           <button type="button" aria-label="Zoom out" title="Zoom out (Ctrl/⌘ −)" onClick={() => zoomAt((z) => z / 1.25)}>
             −
           </button>
-          <span className="sc-zoom__value" aria-label="Zoom level">
+          <span className={ZOOM_VALUE} aria-label="Zoom level">
             {pct}%
           </span>
           <button type="button" aria-label="Zoom in" title="Zoom in (Ctrl/⌘ =)" onClick={() => zoomAt((z) => z * 1.25)}>
@@ -461,19 +462,19 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
           <button type="button" title="Zoom to fit (Shift+1)" onClick={() => setView({ zoom: 1, pan: { x: 0, y: 0 } })}>
             Fit
           </button>
-          <button type="button" className="sc-zoom__actual" title="Zoom to 100% (Shift+0)" onClick={() => zoomAt(() => 1)}>
+          <button type="button" className={ZOOM_ACTUAL} title="Zoom to 100% (Shift+0)" onClick={() => zoomAt(() => 1)}>
             100%
           </button>
         </span>
-        <button type="button" className="sc-fig__close" onClick={onClose}>
+        <button type="button" className={CLOSE} onClick={onClose}>
           Close
         </button>
       </header>
       {/* U4: the gap around the floating panels is empty canvas too: a press there clears the selection. */}
-      <div className={`sc-editor__body sc-editor__body--sheet-${sheet}`} onPointerDown={(e) => e.target === e.currentTarget && select(null)}>
+      <div className={bodyClass(sheet)} onPointerDown={(e) => e.target === e.currentTarget && select(null)}>
         {layers(selected, select)}
         <div
-          className={`sc-editor__stage${hand ? ' sc-editor__stage--hand' : ''}`}
+          className={stageClass(hand)}
           ref={stage}
           onPointerDown={(e) => {
             if (e.pointerType === 'touch') return onTouchDown(e);
@@ -483,7 +484,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
           onPointerUp={onTouchUp}
           onPointerCancel={() => (touchPan.current = null)}
         >
-          <div className="sc-editor__canvas" ref={canvasEl}
+          <div className={CANVAS} ref={canvasEl}
             onPointerDown={onPointerDown}
             onPointerMove={(e) => e.buttons === 0 && setHovered(layersAt(e.clientX, e.clientY)[0] ?? null)}
             onPointerLeave={() => setHovered(null)}
@@ -491,7 +492,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
             <OutputRenderer scene={drawn} sources={layerList} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} scale={scale} mode="preview" />
             {hoveredItem && !live && (
               <div
-                className="sc-editor__hover"
+                className={HOVER}
                 aria-hidden="true"
                 style={{
                   width: hoveredItem.frame.w * scale,
@@ -504,19 +505,19 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
               spots.map((g) => (
                 <div
                   key={g.from}
-                  className="sc-editor__spot"
+                  className={SPOT}
                   data-testid="layout-spot"
                   aria-hidden="true"
                   style={{ width: g.frame.w * scale, height: g.frame.h * scale, transform: `translate(${g.frame.x * scale}px, ${g.frame.y * scale}px) ${frameTransform(g.frame)}` }}
                 >
-                  <span>{g.from}</span>
+                  <span className={SPOT_NAME}>{g.from}</span>
                 </div>
               ))}
-            {frameNow && editable && <div ref={control} className="sc-editor__target" data-testid="selection-box" />}
+            {frameNow && editable && <div ref={control} className={TARGET} data-testid="selection-box" />}
             {frameNow && !editable && (
               // View only: an outline, no handles.
               <div
-                className="sc-editor__target"
+                className={TARGET}
                 data-testid="selection-box"
                 style={{
                   width: frameNow.w * scale,
@@ -527,7 +528,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
             )}
             {frameNow && (
               <div
-                className="sc-editor__size"
+                className={SIZE}
                 data-testid="selection-size"
                 style={{ left: (frameNow.x + frameNow.w / 2) * scale, top: (frameNow.y + frameNow.h) * scale + 8 }}
               >
@@ -536,7 +537,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
             )}
             {frameNow && editable && selected && (frameNow.rotation || frameNow.shear) && (
               <div
-                className="sc-editor__resets"
+                className={RESETS}
                 role="group"
                 aria-label="Reset transform"
                 style={{ left: frameNow.x * scale + 4, top: frameNow.y * scale + 4 }}
@@ -544,6 +545,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
                 {frameNow.rotation ? (
                   <button
                     type="button"
+                    className={RESET}
                     aria-label="Reset rotation"
                     title="Reset rotation"
                     onClick={() => onCommit(selected, resetRotation(frameNow))}
@@ -557,6 +559,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
                 {frameNow.shear ? (
                   <button
                     type="button"
+                    className={RESET}
                     aria-label="Reset transform"
                     title="Reset rotation and skew"
                     onClick={() => onCommit(selected, resetTransform(frameNow))}
@@ -573,7 +576,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
             {onPoint && !hand && (
               // D63: a point on the canvas (a comment's pin); the layers underneath don't take the press.
               <div
-                className="sc-editor__point"
+                className={POINT}
                 data-testid="point-surface"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
@@ -583,12 +586,12 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
               />
             )}
           </div>
-          {hand && <div className="sc-editor__pan" data-testid="pan-surface" {...panHandlers} />}
+          {hand && <div className={PAN} data-testid="pan-surface" {...panHandlers} />}
         </div>
         {/* V3 (owner: the layers were missing on a phone): the sheet's two tabs, shown on phones only. */}
-        <div className="sc-sheet-tabs" role="tablist" aria-label="Panels">
+        <div className={TABS} role="tablist" aria-label="Panels">
           {(['layers', 'design'] as const).map((t) => (
-            <button key={t} type="button" role="tab" aria-selected={sheet === t} className={sheet === t ? 'sc-sheet-tabs__on' : undefined} onClick={() => setSheet(t)}>
+            <button key={t} type="button" role="tab" aria-selected={sheet === t} className={tabClass(sheet === t)} onClick={() => setSheet(t)}>
               {t === 'layers' ? 'Layers' : aside ? 'Comments' : 'Design'}
             </button>
           ))}

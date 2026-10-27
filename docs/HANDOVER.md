@@ -128,7 +128,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Projects screen (T16.2) | `apps/web/src/shell/Projects.tsx` (template cards, search / sort `shownProjects`, ⋯ menus via `board/ContextMenu.tsx` with ↑ ↓ keys, `NewProjectDialog`), `ui/AskDialog.tsx` (the app's own name / confirm dialog, instead of prompt / confirm); rename: `PATCH /teams/:teamId/projects/:projectId` (name + doc.name, new rev) |
 | API schema | `apps/api/src/routes/project-doc.schema.ts` (v3, plus v2 / v1 from clients that haven't reloaded, picked by `schema`; every new doc field must be added: `additionalProperties: false`) |
 | Export | `packages/core/src/exports.ts` (`exportRoute`, `zipOnServer`), `apps/web/src/board/ExportDialog.tsx`, API `routes/exports.ts` (jobs, file, streamed ZIP) |
-| Styling (D65) | Tokens: `apps/web/src/styles.css`; Tailwind theme: `tailwind.css`; shared class lists: `ui/tw.ts`, `ui/Brand.tsx`, `board/topbar.ts`, `board/panel.ts`, `board/frame.ts`; CSS left to convert: `board/*.css`, `editor/editor.css`; guard: `scripts/check-css.mjs`; rules: `docs/STYLING.md` |
+| Styling (D65) | Tokens: `apps/web/src/styles.css`; Tailwind theme: `tailwind.css`; shared class lists: `ui/tw.ts`, `ui/Brand.tsx`, `board/topbar.ts`, `board/panel.ts`, `board/frame.ts`, `board/card.ts`, `editor/shell.ts`; CSS left to convert: `editor/editor.css` (the panels and comments); guard: `scripts/check-css.mjs`; rules: `docs/STYLING.md` |
 | e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` (the Layer Comp's buttons; the inspector has the same ones) |
 
 ## Testing tips (learned the hard way)
