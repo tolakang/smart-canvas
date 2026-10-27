@@ -3,7 +3,7 @@
 The app's look is Figma-like and quiet: neutral greys, one blue accent, small type, and colour used for
 meaning (node type, state) rather than decoration. All values are CSS custom properties on `:root` in
 `apps/web/src/styles.css`, and the UI uses them through Tailwind utilities (`bg-surface`, `text-muted`, `rounded-lg`;
-D65): how to write those classes is in `STYLING.md`. The editor screen (`.sc-fig`) has its own dark toolbar and maps `--accent` and the
+D65): how to write those classes is in `FRONTEND.md`. The editor screen (`.sc-fig`) has its own dark toolbar and maps `--accent` and the
 other shared names onto its palette.
 
 ## Tokens (refreshed in U1, 2026-10-24)
@@ -38,11 +38,11 @@ other shared names onto its palette.
 
 ## Rules
 
-1. Use tokens (in classes: Tailwind utilities on the tokens, `STYLING.md`); add a token rather than a one-off value.
+1. Use tokens (in classes: Tailwind utilities on the tokens, `FRONTEND.md`); add a token rather than a one-off value.
 2. Colour means something: node type, selection, warning, error. Inputs and outputs no longer have tinted backgrounds.
 3. One size for controls (28 px) and one icon style.
 4. Keep the accessible names when restyling (tests and screen readers use them).
-5. Build new UI with Tailwind utilities, not new CSS rules (`STYLING.md`; `pnpm lint` rejects a new `.css` file).
+5. Build new UI with Tailwind utilities, not new CSS rules (`FRONTEND.md`; `pnpm lint` rejects a new `.css` file).
 
 ## Themes (T13.3, D34)
 

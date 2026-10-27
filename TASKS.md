@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P27 are done; P28 (Tailwind conversion) is in progress — see below. New UI is built with Tailwind (`docs/STYLING.md`). After it, BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P27 are done; P28 (Tailwind conversion) is in progress — see below. New UI is built with Tailwind (`docs/FRONTEND.md`). After it, BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -215,7 +215,7 @@ Safety net while it ran: a CSS parity test compared every covered screen with a 
 - [x] C11 — What stays in `styles.css` (tokens, base, shared components): merge its own duplicates — [#175](https://github.com/tolakang/smart-canvas/pull/175)
 - [x] C12 — Guard against the same selector in two files; retire the frozen reference copy — [#176](https://github.com/tolakang/smart-canvas/pull/176). `@layer` dropped: one layer per area flips about 95 rules that win across files on specificity
 
-## P28 Tailwind conversion (approved 2026-10-26, D65) — plan: `TAILWIND-PLAN.md`, how to write classes: `docs/STYLING.md`
+## P28 Tailwind conversion (approved 2026-10-26, D65) — plan: `TAILWIND-PLAN.md`, how to write classes: `docs/FRONTEND.md`
 Rule: nothing may look different; the CSS parity test comes back for the conversion and must match every screen.
 - [x] T1 — Setup: `tailwindcss` + `@tailwindcss/vite`, `@theme inline` on our tokens only, `dark` variant, breakpoints, cascade layers (React Flow < ours < utilities), parity test back, guard update, DECISIONS entry — [#180](https://github.com/tolakang/smart-canvas/pull/180)
 - [x] T2a — Dialogs → utilities; `ui/dialogs.css` removed — [#181](https://github.com/tolakang/smart-canvas/pull/181)
