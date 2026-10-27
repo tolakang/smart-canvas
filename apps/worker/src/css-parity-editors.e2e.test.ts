@@ -82,7 +82,7 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await square.getByRole('button', { name: 'Approve again' }).hover();
     await same('approve-hover');
     await square.getByRole('button', { name: 'Close', exact: true }).click();
-  }, limit(90_000));
+  }, limit(150_000)); // many screens since T7a–T7c
 
   it('dark theme: board and an editor', async () => {
     await page.getByRole('button', { name: 'Dark theme' }).click();

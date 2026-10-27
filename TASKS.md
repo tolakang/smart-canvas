@@ -233,4 +233,5 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [ ] T8 — Optional: Preflight instead of our base styles; drop unused `sc-` modifiers; retire the parity test again
 
 ## Next (see BACKLOG; proposals, the owner picks)
+- [x] Q9 — Editor colour variables: the `--line` / `--muted` loop in `.sc-fig` (this PR)
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`

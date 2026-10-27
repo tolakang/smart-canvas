@@ -3,7 +3,9 @@
  * the stage with the canvas and its overlays, the body that lays out the panels, and the phone's Layers | Design tabs.
  * The panels themselves (Layers, Design, inspector, comments) and the transform box (`tb-*`) are still CSS.
  *
- * - `.sc-fig` sets the editor's own variables; `--line`, `--muted` and `--input` follow them, as before.
+ * - `.sc-fig` sets the editor's own variables (`--fig-*`) from the page tokens, and `--input` from `--fig-select`. It
+ *   doesn't redefine `--line` or `--muted`: they were defined from `--fig-line` / `--fig-muted`, which are defined from
+ *   them, a loop that left both empty in the editors (Q9).
  * - Every button in the bar shares one quiet face. It is written with `:where()`, so a button's own classes win over
  *   it, as they did over the old CSS. Hover and disabled keep the old selectors' weight: hover beats a pressed tool.
  * - `_` in a class is a space, so a selector naming `sc-editor__side` is written with `\_` (String.raw).
@@ -15,7 +17,7 @@ const SCREEN =
 /** While fonts load. */
 export const LOADING = `${SCREEN} sc-muted [background:var(--bg)]`;
 /** The editor: its variables, compact 11 px type, the ambient backdrop. */
-export const FIG = `${SCREEN} sc-fig font-sans text-[11px] [color:var(--fig-fg)] [background:var(--ambient)] [--fig-panel:var(--surface)] [--fig-line:var(--line)] [--fig-hover:var(--surface-2)] [--fig-select:var(--accent-soft)] [--fig-blue:var(--accent)] [--fig-canvas:var(--canvas)] [--fig-fg:var(--fg)] [--fig-muted:var(--muted)] [--line:var(--fig-line)] [--input:var(--fig-select)] [--muted:var(--fig-muted)] [--fig-bar:var(--glass)] [--fig-bar-hover:color-mix(in_srgb,var(--fg)_7%,transparent)] [--fig-bar-fg:var(--fg)] [--fig-bar-muted:var(--muted)] dark:[--fig-bar-hover:color-mix(in_srgb,var(--fg)_9%,transparent)]`;
+export const FIG = `${SCREEN} sc-fig font-sans text-[11px] [color:var(--fig-fg)] [background:var(--ambient)] [--fig-panel:var(--surface)] [--fig-line:var(--line)] [--fig-hover:var(--surface-2)] [--fig-select:var(--accent-soft)] [--fig-blue:var(--accent)] [--fig-canvas:var(--canvas)] [--fig-fg:var(--fg)] [--fig-muted:var(--muted)] [--input:var(--fig-select)] [--fig-bar:var(--glass)] [--fig-bar-hover:color-mix(in_srgb,var(--fg)_7%,transparent)] [--fig-bar-fg:var(--fg)] [--fig-bar-muted:var(--muted)] dark:[--fig-bar-hover:color-mix(in_srgb,var(--fg)_9%,transparent)]`;
 
 /** The bar: one line that never wraps; the title takes what is left. Its buttons share one face. */
 export const BAR =

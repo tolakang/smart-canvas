@@ -1,36 +1,5 @@
 {
-  "ref": "c19425a44f33b291ab9d7db917ad2797e2f8b9f7",
-  "sheets": [
-    "apps/web/src/editor/editor.css"
-  ],
-  "subjects": [
-    ".sc-comment",
-    ".sc-comment__actions",
-    ".sc-comment__actions button",
-    ".sc-comment__meta",
-    ".sc-comment__resolved",
-    ".sc-comment__text",
-    ".sc-comments",
-    ".sc-comments__compose",
-    ".sc-comments__compose textarea",
-    ".sc-comments__compose-actions",
-    ".sc-comments__compose-actions .sc-comments__primary",
-    ".sc-comments__compose-actions button",
-    ".sc-comments__head",
-    ".sc-comments__hint",
-    ".sc-comments__list",
-    ".sc-comments__reply",
-    ".sc-comments__reply-btn",
-    ".sc-comments__thread",
-    ".sc-comments__thread--on",
-    ".sc-comments__thread--resolved",
-    ".sc-comments__toggle",
-    ".sc-pin",
-    ".sc-pin--inline",
-    ".sc-pin--new",
-    ".sc-pin--on",
-    ".sc-pin--resolved",
-    ".sc-pin:not(.sc-pin--inline)",
-    "p.sc-comment__text"
-  ]
+  "ref": "c659f335b05b12975461b07e7a19b3b593f4640a",
+  "sheets": [],
+  "subjects": []
 }
