@@ -9,6 +9,7 @@ import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, presetFamilies
 import { api, ApiError } from '../api';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState } from 'react';
+import { cardClass, HEAD_ACTION } from './card';
 import { useBoard } from './context';
 import { setRowHandle, type SetFlowNode } from './flow';
 import { newId } from './ids';
@@ -84,7 +85,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   }
 
   return (
-    <div className="sc-node sc-node--preset w-300 gap-14 rounded-[20px] p-16" aria-label={`Preset ${set.label}`}>
+    <div className={cardClass('preset')} aria-label={`Preset ${set.label}`}>
       <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="sc-handle--composition" title="From the Layer Comp group: feeds every size" />
       <NodeHead
         icon="grid"
@@ -102,7 +103,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         }
         extra={
           rows.length > 0 && (
-            <button type="button" className={`sc-head__action ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id), set.id)} aria-label={`Export all ${set.label} sizes`} title="Export every size as one ZIP">
+            <button type="button" className={`${HEAD_ACTION} ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id), set.id)} aria-label={`Export all ${set.label} sizes`} title="Export every size as one ZIP">
               <Icon name="export" size={14} />
               Export
             </button>

@@ -5,6 +5,7 @@
  */
 import { useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { HEAD, HEAD_ICON, HEAD_MORE, HEAD_SUB, HEAD_TEXT, HEAD_TITLE } from './card';
 import { ContextMenu, type MenuItem, type MenuState } from './ContextMenu';
 import { Icon, type IconName } from './LayerRow';
 
@@ -24,7 +25,7 @@ export function NodeHead(props: {
   menuLabel?: string;
   /** Marks or badges at the right, before the menu (hidden, from library, health…). */
   extra?: ReactNode;
-  /** The card kind's header colour, as a class setting `--head` (e.g. `[--head:var(--head-preview)]`). */
+  /** The card kind's header colour, as a class setting `--head` (e.g. `[--head:var(--head-preview)]`); assets by default. */
   tone?: string;
 }) {
   const [editing, setEditing] = useState(false);
@@ -35,14 +36,14 @@ export function NodeHead(props: {
     if (draft.trim() && draft.trim() !== (props.renameValue ?? props.title)) props.onRename?.(draft.trim());
   };
   return (
-    <div className={`sc-node__head sc-head${props.tone ? ` ${props.tone}` : ''}`}>
-      <span className="sc-head__icon" aria-hidden="true">
+    <div className={`${HEAD} ${props.tone ?? '[--head:var(--head-asset)]'}`}>
+      <span className={HEAD_ICON} aria-hidden="true">
         <Icon name={props.icon} size={15} />
       </span>
-      <div className="sc-head__text">
+      <div className={HEAD_TEXT}>
         {editing ? (
           <input
-            className={`sc-rename ${NO_CANVAS}`}
+            className={`sc-rename flex-1 ${NO_CANVAS}`}
             aria-label={props.renameLabel ?? 'Name'}
             value={draft}
             autoFocus
@@ -53,20 +54,20 @@ export function NodeHead(props: {
           />
         ) : (
           <div
-            className="sc-node__title sc-head__title"
+            className={HEAD_TITLE}
             title={props.onRename ? `${props.title} — double-click to rename` : props.title}
             onDoubleClick={() => props.onRename && (setDraft(props.renameValue ?? props.title), setEditing(true))}
           >
             {props.title}
           </div>
         )}
-        {props.sub && <div className="sc-head__sub">{props.sub}</div>}
+        {props.sub && <div className={HEAD_SUB}>{props.sub}</div>}
       </div>
       {props.extra}
       {props.menu && props.menu.length > 0 && (
         <button
           type="button"
-          className={`sc-head__more ${NO_CANVAS}`}
+          className={`${HEAD_MORE} ${NO_CANVAS}`}
           aria-label={props.menuLabel ?? `${props.title} actions`}
           aria-haspopup="menu"
           aria-expanded={Boolean(open)}

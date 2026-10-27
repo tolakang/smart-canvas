@@ -22,6 +22,7 @@ import {
 } from '@smart-canvas/core';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useMemo, useState } from 'react';
+import { cardClass } from './card';
 import { useBoard } from './context';
 import { LAYERS_HANDLE, OUTPUT_HANDLE, type MainFlowNode } from './flow';
 import { HealthBadge } from './HealthBadge';
@@ -85,7 +86,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
   return (
     <div className={GROUP} aria-label="Layer comp and core preset">
       <Handle type="target" position={Position.Top} id={LAYERS_HANDLE} isConnectable={!readOnly} className="sc-handle--layer" title="Asset nodes wire in here" />
-      <section className="sc-node sc-node--main w-280 min-w-260 min-h-120 gap-14 rounded-[20px] p-16 before:bg-type-main" aria-label="Layer comp">
+      <section className={cardClass('main')} aria-label="Layer comp">
         <NodeHead icon="arrange" tone="[--head:var(--head-master)]" title="Layer Comp" sub={`${layerCount} ${layerCount === 1 ? 'layer' : 'layers'} · front to back`} extra={<HealthBadge health={health} />} />
         <div className={LABEL}>Layer order</div>
         <ol className={`sc-comp__groups m-0 grid list-none gap-6 p-0 ${NO_DRAG}`} aria-label="Layer order (front first)">
@@ -142,7 +143,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
         </div>
       </section>
 
-      <section className="sc-node sc-node--rule w-280 gap-14 rounded-[20px] p-16" aria-label="Core preset">
+      <section className={cardClass('rule')} aria-label="Core preset">
         <NodeHead icon="grid" tone="[--head:var(--head-rule)]" title="Core preset" sub={`${previewCount} ${previewCount === 1 ? 'Preview' : 'Previews'} · sorted by shape`} />
         {/* D50: each Preview in its layout's section (closest shape, or as chosen); drag one into another section. */}
         <div className={`sc-rule__sections grid gap-10 ${NO_DRAG}`} role="list" aria-label="Core preset">

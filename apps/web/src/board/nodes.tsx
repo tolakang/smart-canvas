@@ -2,6 +2,7 @@ import { Handle, Position, type NodeProps, type NodeTypes } from '@xyflow/react'
 import { ALLOWED_BEHAVIORS, fillToCss, fontStack, setBehavior, type Behavior, type InputSource } from '@smart-canvas/core';
 import { assetUrl } from '../api';
 import { AssetEditor, BackgroundSlots, FillEditor, TextEditor, useAssetUpload, type AssetUpload } from './editors';
+import { cardClass } from './card';
 import { useBoard } from './context';
 import { MainNodeView } from './MainNode';
 import { SourceHeader } from './SourceHeader';
@@ -25,7 +26,7 @@ function InputNodeView({ data, selected }: NodeProps<InputFlowNode>) {
   // T8.3: drop an image file anywhere on a picture input (or a photo on a fill background, D9).
   const upload = useAssetUpload(source);
   return (
-    <div className={`sc-node sc-node--input${source.visible ? '' : ' sc-node--hidden'}${upload.over ? ' sc-node--drop' : ''}`} {...upload.dropProps}>
+    <div className={cardClass('input', { hidden: !source.visible, drop: upload.over })} {...upload.dropProps}>
       <SourceHeader source={source} />
       {/* D43.1: a Background node is its square, vertical and horizontal slots; each output uses the one of its group. */}
       {source.behavesLike === 'background' ? <BackgroundSlots source={source} selected={selected} /> : <NodePreview source={source} upload={upload} />}
@@ -42,13 +43,13 @@ function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpl
   const { content } = source;
   if (content.kind === 'text')
     return (
-      <div className="sc-node__text" lang={content.style.language === 'km' ? 'km' : undefined} style={{ fontFamily: fontStack(content.style.fontFamily), fontWeight: content.style.fontWeight }}>
+      <div className="sc-node__text overflow-hidden text-md leading-[1.35] [overflow-wrap:anywhere] [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical]" lang={content.style.language === 'km' ? 'km' : undefined} style={{ fontFamily: fontStack(content.style.fontFamily), fontWeight: content.style.fontWeight }}>
         {content.text || <span className="sc-muted">No text yet</span>}
       </div>
     );
   const picture = content.kind === 'fill' ? null : content.assetId;
   return (
-    <div className="sc-node__preview">
+    <div className="sc-node__preview grid justify-items-center gap-(--sp-1)">
       {content.kind === 'fill' && !picture ? (
         <div className="sc-swatch" style={{ background: fillToCss(content.fill) }} />
       ) : picture ? (
@@ -61,7 +62,7 @@ function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpl
           <input type="file" accept={upload.accept} onChange={upload.onFile} disabled={upload.busy} hidden />
         </label>
       )}
-      {upload.busy && picture && <div className="sc-node__busy">Uploading…</div>}
+      {upload.busy && picture && <div className="sc-node__busy text-xs text-muted">Uploading…</div>}
       {upload.error && (
         <p className="sc-error" role="alert">
           {upload.error}
@@ -78,7 +79,7 @@ export function BehaviorPicker({ source, id }: { source: InputSource; id?: strin
   return (
     <select
       id={id}
-      className="sc-behavior nodrag nopan nowheel"
+      className="sc-behavior border border-line bg-surface px-2 py-0 [font-family:inherit] [font-weight:inherit] [line-height:inherit] text-[12px] text-fg nodrag nopan nowheel"
       aria-label={`${source.label} behaves like`}
       title="How this input adapts in Previews"
       value={source.behavesLike}

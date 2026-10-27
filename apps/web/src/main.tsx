@@ -11,7 +11,6 @@ import './fonts/bundled.css';
 import './styles.css';
 import './board/review.css';
 import './editor/editor.css';
-import './board/node.css';
 import './board/chrome.css';
 import './board/assets.css';
 import { applyTheme } from './ui/theme';

@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { ApiError, assetUrl, UploadCancelled, uploadAsset } from '../api';
 import { setAsset, setPicture, withSource } from './content';
 import { PICTURE_ACCEPT } from './stack-upload';
+import { cardClass } from './card';
 import { useBoard } from './context';
 import type { PairFlowNode } from './flow';
 import { newId } from './ids';
@@ -94,7 +95,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
   };
 
   return (
-    <div className="sc-node sc-node--input sc-node--headline">
+    <div className={`${cardClass('input')} sc-node--headline`}>
       <NodeHead
         icon="font"
         title={pair.label}

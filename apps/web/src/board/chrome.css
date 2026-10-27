@@ -33,6 +33,27 @@
 }
 .react-flow__edge-path { stroke: color-mix(in srgb, var(--head-master) 45%, var(--faint)); stroke-width: 2; }
 .react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2.5; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 45%, transparent)); }
+/* Nodes and their handles (ports, T12.2) are React Flow's DOM: the nodes' text size, the glide while Tidy moves them
+   (D57), and the typed ports. Our cards inside them are Tailwind classes (board/card.ts). */
+.react-flow__node { font-size: 12.5px; }
+.sc-board__flow--tidying .react-flow__node { transition: transform 200ms cubic-bezier(0.2, 0, 0, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .sc-board__flow--tidying .react-flow__node { transition: none; }
+}
+/* Handles (ports, T12.2): typed colours, bigger with an invisible hit area, on the title row. */
+/* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
+.react-flow__handle::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+/* T12.2 typed ports (D32): layer = blue, composition = purple; while wiring, valid targets glow, others fade */
+.react-flow__handle.sc-handle--layer { border-color: var(--type-input); }
+.react-flow__handle.sc-handle--composition { border-color: var(--type-main); border-radius: 3px; }
+.react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
+.react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
+.react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: var(--danger-soft); }
+@media (pointer: coarse) {
+  .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
+}
+.react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
+.react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }
 /* The Layer Comp group's handles (in and out) are a little larger; a Preview's input sits level with its title (where
    a dropped wire creates it), not mid-card (T10.4). */
 .sc-comp-group > .react-flow__handle-top, .sc-comp-group > .react-flow__handle-bottom { width: 14px; height: 14px; }
