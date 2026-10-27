@@ -13,8 +13,8 @@ import type { StackFlowNode } from './flow';
 import { newId } from './ids';
 import { confirmDelete, Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** Its Delete: shown on hover or while typing (on touch: while typing, or once the slot is selected). */
 const REMOVE =
@@ -46,7 +46,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
           return (
             <li
               key={s.id}
-              className={`sc-text-slot group/text relative grid gap-6 rounded-[8px] p-0${focused ? ' sc-assets__item--focus [outline:2px_solid_var(--accent)] outline-offset-1' : ''}${s.visible ? '' : ' sc-assets__item--hidden opacity-45'}`}
+              className={`sc-text-slot group/text relative grid gap-6 rounded-[8px] p-0 ${focused ? ' sc-assets__item--focus [outline:2px_solid_var(--accent)] outline-offset-1' : ''}${s.visible ? '' : ' sc-assets__item--hidden opacity-45'}`}
             >
               <span className="sc-text-slot__label text-[12px] font-[600] text-muted">{s.label}</span>
               <textarea

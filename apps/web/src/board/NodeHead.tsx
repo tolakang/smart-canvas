@@ -8,8 +8,8 @@ import { createPortal } from 'react-dom';
 import { HEAD, HEAD_ICON, HEAD_MORE, HEAD_SUB, HEAD_TEXT, HEAD_TITLE } from './card';
 import { ContextMenu, type MenuItem, type MenuState } from './ContextMenu';
 import { Icon, type IconName } from './LayerRow';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 export function NodeHead(props: {
   icon: IconName;

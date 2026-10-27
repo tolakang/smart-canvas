@@ -23,12 +23,12 @@ import { frameOfState, sameFrame, snapMove, snapResize, snapTargets, syncDoc } f
 import type { TransformDoc } from './transform/math';
 import { DOUBLE_TAP_DIST, DOUBLE_TAP_MS, TransformBox } from './transform/transform-box';
 import { BAR, bodyClass, CANVAS, CLOSE, FIG, HOVER, MUTED, PAN, POINT, RESET, RESETS, SELECTION, SIZE, SPOT, SPOT_NAME, stageClass, TABS, tabClass, TARGET, TITLE, TOOL, TOOLS, ZOOM, ZOOM_ACTUAL, ZOOM_VALUE } from './shell';
+import { MIN_SCALE } from './transform/math';
 
 /** Moves and resizes snap within this many screen px. */
 const SNAP_PX = 6;
 /** Touch: a finger that moves less than this is a tap (two taps make a double-tap as on the box's handles). */
 const TAP_SLOP_PX = 8;
-const MIN_SCALE = 0.02;
 const MAX_SCALE = 64;
 
 type Tool = 'move' | 'hand';

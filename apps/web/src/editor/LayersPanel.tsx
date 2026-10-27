@@ -6,10 +6,9 @@
  */
 import { connectSource, layerOrder, MAIN, outputComposition, setOverrideHidden, wiredLayers, type InputSource } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
-import { Icon, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
+import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 import { EDITED, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
 
-const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 
 export function LayersPanel(props: { selected: string | null; onSelect: (id: string) => void; outputId?: string; compositionId?: string }) {
   const { doc, run, readOnly, author } = useBoard();

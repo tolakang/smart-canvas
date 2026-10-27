@@ -7,8 +7,8 @@
  */
 import { useId, useState, type DragEvent, type ReactNode } from 'react';
 import { Icon } from './LayerRow';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** A soft checkerboard under the picture (transparent pixels show as such). */
 const CHECKER = '[background:repeating-conic-gradient(color-mix(in_srgb,var(--checker-a)_70%,transparent)_0_25%,transparent_0_50%)_0_0/14px_14px,var(--surface-2)]';
@@ -92,7 +92,7 @@ export function Slot(p: SlotProps) {
     over && 'sc-slot--over',
     p.use && `sc-slot--${p.use}`,
     row
-      ? `sc-slot--row grid-cols-[52px_minmax(0,1fr)] items-center gap-12 rounded-[14px] p-6 [transition:background_var(--t-fast)] hover:bg-surface-2${p.focused ? ' bg-surface-2' : ''}`
+      ? `sc-slot--row grid-cols-[52px_minmax(0,1fr)] items-center gap-12 rounded-[14px] p-6 [transition:background_var(--t-fast)] hover:bg-surface-2 ${p.focused ? ' bg-surface-2' : ''}`
       : 'gap-8',
     p.className,
   ]

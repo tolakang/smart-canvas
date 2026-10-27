@@ -10,6 +10,8 @@ import { useEffect, type RefObject } from 'react';
  * D58: on touch the board's no-pan marker. Ports, a selected panel and drag grips carry it; a card's buttons and
  * fields don't (their `nopan` counts with a mouse only), so a finger that lands on them still moves the board.
  */
+/** React Flow leaves a control with these alone: a click or a scroll on it doesn't drag the node or pan the board. */
+export const NO_CANVAS = 'nodrag nopan nowheel';
 export const TOUCH_NO_PAN = 'sc-touch-nopan';
 
 interface Viewport {

@@ -13,6 +13,7 @@ import { AssetsNodeView } from './AssetsNode';
 import { HeadlineNodeView } from './HeadlineNode';
 import { TextNodeView } from './TextNode';
 import { PresetNodeView } from './PresetNode';
+import { NO_CANVAS } from './pinch';
 
 /**
  * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
@@ -35,7 +36,6 @@ function InputNodeView({ data, selected }: NodeProps<InputFlowNode>) {
   );
 }
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** The card's view of an input's content (read-only; editing is in the inspector). */
 function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpload }) {

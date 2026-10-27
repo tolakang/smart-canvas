@@ -30,8 +30,8 @@ import { HealthBadge } from './HealthBadge';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { approvalOf, threadsOf } from './review';
+import { NO_CANVAS } from './pinch';
 
-const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** The approval pill (also in the Review panel). */
 export const APPROVAL_PILL = 'inline-flex h-20 items-center rounded-[10px] px-6 py-0 text-[11px] font-[600] whitespace-nowrap';
