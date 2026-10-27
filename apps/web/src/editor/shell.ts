@@ -50,7 +50,7 @@ export const bodyClass = (sheet: 'layers' | 'design') =>
 
 /** The stage: the grey canvas around the artwork; the editor's touch gestures are its own (D58). */
 export const stageClass = (hand: boolean) =>
-  `sc-editor__stage relative min-h-0 min-w-0 flex-1 touch-none overflow-hidden [background:var(--fig-canvas,var(--canvas))] md:rounded-[18px] md:[background:color-mix(in_srgb,var(--canvas)_85%,transparent)] md:[border:1px_solid_color-mix(in_srgb,var(--line)_80%,transparent)] md:[box-shadow:inset_0_1px_3px_rgb(16_24_40/0.06)]${hand ? ' sc-editor__stage--hand cursor-grab' : ''}`;
+  `sc-editor__stage relative min-h-0 min-w-0 flex-1 touch-none overflow-hidden [background:var(--fig-canvas,var(--canvas))] md:rounded-[18px] md:[background:color-mix(in_srgb,var(--canvas)_85%,transparent)] md:[border:1px_solid_color-mix(in_srgb,var(--line)_80%,transparent)] md:[box-shadow:inset_0_1px_3px_rgb(16_24_40/0.06)] ${hand ? 'sc-editor__stage--hand cursor-grab' : ''}`;
 /** The artwork, on a checkerboard. */
 export const CANVAS =
   'sc-editor__canvas absolute [background:repeating-conic-gradient(var(--checker-a)_0_25%,var(--checker-b)_0_50%)_0_0_/_16px_16px] [box-shadow:0_0_0_1px_rgb(16_24_40/0.06),0_12px_32px_-8px_rgb(16_24_40/0.28)]';
