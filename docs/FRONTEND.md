@@ -52,7 +52,7 @@ CSS that stays CSS, and why:
 - **A shorthand then a longhand** in one old rule: write the shorthand as `[:where(&)]:[border-bottom:…]` and the
   longhand plainly, so the longhand wins (`editor/panels.ts`).
 - **Never a class right after `${…}`.** Tailwind reads the source text; `` `cursor-grab${x}` `` is one word to it and
-  the class is never generated. Leave a space: `` `cursor-grab ${x}` ``.
+  the class is never generated. Leave a space: `` `cursor-grab ${x}` ``. `pnpm lint` catches it.
 - **`_` is a space** in a class. Name a class with `__` as `\_\_` in a `String.raw` string:
   `` String.raw`[.react-flow\_\_node.selected_&]:border-accent` `` (`board/card.ts`).
 
@@ -163,7 +163,8 @@ The board (D49: asset nodes → Layer Comp + Core preset → Preset nodes → Pr
 ```
 pnpm i
 pnpm lint          # eslint + scripts/check-css.mjs: no hex colour outside a token, no unused sc- class in CSS,
-                   # each selector in one stylesheet, no -webkit-backdrop-filter, no new .css file
+                   # each selector in one stylesheet, no -webkit-backdrop-filter, no new .css file,
+                   # no class written right before ${…}
 pnpm typecheck
 pnpm build
 pnpm test          # vitest: unit tests, and the e2e tests when TEST_DATABASE_URL is set

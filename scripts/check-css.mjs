@@ -11,6 +11,8 @@
 // 5. No hex colour in a Tailwind class either (`bg-[#fff]`): classes use the tokens (`bg-surface`, tailwind.css).
 // 6. No new stylesheet: the UI is built with Tailwind utilities (D65, docs/FRONTEND.md). The list below only shrinks
 //    as areas are converted.
+// 7. No Tailwind class written right before `${…}` in a template (`` `cursor-grab${x}` ``): Tailwind reads the source
+//    text, sees one word and never generates the class. Leave a space (`` `cursor-grab ${x}` ``).
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -80,6 +82,11 @@ for (const file of codeFiles) {
   const text = readFileSync(file, 'utf8');
   for (const m of text.matchAll(/[\w-]+-\[#[0-9a-fA-F]{3,8}\]/g))
     problems.push(`${relative(root, file)}:${lineAt(text, m.index)}: ${m[0]} — use a colour token (tailwind.css) instead of a hex value`);
+  // A class-like word (`p-0`, `hover:bg-surface-2`, `[&:hover]:…`) glued to `${`. Our `sc-` hooks, ids built from a
+  // prefix (`tip-${id}`) and data URLs are written that way on purpose.
+  for (const m of text.matchAll(/(?<=[\s'"`])([^\s'"`{}$]*[a-z][^\s'"`{}$]*)\$\{/g))
+    if (/[a-z]-|\]/.test(m[1]) && !/^(sc-|react-flow|data:)/.test(m[1]) && !/[-,=/]$/.test(m[1]))
+      problems.push(`${relative(root, file)}:${lineAt(text, m.index)}: ${m[1]}\${…} — leave a space before \${…}, or Tailwind never generates ${m[1]}`);
 }
 if (problems.length) {
   console.error(problems.join('\n'));
