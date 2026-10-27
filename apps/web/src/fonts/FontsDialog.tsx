@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { ApiError, uploadAsset } from '../api';
 import type { TeamFont } from './loader';
 import { DIALOG } from '../ui/tw';
+import { FILE_PICK } from '../ui/file-pick';
 
 const SAMPLE = 'Aa Bb 123 · សួស្តី កម្ពុជា';
 
@@ -73,7 +74,7 @@ export function FontsDialog(props: {
           {props.teamFonts.map((f) => row(f.family, 'team'))}
         </ul>
         {!props.readOnly && (
-          <label className="sc-upload">
+          <label className="sc-upload" {...FILE_PICK}>
             {busy ? 'Uploading…' : 'Upload font (TTF, OTF, WOFF2)…'}
             <input type="file" accept=".ttf,.otf,.woff2,font/ttf,font/otf,font/woff2" onChange={onFile} disabled={busy} hidden />
           </label>

@@ -14,6 +14,7 @@ import { HeadlineNodeView } from './HeadlineNode';
 import { TextNodeView } from './TextNode';
 import { PresetNodeView } from './PresetNode';
 import { NO_CANVAS } from './pinch';
+import { FILE_PICK } from '../ui/file-pick';
 
 /**
  * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
@@ -57,7 +58,7 @@ function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpl
       ) : readOnly ? (
         <div className="sc-thumb sc-thumb--empty">No {content.kind === 'vector' ? 'SVG' : 'image'} yet</div>
       ) : (
-        <label className={`sc-thumb sc-thumb--empty sc-thumb--upload ${NO_CANVAS}`}>
+        <label className={`sc-thumb sc-thumb--empty sc-thumb--upload ${NO_CANVAS}`} {...FILE_PICK}>
           {upload.busy ? 'Uploading…' : `Upload ${content.kind === 'vector' ? 'an SVG' : 'an image'}… or drop`}
           <input type="file" accept={upload.accept} onChange={upload.onFile} disabled={upload.busy} hidden />
         </label>

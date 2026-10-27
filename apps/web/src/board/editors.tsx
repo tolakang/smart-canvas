@@ -7,6 +7,7 @@ import { Slot } from './Slot';
 import { FIELDS } from '../editor/shell';
 import { BOARD_TEXT } from '../editor/panels';
 import { NO_CANVAS } from './pinch';
+import { FILE_PICK } from '../ui/file-pick';
 
 
 const ACCEPT: Record<'image' | 'vector', string> = {
@@ -119,7 +120,7 @@ export function AssetEditor({ source, upload }: { source: InputSource & { conten
         <div className="sc-thumb sc-thumb--empty">No {kind === 'image' ? 'image' : 'SVG'} yet</div>
       )}
       {!readOnly && (
-        <label className={`sc-upload ${NO_CANVAS}`}>
+        <label className={`sc-upload ${NO_CANVAS}`} {...FILE_PICK}>
           {busy ? 'Uploading…' : assetId ? 'Replace… or drop' : 'Upload… or drop'}
           <input type="file" accept={ACCEPT[kind]} onChange={onFile} disabled={busy} hidden />
         </label>
@@ -221,7 +222,7 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
         )}
       </fieldset>
       {!readOnly && upload.kind && (
-        <label className={`sc-upload ${NO_CANVAS}`} title="A background can be a photo (D9)">
+        <label className={`sc-upload ${NO_CANVAS}`} title="A background can be a photo (D9)" {...FILE_PICK}>
           {upload.busy ? 'Uploading…' : 'Use a photo… or drop'}
           <input type="file" accept={upload.accept} onChange={upload.onFile} disabled={upload.busy} hidden />
         </label>
