@@ -12,7 +12,6 @@ import './styles.css';
 import './board/review.css';
 import './editor/editor.css';
 import './board/chrome.css';
-import './board/assets.css';
 import { applyTheme } from './ui/theme';
 
 applyTheme(); // D34: before the first paint, so a dark-theme user never sees a light flash

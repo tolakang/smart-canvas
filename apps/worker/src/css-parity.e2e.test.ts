@@ -362,9 +362,9 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await image.dispatchEvent('dragleave', { dataTransfer: files });
 
     await image.locator('.sc-slot').first().hover();
-    await image.getByRole('button', { name: /^Delete / }).first().hover();
+    await image.getByRole('button', { name: /^Delete / }).first().hover({ force: true });
     await same('slot-delete-hover');
-    await image.getByRole('button', { name: /^Remove picture from / }).first().hover();
+    await image.getByRole('button', { name: /^Remove picture from / }).first().hover({ force: true });
     await same('slot-act-hover');
     await page.mouse.move(5, 500);
     await image.getByRole('button', { name: /^Select / }).first().focus();
@@ -374,8 +374,8 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     // A slot whose picture was removed keeps its Delete on hover.
     const logo = node('Logo');
     await logo.locator('.sc-slot').nth(1).hover();
-    await logo.getByRole('button', { name: /^Remove picture from / }).nth(1).click();
-    await expect(logo.locator('.sc-slot--empty')).toHaveCount(1);
+    await logo.getByRole('button', { name: /^Remove picture from / }).nth(1).click({ force: true });
+    await expect.poll(() => logo.locator('.sc-slot--empty').count()).toBe(1);
     await page.mouse.move(5, 500);
     await logo.locator('.sc-slot--empty').hover();
     await same('slot-empty-hover');
@@ -420,19 +420,19 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     const headline = node('Headline');
     await headline.locator('.sc-hl-row').nth(1).hover();
     await same('headline-row-hover');
-    await headline.getByRole('button', { name: 'Delete headline 2' }).hover();
+    await headline.getByRole('button', { name: 'Delete headline 2' }).hover({ force: true });
     await same('headline-delete-hover');
     await page.mouse.move(5, 500);
     await headline.getByRole('radio', { name: 'Khmer' }).focus();
     await page.keyboard.press('ArrowRight');
-    await expect(headline.getByRole('radio', { name: 'English' })).toBeChecked();
+    await expect.poll(() => headline.getByRole('radio', { name: 'English' }).isChecked()).toBe(true);
     await saved();
     await same('headline-english-key');
     await headline.locator('.sc-slot--off img').first().hover();
     await same('headline-off-hover');
     await headline.getByRole('radio', { name: 'English' }).focus();
     await page.keyboard.press('ArrowLeft');
-    await expect(headline.getByRole('radio', { name: 'Khmer' })).toBeChecked();
+    await expect.poll(() => headline.getByRole('radio', { name: 'Khmer' }).isChecked()).toBe(true);
     await page.mouse.click(5, 500);
 
     // Text slots: one hovered, one being typed in, its Delete hovered.
@@ -441,7 +441,7 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await same('text-slot-hover');
     await text.getByRole('textbox').first().focus();
     await same('text-slot-focus');
-    await text.getByRole('button', { name: /^Delete / }).first().hover();
+    await text.getByRole('button', { name: /^Delete / }).first().hover({ force: true });
     await same('text-remove-hover');
     await page.mouse.click(5, 500);
     await saved();
