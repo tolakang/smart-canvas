@@ -152,6 +152,36 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('button', { name: 'Review', exact: true }).click();
   }, limit(60_000));
 
+  it('inspector and canvas notices: a focused field, a Preview, the Tidy notice, a version shown', async () => {
+    const inspector = page.getByRole('complementary', { name: 'Inspector' });
+    await node('Text').locator('.sc-node__title').click();
+    await inspector.getByRole('textbox').first().focus();
+    await same('inspector-field-focus');
+    await page.locator('.react-flow__node[data-id="out:banner"] .sc-node__title').click();
+    await page.mouse.move(5, 500);
+    await same('inspector-preview');
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Tidy board' }).click();
+    const toast = page.locator('.sc-board__toast');
+    await toast.waitFor();
+    await toast.getByRole('button', { name: 'Undo' }).hover();
+    await page.waitForTimeout(400); // the panels glide into place; the notice stays 5 s, long enough for one draw
+    await same('tidy-notice-hover');
+    await saved();
+    await page.getByRole('button', { name: 'History' }).click();
+    const history = page.getByRole('complementary', { name: 'History' });
+    await history.getByRole('textbox', { name: 'Version name' }).fill('Sent to client');
+    await history.getByRole('button', { name: 'Save version' }).click();
+    await history.getByRole('button', { name: /Sent to client/ }).first().click();
+    await page.locator('.sc-board__version').waitFor();
+    await page.waitForTimeout(500);
+    await same('version-shown');
+    await page.locator('.sc-board__version').getByRole('button', { name: 'Close' }).click();
+    await page.locator('.sc-board__version').waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: 'Close history' }).click();
+    await page.mouse.move(5, 500);
+  }, limit(90_000));
+
   it('dialogs: Export', async () => {
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     await page.getByRole('dialog', { name: 'Export' }).waitFor();
@@ -230,6 +260,10 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('menu').waitFor();
     await same('tablet-add-menu');
     await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Inspector', exact: true }).click();
+    await page.getByRole('complementary', { name: 'Inspector' }).waitFor();
+    await same('tablet-inspector');
+    await page.getByRole('button', { name: 'Close inspector' }).click();
     await page.setViewportSize({ width: 1600, height: 1000 });
     await fit();
   }, limit(60_000));
@@ -295,6 +329,11 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await node('Image').waitFor();
     await imagesLoaded();
     await same('phone-board');
+    await page.getByRole('button', { name: 'Inspector', exact: true }).click();
+    await page.getByRole('complementary', { name: 'Inspector' }).waitFor();
+    await page.waitForTimeout(400);
+    await same('phone-inspector');
+    await page.getByRole('button', { name: 'Close inspector' }).click();
     // On touch the first tap on a small panel zooms to it (Q8); the next one opens the editor.
     const editor = page.getByRole('dialog', { name: 'Preview editor Banner' });
     await expect
