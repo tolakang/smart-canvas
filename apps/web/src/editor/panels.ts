@@ -7,6 +7,8 @@
  * - Where one old rule set a shorthand and then a longhand (`border-bottom: …; border-bottom-color: …`), the shorthand
  *   is written with `[:where(&)]:` so the longhand wins, as it did.
  * - `.sc-field` (styles.css) still sizes the number inputs in the Design panel's grid; the old rules let it.
+ * - The dropdown chevron (styles.css) outranks the fields' face, so only their background colour is set; focus
+ *   clears it, as before.
  * - State rules keep the old selectors' weight: hover beats pressed (the lock), focus beats hover (number fields).
  */
 
@@ -53,7 +55,7 @@ export const TITLE = 'sc-design__title flex flex-wrap items-baseline gap-6 text-
 export const COMMENTS_HEAD = 'sc-design__title sc-comments__head flex flex-wrap items-center justify-between gap-6 text-[12px] font-[600]';
 /** A folding section's title, with a chevron that turns when open. */
 export const SUMMARY =
-  "sc-design__title flex cursor-pointer list-none flex-wrap items-center justify-between gap-6 text-[12px] font-[600] [&::-webkit-details-marker]:hidden after:size-6 after:content-[''] after:[border-right:1.5px_solid_var(--muted)] after:[border-bottom:1.5px_solid_var(--muted)] after:[transform:rotate(45deg)] after:[transition:transform_var(--t-fast)] [details[open]>&]:after:[transform:rotate(225deg)]";
+  "sc-design__title flex cursor-pointer [list-style:none] flex-wrap items-center justify-between gap-6 text-[12px] font-[600] [&::-webkit-details-marker]:hidden after:size-6 after:content-[''] after:[border-right:1.5px_solid_var(--muted)] after:[border-bottom:1.5px_solid_var(--muted)] after:[transform:rotate(45deg)] after:[transition:transform_var(--t-fast)] [details[open]>&]:after:[transform:rotate(225deg)]";
 /** One gesture per line. */
 export const GESTURES_LIST =
   'sc-gestures m-0 grid gap-2 [&>div]:grid [&>div]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] [&>div]:items-baseline [&>div]:gap-12 [&>div]:px-0 [&>div]:py-8 [&>div]:[border-top:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [&>div:first-child]:[border-top:0] [&_dt]:text-[12.5px] [&_dt]:font-[650] [&_dt]:text-fg [&_dd]:m-0 [&_dd]:text-[12.5px] [&_dd]:text-muted';
@@ -69,7 +71,7 @@ export const LOCK =
 /** The text properties: font, size, weight, colour, align, lines, language. */
 export const PROPS = 'sc-props w-auto flex-none overflow-visible [background:var(--surface)] [border-left:0]';
 export const PROPS_BODY =
-  'sc-props__body m-0 grid gap-8 px-16 pt-8 pb-12 text-[11px] [border:0] [:where(&)_:is(select,input[type=number])]:[font:inherit] [:where(&)_:is(select,input[type=number])]:[border:1px_solid_var(--line)] [&_:is(select,input[type=number])]:h-28 [&_:is(select,input[type=number])]:w-full [&_:is(select,input[type=number])]:rounded-[5px] [&_:is(select,input[type=number])]:px-6 [&_:is(select,input[type=number])]:py-4 [&_:is(select,input[type=number])]:text-[11px] [&_:is(select,input[type=number])]:[border-color:transparent] [&_:is(select,input[type=number])]:[background:var(--fig-hover)] [&_:is(select,input[type=number]):focus]:[border-color:var(--fig-blue)] [&_:is(select,input[type=number]):focus]:[background:var(--surface)] [&_:is(select,input[type=number]):focus]:[outline:none] [&_input[type=color]]:h-28 [&_input[type=color]]:w-44 [&_input[type=color]]:rounded-[4px] [&_input[type=color]]:p-0 [&_input[type=color]]:[border:1px_solid_var(--line)]';
+  'sc-props__body m-0 grid gap-8 px-16 pt-8 pb-12 text-[11px] [border:0] [:where(&)_:is(select,input[type=number])]:[font:inherit] [:where(&)_:is(select,input[type=number])]:[border:1px_solid_var(--line)] [&_:is(select,input[type=number])]:h-28 [&_:is(select,input[type=number])]:w-full [&_:is(select,input[type=number])]:rounded-[5px] [&_:is(select,input[type=number])]:px-6 [&_:is(select,input[type=number])]:py-4 [&_:is(select,input[type=number])]:text-[11px] [&_:is(select,input[type=number])]:[border-color:transparent] [&_:is(select,input[type=number])]:[background-color:var(--fig-hover)] [&_:is(select,input[type=number]):focus]:[border-color:var(--fig-blue)] [&_:is(select,input[type=number]):focus]:[background:var(--surface)] [&_:is(select,input[type=number]):focus]:[outline:none] [&_input[type=color]]:h-28 [&_input[type=color]]:w-44 [&_input[type=color]]:rounded-[4px] [&_input[type=color]]:p-0 [&_input[type=color]]:[border:1px_solid_var(--line)]';
 export const PROPS_ROW = 'sc-props__row grid grid-cols-[1fr_1fr] gap-10';
 export const NOTE = 'sc-props__note m-0 text-[12px]';
 /** The text itself, in the Layer Comp editor. */
