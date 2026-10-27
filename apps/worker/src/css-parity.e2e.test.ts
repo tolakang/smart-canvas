@@ -389,7 +389,8 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await page.getByRole('menuitem', { name: 'List view' }).click();
     await image.locator('.sc-slot--row').first().hover();
     await same('assets-list-hover');
-    await image.getByRole('button', { name: /^Select / }).nth(1).click();
+    await page.mouse.move(5, 500);
+    await image.getByRole('button', { name: /^Select / }).nth(1).click({ force: true });
     await page.mouse.move(5, 500);
     await same('assets-list-selected');
     await image.locator('.sc-head__more').click();
