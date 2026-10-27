@@ -68,5 +68,5 @@ of the older CSS is tracked in `../TAILWIND-PLAN.md`.
 
 - `pnpm lint` runs `scripts/check-css.mjs`: no hex colour outside a token (in CSS and in classes), no unused `sc-`
   class in CSS, each selector in one stylesheet, no `-webkit-backdrop-filter` (the build adds it), no new `.css` file.
-- While areas are being converted, `apps/worker/src/css-parity.e2e.test.ts` proves a conversion PR changes nothing
-  (`TAILWIND-PLAN.md`). A PR meant to look different is not a conversion PR.
+- While areas are being converted, the parity test (`apps/worker/src/css-parity-*.e2e.test.ts`) proves a conversion
+  PR changes nothing (`TAILWIND-PLAN.md`). A PR meant to look different is not a conversion PR.

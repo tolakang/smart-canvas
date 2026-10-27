@@ -146,7 +146,7 @@ what is named instead.
   - `.react-flow__edge`, `.react-flow__pane`
   - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything
 - Seed a board through the API with core functions (`addOutput`, …) and `page.request.put`, as `comments.e2e.test.ts` does, rather than many UI clicks.
-- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). The board areas not converted yet keep their files (`review.css`), which the conversion empties one by one (`TAILWIND-PLAN.md`): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run `css-parity.e2e.test.ts`.
+- **Styling**: build with Tailwind utilities on our tokens (`docs/STYLING.md`); no new CSS rules except React Flow's own DOM (`.react-flow__*`, in `board/chrome.css`). The board areas not converted yet keep their files (`review.css`), which the conversion empties one by one (`TAILWIND-PLAN.md`): React Flow's sheet sits in the lowest cascade layer (`board/reactflow.css`), ours in `app`, utilities on top (`tailwind.css`); keep the `sc-` classes in the markup and run the parity test (`css-parity-*.e2e.test.ts`, commands in `TAILWIND-PLAN.md`).
 
 ## 9. Checklist: a new node type
 
