@@ -8,6 +8,7 @@
 import { useId, useState, type DragEvent, type ReactNode } from 'react';
 import { Icon } from './LayerRow';
 import { NO_CANVAS } from './pinch';
+import { FILE_PICK } from '../ui/file-pick';
 
 
 /** A soft checkerboard under the picture (transparent pixels show as such). */
@@ -114,7 +115,7 @@ export function Slot(p: SlotProps) {
   ]
     .filter(Boolean)
     .join(' ');
-  const pick = `sc-slot__pick grid size-full cursor-pointer [grid-template:minmax(0,1fr)/minmax(0,1fr)] place-items-center [border:0] [background:none] [color:inherit] ${row ? 'p-5' : 'p-8'} ${NO_CANVAS}`;
+  const pick = `sc-slot__pick grid size-full cursor-pointer [grid-template:minmax(0,1fr)/minmax(0,1fr)] place-items-center rounded-[inherit] [border:0] [background:none] [color:inherit] focus-visible:outline-offset-[-3px] ${row ? 'p-5' : 'p-8'} ${NO_CANVAS}`;
   const state = `sc-slot__state grid justify-items-center gap-6 text-center text-[12px] font-[600] ${over ? 'text-accent' : empty ? 'text-muted group-hover/slot:text-accent' : 'text-muted'}`;
   // Shown on hover or keyboard focus, and on touch once the slot is tapped (a touch hover alone doesn't show them).
   const shown = 'opacity-100 [transform:none] pointer-events-auto';
@@ -156,7 +157,7 @@ export function Slot(p: SlotProps) {
       <div className={tile}>
         {empty && !p.readOnly ? (
           // An empty slot: the whole tile picks a file (and selects the slot, for the inspector).
-          <label htmlFor={fileId} className={pick} onClick={p.onSelect}>
+          <label htmlFor={fileId} className={pick} onClick={p.onSelect} {...FILE_PICK}>
             {picture}
           </label>
         ) : (
@@ -166,7 +167,7 @@ export function Slot(p: SlotProps) {
         )}
         {!p.readOnly && (
           <div className={actions}>
-            <label className={ACT_PLAIN} htmlFor={fileId} title={empty ? 'Add a picture' : 'Replace (keeps its place in every layout)'}>
+            <label className={ACT_PLAIN} htmlFor={fileId} title={empty ? 'Add a picture' : 'Replace (keeps its place in every layout)'} aria-label={empty ? 'Add a picture' : 'Replace picture'} {...FILE_PICK}>
               <Icon name={empty ? 'plus' : 'replace'} size={14} />
             </label>
             {!empty && p.onRemovePicture && (

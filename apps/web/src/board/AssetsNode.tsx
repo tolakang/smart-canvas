@@ -18,6 +18,7 @@ import { NodeHead } from './NodeHead';
 import { Slot } from './Slot';
 import { carriesFiles, filesOf, PICTURE_ACCEPT, usePictureDrop } from './stack-upload';
 import { NO_CANVAS } from './pinch';
+import { FILE_PICK } from '../ui/file-pick';
 
 const ITEM_DRAG = 'application/x-sc-stack-item';
 
@@ -131,6 +132,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         // One drop area: click to pick, or drop files anywhere on the card.
         <label
           className={`${DROPZONE} ${over ? 'border-accent bg-[color-mix(in_srgb,var(--accent-soft)_75%,transparent)]' : 'border-line-strong bg-[color-mix(in_srgb,var(--surface-2)_55%,transparent)]'} ${drop.busy ? 'sc-dropzone--busy cursor-progress' : 'cursor-pointer'} ${NO_CANVAS}`}
+          {...FILE_PICK}
         >
           <span className={DROPZONE_ICON} aria-hidden="true">
             {drop.busy ? <span className="sc-spinner" /> : <Icon name="plus" />}

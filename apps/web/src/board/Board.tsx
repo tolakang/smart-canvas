@@ -34,6 +34,7 @@ import {
   MiniMap,
   Panel,
   ReactFlow,
+  useStore,
   ViewportPortal,
   type Connection,
   type Edge,
@@ -246,6 +247,15 @@ const FAR_ZOOM = 0.5;
 const edgeTypes = { routed: RoutedEdge };
 
 /** A layer wire into a composition row (D56: the only kind); the node id from React Flow. */
+/** UX A7 (F19): React Flow's credit link stays on screen but out of the Tab order (it sat between the board and its panels). */
+function QuietCredit() {
+  const dom = useStore((s) => s.domNode);
+  useEffect(() => {
+    dom?.querySelectorAll('.react-flow__attribution a').forEach((a) => a.setAttribute('tabindex', '-1'));
+  }, [dom]);
+  return null;
+}
+
 function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, port: number | undefined): SourceResult {
   const composition = compositionIdOfNode(target);
   return composition ? connectSource(doc, sourceId, port, composition) : { ok: false, error: 'not_found' };
@@ -1481,7 +1491,8 @@ function BoardCanvas(props: {
             // Shift-click (or Ctrl / ⌘-click) adds a panel to the selection or takes it out; Shift-drag adds a box.
             multiSelectionKeyCode={MULTI_SELECT_KEYS}
             nodesConnectable={!readOnly}
-            edgesFocusable={!readOnly}
+            // UX A2 (F2): wires stay out of the Tab order (they are clicked, or cut with ✂); Tab goes card to card.
+            edgesFocusable={false}
             deleteKeyCode={null}
             fitView
             fitViewOptions={FIT_OPTIONS}
@@ -1505,6 +1516,7 @@ function BoardCanvas(props: {
             proOptions={{ hideAttribution: false }}
           >
             {/* D57: the dots show the grid's state — every 16 px and stronger while panels snap to it, faint every 32 px when not. */}
+            <QuietCredit />
             <Background gap={grid ? 16 : 32} size={grid ? 1.6 : 1} color={grid ? 'var(--muted)' : undefined} className={grid ? 'sc-bg sc-bg--grid' : 'sc-bg'} />
             {/* The minimap needs a desktop-sized canvas; on tablets and phones it would cover the work. */}
             {minimap && screen === 'desktop' && <MiniMap pannable zoomable position="bottom-right" />}
