@@ -62,7 +62,13 @@ export function paritySuite() {
   };
   const saved = () => s.page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
   const node = (title: string) => s.page.locator('.react-flow__node').filter({ has: s.page.locator('.sc-node__title', { hasText: new RegExp(`^${title}$`) }) });
-  const imagesLoaded = () => expect.poll(() => s.page.locator('img').evaluateAll((els) => els.every((e) => (e as HTMLImageElement).complete))).toBe(true);
+  /** Like `expect.poll`, but also usable in `beforeAll` (the shared `seed`). */
+  const until = async (what: string, check: () => Promise<boolean>, timeout = 10_000) => {
+    for (const end = Date.now() + timeout; !(await check()); await s.page.waitForTimeout(100)) {
+      if (Date.now() > end) throw new Error(`timed out waiting for ${what}`);
+    }
+  };
+  const imagesLoaded = () => until('images to load', () => s.page.locator('img').evaluateAll((els) => els.every((e) => (e as HTMLImageElement).complete)));
   const fit = async () => {
     await s.page.getByRole('button', { name: /^Fit to screen/ }).click();
     await s.page.waitForTimeout(400);
@@ -91,7 +97,8 @@ export function paritySuite() {
       ['banner', 'Banner', 1500, 500],
     ] as const)
       doc = ok(addOutput(doc, { id, label, size: { width, height, unit: 'px' } }));
-    expect((await page.request.put(s.api, { data: { rev: p.rev, doc } })).status()).toBe(200);
+    const put = await page.request.put(s.api, { data: { rev: p.rev, doc } });
+    if (put.status() !== 200) throw new Error(`seeding the outputs: HTTP ${put.status()}`);
     s.board = page.url();
     await page.reload();
     await node('Image').waitFor();
@@ -105,7 +112,7 @@ export function paritySuite() {
     ];
     await node('Logo').locator('input[type=file][multiple]').first().setInputFiles(both);
     await node('Image').locator('input[type=file][multiple]').first().setInputFiles(both);
-    await expect.poll(() => node('Image').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(2);
+    await until('both images in the Image node', async () => (await node('Image').locator('.sc-slot__pick img').count()) === 2, 20_000);
     await node('Headline').locator('input[type=file]').first().setInputFiles({ name: 'khmer.png', mimeType: 'image/png', buffer: wide });
     await node('Background').locator('input[type=file]').nth(1).setInputFiles({ name: 'bg.png', mimeType: 'image/png', buffer: await png(400, 400, 240, 200, 120) });
     await node('Text').getByRole('textbox').first().fill('Big summer sale');
