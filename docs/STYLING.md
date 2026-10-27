@@ -12,7 +12,7 @@ of the older CSS is tracked in `../TAILWIND-PLAN.md`.
 | Tailwind's theme: which tokens are classes, breakpoints, `dark:` and `hover:` | `apps/web/src/tailwind.css` (imported first in `main.tsx`) |
 | Shared class lists | `ui/tw.ts` (dialogs), `ui/Brand.tsx` (brand), `board/topbar.ts` (top bar, menus), `board/panel.ts` (side panels, inspector), `board/frame.ts` (board frame, notices), `shell/Projects.tsx` (tiles) |
 | CSS that stays CSS | `styles.css` (tokens, base, keyframes, shared `sc-` components not converted yet), `board/chrome.css` (React Flow's pane, wires, minimap, handles), `board/reactflow.css` (React Flow's own sheet, lowest layer), fonts |
-| Areas not converted yet | `board/node.css`, `board/pipeline.css`, `board/assets.css`, `board/review.css`, `editor/editor.css`, the rest of `board/chrome.css` (`TAILWIND-PLAN.md`) |
+| Areas not converted yet | `board/node.css`, `board/pipeline.css`, `board/assets.css`, `board/review.css`, `editor/editor.css` (`TAILWIND-PLAN.md`) |
 
 ## Writing classes
 
@@ -47,6 +47,7 @@ of the older CSS is tracked in `../TAILWIND-PLAN.md`.
 | `font-size: 0` | `text-[0]` (ambiguous) | `text-[length:0px]` |
 | `padding: 0 12px` on a button | `px-12` alone (keeps the browser's 1px) | `px-12 py-0` |
 | a border on one side | `[border:0] [border-top:…]` (two properties, Tailwind's order) | `[border-width:1px_0_0] [border-style:solid_none_none] [border-color:…]` |
+| a class with `__` in a variant's selector | `[.sc-a>.sc-a__item:first-of-type_&]:` (`_` is a space: `.sc-a item`) | a selector without underscores (`[.sc-a>span:first-of-type_&]:`) |
 
 ## Rules
 

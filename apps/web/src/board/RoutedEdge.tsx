@@ -16,6 +16,12 @@ type XY = { x: number; y: number };
 export type RoutedEdgeData = { points?: XY[]; noCut?: boolean };
 export type RoutedFlowEdge = Edge<RoutedEdgeData, 'routed'>;
 
+/** The ✂ badge on a wire: a larger one with a shadow on a selected wire (Disconnect), a smaller one on hover (Cut). */
+const CUT =
+  'sc-wire-cut absolute top-0 left-0 z-10 grid cursor-pointer place-items-center rounded-[22%] bg-transparent p-0 [border:0] [pointer-events:all] [transition:transform_var(--t-fast),opacity_var(--t-fast)] hover:[transform:scale(1.12)] focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2';
+const CUT_SELECTED = 'size-28 [box-shadow:var(--shadow-2)] pointer-coarse:size-40';
+const CUT_HOVER = 'sc-wire-cut--hover size-24 [box-shadow:var(--shadow-1)] pointer-coarse:size-36';
+
 export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
   const { id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, style, data, selected, interactionWidth } = props;
   const { readOnly, run } = useBoard();
@@ -67,7 +73,7 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
         <EdgeLabelRenderer>
           <button
             type="button"
-            className={`sc-wire-cut${selected ? '' : ' sc-wire-cut--hover'} nodrag nopan`}
+            className={`${CUT} ${selected ? CUT_SELECTED : CUT_HOVER} nodrag nopan`}
             onPointerEnter={enter}
             onPointerLeave={exit}
             // Just above the wire, never on it: a double-click there (adding a reroute point) must not hit it.
@@ -88,7 +94,7 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
         points.map((p, i) => (
           <circle
             key={i}
-            className="sc-reroute nodrag nopan"
+            className="sc-reroute nodrag nopan cursor-move fill-surface stroke-accent stroke-2 [pointer-events:all] hover:fill-accent-soft"
             cx={p.x}
             cy={p.y}
             r={5}
@@ -109,7 +115,7 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
 /** The owner's scissor badge (2026-10-23): white scissors on a dark rounded square. */
 function ScissorIcon() {
   return (
-    <svg className="sc-wire-cut__icon" viewBox="0 0 480 480" aria-hidden="true">
+    <svg className="sc-wire-cut__icon block size-full" viewBox="0 0 480 480" aria-hidden="true">
       <path d="M400,480L80,480C36,480 0,444 0,400L0,80C0,36 36,0 80,0L400,0C444,0 480,36 480,80L480,400C480,444 444,480 400,480Z" fill="#101111" />
       <path
         fill="#fff"
