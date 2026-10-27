@@ -18,8 +18,8 @@ before that, area by area, with no visual change.
 | T4b | The card every node shares: card, header, fields, behaviour picker (React Flow's handles stay CSS) | `board/node.css` | medium | ✅ #188 |
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high | ✅ #189 |
 | T6 | History, comments, approval | `board/review.css` | low | ✅ #192 |
-| T7a | Editor shell: screen, bar, stage and its overlays, the panels' layout, phone tabs | the shell's rules in `editor/editor.css` | high | this PR |
-| T7b | Editor panels: Layers, Design, override inspector, text properties | more of `editor/editor.css` | high | |
+| T7a | Editor shell: screen, bar, stage and its overlays, the panels' layout, phone tabs | the shell's rules in `editor/editor.css` | high | ✅ #193 |
+| T7b | Editor panels: Layers, Design, override inspector, text properties | more of `editor/editor.css` | high | this PR |
 | T7c | Comments and pins (the transform box stays CSS) | the rest but the transform box | medium | |
 | T8 | Optional: Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
 

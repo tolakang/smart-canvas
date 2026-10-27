@@ -8,6 +8,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { useBoard } from '../board/context';
 import { mayOnComment, threadsOf, type ReviewComment, type Thread } from '../board/review';
+import { COMMENTS, COMMENTS_HEAD, SECTION } from './panels';
 
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -80,9 +81,9 @@ export function CommentsPanel(props: {
   const post = (text: string, extra: object) => send('POST', url, { outputId: props.outputId, text, ...extra });
 
   return (
-    <aside className="sc-design sc-comments" aria-label="Comments">
-      <section className="sc-design__section">
-        <div className="sc-design__title sc-comments__head">
+    <aside className={COMMENTS} aria-label="Comments">
+      <section className={SECTION}>
+        <div className={COMMENTS_HEAD}>
           Comments
           <label className="sc-comments__toggle">
             <input type="checkbox" checked={props.showResolved} onChange={(e) => props.onShowResolved(e.target.checked)} /> Show resolved
@@ -107,7 +108,7 @@ export function CommentsPanel(props: {
           </p>
         )}
       </section>
-      {threads.length === 0 && <p className="sc-muted sc-comments__hint sc-design__section">No comments yet.</p>}
+      {threads.length === 0 && <p className={`sc-muted sc-comments__hint ${SECTION}`}>No comments yet.</p>}
       <ol className="sc-comments__list">
         {threads.map((t) => (
           <li key={t.comment.id} className={`sc-comments__thread${t.comment.id === props.active ? ' sc-comments__thread--on' : ''}${t.comment.resolvedAt ? ' sc-comments__thread--resolved' : ''}`}>
@@ -128,7 +129,7 @@ export function CommentsPanel(props: {
           </li>
         ))}
       </ol>
-      <section className="sc-design__section">
+      <section className={SECTION}>
         <Compose label="Comment on the whole Preview" placeholder="A comment on the whole Preview" submit="Comment" onSubmit={(text) => post(text, {}).then(() => undefined)} />
       </section>
     </aside>

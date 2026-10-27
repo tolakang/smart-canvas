@@ -22,6 +22,8 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await comp.waitFor();
     await imagesLoaded();
     await same('layer-comp-editor');
+    await comp.getByText('Keyboard shortcuts').click();
+    await same('editor-shortcuts');
     // A layer selected (the box, its size), a zoom button hovered; the Hand tool on, then hovered (hover beats pressed).
     await comp.locator('.sc-layer__name').first().click();
     await comp.getByTestId('selection-size').waitFor();
@@ -33,6 +35,11 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await comp.getByRole('button', { name: 'Hand tool (H)' }).hover();
     await same('editor-hand-hover');
     await comp.getByRole('button', { name: 'Move tool (V)' }).click();
+    // A text layer's properties in the Design panel, another row hovered.
+    await comp.locator('.sc-layer__name').filter({ hasText: 'Text ·' }).first().click();
+    await comp.getByRole('complementary', { name: 'Text' }).waitFor();
+    await comp.locator('.sc-layer:not(.sc-layer--selected)').first().hover();
+    await same('editor-text-props');
     await comp.getByRole('button', { name: 'Close', exact: true }).click();
 
     await page.getByRole('button', { name: 'Edit Preview Banner' }).click();
@@ -40,6 +47,11 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await preview.waitFor();
     await imagesLoaded();
     await same('preview-editor');
+    // A Preview's text layer: its override inspector and text properties.
+    await preview.locator('.sc-layer__name').filter({ hasText: 'Text ·' }).first().click();
+    await preview.getByRole('region', { name: 'Overrides' }).waitFor();
+    await page.mouse.move(5, 500);
+    await same('preview-inspector');
     await preview.getByRole('button', { name: 'Comment', exact: true }).click();
     await preview.getByRole('complementary', { name: 'Comments' }).waitFor();
     await same('comments');

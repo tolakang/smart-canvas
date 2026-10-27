@@ -15,6 +15,7 @@ import { LayersPanel } from './LayersPanel';
 import { OverrideInspector } from './OverrideInspector';
 import { TextPanel } from './TextPanel';
 import { COMMENT_TOOL, COUNT, LOADING } from './shell';
+import { SIDE } from './panels';
 
 export function OutputEditor({ outputId, comments = false, onClose }: { outputId: string; comments?: boolean; onClose: () => void }) {
   const { doc, run, layoutDeps, author, readOnly, review, reviewApprove } = useBoard();
@@ -98,7 +99,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       onDelete={readOnly ? undefined : (id) => run((d) => setOverrideHidden(d, output.id, id, true, author()))}
       layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} outputId={output.id} />}
       props={(s) => (
-        <div className="sc-editor__side">
+        <div className={SIDE}>
           <OverrideInspector outputId={output.id} sourceId={s.id} />
           {s.content.kind === 'text' && <TextPanel key={s.id} source={{ ...s, content: s.content }} outputId={output.id} />}
         </div>

@@ -5,6 +5,7 @@ import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFi
 import { useBoard } from './context';
 import { Slot } from './Slot';
 import { FIELDS } from '../editor/shell';
+import { BOARD_TEXT } from '../editor/panels';
 
 // Interactive elements inside a node must not start a node drag, pan or zoom.
 const NO_CANVAS = 'nodrag nopan nowheel';
@@ -142,7 +143,7 @@ export function TextEditor({ source }: { source: InputSource & { content: { kind
   const { readOnly, editSource } = useBoard();
   return (
     <textarea
-      className={`sc-text ${NO_CANVAS}`}
+      className={`${BOARD_TEXT} ${NO_CANVAS}`}
       aria-label={`${source.label} text`}
       value={source.content.text}
       readOnly={readOnly}
