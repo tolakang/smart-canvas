@@ -110,6 +110,7 @@ import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 import { ADD, COUNT, COUNTS, GHOST, GROUP_ADD, GROUP_END, GROUP_START, ICON, NAME, PRIMARY, SAVE_BUTTON, SAVE_LONG, SAVE_SHORT, saveClass, saveDotClass, SEP, TOPBAR } from './topbar';
+import { BOARD, CANVAS, FLOW, TOAST, TOAST_BUTTON, VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
 
 interface Loaded {
   rev: number;
@@ -1294,7 +1295,7 @@ function BoardCanvas(props: {
 
 
   return (
-    <div className="sc-board">
+    <div className={BOARD}>
       <header className={TOPBAR}>
         <div className={GROUP_START}>
           <button type="button" className={ICON} onClick={props.onBack} aria-label="Back to projects" title="All projects">
@@ -1400,27 +1401,27 @@ function BoardCanvas(props: {
         </div>
       </header>
       {props.history.previewing && (
-        <div className="sc-board__version" role="status">
+        <div className={VERSION} role="status">
           <span>
             <strong>Version from {versionWhen(props.history.previewing)}</strong>
             {` · ${versionTitle(props.history.previewing)}`}
             {props.history.previewing.by ? ` · ${props.history.previewing.by}` : ''}
           </span>
           {props.history.error && <span className="sc-error">{props.history.error}</span>}
-          <span className="sc-board__version-actions">
+          <span className={VERSION_ACTIONS}>
             {props.canEdit && (
-              <button type="button" className="sc-board__restore" onClick={() => void props.history.restore()}>
+              <button type="button" className={VERSION_RESTORE} onClick={() => void props.history.restore()}>
                 Restore
               </button>
             )}
-            <button type="button" onClick={props.history.close}>
+            <button type="button" className={VERSION_CLOSE} onClick={props.history.close}>
               Close
             </button>
           </span>
         </div>
       )}
       <div
-        className="sc-board__canvas"
+        className={CANVAS}
         // A file dropped outside an input must not make the browser open it (and leave the board).
         onDragOver={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
         onDrop={(e) => {
@@ -1440,7 +1441,7 @@ function BoardCanvas(props: {
         }}
       >
         <BoardContext.Provider value={actions}>
-          <div className={`sc-board__flow${activeTool === 'hand' ? ' sc-board__flow--hand' : ''}${tidying ? ' sc-board__flow--tidying' : ''}`} ref={flowEl} onContextMenuCapture={onPortContextMenu}>
+          <div className={`${FLOW}${activeTool === 'hand' ? ' sc-board__flow--hand' : ''}${tidying ? ' sc-board__flow--tidying' : ''}`} ref={flowEl} onContextMenuCapture={onPortContextMenu}>
           <ReactFlow
             nodes={flowNodes}
             edges={displayEdges}
@@ -1557,11 +1558,12 @@ function BoardCanvas(props: {
               {guides.horizontal !== undefined && <div className="sc-guide sc-guide--h" style={{ transform: `translateY(${guides.horizontal}px)` }} />}
             </ViewportPortal>
             {toast && (
-              <Panel position="bottom-center" className="sc-board__toast nodrag nopan" role="status">
+              <Panel position="bottom-center" className={`${TOAST} nodrag nopan`} role="status">
                 <span>{toast}</span>
                 {/already tidy$/.test(toast) ? null : (
                   <button
                     type="button"
+                    className={TOAST_BUTTON}
                     onClick={() => {
                       undo();
                       setToast(null);

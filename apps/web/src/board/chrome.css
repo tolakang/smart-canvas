@@ -1,72 +1,13 @@
-/* Board chrome: the top bar, menus, the floating inspector and overview, the canvas and its backdrop, wires, guides and grid,
-   groups, zoomed-out name tags and the canvas toolbar (CSS cleanup 6). */
+/* Board chrome: React Flow's canvas, wires, guides and grid, groups, zoomed-out name tags and the canvas toolbar
+   (CSS cleanup 6). The top bar, menus, side panels and notices are Tailwind classes (P28 T3a, T3b). */
 @layer app {
 @media (pointer: coarse) {
   .sc-canvasbar__btn { min-width: 44px; min-height: 44px; }
 }
-/* Floating side panels (U3): the inspector, History and Review float over the board on the ambient backdrop. */
-.sc-floating--overlay { position: absolute; top: var(--sp-2); bottom: var(--sp-2); max-width: calc(100% - 16px); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: auto; }
-.sc-floating--overlay.sc-floating--start { left: var(--sp-2); }
-.sc-floating--overlay.sc-floating--end { right: var(--sp-2); }
-.sc-floating--sheet { position: fixed; left: 0; right: 0; bottom: 0; width: auto !important; max-height: 62dvh; overflow: auto; border: 0; border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; padding-bottom: env(safe-area-inset-bottom); }
-.sc-floating--sheet::before { content: ''; display: block; width: 36px; height: 4px; margin: 6px auto 0; border-radius: 2px; background: var(--line-strong); }
-.sc-floating__head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--line); background: var(--surface); font-weight: 600; }
-.sc-floating { z-index: 30; box-shadow: var(--shadow-3); }
-
-/* Inspector (T13.2, N1): the selected node's settings; the canvas takes the rest. */
-.sc-inspector-panel { width: 300px; flex: none; overflow: auto; background: var(--surface); border-left: 1px solid var(--line); font-size: var(--fs-sm); }
-.sc-inspector-panel__title { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: var(--field-h); font-size: var(--fs-sm); font-weight: 600; }
-.sc-inspector-panel__hint { margin: 0; font-size: var(--fs-xs); line-height: 1.5; }
-.sc-inspector-panel__level { padding: 2px var(--sp-2); border-radius: 99px; font-size: var(--fs-xs); font-weight: 600; }
-.sc-inspector-panel__issues { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: var(--fs-xs); }
-.sc-inspector-panel__issues li { padding: 6px var(--sp-2); border-radius: var(--r-sm); border-left: 3px solid var(--warn); background: var(--surface-2); }
-.sc-inspector-panel__issues li[data-level='error'] { border-left-color: var(--danger); }
-.sc-inspector-panel__issues li[data-level='todo'] { border-left-color: var(--faint); }
-.sc-inspector-panel__issues strong { display: block; }
-.sc-inspector-panel__form { display: grid; gap: var(--sp-2); }
-/* The inspector reuses the node controls: give them the node field look there too */
-.sc-inspector-panel input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-inspector-panel select, .sc-inspector-panel textarea { max-width: 100%; min-width: 0; font: inherit; font-size: var(--fs-sm); border: 1px solid transparent; border-radius: var(--r-md); background: var(--surface-2); color: var(--fg); }
-.sc-inspector-panel input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-inspector-panel select { height: var(--field-h); padding: 0 var(--sp-2); width: 100%; }
-.sc-inspector-panel input:focus, .sc-inspector-panel select:focus, .sc-inspector-panel textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
-.sc-inspector-panel__actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
-.sc-inspector-panel__section { display: grid; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent); }
-.sc-inspector-panel__section:last-child { border-bottom: 0; }
-
-/* Project overview (U2): what the inspector shows with nothing selected. */
-.sc-overview__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-lg); font-weight: 650; }
-.sc-overview__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); margin: var(--sp-1) 0; }
-.sc-overview__stats div { padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); }
-.sc-overview__stats dt { color: var(--muted); font-size: var(--fs-xs); }
-.sc-overview__stats dd { margin: 2px 0 0; font-size: var(--fs-xl); font-weight: 650; font-variant-numeric: tabular-nums; }
-.sc-overview__tips { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--sp-2); color: var(--muted); font-size: var(--fs-sm); line-height: 1.5; }
-.sc-overview__tips strong { color: var(--fg); font-weight: 600; }
-
-/* The board (T13.2, U3): the ambient backdrop, the canvas and its notices (Tidy undo, version shown read-only). */
-/* D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
+/* The board (T13.2, U3): its frame, side panels and notices are Tailwind classes (board/frame.ts, board/panel.ts).
+   D58: board gestures are ours on touch (usePinch, React Flow); the browser must not zoom or scroll the page. */
 @media (pointer: coarse) {
   .sc-board__flow .react-flow { touch-action: none; }
-}
-.sc-board__toast.react-flow__panel { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: 72px; padding: 6px 6px 6px 14px; border-radius: var(--r-md); background: var(--fg); color: var(--surface); font-size: var(--fs-sm); box-shadow: var(--shadow-2); }
-.sc-board__toast button { min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: transparent; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
-.sc-board__toast button:hover { background: color-mix(in srgb, var(--surface) 15%, transparent); }
-@media (pointer: coarse) {
-  .sc-board__toast button { min-height: 44px; }
-}
-.sc-board__version { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); padding: 6px 12px; background: var(--accent-soft); border-bottom: 1px solid var(--line); font-size: var(--fs-sm); }
-.sc-board__version-actions { display: flex; gap: var(--sp-2); margin-left: auto; }
-.sc-board__version button { height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); font: inherit; cursor: pointer; }
-.sc-board__version .sc-board__restore { border-color: var(--accent); background: var(--accent); color: var(--on-accent); font-weight: 600; }
-/* The visible height (dvh), not 100vh: on phones 100vh is taller than the screen while the browser's address
-   bar and bottom bar show, which pushed the top bar or the canvas toolbar out of view. The page itself never
-   scrolls on the board. */
-.sc-board { height: 100dvh; display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); box-sizing: border-box; background: var(--ambient); }
-.sc-board__canvas { flex: 1; display: flex; min-height: 0; position: relative; padding: 10px 12px 12px; gap: 12px; }
-.sc-board__flow { flex: 1; min-width: 0; position: relative; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: color-mix(in srgb, var(--surface) 55%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), var(--shadow-1); overflow: hidden; }
-:root[data-theme='dark'] .sc-board__flow { background: color-mix(in srgb, var(--bg) 60%, transparent); box-shadow: var(--shadow-1); }
-.sc-board__canvas > .sc-inspector-panel:not(.sc-floating) { width: 320px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: var(--panel-r); background: var(--glass); backdrop-filter: blur(16px); box-shadow: var(--shadow-2); }
-@media (max-width: 767px) {
-  .sc-board__canvas { padding: 6px; }
-  .sc-board__flow { border-radius: 14px; }
 }
 
 /* React Flow, restyled: pane, edges, minimap and panels. */

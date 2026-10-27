@@ -12,7 +12,7 @@ before that, area by area, with no visual change.
 | T2a | Dialogs (Export, Rename / New project, Size presets, Team, fonts, library, PDF page, reconnect) | `ui/dialogs.css` | low | ✅ #181 |
 | T2b | Projects home, sign-in | `shell/home.css` | low | ✅ #182 |
 | T3a | Top bar and menus | their rules in `board/chrome.css` | medium | ✅ #183 |
-| T3b | Floating side panels, inspector, project overview, canvas notices | more of `board/chrome.css` | medium | |
+| T3b | Floating side panels, inspector, project overview, canvas notices | more of `board/chrome.css` | medium | this PR |
 | T3c | Canvas toolbar, selection bar, tooltips, name tags, groups | the rest but React Flow's | medium | |
 | T4 | Main Comps, Export Group, Presets, Preview Cards | `board/node.css`, `board/pipeline.css` | medium | |
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high | |

@@ -6,6 +6,7 @@
 import { presetSets } from '@smart-canvas/core';
 import { useBoard } from './context';
 import { Icon } from './LayerRow';
+import { PANEL_HEAD, panelClass } from './panel';
 import { approvalOf, openCounts } from './review';
 
 const STATE_LABEL = { approved: '✓ Approved', changed: 'Changed since approved', none: 'Not approved' } as const;
@@ -23,8 +24,8 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
   const open = [...counts.values()].reduce((n, c) => n + c, 0);
   const { floating } = props;
   return (
-    <aside className={`sc-inspector-panel sc-history sc-review${floating ? ` sc-floating sc-floating--${floating} sc-floating--end` : ''}`} aria-label="Review">
-      <div className="sc-floating__head">
+    <aside className={panelClass(floating, 'sc-history sc-review')} aria-label="Review">
+      <div className={PANEL_HEAD}>
         <span>Review</span>
         <button type="button" className="sc-icon-btn" onClick={props.onClose} aria-label="Close review" title="Close">
           <Icon name="close" />
