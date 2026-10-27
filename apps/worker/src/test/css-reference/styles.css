@@ -1,4 +1,4 @@
-/* The app's CSS at c659f335b05b12975461b07e7a19b3b593f4640a (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 6894419b9c4b4602a56365e5902c9646c874bdfa (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -3796,6 +3796,10 @@
     outline-offset: -2px;
   }
 
+  .focus-visible\:outline-offset-\[-3px\]:focus-visible {
+    outline-offset: -3px;
+  }
+
   .active\:cursor-grabbing:active {
     cursor: grabbing;
   }
@@ -6932,9 +6936,11 @@ button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent;
 /* React Flow rules that out-ranked ours by specificity before its sheet went into the lowest cascade layer (see tailwind.css), kept so they still
    do: no focus ring on a focused node, wire or selection box, and its colours for a focused wire and a wire being
    reconnected. They sit ahead of the wire rules below, which still win where they tied before. */
-.react-flow__node.selectable:focus, .react-flow__node.selectable:focus-visible, .react-flow__edge.selected, .react-flow__edge:focus,
+.react-flow__node.selectable:focus, .react-flow__edge.selected, .react-flow__edge:focus,
 .react-flow__edge:focus-visible, .react-flow__nodesselection-rect:focus, .react-flow__nodesselection-rect:focus-visible,
 .react-flow__selection:focus, .react-flow__selection:focus-visible { outline: none; }
+/* UX A2 (F2): a panel reached with Tab shows the accent ring, round like its card (a mouse focus still shows none). */
+.react-flow__node.selectable:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 23px; }
 .react-flow__edge.selectable:focus .react-flow__edge-path, .react-flow__edge.selectable:focus-visible .react-flow__edge-path {
   stroke: var(--xy-edge-stroke-selected, var(--xy-edge-stroke-selected-default));
 }
