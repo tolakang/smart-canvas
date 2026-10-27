@@ -1,4 +1,4 @@
-/* The app's CSS at cdfb05c660d11bf4d2290d2f92c759ca8867258e (origin/main), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at ef1838aaba6b4b77d2a76dbd1a722d3a2b733ac7 (origin/main), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -268,6 +268,10 @@
     margin-top: 40px;
   }
 
+  .mt-\[-16px\] {
+    margin-top: -16px;
+  }
+
   .mt-\[-50000px\] {
     margin-top: -50000px;
   }
@@ -338,6 +342,10 @@
 
   .ml-auto {
     margin-left: auto;
+  }
+
+  .\[display\:-webkit-box\] {
+    display: -webkit-box;
   }
 
   .block {
@@ -561,6 +569,10 @@
     min-height: 60px;
   }
 
+  .min-h-64 {
+    min-height: 64px;
+  }
+
   .min-h-120 {
     min-height: 120px;
   }
@@ -689,6 +701,10 @@
     min-width: 260px;
   }
 
+  .min-w-\[160px\] {
+    min-width: 160px;
+  }
+
   .flex-1 {
     flex: 1;
   }
@@ -767,6 +783,10 @@
 
   .grid-cols-\[minmax\(0\,1\.1fr\)_minmax\(360px\,0\.9fr\)\] {
     grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr);
+  }
+
+  .grid-cols-\[minmax\(0\,1fr\)\] {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .grid-cols-\[repeat\(3\,1fr\)\] {
@@ -1029,6 +1049,11 @@
     border-radius: var(--r-sm);
   }
 
+  .rounded-t-\[20px\] {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+
   .rounded-t-lg {
     border-top-left-radius: var(--r-lg);
     border-top-right-radius: var(--r-lg);
@@ -1220,6 +1245,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .bg-\[color-mix\(in_srgb\,var\(--group\)_18\%\,var\(--surface\)\)\] {
       background-color: color-mix(in srgb,var(--group) 18%,var(--surface));
+    }
+  }
+
+  .bg-\[color-mix\(in_srgb\,var\(--head\)_14\%\,var\(--surface\)\)\] {
+    background-color: var(--head);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-\[color-mix\(in_srgb\,var\(--head\)_14\%\,var\(--surface\)\)\] {
+      background-color: color-mix(in srgb,var(--head) 14%,var(--surface));
     }
   }
 
@@ -1441,6 +1476,10 @@
     padding-inline: 0;
   }
 
+  .px-2 {
+    padding-inline: 2px;
+  }
+
   .px-4 {
     padding-inline: 4px;
   }
@@ -1569,6 +1608,10 @@
     padding-top: 10px;
   }
 
+  .pt-14 {
+    padding-top: 14px;
+  }
+
   .pt-18 {
     padding-top: 18px;
   }
@@ -1601,6 +1644,10 @@
     padding-right: 10px;
   }
 
+  .pr-12 {
+    padding-right: 12px;
+  }
+
   .pr-22 {
     padding-right: 22px;
   }
@@ -1631,6 +1678,10 @@
 
   .pb-12 {
     padding-bottom: 12px;
+  }
+
+  .pb-14 {
+    padding-bottom: 14px;
   }
 
   .pb-22 {
@@ -1703,6 +1754,10 @@
 
   .text-\[13px\] {
     font-size: 13px;
+  }
+
+  .text-\[14\.5px\] {
+    font-size: 14.5px;
   }
 
   .text-\[14px\] {
@@ -1785,6 +1840,11 @@
     line-height: 1.08;
   }
 
+  .leading-\[1\.25\] {
+    --tw-leading: 1.25;
+    line-height: 1.25;
+  }
+
   .leading-\[1\.35\] {
     --tw-leading: 1.35;
     line-height: 1.35;
@@ -1829,6 +1889,11 @@
     font-weight: 650;
   }
 
+  .font-\[680\] {
+    --tw-font-weight: 680;
+    font-weight: 680;
+  }
+
   .font-\[700\] {
     --tw-font-weight: 700;
     font-weight: 700;
@@ -1842,6 +1907,10 @@
   .font-\[800\] {
     --tw-font-weight: 800;
     font-weight: 800;
+  }
+
+  .\[font-weight\:inherit\] {
+    font-weight: inherit;
   }
 
   .tracking-\[-0\.01em\] {
@@ -1864,6 +1933,11 @@
     letter-spacing: -.04em;
   }
 
+  .tracking-\[-0\.015em\] {
+    --tw-tracking: -.015em;
+    letter-spacing: -.015em;
+  }
+
   .tracking-\[0\.02em\] {
     --tw-tracking: .02em;
     letter-spacing: .02em;
@@ -1879,6 +1953,10 @@
     letter-spacing: 0;
   }
 
+  .\[overflow-wrap\:anywhere\] {
+    overflow-wrap: anywhere;
+  }
+
   .text-ellipsis {
     text-overflow: ellipsis;
   }
@@ -1889,6 +1967,20 @@
 
   .\[color\:inherit\] {
     color: inherit;
+  }
+
+  .\[color\:white\] {
+    color: #fff;
+  }
+
+  .text-\[color-mix\(in_srgb\,var\(--head\)_65\%\,var\(--fg\)\)\] {
+    color: var(--head);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .text-\[color-mix\(in_srgb\,var\(--head\)_65\%\,var\(--fg\)\)\] {
+      color: color-mix(in srgb,var(--head) 65%,var(--fg));
+    }
   }
 
   .text-\[color-mix\(in_srgb\,var\(--head-preview\)_70\%\,var\(--fg\)\)\] {
@@ -1989,6 +2081,10 @@
     opacity: 0;
   }
 
+  .opacity-50 {
+    opacity: .5;
+  }
+
   .opacity-100 {
     opacity: 1;
   }
@@ -2016,8 +2112,22 @@
     box-shadow: 0 1px 1px #1018280a;
   }
 
+  .\[box-shadow\:0_1px_2px_rgb\(16_24_40\/0\.06\)\,0_6px_16px_-6px_rgb\(16_24_40\/0\.12\)\] {
+    box-shadow: 0 1px 2px #1018280f, 0 6px 16px -6px #1018281f;
+  }
+
   .\[box-shadow\:0_1px_2px_rgb\(16_24_40\/0\.12\)\,inset_0_1px_0_rgb\(255_255_255\/0\.12\)\] {
     box-shadow: 0 1px 2px #1018281f, inset 0 1px #ffffff1f;
+  }
+
+  .\[box-shadow\:0_4px_10px_-3px_color-mix\(in_srgb\,var\(--head\)_60\%\,transparent\)\,inset_0_1px_0_rgb\(255_255_255\/0\.3\)\] {
+    box-shadow: 0 4px 10px -3px var(--head),inset 0 1px 0 #ffffff4d;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .\[box-shadow\:0_4px_10px_-3px_color-mix\(in_srgb\,var\(--head\)_60\%\,transparent\)\,inset_0_1px_0_rgb\(255_255_255\/0\.3\)\] {
+      box-shadow: 0 4px 10px -3px color-mix(in srgb,var(--head) 60%,transparent),inset 0 1px 0 #ffffff4d;
+    }
   }
 
   .\[box-shadow\:0_8px_20px_-8px_color-mix\(in_srgb\,var\(--accent\)_70\%\,transparent\)\,inset_0_1px_0_rgb\(255_255_255\/0\.15\)\] {
@@ -2070,6 +2180,10 @@
     outline: 1px solid var(--accent);
   }
 
+  .\[outline\:2px_dashed_var\(--accent\)\] {
+    outline: 2px dashed var(--accent);
+  }
+
   .\[outline\:none\] {
     outline: none;
   }
@@ -2077,6 +2191,10 @@
   .outline {
     outline-style: var(--tw-outline-style);
     outline-width: 1px;
+  }
+
+  .outline-offset-2 {
+    outline-offset: 2px;
   }
 
   .invert {
@@ -2145,6 +2263,10 @@
     --group: var(--type-process);
   }
 
+  .\[--head\:var\(--head-asset\)\] {
+    --head: var(--head-asset);
+  }
+
   .\[--head\:var\(--head-frozen\)\] {
     --head: var(--head-frozen);
   }
@@ -2187,6 +2309,34 @@
 
   .\[--tile\:var\(--type-process\)\] {
     --tile: var(--type-process);
+  }
+
+  .\[-webkit-box-orient\:vertical\] {
+    -webkit-box-orient: vertical;
+  }
+
+  .\[-webkit-line-clamp\:3\] {
+    -webkit-line-clamp: 3;
+  }
+
+  .\[background\:linear-gradient\(140deg\,color-mix\(in_srgb\,var\(--head\)_78\%\,white\)\,var\(--head\)\)\] {
+    background: linear-gradient(140deg,var(--head),var(--head));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .\[background\:linear-gradient\(140deg\,color-mix\(in_srgb\,var\(--head\)_78\%\,white\)\,var\(--head\)\)\] {
+      background: linear-gradient(140deg,color-mix(in srgb,var(--head) 78%,white),var(--head));
+    }
+  }
+
+  .\[background\:linear-gradient\(180deg\,color-mix\(in_srgb\,var\(--head\)_12\%\,var\(--surface\)\)\,color-mix\(in_srgb\,var\(--head\)_4\%\,var\(--surface\)\)\)\] {
+    background: linear-gradient(180deg,var(--head),var(--head));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .\[background\:linear-gradient\(180deg\,color-mix\(in_srgb\,var\(--head\)_12\%\,var\(--surface\)\)\,color-mix\(in_srgb\,var\(--head\)_4\%\,var\(--surface\)\)\)\] {
+      background: linear-gradient(180deg,color-mix(in srgb,var(--head) 12%,var(--surface)),color-mix(in srgb,var(--head) 4%,var(--surface)));
+    }
   }
 
   .\[background\:linear-gradient\(180deg\,color-mix\(in_srgb\,var\(--head-master\)_7\%\,transparent\)\,color-mix\(in_srgb\,var\(--head-preview\)_5\%\,transparent\)\)\] {
@@ -2323,6 +2473,10 @@
     transition: border-color var(--t-fast),background var(--t-fast);
   }
 
+  .\[transition\:box-shadow_var\(--t-fast\)\,border-color_var\(--t-fast\)\] {
+    transition: box-shadow var(--t-fast),border-color var(--t-fast);
+  }
+
   .\[transition\:opacity_var\(--t-fast\)\,transform_var\(--t-fast\)\,visibility_0s_linear_var\(--t-fast\)\] {
     transition: opacity var(--t-fast),transform var(--t-fast),visibility 0s linear var(--t-fast);
   }
@@ -2380,6 +2534,26 @@
     backdrop-filter: blur(3px);
   }
 
+  .before\:absolute:before {
+    content: var(--tw-content);
+    position: absolute;
+  }
+
+  .before\:top-\[-1px\]:before {
+    content: var(--tw-content);
+    top: -1px;
+  }
+
+  .before\:right-\[-1px\]:before {
+    content: var(--tw-content);
+    right: -1px;
+  }
+
+  .before\:left-\[-1px\]:before {
+    content: var(--tw-content);
+    left: -1px;
+  }
+
   .before\:mx-auto:before {
     content: var(--tw-content);
     margin-inline: auto;
@@ -2400,6 +2574,16 @@
     display: block;
   }
 
+  .before\:hidden:before {
+    content: var(--tw-content);
+    display: none;
+  }
+
+  .before\:h-3:before {
+    content: var(--tw-content);
+    height: 3px;
+  }
+
   .before\:h-4:before {
     content: var(--tw-content);
     height: 4px;
@@ -2415,9 +2599,20 @@
     border-radius: 2px;
   }
 
+  .before\:rounded-t-lg:before {
+    content: var(--tw-content);
+    border-top-left-radius: var(--r-lg);
+    border-top-right-radius: var(--r-lg);
+  }
+
   .before\:bg-line-strong:before {
     content: var(--tw-content);
     background-color: var(--line-strong);
+  }
+
+  .before\:bg-type-input:before {
+    content: var(--tw-content);
+    background-color: var(--type-input);
   }
 
   .before\:bg-type-main:before {
@@ -2507,6 +2702,26 @@
     border-color: var(--line-strong);
   }
 
+  .hover\:bg-\[color-mix\(in_srgb\,var\(--fg\)_8\%\,transparent\)\]:hover {
+    background-color: var(--fg);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .hover\:bg-\[color-mix\(in_srgb\,var\(--fg\)_8\%\,transparent\)\]:hover {
+      background-color: color-mix(in srgb,var(--fg) 8%,transparent);
+    }
+  }
+
+  .hover\:bg-\[color-mix\(in_srgb\,var\(--head\)_24\%\,var\(--surface\)\)\]:hover {
+    background-color: var(--head);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .hover\:bg-\[color-mix\(in_srgb\,var\(--head\)_24\%\,var\(--surface\)\)\]:hover {
+      background-color: color-mix(in srgb,var(--head) 24%,var(--surface));
+    }
+  }
+
   .hover\:bg-\[color-mix\(in_srgb\,var\(--head-preview\)_24\%\,var\(--surface\)\)\]:hover {
     background-color: var(--head-preview);
   }
@@ -2547,6 +2762,10 @@
 
   .hover\:fill-accent-soft:hover {
     fill: var(--accent-soft);
+  }
+
+  .hover\:text-fg:hover {
+    color: var(--fg);
   }
 
   .hover\:\[box-shadow\:0_0_0_1px_var\(--accent\)\]:hover {
@@ -2595,6 +2814,20 @@
 
   .disabled\:text-topbar-primary-disabled:disabled {
     color: var(--topbar-primary-disabled);
+  }
+
+  .aria-expanded\:bg-\[color-mix\(in_srgb\,var\(--fg\)_8\%\,transparent\)\][aria-expanded="true"] {
+    background-color: var(--fg);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .aria-expanded\:bg-\[color-mix\(in_srgb\,var\(--fg\)_8\%\,transparent\)\][aria-expanded="true"] {
+      background-color: color-mix(in srgb,var(--fg) 8%,transparent);
+    }
+  }
+
+  .aria-expanded\:text-fg[aria-expanded="true"] {
+    color: var(--fg);
   }
 
   .aria-pressed\:bg-accent-soft[aria-pressed="true"] {
@@ -2842,12 +3075,20 @@
       height: 44px;
     }
 
+    .pointer-coarse\:h-40 {
+      height: 40px;
+    }
+
     .pointer-coarse\:min-h-44 {
       min-height: 44px;
     }
 
     .pointer-coarse\:min-w-44 {
       min-width: 44px;
+    }
+
+    .pointer-coarse\:px-14 {
+      padding-inline: 14px;
     }
   }
 
@@ -2857,6 +3098,10 @@
 
   .\[\&_\.sc-field_input\[type\=number\]\]\:w-full .sc-field input[type="number"] {
     width: 100%;
+  }
+
+  .\[\&_\:is\(input\,select\,textarea\)\:focus\]\:\[outline\:none\] :is(input, select, textarea):focus {
+    outline: none;
   }
 
   .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\)\]\:h-\(--field-h\) :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select) {
@@ -2883,6 +3128,18 @@
     min-width: 0;
   }
 
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:rounded-md :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    border-radius: var(--r-md);
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[border-width\:1px\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    border-width: 1px;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[border-style\:solid\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    border-style: solid;
+  }
+
   .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:border-transparent :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
     border-color: #0000;
   }
@@ -2899,7 +3156,7 @@
     font-feature-settings: inherit;
   }
 
-  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:text-sm :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-size\:var\(--fs-sm\)\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea), .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:text-sm :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
     font-size: var(--fs-sm);
   }
 
@@ -2907,8 +3164,64 @@
     line-height: inherit;
   }
 
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-weight\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-weight: inherit;
+  }
+
   .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:text-fg :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
     color: var(--fg);
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-style\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-style: inherit;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-stretch\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-stretch: inherit;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-kerning\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-kerning: inherit;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-optical-sizing\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-optical-sizing: inherit;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-size-adjust\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-size-adjust: inherit;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-variant\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-variant: inherit;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[font-variation-settings\:inherit\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    font-variation-settings: inherit;
+  }
+
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:\[transition\:border-color_var\(--t-fast\)\,background_var\(--t-fast\)\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    transition: border-color var(--t-fast),background var(--t-fast);
+  }
+
+  .\[\&_\:is\(select\,textarea\)\:focus\]\:border-accent :is(select, textarea):focus {
+    border-color: var(--accent);
+  }
+
+  .\[\&_\:is\(select\,textarea\)\:focus\]\:bg-surface :is(select, textarea):focus {
+    background-color: var(--surface);
+  }
+
+  .\[\&_\:is\(select\,textarea\)\:hover\:not\(\:focus\)\]\:border-line-strong :is(select, textarea):hover:not(:focus) {
+    border-color: var(--line-strong);
+  }
+
+  .\[\&_\:is\(select\,textarea\)\:not\(\:focus\)\]\:bg-surface-2 :is(select, textarea):not(:focus) {
+    background-color: var(--surface-2);
+  }
+
+  .\[\&_\:is\(select\,textarea\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-transparent :is(select, textarea):not(:hover):not(:focus) {
+    border-color: #0000;
   }
 
   .\[\&_\:where\(input\,select\,textarea\)\:focus\]\:border-accent :where(input, select, textarea):focus {
@@ -2939,12 +3252,62 @@
     width: 64px;
   }
 
+  .\[\&_input\:is\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=file\]\)\:focus\]\:border-accent input:is([type="radio"], [type="checkbox"], [type="file"]):focus {
+    border-color: var(--accent);
+  }
+
+  .\[\&_input\:is\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=file\]\)\:focus\]\:bg-surface input:is([type="radio"], [type="checkbox"], [type="file"]):focus {
+    background-color: var(--surface);
+  }
+
+  .\[\&_input\:is\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=file\]\)\:hover\:not\(\:focus\)\]\:border-line-strong input:is([type="radio"], [type="checkbox"], [type="file"]):hover:not(:focus) {
+    border-color: var(--line-strong);
+  }
+
   .\[\&_input\:not\(\[type\=checkbox\]\)\]\:h-42 input:not([type="checkbox"]) {
     height: 42px;
   }
 
   .\[\&_input\:not\(\[type\=checkbox\]\)\]\:text-\[14px\] input:not([type="checkbox"]) {
     font-size: 14px;
+  }
+
+  .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\]\:border-transparent input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]) {
+    border-color: #0000;
+  }
+
+  .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\]\:bg-surface-2 input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]) {
+    background-color: var(--surface-2);
+  }
+
+  .\[\&_input\[type\=color\]\]\:size-\(--field-h\) input[type="color"] {
+    width: var(--field-h);
+    height: var(--field-h);
+  }
+
+  .\[\&_input\[type\=color\]\]\:rounded-md input[type="color"] {
+    border-radius: var(--r-md);
+  }
+
+  .\[\&_input\[type\=color\]\]\:border input[type="color"] {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+
+  .\[\&_input\[type\=color\]\]\:border-line input[type="color"] {
+    border-color: var(--line);
+  }
+
+  .\[\&_input\[type\=color\]\]\:bg-surface input[type="color"] {
+    background-color: var(--surface);
+  }
+
+  .\[\&_input\[type\=color\]\]\:p-2 input[type="color"] {
+    padding: 2px;
+  }
+
+  .\[\&_select\]\:w-full select {
+    width: 100%;
   }
 
   .\[\&_strong\]\:block strong {
@@ -2988,6 +3351,10 @@
 
   .\[\&\:hover\:not\(\[aria-pressed\=true\]\)\]\:text-fg:hover:not([aria-pressed="true"]) {
     color: var(--fg);
+  }
+
+  .\[\&\>\*\]\:min-w-0 > * {
+    min-width: 0;
   }
 
   .\[\&\>button\]\:ml-auto > button {
@@ -3055,6 +3422,18 @@
     cursor: pointer;
   }
 
+  .react-flow__node.selected .\[\.react-flow\\_\\_node\.selected_\&\]\:border-accent {
+    border-color: var(--accent);
+  }
+
+  .react-flow__node.selected .\[\.react-flow\\_\\_node\.selected_\&\]\:\[box-shadow\:0_0_0_2px_var\(--accent\)\,0_0_0_7px_var\(--ring\)\,0_14px_28px_-10px_rgb\(16_24_40\/0\.22\)\] {
+    box-shadow: 0 0 0 2px var(--accent),0 0 0 7px var(--ring),0 14px 28px -10px #10182838;
+  }
+
+  .react-flow__node:hover:not(.selected) .\[\.react-flow\\_\\_node\:hover\:not\(\.selected\)_\&\]\:\[box-shadow\:0_2px_4px_rgb\(16_24_40\/0\.06\)\,0_14px_28px_-10px_rgb\(16_24_40\/0\.22\)\] {
+    box-shadow: 0 2px 4px #1018280f, 0 14px 28px -10px #10182838;
+  }
+
   .sc-canvasbar > span:first-of-type .\[\.sc-canvasbar\>span\:first-of-type_\&\]\:left-0 {
     left: 0;
   }
@@ -3081,10 +3460,6 @@
 
   .sc-canvasbar > span:last-of-type .\[\.sc-canvasbar\>span\:last-of-type_\&\]\:\[transform\:translate\(0\,4px\)\] {
     transform: translate(0, 4px);
-  }
-
-  .selected .\[\.selected_\&\]\:border-accent {
-    border-color: var(--accent);
   }
 
   @media (hover: none) {
@@ -4791,89 +5166,6 @@ p.sc-comment__text { cursor: auto; }
   .sc-comment__actions button, .sc-comments__compose-actions button, .sc-comments__reply-btn { min-height: 40px; padding: 0 12px; }
 }
 }
-/* The node card every board panel shares: card, header, handles (CSS cleanup 7). */
-@layer app {
-/* A node card (T10.2, U3, V1): white card, rounded, a lift on hover and a glow when selected; its preview and states. */
-/* Board cards fit their content (no thumbnail wider than the card) and show only a preview; settings live in
-   the inspector. `minmax(0, 1fr)`: a grid column sized `auto` grows to an image's natural width. */
-.sc-node { min-width: 160px; }
-.sc-node--hidden { opacity: 0.5; }
-.sc-node--input { width: 280px; }
-.sc-node__head .sc-node__title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-node--drop { outline: 2px dashed var(--accent); outline-offset: 2px; }
-.sc-node { position: relative; display: grid; transition: box-shadow var(--t-fast), border-color var(--t-fast); }
-.sc-node--input, .sc-node--output { background: var(--surface); }
-.react-flow__node:hover .sc-node { box-shadow: var(--shadow-2); }
-.sc-node__head { display: flex; align-items: center; gap: var(--sp-1); min-height: var(--field-h); }
-.sc-node__meta { color: var(--muted); font-size: var(--fs-xs); line-height: 1.5; }
-.sc-node input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-node select, .sc-node textarea { max-width: 100%; min-width: 0; font: inherit; font-size: var(--fs-sm); border: 1px solid transparent; border-radius: var(--r-md); background: var(--surface-2); color: var(--fg); transition: border-color var(--t-fast), background var(--t-fast); }
-.sc-node input:not([type='radio']):not([type='checkbox']):not([type='color']):not([type='file']), .sc-node select { height: var(--field-h); padding: 0 var(--sp-2); }
-.sc-node input:hover, .sc-node select:hover, .sc-node textarea:hover { border-color: var(--line-strong); }
-.sc-node input:focus, .sc-node select:focus, .sc-node textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
-.sc-node select { width: 100%; }
-.sc-node .sc-behavior { width: auto; height: 22px; padding: 0 var(--sp-1); font-size: var(--fs-xs); }
-.sc-node input[type='color'] { width: var(--field-h); height: var(--field-h); padding: 2px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
-.sc-node { grid-template-columns: minmax(0, 1fr); }
-.sc-node > * { min-width: 0; }
-.sc-node__preview { display: grid; gap: var(--sp-1); justify-items: center; }
-.sc-node__busy { font-size: var(--fs-xs); color: var(--muted); }
-.sc-node__text { font-size: var(--fs-md); line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
-.sc-node__mark { display: inline-flex; color: var(--muted); flex: none; }
-.sc-board__flow--tidying .react-flow__node { transition: transform 200ms cubic-bezier(0.2, 0, 0, 1); }
-@media (prefers-reduced-motion: reduce) {
-  .sc-board__flow--tidying .react-flow__node { transition: none; }
-}
-.react-flow__node { font-size: 12.5px; }
-.sc-node { padding: 14px; gap: 10px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); background: var(--surface); box-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 6px 16px -6px rgb(16 24 40 / 0.12); }
-.sc-node::before { content: ''; position: absolute; left: -1px; right: -1px; top: -1px; height: 3px; border-radius: var(--r-lg) var(--r-lg) 0 0; background: var(--type-input); display: none; }
-.sc-node > .sc-node__head { --head: var(--head-asset); position: relative; margin: -14px -14px 0; padding: 10px 14px 10px 42px; min-height: 44px; border-radius: 16px 16px 0 0; border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--head) 12%, var(--surface)), color-mix(in srgb, var(--head) 4%, var(--surface))) !important; }
-.sc-node > .sc-node__head::before { content: ''; position: absolute; left: 14px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 7px; background: linear-gradient(135deg, color-mix(in srgb, var(--head) 70%, white), var(--head)); box-shadow: 0 2px 6px -1px color-mix(in srgb, var(--head) 55%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.35); }
-.sc-node--input > .sc-node__head { background: color-mix(in srgb, var(--head-asset) 16%, var(--surface)); --head: var(--head-asset); }
-.sc-node__title { font-size: 13.5px; font-weight: 650; letter-spacing: -0.01em; }
-.react-flow__node:hover .sc-node { box-shadow: 0 2px 4px rgb(16 24 40 / 0.06), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
-.react-flow__node.selected .sc-node { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px var(--ring), 0 14px 28px -10px rgb(16 24 40 / 0.22); }
-.sc-node--input.sc-node { padding: 16px; gap: 14px; border-radius: 20px; }
-.sc-node > .sc-node__head.sc-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 12px 14px 16px; min-height: 64px; border-radius: 20px 20px 0 0; }
-.sc-node > .sc-node__head.sc-head::before { content: none; }
-
-/* The card header (V1): a kind tile, the name on its own line and a quiet line under it, one ⋯ menu; renaming in place. */
-.sc-rename { flex: 1; min-width: 0; padding: 2px 6px; font-weight: 600; height: var(--field-h); font-size: var(--fs-md); }
-.sc-head__icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: white; background: linear-gradient(140deg, color-mix(in srgb, var(--head) 78%, white), var(--head)); box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--head) 60%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.3); }
-.sc-head__text { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.sc-head__title { font-size: 14.5px; font-weight: 680; letter-spacing: -0.015em; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-head__sub { font-size: 12px; line-height: 1.3; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-head__more { flex: none; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
-.sc-head__more:hover, .sc-head__more[aria-expanded='true'] { background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); }
-.sc-head .sc-node__mark { color: var(--muted); display: grid; place-items: center; }
-.sc-head .sc-rename { flex: 1; min-width: 0; height: 30px; font-size: 14px; font-weight: 600; }
-@media (pointer: coarse) {
-  .sc-head__more { width: 44px; height: 44px; }
-}
-.sc-head__action { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: color-mix(in srgb, var(--head) 14%, var(--surface)); color: color-mix(in srgb, var(--head) 65%, var(--fg)); font-size: 12.5px; font-weight: 650; cursor: pointer; transition: background var(--t-fast); }
-.sc-head__action:hover { background: color-mix(in srgb, var(--head) 24%, var(--surface)); }
-@media (pointer: coarse) {
-  .sc-head__action { height: 40px; padding: 0 14px; }
-}
-
-/* Handles (ports, T12.2): typed colours, bigger with an invisible hit area, on the title row. */
-/* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
-.react-flow__handle::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
-/* T12.2 typed ports (D32): layer = blue, composition = purple; while wiring, valid targets glow, others fade */
-.react-flow__handle.sc-handle--layer { border-color: var(--type-input); }
-.react-flow__handle.sc-handle--composition { border-color: var(--type-main); border-radius: 3px; }
-.react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
-.react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
-.react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: var(--danger-soft); }
-@media (pointer: coarse) {
-  .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
-}
-.react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
-.react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }
-
-/* An input's behaviour picker (T8.7). */
-.sc-behavior { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--fg); }
-.sc-inspector-panel .sc-behavior { height: var(--field-h); font-size: var(--fs-sm); }
-}
 /* Board chrome: what stays CSS because React Flow draws the DOM — its canvas, wires, minimap, the grid's colour and a
    selected group's frame. Everything of ours on the board is Tailwind classes (P28 T3a–T3c). */
 @layer app {
@@ -4909,6 +5201,27 @@ p.sc-comment__text { cursor: auto; }
 }
 .react-flow__edge-path { stroke: color-mix(in srgb, var(--head-master) 45%, var(--faint)); stroke-width: 2; }
 .react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2.5; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 45%, transparent)); }
+/* Nodes and their handles (ports, T12.2) are React Flow's DOM: the nodes' text size, the glide while Tidy moves them
+   (D57), and the typed ports. Our cards inside them are Tailwind classes (board/card.ts). */
+.react-flow__node { font-size: 12.5px; }
+.sc-board__flow--tidying .react-flow__node { transition: transform 200ms cubic-bezier(0.2, 0, 0, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .sc-board__flow--tidying .react-flow__node { transition: none; }
+}
+/* Handles (ports, T12.2): typed colours, bigger with an invisible hit area, on the title row. */
+/* Ports stay small to look at but take a 44 px tap: tap a port, then tap a target to wire. */
+.react-flow__handle::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+/* T12.2 typed ports (D32): layer = blue, composition = purple; while wiring, valid targets glow, others fade */
+.react-flow__handle.sc-handle--layer { border-color: var(--type-input); }
+.react-flow__handle.sc-handle--composition { border-color: var(--type-main); border-radius: 3px; }
+.react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
+.react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
+.react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: var(--danger-soft); }
+@media (pointer: coarse) {
+  .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
+}
+.react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
+.react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }
 /* The Layer Comp group's handles (in and out) are a little larger; a Preview's input sits level with its title (where
    a dropped wire creates it), not mid-card (T10.4). */
 .sc-comp-group > .react-flow__handle-top, .sc-comp-group > .react-flow__handle-bottom { width: 14px; height: 14px; }

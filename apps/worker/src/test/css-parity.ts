@@ -90,18 +90,8 @@ const snapshot = (page: Page, key: string) =>
  * - KEEP: unchanged since main: they keep every class.
  * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const KEEP = [
-  ':is(.sc-comp-group, .react-flow__node-presetNode, .react-flow__node-outputNode) *:not(.sc-node, .sc-node__head, .sc-head__icon, .sc-head__text, .sc-head__text *, .sc-head__more, .sc-head__action, .sc-node__meta)',
-  '.sc-inspector-panel__level',
-];
-const MAIN_CLASSES: Record<string, string> = {
-  '.sc-node--main': 'w-280 min-w-260 min-h-120 gap-14 rounded-[20px] p-16 before:bg-type-main',
-  '.sc-node--rule, .sc-node--preset, .sc-node--output': 'w-280 w-300 gap-14 rounded-[20px] p-16 before:bg-type-output',
-  '.sc-node--frozen': 'border-line-strong [border-style:dashed] before:bg-line-strong',
-  '.sc-node__head': '[--head:var(--head-master)] [--head:var(--head-rule)] [--head:var(--head-preset)] [--head:var(--head-preview)] [--head:var(--head-frozen)]',
-  '.react-flow__node-outputNode .sc-node__meta':
-    'flex flex-wrap gap-6 [&>span]:rounded-[99px] [&>span]:bg-surface-2 [&>span]:px-8 [&>span]:py-2 [&>span]:text-[11.5px] [&>span]:font-[600] [&>span]:text-muted text-warn',
-};
+const KEEP: string[] = [];
+const MAIN_CLASSES: Record<string, string> = {};
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>
   page.evaluate(({ css, subjects, keepAll, mainClasses }) => {
