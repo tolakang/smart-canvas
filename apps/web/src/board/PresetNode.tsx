@@ -20,6 +20,15 @@ import { TOUCH_NO_PAN } from './pinch';
 const NO_CANVAS = 'nodrag nopan nowheel';
 
 /** A row's name without its trailing size, or '' when what is left is just the preset's name. */
+/**
+ * A size row (D46): the size first, its name, then the eye and the trash, shown on hover or keyboard focus (always
+ * on touch, and the eye while it hides a Preview). Only the grip drags it; its handle starts a wire.
+ */
+const ROW =
+  'group/row relative flex min-h-44 cursor-grab items-center gap-10 py-6 pr-22 pl-16 text-[12px] [border-top:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:none] [transition:background_var(--t-fast)] hover:bg-surface-2';
+const ROW_ACTION =
+  'opacity-0 [transition:opacity_var(--t-fast)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100';
+
 export function rowName(label: string, setLabel: string): string {
   const name = nameWithoutSize(label);
   return name === setLabel.trim() ? '' : name;
@@ -75,10 +84,11 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   }
 
   return (
-    <div className="sc-node sc-node--preset" aria-label={`Preset ${set.label}`}>
+    <div className="sc-node sc-node--preset w-300 gap-14 rounded-[20px] p-16" aria-label={`Preset ${set.label}`}>
       <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="sc-handle--composition" title="From the Layer Comp group: feeds every size" />
       <NodeHead
         icon="grid"
+        tone="[--head:var(--head-preset)]"
         title={`${set.label} Preset`}
         sub={`${rows.length} ${rows.length === 1 ? 'size' : 'sizes'}`}
         onRename={readOnly ? undefined : (name) => run((d) => renameSet(d, set.id, name))}
@@ -100,7 +110,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         }
       />
       {!readOnly && family && (family.label !== set.label || family.missing.length > 0) && (
-        <div className={`sc-preset__family ${NO_CANVAS}`} role="group" aria-label={`Team family ${family.label}`}>
+        <div className={`sc-preset__family flex flex-wrap gap-4 px-(--sp-2) pt-0 pb-(--sp-1) [&_.sc-btn]:text-sm ${NO_CANVAS}`} role="group" aria-label={`Team family ${family.label}`}>
           {family.label !== set.label && (
             <button type="button" className="sc-btn sc-btn--ghost" onClick={() => run((d) => renameSet(d, set.id, family.label))} title="The team family these sizes came from has this name now">
               Rename to “{family.label}”
@@ -113,11 +123,11 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           )}
         </div>
       )}
-      <ol className="sc-ports sc-preset__rows" aria-label={`${set.label} sizes`}>
+      <ol className="sc-ports sc-preset__rows mx-[-16px] my-0 list-none p-0" aria-label={`${set.label} sizes`}>
         {rows.map(({ output, connected }, i) => (
           <li
             key={output.id}
-            className={`sc-port${connected ? ' sc-port--wired' : ' sc-port--frozen'}${dropAt === i ? ' sc-port--drop' : ''}`}
+            className={`sc-port${connected ? ' sc-port--wired' : ' sc-port--frozen text-muted'}${dropAt === i ? ' sc-port--drop [box-shadow:inset_0_2px_0_var(--accent)]' : ''} ${ROW}`}
             data-output={output.id}
             onDragOver={(e) => {
               if (!e.dataTransfer.types.includes(ROW_DRAG)) return;
@@ -139,17 +149,17 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
                 <Icon name="grip" />
               </span>
             )}
-            <span className="sc-preset__size">
+            <span className="sc-preset__size min-w-92 flex-none text-[12.5px] font-[600] [font-variant-numeric:tabular-nums]">
               {output.size.width} × {output.size.height}
             </span>
-            <span className="sc-port__label" title={output.label}>
+            <span className="sc-port__label flex-1 overflow-hidden text-[12.5px] text-ellipsis whitespace-nowrap text-muted" title={output.label}>
               {/* V2: the size is already shown; a name that only repeats the preset and the size says nothing more. */}
               {[rowName(output.label, set.label), connected ? '' : 'disconnected'].filter(Boolean).join(' · ')}
             </span>
             {/* D51: the eye shows / hides this size's Preview on the board (it still exports); the trash removes the size. */}
             <button
               type="button"
-              className={`sc-icon-btn sc-preset__eye ${NO_CANVAS}`}
+              className={`sc-icon-btn sc-preset__eye ml-auto ${ROW_ACTION} aria-pressed:text-muted aria-pressed:opacity-100 ${NO_CANVAS}`}
               aria-label={`${hidden.has(output.id) ? 'Show' : 'Hide'} preview ${output.label}`}
               aria-pressed={hidden.has(output.id)}
               disabled={readOnly}
@@ -161,7 +171,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             {!readOnly && (
               <button
                 type="button"
-                className={`sc-icon-btn sc-preset__remove ${NO_CANVAS}`}
+                className={`sc-icon-btn sc-preset__remove ${ROW_ACTION} ${NO_CANVAS}`}
                 aria-label={`Remove ${output.label} from ${set.label}`}
                 title="Remove this size (deletes its preview)"
                 onClick={() => window.confirm(`Remove “${output.label}”? Its preview is deleted.`) && run((d) => deleteOutput(d, output.id))}
@@ -175,7 +185,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
       </ol>
       {!readOnly && custom && (
         <form
-          className={`sc-preset__custom ${NO_CANVAS}`}
+          className={`sc-preset__custom mt-8 flex items-center gap-4 [&_input]:w-64 ${NO_CANVAS}`}
           onSubmit={(e) => {
             e.preventDefault();
             addCustom();
@@ -193,23 +203,23 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         </form>
       )}
       {!readOnly && !custom && (
-        <button type="button" className={`sc-btn sc-preset__add-custom ${NO_CANVAS}`} onClick={() => setCustom({ w: '', h: '' })}>
+        <button type="button" className={`sc-btn sc-preset__add-custom mt-8 w-full justify-center ${NO_CANVAS}`} onClick={() => setCustom({ w: '', h: '' })}>
           <Icon name="plus" /> Custom size
         </button>
       )}
       {!readOnly && rows.length > 0 && (
-        <button type="button" className={`sc-btn sc-preset__save ${NO_CANVAS}`} onClick={() => void saveAsFamily()}>
+        <button type="button" className={`sc-btn sc-preset__save mt-6 w-full ${NO_CANVAS}`} onClick={() => void saveAsFamily()}>
           <Icon name="library" /> Save as team preset
         </button>
       )}
       {savedNote && (
-        <p className="sc-muted sc-preset__note" role="status">
+        <p className="sc-muted sc-preset__note mx-0 mt-6 mb-0 text-[11px]" role="status">
           {savedNote}
         </p>
       )}
       {!readOnly && addable.length > 0 && (
         <select
-          className={`sc-preset__add ${NO_CANVAS}`}
+          className={`sc-preset__add mt-8 w-full ${NO_CANVAS}`}
           aria-label={`Add a size to ${set.label}`}
           value=""
           onChange={(e) => {

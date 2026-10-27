@@ -6,6 +6,7 @@
 import { presetSets } from '@smart-canvas/core';
 import { useBoard } from './context';
 import { Icon } from './LayerRow';
+import { APPROVAL, APPROVAL_PILL } from './OutputNode';
 import { PANEL_HEAD, panelClass } from './panel';
 import { approvalOf, openCounts } from './review';
 
@@ -49,7 +50,7 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
                   <button type="button" className="sc-history__open" onClick={() => openOutputEditor(o.id, { comments: n > 0 })} aria-label={`Open ${o.label}`}>
                     <span className="sc-history__title">{o.label}</span>
                     <span className="sc-review__row">
-                      <span className={`sc-preview__approval sc-preview__approval--${a.state}`}>{STATE_LABEL[a.state]}</span>
+                      <span className={`sc-preview__approval sc-preview__approval--${a.state} ${APPROVAL_PILL} ${APPROVAL[a.state]}`}>{STATE_LABEL[a.state]}</span>
                       {n > 0 && <span className="sc-muted">{`${n} open ${n === 1 ? 'comment' : 'comments'}`}</span>}
                     </span>
                   </button>

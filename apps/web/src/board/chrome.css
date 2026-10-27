@@ -33,6 +33,10 @@
 }
 .react-flow__edge-path { stroke: color-mix(in srgb, var(--head-master) 45%, var(--faint)); stroke-width: 2; }
 .react-flow__edge.selected .react-flow__edge-path, .react-flow__edge:hover .react-flow__edge-path { stroke: var(--accent); stroke-width: 2.5; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 45%, transparent)); }
+/* The Layer Comp group's handles (in and out) are a little larger; a Preview's input sits level with its title (where
+   a dropped wire creates it), not mid-card (T10.4). */
+.sc-comp-group > .react-flow__handle-top, .sc-comp-group > .react-flow__handle-bottom { width: 14px; height: 14px; }
+.sc-node--output > .react-flow__handle { top: 32px; }
 /* The minimap matches the floating panels. */
 .react-flow__minimap { border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 14px; overflow: hidden; background: var(--glass) !important; backdrop-filter: blur(12px); box-shadow: var(--shadow-2); }
 

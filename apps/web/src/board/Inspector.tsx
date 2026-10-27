@@ -43,11 +43,11 @@ import { useBoard } from './context';
 import { BackgroundSlots, useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
 import { compositionIdOfNode, inputNodeId, outputNodeId, pairNodeId, stackNodeId } from './flow';
-import { HealthIssues, healthSummary } from './HealthBadge';
+import { HEALTH_PILL, HealthIssues, healthSummary } from './HealthBadge';
 import { confirmDelete, Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
 import { FAMILY_LABEL, useOpenLayout } from './MainNode';
-import { OutputSettings } from './OutputSettings';
+import { OUTPUT_ROW, OutputSettings } from './OutputSettings';
 import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
 
 const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
@@ -119,7 +119,7 @@ function NameField({ label, value, onCommit }: { label: string; value: string; o
 
 function HealthSection({ health }: { health: Health }) {
   return (
-    <Section title="Layout health" aside={<span className={`${LEVEL} sc-health--${health.level}`}>{healthSummary(health)}</span>}>
+    <Section title="Layout health" aside={<span className={`${LEVEL} sc-health--${health.level} ${HEALTH_PILL[health.level]}`}>{healthSummary(health)}</span>}>
       {health.issues.length > 0 ? <HealthIssues health={health} className={ISSUES} /> : null}
     </Section>
   );
@@ -315,7 +315,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
       </Section>
       <HealthSection health={health} />
       <Section title="Square layout size">
-        <div className="sc-output__row">
+        <div className={OUTPUT_ROW}>
           <NumberField label="Width" value={comp.size.width} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ width: n })} />
           <NumberField label="Height" value={comp.size.height} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ height: n })} />
           <span className="sc-muted">{comp.size.unit}</span>
