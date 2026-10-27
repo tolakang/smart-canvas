@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Icon } from './LayerRow';
-import { PANEL_HEAD, panelClass, SECTION } from './panel';
+import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass, SECTION } from './panel';
 
 export type VersionKind = 'auto' | 'before-delete' | 'before-restore' | 'named';
 export interface Version {
@@ -108,7 +108,7 @@ export function HistoryPanel(props: {
         </button>
       </div>
       {!props.readOnly && !props.previewing && (
-        <form className={`${SECTION} sc-history__name`} onSubmit={(e) => void name(e)}>
+        <form className={`${SECTION} sc-history__name grid-cols-[1fr_auto] items-center`} onSubmit={(e) => void name(e)}>
           <input aria-label="Version name" placeholder="Name this version, e.g. Sent to client" maxLength={100} value={naming} onChange={(e) => setNaming(e.target.value)} />
           <button type="submit" className="sc-btn" disabled={!naming.trim()}>
             Save version
@@ -116,20 +116,20 @@ export function HistoryPanel(props: {
         </form>
       )}
       {error && (
-        <p className="sc-error sc-history__note" role="alert">
+        <p className={`sc-error ${LIST_NOTE}`} role="alert">
           {error}
         </p>
       )}
-      {list === null && !error && <p className="sc-muted sc-history__note">Loading…</p>}
-      {list?.length === 0 && <p className="sc-muted sc-history__note">No earlier versions yet. One is kept every 10 minutes while you edit, and before panels are deleted.</p>}
+      {list === null && !error && <p className={`sc-muted ${LIST_NOTE}`}>Loading…</p>}
+      {list?.length === 0 && <p className={`sc-muted ${LIST_NOTE}`}>No earlier versions yet. One is kept every 10 minutes while you edit, and before panels are deleted.</p>}
       {days.map(({ day, versions }) => (
-        <section key={day} className="sc-history__day" aria-label={day}>
-          <h3>{day}</h3>
-          <ul>
+        <section key={day} className={LIST_DAY} aria-label={day}>
+          <h3 className={LIST_DAY_TITLE}>{day}</h3>
+          <ul className={LIST_ROWS}>
             {versions.map((v) => (
-              <li key={v.id} className={v.id === props.previewing ? 'sc-history__item sc-history__item--on' : 'sc-history__item'}>
-                <button type="button" className="sc-history__open" aria-current={v.id === props.previewing || undefined} onClick={() => props.onView(v)}>
-                  <span className="sc-history__title">{versionTitle(v)}</span>
+              <li key={v.id} className={listItem(v.id === props.previewing)}>
+                <button type="button" className={LIST_OPEN} aria-current={v.id === props.previewing || undefined} onClick={() => props.onView(v)}>
+                  <span className={LIST_TITLE}>{versionTitle(v)}</span>
                   <span className="sc-muted">
                     {time(v.createdAt)}
                     {v.by ? ` · ${v.by}` : ''}

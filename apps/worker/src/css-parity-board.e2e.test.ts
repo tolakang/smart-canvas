@@ -79,6 +79,9 @@ describe.skipIf(!adminUrl)('CSS parity: the board: asset nodes, top bar, menus, 
     await page.getByRole('button', { name: 'Review', exact: true }).click();
     await page.getByRole('complementary', { name: 'Review' }).waitFor();
     await same('review');
+    await page.getByRole('complementary', { name: 'Review' }).getByRole('button', { name: /^Open / }).first().hover();
+    await same('review-row-hover');
+    await page.mouse.move(5, 500);
     await page.getByRole('button', { name: 'Review', exact: true }).click();
   }, limit(60_000));
 
@@ -102,6 +105,8 @@ describe.skipIf(!adminUrl)('CSS parity: the board: asset nodes, top bar, menus, 
     const history = page.getByRole('complementary', { name: 'History' });
     await history.getByRole('textbox', { name: 'Version name' }).fill('Sent to client');
     await history.getByRole('button', { name: 'Save version' }).click();
+    await history.getByRole('button', { name: /Sent to client/ }).first().hover();
+    await same('history-item-hover');
     await history.getByRole('button', { name: /Sent to client/ }).first().click();
     await page.locator('.sc-board__version').waitFor();
     await page.waitForTimeout(500);

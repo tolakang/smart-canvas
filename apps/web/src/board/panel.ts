@@ -49,3 +49,15 @@ export const STAT_LABEL = 'text-xs text-muted';
 export const STAT_VALUE = 'text-xl font-[650] [font-variant-numeric:tabular-nums] [margin:2px_0_0]';
 export const TIPS = 'sc-overview__tips m-0 grid list-none gap-(--sp-2) p-0 text-sm leading-[1.5] text-muted';
 export const TIP_KEY = 'font-[600] text-fg';
+
+/** History and Review (D62, D63): a note under the title, then rows grouped by day (or by Preset node). */
+export const LIST_NOTE = 'sc-history__note m-0 px-(--sp-4) py-(--sp-3) text-xs leading-[1.5]';
+export const LIST_DAY = 'sc-history__day';
+export const LIST_DAY_TITLE = 'm-0 px-(--sp-4) pt-(--sp-3) pb-(--sp-1) text-xs font-[600] text-muted';
+export const LIST_ROWS = 'm-0 grid list-none gap-2 px-(--sp-2) pt-0 pb-(--sp-2)';
+/** A row; the one shown on the board (`on`) is tinted. */
+export const listItem = (on = false) =>
+  `sc-history__item${on ? ' sc-history__item--on bg-accent-soft' : ''} flex items-center gap-(--sp-1) rounded-sm hover:bg-surface-2`;
+export const LIST_OPEN =
+  'sc-history__open grid min-w-0 flex-1 cursor-pointer gap-2 px-(--sp-2) py-6 text-left [font:inherit] [color:inherit] [background:none] [border:0] pointer-coarse:min-h-44';
+export const LIST_TITLE = 'sc-history__title overflow-hidden font-[500] text-ellipsis whitespace-nowrap';

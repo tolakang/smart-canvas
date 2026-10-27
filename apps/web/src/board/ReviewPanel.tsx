@@ -7,7 +7,7 @@ import { presetSets } from '@smart-canvas/core';
 import { useBoard } from './context';
 import { Icon } from './LayerRow';
 import { APPROVAL, APPROVAL_PILL } from './OutputNode';
-import { PANEL_HEAD, panelClass } from './panel';
+import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass } from './panel';
 import { approvalOf, openCounts } from './review';
 
 const STATE_LABEL = { approved: '✓ Approved', changed: 'Changed since approved', none: 'Not approved' } as const;
@@ -32,24 +32,24 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
           <Icon name="close" />
         </button>
       </div>
-      <p className="sc-muted sc-history__note" role="status">
+      <p className={`sc-muted ${LIST_NOTE}`} role="status">
         {doc.outputs.length === 0
           ? 'No Previews yet.'
           : `${approved} of ${doc.outputs.length} approved · ${open} open ${open === 1 ? 'comment' : 'comments'}`}
       </p>
-      {review === null && <p className="sc-muted sc-history__note">Loading…</p>}
+      {review === null && <p className={`sc-muted ${LIST_NOTE}`}>Loading…</p>}
       {groups.map((g) => (
-        <section key={g.id} className="sc-history__day" aria-label={g.label}>
-          <h3>{g.label}</h3>
-          <ul>
+        <section key={g.id} className={LIST_DAY} aria-label={g.label}>
+          <h3 className={LIST_DAY_TITLE}>{g.label}</h3>
+          <ul className={LIST_ROWS}>
             {g.outputs.map((o) => {
               const a = approvalOf(approvals, o.id);
               const n = counts.get(o.id) ?? 0;
               return (
-                <li key={o.id} className="sc-history__item">
-                  <button type="button" className="sc-history__open" onClick={() => openOutputEditor(o.id, { comments: n > 0 })} aria-label={`Open ${o.label}`}>
-                    <span className="sc-history__title">{o.label}</span>
-                    <span className="sc-review__row">
+                <li key={o.id} className={listItem()}>
+                  <button type="button" className={LIST_OPEN} onClick={() => openOutputEditor(o.id, { comments: n > 0 })} aria-label={`Open ${o.label}`}>
+                    <span className={LIST_TITLE}>{o.label}</span>
+                    <span className="sc-review__row flex flex-wrap items-center gap-8">
                       <span className={`sc-preview__approval sc-preview__approval--${a.state} ${APPROVAL_PILL} ${APPROVAL[a.state]}`}>{STATE_LABEL[a.state]}</span>
                       {n > 0 && <span className="sc-muted">{`${n} open ${n === 1 ? 'comment' : 'comments'}`}</span>}
                     </span>

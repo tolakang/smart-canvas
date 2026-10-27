@@ -10,9 +10,9 @@ of the older CSS is tracked in `../TAILWIND-PLAN.md`.
 |---|---|
 | Tokens (colours, type, radius, shadow, motion), light and dark | `apps/web/src/styles.css`, `:root` and `:root[data-theme='dark']` |
 | Tailwind's theme: which tokens are classes, breakpoints, `dark:` and `hover:` | `apps/web/src/tailwind.css` (imported first in `main.tsx`) |
-| Shared class lists | `ui/tw.ts` (dialogs), `ui/Brand.tsx` (brand), `board/topbar.ts` (top bar, menus), `board/panel.ts` (side panels, inspector), `board/frame.ts` (board frame, notices), `board/card.ts` (the card every node shares), `board/Slot.tsx` (asset slots), `shell/Projects.tsx` (tiles) |
+| Shared class lists | `ui/tw.ts` (dialogs), `ui/Brand.tsx` (brand), `board/topbar.ts` (top bar, menus), `board/panel.ts` (side panels, inspector, History and Review lists), `board/frame.ts` (board frame, notices), `board/card.ts` (the card every node shares), `board/Slot.tsx` (asset slots), `shell/Projects.tsx` (tiles) |
 | CSS that stays CSS | `styles.css` (tokens, base, keyframes, shared `sc-` components not converted yet), `board/chrome.css` (React Flow's pane, wires, minimap, handles), `board/reactflow.css` (React Flow's own sheet, lowest layer), fonts |
-| Areas not converted yet | `board/review.css`, `editor/editor.css` (`TAILWIND-PLAN.md`) |
+| Areas not converted yet | `editor/editor.css` (`TAILWIND-PLAN.md`) |
 
 ## Writing classes
 

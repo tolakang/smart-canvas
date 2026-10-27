@@ -50,6 +50,12 @@ describe.skipIf(!adminUrl)('CSS parity: tablet and phone', () => {
     await page.waitForTimeout(400);
     await same('phone-inspector');
     await page.getByRole('button', { name: 'Close inspector' }).click();
+    await page.getByRole('button', { name: /^More/ }).first().click();
+    await page.getByRole('menuitem', { name: 'History' }).click();
+    await page.getByRole('complementary', { name: 'History' }).waitFor();
+    await page.waitForTimeout(400);
+    await same('phone-history');
+    await page.getByRole('button', { name: 'Close history' }).click();
     // On touch the first tap on a small panel zooms to it (Q8); the next one opens the editor.
     const editor = page.getByRole('dialog', { name: 'Preview editor Banner' });
     await expect
