@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { limit, paritySuite } from './test/parity-suite';
 
 describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comments, dark theme', () => {
-  const { s, same, imagesLoaded, seed } = paritySuite();
+  const { s, same, node, fit, imagesLoaded, seed } = paritySuite();
   let page: Page;
   beforeAll(async () => {
     page = s.page;
@@ -37,6 +37,9 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     // Approval in the bar: changed since approved (Square post approved with an older fingerprint), Approve again hovered.
     const approved = await page.request.put(`${s.api}/review/approvals/sq`, { data: { fingerprint: 'before' } });
     expect(approved.status()).toBe(200);
+    await page.reload(); // the board reads approvals when it loads
+    await node('Image').waitFor();
+    await fit();
     await page.getByRole('button', { name: 'Edit Preview Square post' }).click();
     const square = page.getByRole('dialog', { name: 'Preview editor Square post' });
     await square.getByText('Changed since approved').waitFor();
