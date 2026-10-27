@@ -4,6 +4,7 @@
  */
 import { overrideDiff, resetOverride, type OverrideField } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
+import { INSPECTOR, INSPECTOR_ACTIONS, INSPECTOR_NOTE, INSPECTOR_TABLE, PANEL_TITLE } from './panels';
 
 const LABEL: Record<string, string> = {
   x: 'X',
@@ -32,12 +33,12 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
   const fields = layoutDeps ? overrideDiff(doc, outputId, sourceId, layoutDeps) : [];
   const override = doc.outputs.find((o) => o.id === outputId)?.overrides.find((o) => o.sourceId === sourceId);
   return (
-    <section className="sc-inspector" aria-label="Overrides">
-      <div className="sc-layers__title">{override ? 'Edited by hand on this Preview' : 'Automatic layout'}</div>
+    <section className={INSPECTOR} aria-label="Overrides">
+      <div className={PANEL_TITLE}>{override ? 'Edited by hand on this Preview' : 'Automatic layout'}</div>
       {fields.length === 0 ? (
-        <p className="sc-muted sc-props__note">{override ? 'Same as auto.' : 'No overrides: this layer follows the Layer Comp.'}</p>
+        <p className={`sc-muted ${INSPECTOR_NOTE}`}>{override ? 'Same as auto.' : 'No overrides: this layer follows the Layer Comp.'}</p>
       ) : (
-        <table className="sc-inspector__table">
+        <table className={INSPECTOR_TABLE}>
           <thead>
             <tr>
               <th>Field</th>
@@ -57,12 +58,12 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
         </table>
       )}
       {override && (
-        <p className="sc-muted sc-props__note">
+        <p className={`sc-muted ${INSPECTOR_NOTE}`}>
           Last changed {new Date(override.updatedAt).toLocaleString()}
         </p>
       )}
       {override && !readOnly && (
-        <div className="sc-inspector__actions">
+        <div className={INSPECTOR_ACTIONS}>
           <button type="button" onClick={() => run((d) => resetOverride(d, outputId, sourceId))}>
             Reset layer
           </button>

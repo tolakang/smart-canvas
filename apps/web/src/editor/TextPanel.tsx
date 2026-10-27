@@ -17,6 +17,7 @@ import {
 import { useBoard } from '../board/context';
 import { setText } from '../board/content';
 import { NumberField } from '../ui/NumberField';
+import { NOTE, PANEL_TITLE, PROPS, PROPS_BODY, PROPS_ROW, TEXT } from './panels';
 
 const WEIGHT_NAME: Record<number, string> = { 100: 'Thin', 200: 'Extra light', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold', 700: 'Bold', 800: 'Extra bold', 900: 'Black' };
 
@@ -35,16 +36,16 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
   const families = [...new Set([...BUNDLED_FONTS.map((f) => f.family), ...teamFonts.map((f) => f.family), style.fontFamily])];
 
   return (
-    <aside className="sc-props" aria-label="Text">
-      <div className="sc-layers__title">Text · {source.label}</div>
-      <fieldset className="sc-props__body" disabled={readOnly}>
+    <aside className={PROPS} aria-label="Text">
+      <div className={PANEL_TITLE}>Text · {source.label}</div>
+      <fieldset className={PROPS_BODY} disabled={readOnly}>
         {outputId ? (
-          <p className="sc-muted sc-props__note">Text is shared by every Preview; edit it on the Layer Comp. Style changes here apply to this Preview only.</p>
+          <p className={`sc-muted ${NOTE}`}>Text is shared by every Preview; edit it on the Layer Comp. Style changes here apply to this Preview only.</p>
         ) : (
         <label className="sc-field sc-field--col">
           Text
           <textarea
-            className="sc-text"
+            className={TEXT}
             aria-label="Text content"
             rows={3}
             value={text}
@@ -65,7 +66,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
             ))}
           </select>
         </label>
-        <div className="sc-props__row">
+        <div className={PROPS_ROW}>
           <NumberField
             label="Size (px)"
             value={style.fontSizePx}
@@ -86,7 +87,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
             </select>
           </label>
         </div>
-        <div className="sc-props__row">
+        <div className={PROPS_ROW}>
           <label className="sc-field sc-field--col">
             Colour
             <input type="color" value={style.color} onChange={(e) => patch({ color: e.target.value })} />
@@ -103,7 +104,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
             </div>
           </div>
         </div>
-        <div className="sc-props__row">
+        <div className={PROPS_ROW}>
           <NumberField
             label="Max lines"
             value={style.maxLines}

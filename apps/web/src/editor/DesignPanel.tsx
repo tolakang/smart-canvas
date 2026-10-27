@@ -7,6 +7,7 @@
 import { MAX_SHEAR_DEG, type Frame, type InputSource, type RenderScene } from '@smart-canvas/core';
 import type { ReactNode } from 'react';
 import { NumberField } from '../ui/NumberField';
+import { DESIGN, GESTURES_LIST, GRID, KEYS, LOCK, NUM, SECTION, SECTION_KEYS, SECTION_TOUCH, SUMMARY, TITLE } from './panels';
 
 const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 /** Shown values: whole design px (as the selection badge), rotation to 0.1°. Typed values are kept as typed. */
@@ -56,18 +57,18 @@ export function DesignPanel(props: {
   const { source, frame, readOnly } = props;
   if (!source || !frame) {
     return (
-      <aside className="sc-design" aria-label="Design">
-        <section className="sc-design__section">
-          <div className="sc-design__title">Canvas</div>
+      <aside className={DESIGN} aria-label="Design">
+        <section className={SECTION}>
+          <div className={TITLE}>Canvas</div>
           <div className="sc-design__value">
             {round(props.scene.width)} × {round(props.scene.height)} <span className="sc-muted">design px</span>
           </div>
         </section>
         {/* Touch screens get gestures instead of keyboard shortcuts. */}
-        <details className="sc-design__section sc-design__touch sc-design__shortcuts--touch">
-          <summary className="sc-design__title">Gestures</summary>
+        <details className={SECTION_TOUCH}>
+          <summary className={SUMMARY}>Gestures</summary>
           {/* V3 (owner: "The instructions is crowd, make it easy and clean for human to read"): one gesture per line. */}
-          <dl className="sc-gestures">
+          <dl className={GESTURES_LIST}>
             {GESTURES.map(([k, v]) => (
               <div key={k}>
                 <dt>{k}</dt>
@@ -77,9 +78,9 @@ export function DesignPanel(props: {
           </dl>
         </details>
         {/* U4: the keys are there when wanted, folded away otherwise. */}
-        <details className="sc-design__section sc-design__shortcuts">
-          <summary className="sc-design__title">Keyboard shortcuts</summary>
-          <dl className="sc-design__keys">
+        <details className={SECTION_KEYS}>
+          <summary className={SUMMARY}>Keyboard shortcuts</summary>
+          <dl className={KEYS}>
             {SHORTCUTS.map(([k, v]) => (
               <div key={k}>
                 <dt>{k}</dt>
@@ -101,7 +102,7 @@ export function DesignPanel(props: {
   };
   const field = (label: string, name: string, value: number, onCommit: (n: number | null) => void, min = -100000, show = round) => (
     <NumberField
-      className="sc-design__num"
+      className={NUM}
       label={label}
       value={show(value)}
       min={min}
@@ -114,12 +115,12 @@ export function DesignPanel(props: {
   );
 
   return (
-    <aside className="sc-design" aria-label="Design">
-      <section className="sc-design__section">
-        <div className="sc-design__title">
+    <aside className={DESIGN} aria-label="Design">
+      <section className={SECTION}>
+        <div className={TITLE}>
           {source.label} <span className="sc-muted">{KIND_LABEL[source.kind]} · {source.behavesLike}</span>
         </div>
-        <div className="sc-design__grid">
+        <div className={GRID}>
           {field('X', 'X', frame.x, (n) => n !== null && set({ x: n }))}
           {field('Y', 'Y', frame.y, (n) => n !== null && set({ y: n }))}
           {field('W', 'Width', frame.w, (n) => setSize('w', n), 1)}
@@ -128,7 +129,7 @@ export function DesignPanel(props: {
           {field('⫽', 'Skew', frame.shear ?? 0, (n) => set({ shear: Math.max(-MAX_SHEAR_DEG, Math.min(MAX_SHEAR_DEG, n ?? 0)) }), -MAX_SHEAR_DEG, roundDeg)}
           <button
             type="button"
-            className="sc-design__lock"
+            className={LOCK}
             aria-label="Constrain proportions"
             aria-pressed={props.lockRatio}
             title="Constrain proportions"

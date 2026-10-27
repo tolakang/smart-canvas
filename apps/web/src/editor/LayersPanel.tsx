@@ -7,6 +7,7 @@
 import { connectSource, layerOrder, MAIN, outputComposition, setOverrideHidden, wiredLayers, type InputSource } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
+import { EDITED, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
 
 const KIND_LABEL = { image: 'Image', vector: 'SVG', text: 'Text', fill: 'Fill' } as const;
 
@@ -23,11 +24,11 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
   const reorder = !readOnly && !outputId;
 
   return (
-    <aside className="sc-layers" aria-label="Layers">
-      <div className="sc-layers__title">
+    <aside className={LAYERS} aria-label="Layers">
+      <div className={LAYERS_TITLE}>
         Layers <span className="sc-muted">top = front</span>
       </div>
-      <ol className="sc-layers__list">
+      <ol className={LAYERS_LIST}>
         {layers.map(({ s, port }) => {
           const isWired = wired.has(s.id);
           const isSelected = props.selected === s.id;
@@ -36,7 +37,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
           return (
             <li
               key={s.id}
-              className={`sc-layer${isSelected ? ' sc-layer--selected' : ''}${visible ? '' : ' sc-layer--hidden'}${isWired ? '' : ' sc-layer--unwired'}${dropAt === port ? ' sc-layer--drop' : ''}`}
+              className={layerRowClass({ selected: isSelected, hidden: !visible, unwired: !isWired, drop: dropAt === port })}
               aria-selected={isSelected}
               data-layer={s.id}
               {...(reorder ? rowProps({ id: s.id, port }) : {})}
@@ -47,11 +48,11 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                 </span>
               )}
               <LayerThumb source={s} />
-              <button type="button" className="sc-layer__name" onClick={() => props.onSelect(s.id)}>
+              <button type="button" className={layerNameClass(!visible, !isWired)} onClick={() => props.onSelect(s.id)}>
                 <span>
                   {s.label}
                   {overrides.has(s.id) && (
-                    <span className="sc-edited" title="Edited by hand on this Preview: it no longer follows the automatic layout. Reset it in the properties panel.">
+                    <span className={EDITED} title="Edited by hand on this Preview: it no longer follows the automatic layout. Reset it in the properties panel.">
                       edited
                     </span>
                   )}
@@ -63,7 +64,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                 </span>
               </button>
               {!readOnly && outputId && (
-                <span className="sc-layer__actions">
+                <span className={layerActionsClass(isSelected)}>
                   <button
                     type="button"
                     aria-label={`${hiddenHere ? 'Show' : 'Hide'} layer ${s.label} on this Preview`}
@@ -77,7 +78,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
                 </span>
               )}
               {reorder && (
-                <span className="sc-layer__actions">
+                <span className={layerActionsClass(isSelected)}>
                   {!isWired && (
                     <button type="button" aria-label={`Connect ${s.label} to main`} title="Connect to main" onClick={() => run((d) => connectSource(d, s.id, undefined, compositionId))}>
                       ○

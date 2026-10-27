@@ -8,6 +8,7 @@ import { useState, type DragEvent, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from './context';
 import { newId } from './ids';
+import { THUMB } from '../editor/panels';
 
 const DRAG_TYPE = 'application/x-sc-source';
 
@@ -20,7 +21,7 @@ export function LayerThumb({ source }: { source: InputSource }) {
   else if (content.kind === 'text') inner = <span className="sc-thumb-text">{firstGrapheme(content.text) || 'T'}</span>;
   else if (content.assetId) inner = <img src={assetUrl(teamId, content.assetId)} alt="" draggable={false} />;
   return (
-    <span className="sc-layer-thumb" aria-hidden="true">
+    <span className={THUMB} aria-hidden="true">
       {inner}
     </span>
   );

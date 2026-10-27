@@ -164,11 +164,11 @@ const releaseTimers = (page: Page) =>
 /**
  * Elements an earlier step converted that a rule this branch removes also styled: their classes from main must stay
  * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (T7a: the bar's rules for
- * every button and for the title's parts reach the T6 approval group and its Approve button).
+ * none in T7b).
  * - KEEP: unchanged since main: they keep every class.
  * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const KEEP: string[] = ['.sc-approval', '.sc-approval__approve'];
+const KEEP: string[] = [];
 const MAIN_CLASSES: Record<string, string> = {};
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>
