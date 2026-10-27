@@ -1,30 +1,14 @@
 # Tailwind conversion
 
-Decided: **the web app is built with Tailwind** (D65; owner 2026-10-26: "build with tailwind"). New UI is written in
-utilities from the start, following `docs/FRONTEND.md`. This file tracks only the conversion of the CSS written
-before that, area by area, with no visual change.
-
-## Status
+Decided: **the web app is built with Tailwind** (D65; owner 2026-10-26: "build with tailwind"). How to write the UI:
+`docs/FRONTEND.md`. The conversion of the older CSS is done through T7 (every area, #180–#195; the finished plan and
+its history: [`docs/archive/TAILWIND-PLAN-T1-T7.md`](docs/archive/TAILWIND-PLAN-T1-T7.md)). Left:
 
 | PR | Area | CSS it empties | Risk | Done |
 |---|---|---|---|---|
-| T1 | Setup: packages, `tailwind.css` (tokens, `dark`, breakpoints, layers), parity test, guard, D65 | — | low | ✅ #180 |
-| T2a | Dialogs (Export, Rename / New project, Size presets, Team, fonts, library, PDF page, reconnect) | `ui/dialogs.css` | low | ✅ #181 |
-| T2b | Projects home, sign-in | `shell/home.css` | low | ✅ #182 |
-| T3a | Top bar and menus | their rules in `board/chrome.css` | medium | ✅ #183 |
-| T3b | Floating side panels, inspector, project overview, canvas notices | more of `board/chrome.css` | medium | ✅ #185 |
-| T3c | Canvas toolbar, selection bar, tooltips, name tags, groups | the rest but React Flow's | medium | ✅ #186 |
-| T4a | Main Comps, Export Group, Presets, Preview Cards, their ports and layout health | `board/pipeline.css` | medium | ✅ #187 |
-| T4b | The card every node shares: card, header, fields, behaviour picker (React Flow's handles stay CSS) | `board/node.css` | medium | ✅ #188 |
-| T5 | Asset nodes and slots (many states) | `board/assets.css` | high | ✅ #189 |
-| T6 | History, comments, approval | `board/review.css` | low | ✅ #192 |
-| T7a | Editor shell: screen, bar, stage and its overlays, the panels' layout, phone tabs | the shell's rules in `editor/editor.css` | high | ✅ #193 |
-| T7b | Editor panels: Layers, Design, override inspector, text properties | more of `editor/editor.css` | high | ✅ #194 |
-| T7c | Comments and pins (the transform box stays CSS) | the rest but the transform box | medium | this PR |
 | T8 | Optional: Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
 
-One PR at a time; merge when CI is green. When an area is done, take its file out of the stylesheet list in
-`scripts/check-css.mjs`.
+Until T8 retires it, the parity test below guards any styling PR that should look the same.
 
 ## What stays CSS for good
 
