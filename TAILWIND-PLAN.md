@@ -19,8 +19,8 @@ before that, area by area, with no visual change.
 | T5 | Asset nodes and slots (many states) | `board/assets.css` | high | ✅ #189 |
 | T6 | History, comments, approval | `board/review.css` | low | ✅ #192 |
 | T7a | Editor shell: screen, bar, stage and its overlays, the panels' layout, phone tabs | the shell's rules in `editor/editor.css` | high | ✅ #193 |
-| T7b | Editor panels: Layers, Design, override inspector, text properties | more of `editor/editor.css` | high | this PR |
-| T7c | Comments and pins (the transform box stays CSS) | the rest but the transform box | medium | |
+| T7b | Editor panels: Layers, Design, override inspector, text properties | more of `editor/editor.css` | high | ✅ #194 |
+| T7c | Comments and pins (the transform box stays CSS) | the rest but the transform box | medium | this PR |
 | T8 | Optional: Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
 
 One PR at a time; merge when CI is green. When an area is done, take its file out of the stylesheet list in

@@ -55,6 +55,17 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await preview.getByRole('button', { name: 'Comment', exact: true }).click();
     await preview.getByRole('complementary', { name: 'Comments' }).waitFor();
     await same('comments');
+    // A pin being placed with its box, then posted and opened: the canvas pin, its thread, the inline number.
+    await preview.getByTestId('point-surface').click({ position: { x: 60, y: 40 } });
+    const box = preview.getByRole('textbox', { name: 'New comment' });
+    await box.fill('Move this up');
+    await box.blur();
+    await same('comments-compose');
+    await preview.getByRole('button', { name: 'Post', exact: true }).click();
+    await preview.getByRole('button', { name: 'Comment 1' }).waitFor();
+    await preview.getByRole('button', { name: 'Move this up' }).click();
+    await preview.getByRole('button', { name: 'Reply', exact: true }).first().hover();
+    await same('comments-pinned');
     await preview.getByRole('button', { name: 'Close', exact: true }).click();
 
     // Approval in the bar: changed since approved (Square post approved with an older fingerprint), Approve again hovered.
