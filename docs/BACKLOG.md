@@ -3,7 +3,7 @@
 Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.md` and the files named in the ticket.
 
 ## P0 Spikes (time-box 1 session each)
-- ~~S1 — Affinity 3 `.af` reader check~~ — Dropped (D6). Was: Needs the named-layer test file. Output: `AFFINITY-IMPORT.md` saying what is readable (names, text, rasters, vectors) and go/no-go for T7.6.
+- ~~S1 — Affinity 3 `.af` reader check~~ — Dropped (D6). Was: Needs the named-layer test file. Output (never written): `AFFINITY-IMPORT.md` saying what is readable (names, text, rasters, vectors) and go/no-go for T7.6.
 - S2 — Khmer text parity — Browser measure + `Intl.Segmenter('km')` gives the same line breaks in Chromium worker as on screen for 5 sample headlines; no clipped diacritics.
 - S3 — SVG text outlines — harfbuzzjs + fontkit produces outlined Khmer text that matches the screen render within 1 px.
 
@@ -173,5 +173,18 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - T24.2 (Q4) — **Done.** Comments on Previews: the Comment tool and pins in the Preview editor, the Comments panel (replies, resolve, edit, delete), the open count on Preview nodes; a tap pins on touch.
 - T24.3 (Q4) — **Done.** Approval: Approve / Approve again / Withdraw in the Preview editor, "✓ Approved" and "Changed since approved" on nodes, the Review panel, the export warning and "Only approved".
 
+## P25 — UI refresh (owner, 2026-10-24; D64)
+- U1–U7 and U5b — **Done.** Tokens and components, board chrome and readability, editors, Projects home and sign-in, dialogs, copy and accessibility, project thumbnails. Tickets and PRs: `TASKS.md` P25.
+
+## P26 — Asset and pipeline nodes (owner feedback, 2026-10-25; D64)
+- V1–V6 — **Done.** Asset nodes and the solid icon set, Layer Comp / Core preset / Preview, phone editors. Tickets and PRs: `TASKS.md` P26.
+
+## P27 — CSS cleanup (plain CSS, one place per style)
+- C1–C12 — **Done.** One file per area, no duplicates, a cross-file selector guard. Tickets and PRs: `TASKS.md` P27.
+
+## P28 — Tailwind conversion (owner, 2026-10-26; D65)
+- T1–T7 — **Done.** The web app is styled with Tailwind on our tokens; only tokens, base styles, React Flow's DOM and the transform box stay CSS (`docs/FRONTEND.md`). T8 (Preflight, unused `sc-` hooks, retiring the parity test) is optional. Plan: `TAILWIND-PLAN.md`.
+
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
+- Q9 — Editor colour variables (bug, found in the 2026-10-27 clean-up audit, Q7). The editor screen (`.sc-fig`, `editor/shell.ts`) sets `--line: var(--fig-line)` while `--fig-line: var(--line)`, and the same for `--muted`; the loop makes both invalid inside the editors, so borders and muted text that use them there don't show as designed. Fix: let the `--fig-*` names read the page tokens and stop redefining `--line` / `--muted` (or the reverse), then look at the editors in both themes. A visible change, so its own PR after the parity test is retired or with the owner's OK on the new look.
 - Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). **Planned, on hold** (owner, 2026-10-24: "Write this Q6 plan for later. Do not dev it yet."): full plan in `docs/plans/Q6-print-colour.md` — Ghostscript after Chromium in the worker, FOGRA39 / SWOP profiles, three PRs, three open questions for the owner.

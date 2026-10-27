@@ -43,6 +43,17 @@ Docs:
 
 ## (3) Unsure — the owner's call
 
+**Decided (owner, 2026-10-27: "You auto fix it for me on answer group 3"):** each call takes the option that
+changes nothing anyone can see.
+- Q1 — leave the `sc-` classes for T8. Q2 — leave the exports. Q4 — leave the one-line copies.
+- Q3 — keep the spikes in `docs/spikes/`: DECISIONS (O5) and three code comments link to them, and DECISIONS
+  entries are not rewritten.
+- Q5 — T8 not scheduled; the parity test stays as a guard.
+- Q6 — add the lint check (clean-up 4).
+- Q7 — not a clean-up (it changes the editors' look): BACKLOG **Next**, Q9.
+
+The audit as written:
+
 | # | What | Why it needs you |
 |---|---|---|
 | Q1 | 248 `sc-` classes (of 393) that no test, CSS rule or selector reads (list below) | T8 says "drop `sc-` modifiers no test uses". Drop them now, in their own PR, or leave them for T8? They cost nothing at runtime; they help reading the DOM |

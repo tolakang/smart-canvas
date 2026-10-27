@@ -1,15 +1,15 @@
 # smart-canvas
 
-Artwork adaptation web app: one master artwork → many sizes via a flow board (asset nodes → Layer Comp + Core Rule → Preset nodes → Previews).
+Artwork adaptation web app: one master artwork → many sizes via a flow board (asset nodes → Layer Comp + Core preset → Preset nodes → Previews).
 
-Status: v1 built (backlog P1–P24 done; project history, D62; review of Previews, D63; documents are schema 4, D61; board tools to standard, D57; touch screens, D58). Spec in `docs/` — start with `docs/00-READ-FIRST.md`, then `docs/HANDOVER.md`; proposed next work at the end of `docs/BACKLOG.md`.
+Status: v1 built (backlog P1–P28 done, P28 through T7: the web app on Tailwind, D65; the UI refresh, D64; project history, D62; review of Previews, D63; documents are schema 4, D61; board tools to standard, D57; touch screens, D58). Spec in `docs/` — start with `docs/00-READ-FIRST.md`, then `docs/HANDOVER.md`; proposed next work at the end of `docs/BACKLOG.md`.
 
 ```
 pnpm i          # install (Node >= 22, pnpm 10)
 pnpm test       # vitest, all workspaces
 pnpm typecheck  # tsc --noEmit per workspace
-pnpm lint       # eslint
-pnpm build      # build (web)
+pnpm lint       # eslint + the CSS guard (scripts/check-css.mjs)
+pnpm build      # build every workspace
 pnpm dev        # web (Vite) + api (Fastify :3000) + worker
 ```
 
