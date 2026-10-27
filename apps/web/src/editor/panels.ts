@@ -23,11 +23,11 @@ export function layerRowClass(o: { selected: boolean; hidden: boolean; unwired: 
   const state = o.selected
     ? ' sc-layer--selected [background:var(--fig-select)] [box-shadow:none]'
     : `${o.drop ? ' [box-shadow:inset_0_2px_0_var(--accent)]' : ''} hover:[background:var(--fig-hover)]`;
-  return `sc-layer group/layer flex min-h-32 items-center gap-6 rounded-[10px] px-8 py-0 [border-bottom:0] [&[draggable=true]]:cursor-grab${o.hidden ? ' sc-layer--hidden' : ''}${o.unwired ? ' sc-layer--unwired' : ''}${o.drop ? ' sc-layer--drop' : ''}${state}`;
+  return `sc-layer group/layer flex min-h-32 items-center gap-6 rounded-[10px] px-8 py-0 [border-bottom:0] [&[draggable=true]]:cursor-grab ${o.hidden ? ' sc-layer--hidden' : ''}${o.unwired ? ' sc-layer--unwired' : ''}${o.drop ? ' sc-layer--drop' : ''}${state}`;
 }
 /** The row's name and its kind; a hidden layer's name is struck through, an unwired one is faded. */
 export const layerNameClass = (hidden: boolean, unwired: boolean) =>
-  `sc-layer__name grid min-w-0 flex-1 p-2 text-left text-[11px] [background:none] [border:0] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap${unwired ? ' opacity-60' : ''}${hidden ? ' [&>span:first-child]:line-through [&>span:first-child]:opacity-50' : ''}`;
+  `sc-layer__name grid min-w-0 flex-1 p-2 text-left text-[11px] [background:none] [border:0] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap ${unwired ? ' opacity-60' : ''}${hidden ? ' [&>span:first-child]:line-through [&>span:first-child]:opacity-50' : ''}`;
 /** The row's buttons: shown on hover, on the selected row, or while one has focus. */
 export const layerActionsClass = (selected: boolean) =>
   `sc-layer__actions flex gap-2 ${selected ? 'opacity-100' : 'opacity-0 group-hover/layer:opacity-100 focus-within:opacity-100'} [&_button]:size-22 [&_button]:rounded-[4px] [&_button]:p-0 [&_button]:text-[11px] [&_button]:text-muted [&_button]:[background:none] [&_button]:[border:1px_solid_transparent] [&_button:hover:not(:disabled)]:border-line [&_button:hover:not(:disabled)]:text-fg [&_button:disabled]:opacity-30`;
@@ -75,7 +75,7 @@ export const NOTE = 'sc-props__note m-0 text-[12px]';
 /** The text itself, in the Layer Comp editor. */
 export const TEXT = 'sc-text mt-0 w-full resize-y rounded-[6px] px-8 py-6 text-[14px] [:where(&)]:[font:inherit] [border:1px_solid_var(--line)]';
 /** The text box in the board's inspector (its panel's field rules style the rest). */
-export const BOARD_TEXT = 'sc-text mt-8 w-full resize-y rounded-[6px] px-8 py-6 [font:inherit] [border:1px_solid_var(--line)]';
+export const BOARD_TEXT = 'sc-text mt-8 w-full resize-y px-8 py-6 [font:inherit] [border:1px_solid_var(--line)]';
 
 /** A Preview's side of the Design panel: overrides, then the text properties. */
 export const SIDE = 'sc-editor__side flex w-auto flex-none flex-col overflow-visible [background:var(--surface)] [border-left:0]';
