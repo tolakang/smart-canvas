@@ -4,6 +4,7 @@ import { ApiError, assetUrl, UploadCancelled, uploadAsset } from '../api';
 import { addStop, colourBackground, photoBackground, removeStop, setAsset, setFill, setStop, setText, setVariant, switchFillType, withSource } from './content';
 import { useBoard } from './context';
 import { Slot } from './Slot';
+import { FIELDS } from '../editor/shell';
 
 // Interactive elements inside a node must not start a node drag, pan or zoom.
 const NO_CANVAS = 'nodrag nopan nowheel';
@@ -111,7 +112,7 @@ export function AssetEditor({ source, upload }: { source: InputSource & { conten
 
   const { assetId } = source.content;
   return (
-    <div className="sc-editor">
+    <div className={FIELDS}>
       {assetId ? (
         <img className="sc-thumb" src={assetUrl(teamId, assetId)} alt={`${source.label} preview`} draggable={false} />
       ) : (
@@ -159,7 +160,7 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
   const change = (next: Fill) => editSource(source.id, (s) => setFill(s, next));
 
   return (
-    <div className="sc-editor">
+    <div className={FIELDS}>
       <div className="sc-swatch" style={{ background: fillToCss(fill) }} />
       <fieldset className={`sc-fill ${NO_CANVAS}`} disabled={readOnly}>
         <div className="sc-seg" role="radiogroup" aria-label="Fill type">

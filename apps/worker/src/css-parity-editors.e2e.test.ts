@@ -22,6 +22,17 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await comp.waitFor();
     await imagesLoaded();
     await same('layer-comp-editor');
+    // A layer selected (the box, its size), a zoom button hovered; the Hand tool on, then hovered (hover beats pressed).
+    await comp.locator('.sc-layer__name').first().click();
+    await comp.getByTestId('selection-size').waitFor();
+    await comp.getByRole('button', { name: 'Zoom in', exact: true }).hover();
+    await same('editor-selected');
+    await comp.getByRole('button', { name: 'Hand tool (H)' }).click();
+    await page.mouse.move(800, 990);
+    await same('editor-hand');
+    await comp.getByRole('button', { name: 'Hand tool (H)' }).hover();
+    await same('editor-hand-hover');
+    await comp.getByRole('button', { name: 'Move tool (V)' }).click();
     await comp.getByRole('button', { name: 'Close', exact: true }).click();
 
     await page.getByRole('button', { name: 'Edit Preview Banner' }).click();

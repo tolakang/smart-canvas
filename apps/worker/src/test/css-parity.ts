@@ -163,15 +163,13 @@ const releaseTimers = (page: Page) =>
  */
 /**
  * Elements an earlier step converted that a rule this branch removes also styled: their classes from main must stay
- * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (T4b: node.css styled the
- * card roots, headers and every direct child of a card, so the T4a pipeline cards are hit).
+ * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (T7a: the bar's rules for
+ * every button and for the title's parts reach the T6 approval group and its Approve button).
  * - KEEP: unchanged since main: they keep every class.
  * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const KEEP: string[] = [];
-const MAIN_CLASSES: Record<string, string> = {
-  '.sc-history__name': 'sc-inspector-panel__section grid gap-(--sp-2) px-(--sp-4) py-(--sp-3) [border-bottom:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] last:[border-bottom:0]',
-};
+const KEEP: string[] = ['.sc-approval', '.sc-approval__approve'];
+const MAIN_CLASSES: Record<string, string> = {};
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>
   page.evaluate(({ css, subjects, keepAll, mainClasses }) => {

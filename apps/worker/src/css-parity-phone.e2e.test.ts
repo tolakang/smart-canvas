@@ -28,6 +28,12 @@ describe.skipIf(!adminUrl)('CSS parity: tablet and phone', () => {
     await page.getByRole('complementary', { name: 'Inspector' }).waitFor();
     await same('tablet-inspector');
     await page.getByRole('button', { name: 'Close inspector' }).click();
+    await page.locator('.react-flow__node-mainNode').getByRole('button', { name: /^(Edit|View) Square layout$/ }).click({ force: true });
+    const comp = page.getByRole('dialog', { name: /Layer Comp editor/ });
+    await comp.waitFor();
+    await imagesLoaded();
+    await same('tablet-editor');
+    await comp.getByRole('button', { name: 'Close', exact: true }).click();
     await page.setViewportSize({ width: 1600, height: 1000 });
     await fit();
   }, limit(60_000));
@@ -71,6 +77,9 @@ describe.skipIf(!adminUrl)('CSS parity: tablet and phone', () => {
       .toBe(true);
     await imagesLoaded();
     await same('phone-preview-editor');
+    await editor.getByRole('tab', { name: 'Layers' }).click();
+    await page.waitForTimeout(300);
+    await same('phone-editor-layers');
     await page.goto(s.stack.env.webUrl);
     await page.getByRole('heading', { name: 'Projects', exact: true }).waitFor();
     await imagesLoaded();
