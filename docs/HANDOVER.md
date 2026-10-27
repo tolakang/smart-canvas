@@ -148,4 +148,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next
-P28 (Tailwind conversion, `TASKS.md`) is in progress: finish T3b–T7 one PR at a time, T8 optional. P1–P27 are done. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.
+P28 (Tailwind conversion, `TASKS.md`) is in progress: T1–T5 done; T6, T7 one PR at a time, T8 optional. **UI/UX review (2026-10-27): `docs/UX-REVIEW.md`** — 22 findings and proposals A1–C3 with a suggested PR order; none approved yet, so build none until the owner picks (proposals tagged with a decision change a locked one). P1–P27 are done. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.
