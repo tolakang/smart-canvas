@@ -4,7 +4,7 @@
  * dark theme, the Projects home and first-run screens, and a phone (as a touch device).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
-import { addOutput, libraryEntryOf, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addOutput, addPresetSet, libraryEntryOf, setOutputLayout, setPreviewHidden, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -255,6 +255,54 @@ describe.skipIf(!adminUrl)('CSS parity: the app looks exactly like main', () => 
     await imagesLoaded();
     await same('zoomed-out');
     await fit();
+  }, limit(120_000));
+
+  it('pipeline cards: an approved Preview, a Preset node (a size hidden, one disconnected), a chosen chip, their hovers', async () => {
+    await page.getByRole('button', { name: 'Edit Preview Banner' }).click();
+    const preview = page.getByRole('dialog', { name: 'Preview editor Banner' });
+    await preview.waitFor();
+    await preview.getByRole('group', { name: 'Approval' }).getByRole('button', { name: 'Approve' }).click();
+    await preview.getByText(/✓ Approved/).waitFor();
+    await preview.getByRole('button', { name: 'Close', exact: true }).click();
+    await preview.waitFor({ state: 'detached' });
+
+    const p = (await (await page.request.get(api)).json()) as { rev: number; doc: ProjectDoc };
+    const right = Math.max(...p.doc.outputs.map((o) => o.board.x)) + 360;
+    const top = Math.min(...p.doc.outputs.map((o) => o.board.y));
+    const px = (width: number, height: number) => ({ width, height, unit: 'px' as const });
+    let doc = ok(addPresetSet(p.doc, { id: 'gdn', label: 'GDN', board: { x: right, y: top }, sizes: [{ id: 'g1', label: 'GDN 300×250', size: px(300, 250) }, { id: 'g2', label: 'GDN 728×90', size: px(728, 90) }] }));
+    doc = ok(setPreviewHidden(doc, 'gdn', 'g1', true));
+    doc = { ...doc, edges: doc.edges.filter((e) => !(e.kind === 'composition' && e.to === 'g2')) }; // g2 disconnected: frozen
+    doc = ok(setOutputLayout(doc, 'banner', 'square', 'chosen-1'));
+    expect((await page.request.put(api, { data: { rev: p.rev, doc } })).status()).toBe(200);
+    await page.reload();
+    await node('Image').waitFor();
+    await fit();
+    await imagesLoaded();
+    await page.mouse.move(5, 500);
+    await same('pipeline');
+    for (const [target, screen] of [
+      [page.locator('.sc-comp__group').first(), 'comp-row-hover'],
+      [page.locator('[aria-label="Preset GDN"] .sc-port').last(), 'preset-row-hover'],
+      [page.locator('.sc-rule__chip-reset').first(), 'chip-reset-hover'],
+      [page.getByRole('button', { name: 'Export Preview Banner' }), 'preview-export-hover'],
+    ] as const) {
+      await target.hover();
+      await page.waitForTimeout(250);
+      await same(screen);
+    }
+    await page.mouse.move(5, 500);
+    await page.locator('.sc-health__btn[aria-expanded]').first().click();
+    await page.getByRole('list', { name: 'Layout issues' }).first().waitFor();
+    await page.mouse.move(5, 500);
+    await same('health-list');
+    await page.keyboard.press('Escape');
+    await page.locator('.sc-health__btn[aria-expanded="true"]').first().click().catch(() => undefined);
+    const gdn = page.locator('[aria-label="Preset GDN"]');
+    await gdn.getByRole('button', { name: /Custom size/ }).click();
+    await gdn.getByRole('textbox', { name: 'Width (px)' }).waitFor();
+    await same('preset-custom');
+    await gdn.getByRole('button', { name: 'Cancel' }).click();
   }, limit(120_000));
 
   it('dialogs: Export', async () => {
