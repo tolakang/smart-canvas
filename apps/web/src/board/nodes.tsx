@@ -76,7 +76,7 @@ function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpl
 /** T8.7: how an input adapts in outputs (its behaviour's rules), changeable any time (node and inspector). */
 export function BehaviorPicker({ source, id }: { source: InputSource; id?: string }) {
   const { readOnly, run } = useBoard();
-  if (readOnly || ALLOWED_BEHAVIORS[source.kind].length < 2) return <>{BEHAVIOR_LABEL[source.behavesLike].toLowerCase()}</>;
+  if (readOnly || ALLOWED_BEHAVIORS[source.kind].length < 2) return <span>{BEHAVIOR_LABEL[source.behavesLike].toLowerCase()}</span>;
   return (
     <select
       id={id}
