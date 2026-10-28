@@ -17,6 +17,7 @@ import {
   GUIDE_FAMILIES,
   compositionById,
   deleteStack,
+  moveStackItem,
   renameStack,
   compositionHealth,
   deleteSource,
@@ -288,6 +289,20 @@ function AssetsInspector({ stackId }: { stackId: string }) {
                       <Icon name={s.content.kind === 'text' ? 'text' : 'image'} />
                     </span>
                   )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {!readOnly && focused && items.length > 1 && (
+          // UX B4 (F9): the card's drag-to-reorder, without dragging (WCAG 2.5.7): the picture set below moves one place.
+          <div className="sc-assets__move flex flex-wrap gap-6" role="group" aria-label={`Move ${focused.label}`}>
+            {(['left', 'right'] as const).map((dir) => {
+              const at = items.findIndex((x) => x.id === focused.id);
+              const to = dir === 'left' ? at - 1 : at + 1;
+              return (
+                <button key={dir} type="button" className="sc-btn" disabled={to < 0 || to >= items.length} aria-label={`Move ${focused.label} ${dir}`} onClick={() => run((d) => moveStackItem(d, stack.id, focused.id, to))}>
+                  <Icon name={dir === 'left' ? 'back' : 'forward'} /> Move {dir}
                 </button>
               );
             })}

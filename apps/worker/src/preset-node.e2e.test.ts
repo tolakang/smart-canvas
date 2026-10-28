@@ -107,10 +107,10 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await preset().locator(`[data-output="${id}"]`).getByRole('button', { name: /^Hide preview / }).click();
     await out.waitFor({ state: 'hidden' });
     expect(await page.locator(`.react-flow__edge[data-id="${wire}"]`).count()).toBe(0);
-    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toEqual([id]);
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden, { timeout: 15_000 }).toEqual([id]);
     await preset().locator(`[data-output="${id}"]`).getByRole('button', { name: /^Show preview / }).click();
     await out.waitFor();
-    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toBeUndefined();
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden, { timeout: 15_000 }).toBeUndefined();
   }, 60_000);
 
   it('N6: Export on a Preset node exports its sizes as one ZIP named by the family; a hidden Preview can be left out', async () => {
@@ -118,7 +118,8 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     const set = d0.presetSets?.[0];
     const hiddenId = set?.outputs[1] ?? '';
     await preset().locator(`[data-output="${hiddenId}"]`).getByRole('button', { name: /^Hide preview / }).click();
-    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toEqual([hiddenId]);
+    // An autosave can take longer than the default 5 s on a busy CI runner (as `saved()` allows).
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden, { timeout: 15_000 }).toEqual([hiddenId]);
     await preset().getByRole('button', { name: 'Export all GDN sizes' }).click();
     const dialog = page.getByRole('dialog');
     // Its sizes only, all chosen — the hidden one too, until unticked.
@@ -135,7 +136,7 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     expect([...names].map((n) => n.replace(/^Presets_/, '').replace(/_\d+x\d+\.png$/, '').replace('-', ' ')).sort()).toEqual([...want].sort());
     await dialog.getByRole('button', { name: 'Close' }).click();
     await preset().locator(`[data-output="${hiddenId}"]`).getByRole('button', { name: /^Show preview / }).click();
-    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden).toBeUndefined();
+    await expect.poll(async () => (await doc()).presetSets?.[0]?.hidden, { timeout: 15_000 }).toBeUndefined();
   }, 150_000);
 
   it('a Preview exports itself; Delete removes the node with its sizes', async () => {
