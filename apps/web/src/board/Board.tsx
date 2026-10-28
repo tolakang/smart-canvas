@@ -667,7 +667,7 @@ function BoardCanvas(props: {
   useEffect(() => {
     if (readOnly) return;
     // D45 too: a project saved before the fixed order gets it here, also without an undo step; and D49: on open, a
-    // project made before the page-3 board is brought into its shape (asset nodes, one Layer Comp, Preset nodes) —
+    // project made before the page-3 board is brought into its shape (asset nodes, one Main Comps, Preset nodes) —
     // once, so a node deleted afterwards stays deleted.
     const first = !structured.current;
     const base = first ? boardStructure(docRef.current) : docRef.current;
@@ -837,7 +837,7 @@ function BoardCanvas(props: {
           disconnect(row);
           continue;
         }
-        // D49: a card's one wire into the Layer Comp stands for all its items' wires.
+        // D49: a card's one wire into Main Comps stands for all its items' wires.
         if (e.id.startsWith('card:')) {
           const d0 = docRef.current;
           const stack = assetStacks(d0).find((st) => st.id === stackIdOfNode(e.source));
@@ -929,7 +929,7 @@ function BoardCanvas(props: {
     [onEdgesDelete],
   );
 
-  /** D49: a wire dragged out of the Layer Comp group onto empty canvas (or a right-click on its out port) offers the Preset nodes. */
+  /** D49: a wire dragged out of the Main Comps group onto empty canvas (or a right-click on its out port) offers the Preset nodes. */
   const openPresets = useCallback(
     (client: { x: number; y: number }) => {
       if (readOnly || !flow.current) return;
@@ -1052,7 +1052,7 @@ function BoardCanvas(props: {
   /** N4: where a Preset node of `rows` sizes goes near `at` — its node and its Previews clear of every other node. */
   const clearAt = (at: { x: number; y: number }, rows: number) => clearSpot(nodesRef.current.filter((n) => !n.hidden).map(boxOf), presetBlock(rows), at);
 
-  /** D46 / D49: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to the Layer Comp. */
+  /** D46 / D49: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to Main Comps. */
   const addSet = (family: string, at: { x: number; y: number }) => {
     const sizes = presetFamilies(presets).find((f) => f.label === family)?.presets ?? [];
     run((d) => addPresetSet(d, { id: newId(), label: family, board: clearAt(at, sizes.length), sizes: sizes.map((p) => ({ id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } })) }));

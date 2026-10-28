@@ -74,7 +74,7 @@ export const PROPS_BODY =
   'sc-props__body m-0 grid gap-8 px-16 pt-8 pb-12 text-[11px] [border:0] [:where(&)_:is(select,input[type=number])]:[font:inherit] [:where(&)_:is(select,input[type=number])]:[border:1px_solid_var(--line)] [&_:is(select,input[type=number])]:h-28 [&_:is(select,input[type=number])]:w-full [&_:is(select,input[type=number])]:rounded-[5px] [&_:is(select,input[type=number])]:px-6 [&_:is(select,input[type=number])]:py-4 [&_:is(select,input[type=number])]:text-[11px] [&_:is(select,input[type=number])]:[border-color:var(--field-line)] [&_:is(select,input[type=number])]:[background-color:var(--fig-hover)] [&_:is(select,input[type=number]):focus]:[border-color:var(--fig-blue)] [&_:is(select,input[type=number]):focus]:[background:var(--surface)] [&_:is(select,input[type=number]):focus]:[outline:none] [&_input[type=color]]:h-28 [&_input[type=color]]:w-44 [&_input[type=color]]:rounded-[4px] [&_input[type=color]]:p-0 [&_input[type=color]]:[border:1px_solid_var(--line)]';
 export const PROPS_ROW = 'sc-props__row grid grid-cols-[1fr_1fr] gap-10';
 export const NOTE = 'sc-props__note m-0 text-[12px]';
-/** The text itself, in the Layer Comp editor. */
+/** The text itself, in the Main Comps editor. */
 export const TEXT = 'sc-text mt-0 w-full resize-y rounded-[6px] px-8 py-6 text-[14px] [:where(&)]:[font:inherit] [border:1px_solid_var(--line)]';
 /** The text box in the board's inspector (its panel's field rules style the rest). */
 export const BOARD_TEXT = 'sc-text mt-8 w-full resize-y px-8 py-6 [font:inherit] [border:1px_solid_var(--line)]';

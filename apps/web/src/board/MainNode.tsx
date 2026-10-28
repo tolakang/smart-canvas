@@ -1,6 +1,6 @@
 /**
- * D49 (PDF page 3): the Layer Comp and the Core preset, side by side in one dashed group — the master.
- * - Layer Comp: the layer order as its four groups (logo, headline, elements, background), dragged into another
+ * D49 (PDF page 3): Main Comps and the Export Group, side by side in one dashed group — the master.
+ * - Main Comps: the layer order as its four groups (logo, headline, elements, background), dragged into another
  *   order (D48); Square / Vertical / Horizontal open the editor of each of the master's layouts (D42).
  * - Core preset (V2, owner 2026-10-25: "change from Core Rule to Core preset … remove core auto layout guide"): which
  *   layout each Preview uses — sorted by shape on their own, dragged into another section by hand. The per-layer
@@ -38,7 +38,7 @@ const OUTPUT_DRAG = 'application/x-sc-output-layout';
 export const FAMILY_LABEL: Record<GuideFamily, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
 
 /** Opens one of the master's layout editors; a missing layout is added first (then opened). */
-/** The Layer Comp + Core preset group (D49, D50): one soft frame around both cards. */
+/** The Main Comps + Export Group group (D49, D50): one soft frame around both cards. */
 const GROUP =
   "sc-comp-group relative flex items-start gap-20 rounded-[26px] px-22 pt-26 pb-22 [border:1px_solid_color-mix(in_srgb,var(--head-master)_22%,transparent)] [background:linear-gradient(180deg,color-mix(in_srgb,var(--head-master)_7%,transparent),color-mix(in_srgb,var(--head-preview)_5%,transparent))] [box-shadow:inset_0_0_0_1px_rgb(255_255_255/0.4)]";
 const LABEL = 'sc-comp__label mt-2 text-[11.5px] font-[650] tracking-[0.02em] text-muted';
@@ -48,7 +48,7 @@ const ROW =
 const MOVE = 'size-26 rounded-[8px] text-[11px]';
 /** How many layers a row holds, or Previews a section has. */
 const COUNT = 'min-w-22 rounded-[99px] bg-surface px-7 py-1 text-center text-[11px] font-[650] text-muted';
-/** A layout's section in the Core preset: drop a Preview chip here to choose it by hand. */
+/** A layout's section in the Export Group: drop a Preview chip here to choose it by hand. */
 const SECTION = 'grid gap-8 rounded-[14px] border p-12 [transition:border-color_var(--t-fast),background_var(--t-fast)]';
 const CHIP =
   'inline-flex max-w-full cursor-grab items-center gap-4 rounded-[99px] border bg-surface px-10 py-5 text-[12px] font-[550] [box-shadow:0_1px_1px_rgb(16_24_40/0.04)]';

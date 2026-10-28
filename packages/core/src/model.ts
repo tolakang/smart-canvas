@@ -267,7 +267,7 @@ export interface AssetStack {
   /** D49: what the card holds — pictures (default, the Image node), logos (the Logo node) or text slots (the Text node). */
   kind?: 'image' | 'logo' | 'text';
   /**
-   * D49.1: an empty card has no pictures to carry its wire, so the card itself keeps it: wired into the Layer Comp
+   * D49.1: an empty card has no pictures to carry its wire, so the card itself keeps it: wired into Main Comps
    * by default, `unwired` once its wire is cut. Pictures added later go where the card is wired.
    */
   unwired?: true;

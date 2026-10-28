@@ -86,7 +86,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
     expect((await doc()).stacks?.at(-1)?.items).toHaveLength(2);
   }, 60_000);
 
-  it('a preset family adds its Preset node at the click (or, N4, the nearest clear spot right of / below it), wired from the Layer Comp, a Preview per size', async () => {
+  it('a preset family adds its Preset node at the click (or, N4, the nearest clear spot right of / below it), wired from Main Comps, a Preview per size', async () => {
     const at = await rightClickEmpty();
     await menu().getByRole('menuitem', { name: 'Website preset (4 sizes)' }).click();
     const set = page.locator('.react-flow__node-presetNode');

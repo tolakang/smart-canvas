@@ -44,7 +44,7 @@ describe.skipIf(!adminUrl)('Preset placement and Tidy board (N4)', () => {
     );
   const overlap = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
-  it('a GDN Preset node right-clicked onto the Layer Comp group lands clear of it — node and Previews', async () => {
+  it('a GDN Preset node right-clicked onto the Main Comps group lands clear of it — node and Previews', async () => {
     await fit();
     const group = await page.locator('.react-flow__node-mainNode').boundingBox();
     if (!group) throw new Error('no group');

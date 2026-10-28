@@ -14,7 +14,7 @@ const ok = (r: SourceResult): ProjectDoc => {
   return r.doc;
 };
 
-describe('Core Rule (D47, D49)', () => {
+describe('Export Group data (D47, D49, D66)', () => {
   it('layer comp: the rows in their groups, front to back (D45)', () => {
     const groups = layerComp(project(), MAIN);
     expect(groups.map((g) => [g.group, g.layers.map((l) => l.id)])).toEqual([

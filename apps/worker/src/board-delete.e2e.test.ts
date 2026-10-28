@@ -46,7 +46,7 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
     expect(await inspector.getByLabel('Subject behaves like').count()).toBe(1);
   }, 30_000);
 
-  it('Delete deletes the selected node (after a confirm); the Layer Comp stays', async () => {
+  it('Delete deletes the selected node (after a confirm); Main Comps stays', async () => {
     page.once('dialog', (d) => void d.accept());
     await boardNode(page, 'Logo').locator('.sc-node__title').click();
     await page.keyboard.press('Delete');
@@ -57,7 +57,7 @@ describe.skipIf(!adminUrl)('board cards and the Delete key', () => {
     await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
     await page.keyboard.press('Control+z');
     await boardNode(page, 'Logo').waitFor();
-    // The Layer Comp can't be deleted: nothing is asked, nothing changes.
+    // Main Comps can't be deleted: nothing is asked, nothing changes.
     let asked = false;
     const ask = (d: { dismiss: () => Promise<void> }) => ((asked = true), void d.dismiss());
     page.once('dialog', ask);

@@ -1,5 +1,5 @@
 /**
- * T8.5 / D49 end to end: on the page-3 board every asset node wires into the top of the Layer Comp group, one
+ * T8.5 / D49 end to end: on the page-3 board every asset node wires into the top of the Main Comps group, one
  * wire per node (a card's wire stands for all its items). A wire cut with its ✂ badge, or its end dropped on empty
  * canvas, disconnects; a wire dragged from a node onto the group connects. A wire dragged out of the group onto
  * empty canvas offers the Preset nodes. Ports are typed: a wire dropped where it doesn't fit is refused, with why.
@@ -58,7 +58,7 @@ describe.skipIf(!adminUrl)('wires attach and detach (T8.5, D49)', () => {
       throw new Error('no empty spot');
     });
 
-  it('every asset node has one wire into the top of the Layer Comp group; no ✂ badge rests on them (V1)', async () => {
+  it('every asset node has one wire into the top of the Main Comps group; no ✂ badge rests on them (V1)', async () => {
     const d = await doc();
     for (const s of d.sources) expect((await wired()).has(s.id)).toBe(true);
     // Logo, Headline, Text, Image (cards: one wire each) and Background.

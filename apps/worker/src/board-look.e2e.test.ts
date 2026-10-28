@@ -103,7 +103,7 @@ describe.skipIf(!adminUrl)('board look (T10.2)', () => {
     expect(d.sources.find((s) => s.id === 'headline')).toMatchObject({ label: 'Title', content: { text: 'From the inspector' } });
   }, 30_000);
 
-  it('N1: the inspector names the page-3 nodes — Layer Comp with its three layouts (no "Layout guides"), Text node, Preview', async () => {
+  it('N1: the inspector names the page-3 nodes — Main Comps with its three layouts (no "Layout guides"), Text node, Preview', async () => {
     const panel = page.getByRole('complementary', { name: 'Inspector' });
     await page.locator('.sc-node--main .sc-node__title').click();
     await panel.getByText('Main Comps', { exact: true }).waitFor();

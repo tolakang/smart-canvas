@@ -59,7 +59,7 @@ export function stackCompositions(doc: ProjectDoc, stackId: string): string[] {
   return stack && !stack.items.length && stack.unwired ? [] : [MAIN];
 }
 
-/** D49.1: an empty card's own wire into the Layer Comp — drawn on the board while it has no pictures. */
+/** D49.1: an empty card's own wire into Main Comps — drawn on the board while it has no pictures. */
 export const emptyCardWired = (st: AssetStack): boolean => !st.items.length && !st.unwired;
 
 /** D49.1: cuts (false) or restores (true) an empty card's wire; a card with pictures keeps its wires on them. */

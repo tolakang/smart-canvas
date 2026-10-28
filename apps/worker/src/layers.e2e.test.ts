@@ -1,5 +1,5 @@
 /**
- * T8.1 / D48 / D49 end to end: the Layer Comp lists the layer order as its four groups — logo, headline,
+ * T8.1 / D48 / D49 end to end: Main Comps lists the layer order as its four groups — logo, headline,
  * elements, background — re-ordered by drag (or ↑ ↓), and every layout follows. The editor's Layers panel
  * re-orders layers by drag within their group, with show/hide, duplicate and delete; no ▲ ▼.
  */
@@ -30,7 +30,7 @@ describe.skipIf(!adminUrl)('layer order (T8.1, D48)', () => {
   const groups = () => comp().getByRole('list', { name: 'Layer order (front first)' }).locator('.sc-comp__group-name').allInnerTexts();
   const group = (name: string) => comp().locator('.sc-comp__group', { has: page.locator('.sc-comp__group-name', { hasText: new RegExp(`^${name}$`) }) });
 
-  it('the Layer Comp shows the four groups, logo on top', async () => {
+  it('Main Comps shows the four groups, logo on top', async () => {
     expect(await groups()).toEqual(['Logo', 'Headline', 'Elements', 'Background']);
     // Each group counts its layers (the default board: one logo, the headline text and its two pictures, the subject, the background).
     expect(await group('Elements').locator('.sc-comp__count').innerText()).toBe('1');

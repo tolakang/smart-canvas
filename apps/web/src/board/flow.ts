@@ -1,7 +1,7 @@
 /**
  * ProjectDoc ↔ React Flow. The doc is the source of truth: node positions live in `board`
  * on each source / composition / output; wires come from the doc's typed `edges` (D32).
- * D49: the master ('main') is the Layer Comp group, node id `main`.
+ * D49: the master ('main') is the Main Comps group, node id `main`.
  */
 import { emptyCardWired, stackKind, assetStacks, compositionById, languagePairs, pairInputs, pairRows, presetSets, type LanguagePair, type PresetSet, connectRefusal, type AssetStack, type BoardGroup, isOutputConnected, MAIN, type Composition, type Edge as DocEdge, type EdgeKind, type InputSource, type OutputNode, type ProjectDoc } from '@smart-canvas/core';
 import type { Edge, Node } from '@xyflow/react';
@@ -36,7 +36,7 @@ export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'a
 export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
 /** D44: a Headline card and its two inputs. */
 export type PairFlowNode = Node<{ pair: LanguagePair; rows: { km: InputSource | undefined; en: InputSource | undefined }[] }, 'headlineNode'>;
-/** D49: the Layer Comp + Core preset group (the master); what it shows is read from the doc. */
+/** D49: the Main Comps + Export Group group (the master); what it shows is read from the doc. */
 export type MainFlowNode = Node<{ compositionId: string }, 'mainNode'>;
 
 export const OUTPUT_HANDLE = 'out';
@@ -157,7 +157,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         deletable: false,
       }),
     ),
-    // D49 (page 3): one Layer Comp — the master; its square / vertical / horizontal layouts open from it.
+    // D49 (page 3): one Main Comps — the master; its square / vertical / horizontal layouts open from it.
     ...doc.compositions.filter((c) => c.id === MAIN).map(compositionNode),
     ...presetSets(doc).map(
       (set): SetFlowNode => ({
@@ -204,7 +204,7 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
       setIn.set(set.id, into);
       return [into, row];
     }
-    // D49: only asset nodes → the Layer Comp (one wire per asset node, into its top), the Layer Comp → Preset
+    // D49: only asset nodes → Main Comps (one wire per asset node, into its top), Main Comps → Preset
     // nodes → Previews are drawn; the master's layouts are not on the board.
     if (e.kind !== 'layer' || e.to !== MAIN) return [];
     const source = endpoint(doc, e.from);
@@ -227,9 +227,9 @@ export function docToEdges(doc: ProjectDoc): Edge[] {
   })];
 }
 
-/** D49: the Layer Comp's one layer port (top): every asset node wires in there. */
+/** D49: Main Comps' one layer port (top): every asset node wires in there. */
 export const LAYERS_HANDLE = 'layers';
-/** D49: the one wire drawn from a card (Image, Headline) into the Layer Comp; it stands for all its pictures' wires. */
+/** D49: the one wire drawn from a card (Image, Headline) into Main Comps; it stands for all its pictures' wires. */
 export const cardEdgeId = (cardNodeId: string) => `card:${cardNodeId}`;
 
 type Conn = { source: string | null; target: string | null; sourceHandle?: string | null };
@@ -254,7 +254,7 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
   if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'An asset node wires into Main Comps.';
-  // D46 / D49: the Layer Comp group wires into a Preset node; a Preset node's row wires into its own Preview.
+  // D46 / D49: the Main Comps group wires into a Preset node; a Preset node's row wires into its own Preview.
   if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) ? null : 'Only the Main Comps group wires into a Preset node.';
   if (setIdOfNode(c.source)) return outputOfSetRow(c.sourceHandle) && c.target === outputNodeId(outputOfSetRow(c.sourceHandle) ?? '') ? null : 'A size row wires into its own preview.';
   const e = edgeOfConnection(c);

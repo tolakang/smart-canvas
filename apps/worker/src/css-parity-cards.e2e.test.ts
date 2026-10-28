@@ -1,5 +1,5 @@
 /**
- * CSS parity (P28, TAILWIND-PLAN.md): the node cards (Layer Comp, Presets, Previews, the asset slots' states). Each
+ * CSS parity (P28, TAILWIND-PLAN.md): the node cards (Main Comps, Presets, Previews, the asset slots' states). Each
  * screen is drawn with this branch's CSS and with main's, and every computed style and pixel must match. Runs on its
  * own stack and seeded project (test/parity-suite.ts).
  */
@@ -10,7 +10,7 @@ import sharp from 'sharp';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { limit, ok, paritySuite } from './test/parity-suite';
 
-describe.skipIf(!adminUrl)('CSS parity: the node cards: Layer Comp, Presets, Previews, asset slots', () => {
+describe.skipIf(!adminUrl)('CSS parity: the node cards: Main Comps, Presets, Previews, asset slots', () => {
   const { s, same, saved, node, imagesLoaded, fit, seed } = paritySuite();
   let page: Page;
   beforeAll(async () => {
