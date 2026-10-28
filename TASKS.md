@@ -257,8 +257,9 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (2) U7, U9 — parity tests fit a local full run (three times the nominal time, the editors test in three parts); parity Fit shows every panel — [#220](https://github.com/tolakang/smart-canvas/pull/220)
 - [x] (2) U6 — comments and test titles say Main Comps and Export Group — [#221](https://github.com/tolakang/smart-canvas/pull/221)
 - [x] (2) U20–U25 — docs brought up to date, this audit archived — [#222](https://github.com/tolakang/smart-canvas/pull/222)
-- [x] (2) U10 — inspector copy: one name per kind, asset hints in their own words, each size once, Delete layer (this PR)
-- [ ] (2) U11–U19 — the UI fixes, one piece per PR, in the audit's order; U8 (splitting `Board.tsx`) optional, last
+- [x] (2) U10 — inspector copy: one name per kind, asset hints in their own words, each size once, Delete layer — [#223](https://github.com/tolakang/smart-canvas/pull/223)
+- [x] (2) U11, U12 — Fit all has its own icon; the editor's small targets reach 24 px (this PR)
+- [ ] (2) U13–U19 — the UI fixes, one piece per PR, in the audit's order; U8 (splitting `Board.tsx`) optional, last
 - [ ] (3) K1–K6 — wait for the owner's decisions
 
 ## Next (see BACKLOG; proposals, the owner picks)

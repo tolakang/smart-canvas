@@ -123,4 +123,4 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
 /** The KM / EN switch on a headline pair's row. */
 const LANG_SWITCH = 'sc-layers__lang inline-flex flex-none gap-1 rounded-[5px] p-1 [background:var(--fig-hover)]';
 const LANG =
-  'cursor-pointer rounded-[4px] px-5 py-1 text-[10px] font-[700] [color:var(--fig-muted)] [background:none] [border:0] aria-pressed:[background:var(--fig-panel)] aria-pressed:[color:var(--fig-fg)] aria-pressed:[box-shadow:var(--shadow-1)] disabled:cursor-default';
+  'inline-grid min-h-24 min-w-24 cursor-pointer place-items-center rounded-[4px] px-5 py-1 text-[10px] font-[700] [color:var(--fig-muted)] [background:none] [border:0] aria-pressed:[background:var(--fig-panel)] aria-pressed:[color:var(--fig-fg)] aria-pressed:[box-shadow:var(--shadow-1)] disabled:cursor-default';

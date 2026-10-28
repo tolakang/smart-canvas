@@ -1,4 +1,4 @@
-/* The app's CSS at 740633a3aa99d344bd4c921dd9ba96ab2d564230 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 573c9977d373ebea1827723918d2bd140a81e68b (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -4646,9 +4646,9 @@
     outline: none;
   }
 
-  .\[\&_button\]\:size-22 button {
-    width: 22px;
-    height: 22px;
+  .\[\&_button\]\:size-24 button {
+    width: 24px;
+    height: 24px;
   }
 
   .\[\&_button\]\:min-h-24 button {
@@ -6746,7 +6746,7 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-icon-btn { line-height: 1.4; width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
 .sc-icon-btn:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); border-color: transparent; }
 
-.sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; }
+.sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; }
 .sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
 .sc-fill { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; font-size: var(--fs-xs); color: var(--muted); }
@@ -6766,7 +6766,7 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 /* Hand (or Space held): the board pans from anywhere, panels included; the cursor says so. */
 .sc-board__flow--hand .react-flow__pane, .sc-board__flow--hand .react-flow__node { cursor: grab; }
 .sc-board__flow--hand .react-flow__pane.dragging, .sc-board__flow--hand:active .react-flow__node { cursor: grabbing; }
-.sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; display: inline-flex; }
+.sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; display: inline-flex; }
 .sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
 .sc-inspector-panel .sc-upload, .sc-inspector-panel .sc-fill button, .sc-inspector-panel .sc-link { display: inline-flex; align-items: center; height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); justify-self: start; }
@@ -6813,10 +6813,9 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
   --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 .sc-theme-toggle .sc-icon { margin: 0; }
-/* Touch: icon buttons get a 44 px tap target, and the port a wire starts from a wider glow. */
+/* Touch: icon buttons get a 44 px tap target. */
 @media (pointer: coarse) {
   .sc-icon-btn { min-width: 44px; min-height: 44px; }
-  .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
 .sc-layers__title .sc-muted { font-weight: 400; }
 /* Tablets (and phones turned sideways): slimmer side panels so the canvas keeps most of the width. */
@@ -7130,8 +7129,10 @@ button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent;
 .react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
 .react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
 .react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: var(--danger-soft); }
+/* Touch: a wider hit area, and the port a wire starts from a wider glow. */
 @media (pointer: coarse) {
   .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
+  .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
 .react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
 .react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }

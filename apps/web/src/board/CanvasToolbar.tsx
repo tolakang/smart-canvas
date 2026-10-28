@@ -193,7 +193,7 @@ export function CanvasToolbar(props: {
       </span>
       {!compact && btn('Zoom in', undefined, () => void zoomIn({ duration: 150 }), <Icon name="plus" />)}
       {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ ...fitOptions(), duration: 200 }), <Icon name="fit" />)}
-      {!compact && btn('Fit all', undefined, () => void fitView({ ...FIT_ALL_OPTIONS, duration: 200 }), <Icon name="map" />)}
+      {!compact && btn('Fit all', undefined, () => void fitView({ ...FIT_ALL_OPTIONS, duration: 200 }), <Icon name="fitAll" />)}
       {props.onTidy && btn(props.tidySelection ? 'Tidy selection' : 'Tidy board', undefined, props.onTidy, <Icon name="arrange" />)}
       <span className={SEP} aria-hidden="true" />
       {btn('Snap to grid', props.grid, () => props.onGrid(!props.grid), <Icon name="grid" />)}
