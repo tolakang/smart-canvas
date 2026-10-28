@@ -2,7 +2,7 @@
  * Master preview editor (T3.2): the shared canvas editor on the master; edits write master.placements
  * (normalized to the master canvas) through the board (autosave).
  */
-import { compositionById, deleteSource, layerSpots, MAIN, mainComposition, masterOf, masterScene, setLayerTransform, setPlacement } from '@smart-canvas/core';
+import { compositionById, deleteSource, layerSpots, MAIN, mainComposition, masterOf, masterScene, savedTransforms, setLayerTransform, setPlacement } from '@smart-canvas/core';
 import type { Frame, TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo } from 'react';
 import { useBoard } from '../board/context';
@@ -32,7 +32,7 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
     },
     [run, width, height, main.id],
   );
-  const histories = layerHistories(main, { width, height });
+  const histories = savedTransforms(main?.transforms, { width, height });
   // M1: a layer snaps to where it sits in the master's other layouts.
   const spotsOf = useCallback((id: string) => layerSpots(doc, main.id, id, main.id), [doc, main.id]);
   // D50: in the master's vertical / horizontal layout the layers are the master's — their order, wiring, lock,
@@ -68,11 +68,4 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
       onClose={onClose}
     />
   );
-}
-
-
-/** The composition's saved histories, only while they were saved for the scene's current size. */
-function layerHistories(comp: ReturnType<typeof compositionById>, scene: { width: number; height: number }): Record<string, TransformHistory> | undefined {
-  const saved = comp?.transforms;
-  return saved && saved.scene.width === scene.width && saved.scene.height === scene.height ? saved.layers : undefined;
 }

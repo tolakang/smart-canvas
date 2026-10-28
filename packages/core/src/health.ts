@@ -39,8 +39,9 @@ const MESSAGE: Record<HealthCode, string> = {
   'font-missing': 'Font could not be loaded',
 };
 
-/** No file or text yet. */
-function isEmpty(s: InputSource): boolean {
+/** A layer with nothing to draw yet: a picture with no file, or a text with no words. The health count, the Export
+ * note (B9) and the editors' "empty" tag (B5) all use this one test. */
+export function isEmptyLayer(s: InputSource): boolean {
   const c = s.content;
   return c.kind === 'image' || c.kind === 'vector' ? !c.assetId : c.kind === 'text' ? !c.text.trim() : false;
 }
@@ -53,7 +54,7 @@ function emptyIssues(doc: ProjectDoc, compositionId: string): HealthIssue[] {
   const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   return comp.layers.flatMap((id) => {
     const s = byId.get(id);
-    return s && s.visible && wired.has(id) && isEmpty(s) ? [issue(s, 'empty')] : [];
+    return s && s.visible && wired.has(id) && isEmptyLayer(s) ? [issue(s, 'empty')] : [];
   });
 }
 

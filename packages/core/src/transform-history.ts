@@ -19,10 +19,14 @@ function hostOf(doc: ProjectDoc, target: TransformTarget): Host | undefined {
 
 const sameScene = (a: { width: number; height: number } | undefined, b: { width: number; height: number }) => !!a && a.width === b.width && a.height === b.height;
 
+/** A scene's saved histories by layer, only while they were saved for its current size (none without a scene yet). */
+export function savedTransforms(saved: LayerTransforms | undefined, scene: { width: number; height: number } | null): Record<string, TransformHistory> | undefined {
+  return saved && scene && sameScene(saved.scene, scene) ? saved.layers : undefined;
+}
+
 /** The saved history for a layer, if it belongs to the scene's current size. */
 export function layerTransform(doc: ProjectDoc, sourceId: string, target: TransformTarget, scene: { width: number; height: number }): TransformHistory | undefined {
-  const saved = hostOf(doc, target)?.transforms;
-  return saved && sameScene(saved.scene, scene) ? saved.layers[sourceId] : undefined;
+  return savedTransforms(hostOf(doc, target)?.transforms, scene)?.[sourceId];
 }
 
 /**

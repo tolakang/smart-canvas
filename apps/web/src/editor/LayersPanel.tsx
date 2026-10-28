@@ -6,7 +6,7 @@
  * UX B5 (F13): a headline pair is one row (the language in use, with a KM / EN switch; the other language is not
  * drawn, so not listed); a layer with no file or text yet says "empty"; hide and connect use the icon set.
  */
-import { connectSource, languagePairs, layerOrder, MAIN, outputComposition, pairRows, setLanguage, setOverrideHidden, unusedLanguageInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
+import { connectSource, isEmptyLayer, languagePairs, layerOrder, MAIN, outputComposition, pairRows, setLanguage, setOverrideHidden, unusedLanguageInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 import { EDITED, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
@@ -59,7 +59,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
           </span>
           <span className="sc-muted">
             {KIND_LABEL[s.kind]} · {s.behavesLike}
-            {isEmpty(s) && ' · empty'}
+            {isEmptyLayer(s) && ' · empty'}
             {!isWired && ' · not wired'}
             {outputId && !s.visible && ' · hidden everywhere'}
           </span>
@@ -118,13 +118,6 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
       <ol className={LAYERS_LIST}>{shown.map(row)}</ol>
     </aside>
   );
-}
-
-/** A layer with nothing to draw yet: a picture slot with no file, or a text with no words (D64 "empty"). */
-function isEmpty(s: InputSource): boolean {
-  const c = s.content;
-  if (c.kind === 'image' || c.kind === 'vector') return !c.assetId;
-  return c.kind === 'text' && c.text.trim() === '';
 }
 
 /** The KM / EN switch on a headline pair's row. */

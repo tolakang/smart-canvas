@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { project } from './layout/test-doc';
 import type { TransformHistory } from './model';
-import { layerTransform, setLayerTransform } from './transform-history';
+import { layerTransform, savedTransforms, setLayerTransform } from './transform-history';
 
 const history = (dx = 0): TransformHistory => ({
   origin: { x: 100, y: 100, width: 40, height: 30, scaleX: 1, scaleY: 1, rotation: 0, shear: 0 },
@@ -41,5 +41,13 @@ describe('saved editor transform histories (D41)', () => {
   it('reports an unknown scene', () => {
     expect(setLayerTransform(project(), 'subject', history(), { compositionId: 'nope' }, scene)).toEqual({ ok: false, error: 'not_found' });
     expect(setLayerTransform(project(), 'subject', history(), { outputId: 'nope' }, scene)).toEqual({ ok: false, error: 'not_found' });
+  });
+
+  it('a scene\'s saved histories, only for its current size (the editors read them this way)', () => {
+    const saved = { scene, layers: { subject: history(3) } };
+    expect(savedTransforms(saved, scene)).toEqual({ subject: history(3) });
+    expect(savedTransforms(saved, { width: 1080, height: 1080 })).toBeUndefined();
+    expect(savedTransforms(saved, null)).toBeUndefined(); // no scene measured yet
+    expect(savedTransforms(undefined, scene)).toBeUndefined();
   });
 });

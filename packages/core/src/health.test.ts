@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compositionHealth, outputHealth } from './health';
+import { compositionHealth, isEmptyLayer, outputHealth } from './health';
 import { computeLayout } from './layout';
 import { mockMeasure, output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
@@ -73,5 +73,18 @@ describe('layout health (D35)', () => {
     const r = disconnectOutput(doc, 'o1', deps);
     if (!r.ok) throw new Error(r.error);
     expect(outputHealth(r.doc, 'o1', computeLayout(r.doc, 'o1', deps)).level).toBe('frozen');
+  });
+});
+
+describe('isEmptyLayer (one test for health, Export and the editors)', () => {
+  it('a picture without a file and a text without words are empty; fills never are', () => {
+    const doc = project();
+    const kinds = Object.fromEntries(doc.sources.map((s) => [s.content.kind, isEmptyLayer(s)]));
+    expect(kinds).toMatchObject({ image: true, fill: false });
+    const filledDoc = filled(doc);
+    expect(filledDoc.sources.some(isEmptyLayer)).toBe(false);
+    const blank = filledDoc.sources.find((s) => s.content.kind === 'text');
+    if (!blank || blank.content.kind !== 'text') throw new Error('no text layer');
+    expect(isEmptyLayer({ ...blank, content: { ...blank.content, text: '   ' } })).toBe(true);
   });
 });
