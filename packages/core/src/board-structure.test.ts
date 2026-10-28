@@ -17,11 +17,14 @@ const ok = (r: SourceResult): ProjectDoc => {
 describe('page-3 board structure (D49)', () => {
   it('a new project: Logo, Headline (KH/EN), Text, Image, Background, all wired into the Layer Comp', () => {
     const doc = createBoardProject('P');
+    // D68: the Logo and Image nodes start empty (no empty slot to fill); the first text is "Text 1".
     expect(assetStacks(doc).map((st) => [stackKind(st), st.items])).toEqual([
-      ['logo', ['logo']],
+      ['logo', []],
       ['text', ['headline']],
-      ['image', ['subject']],
+      ['image', []],
     ]);
+    expect(doc.sources.find((s) => s.id === 'headline')?.label).toBe('Text 1');
+    expect(doc.sources.map((s) => s.id)).not.toContain('subject');
     expect(languagePairs(doc)).toHaveLength(1);
     expect(doc.sources.filter((s) => s.behavesLike === 'background')).toHaveLength(1);
     const wired = wiredLayers(doc, MAIN);
@@ -42,13 +45,25 @@ describe('page-3 board structure (D49)', () => {
   });
 
   it('D48: the layer comp groups can be dragged into another order; every composition follows', () => {
-    const doc = createBoardProject('P');
+    const doc = createBoardProject('P', { legacySlots: true });
     expect(layerOrderOf(doc)).toEqual(['logo', 'headline', 'elements', 'background']);
     const moved = moveLayerGroup(doc, 'elements', 0);
     expect(layerOrderOf(moved)).toEqual(['elements', 'logo', 'headline', 'background']);
     for (const c of moved.compositions) expect(c.layers[0]).toBe('subject');
     // Back to the default: nothing stored.
     expect(moveLayerGroup(moved, 'elements', 2).layerOrder).toBeUndefined();
+  });
+});
+
+describe('the D8 shape for tests (legacySlots)', () => {
+  it('keeps the empty Subject picture and Logo and the text named Headline', () => {
+    const doc = createBoardProject('P', { legacySlots: true });
+    expect(assetStacks(doc).map((st) => [stackKind(st), st.items])).toEqual([
+      ['logo', ['logo']],
+      ['text', ['headline']],
+      ['image', ['subject']],
+    ]);
+    expect(doc.sources.find((s) => s.id === 'headline')?.label).toBe('Headline');
   });
 });
 

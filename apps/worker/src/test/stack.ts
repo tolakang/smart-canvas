@@ -3,6 +3,7 @@
  * Vite (its /api proxied to that API) and Chromium. Export jobs run right away in this process through the
  * production runExportJob, like the worker does from pg-boss.
  */
+import { createBoardProject } from '@smart-canvas/core';
 import type { AddressInfo } from 'node:net';
 import { buildApp } from '@smart-canvas/api/src/app';
 import { MemoryStore } from '@smart-canvas/api/src/storage/object-store';
@@ -53,7 +54,12 @@ export async function startStack(): Promise<Stack> {
 }
 
 /** First-run setup in the UI, then a new project; resolves with its ids once the board shows. */
-export async function setupAndCreateProject(page: Page, webUrl: string, name: string): Promise<{ teamId: string; projectId: string }> {
+/**
+ * Sets up the workspace and creates a project. D68: a new project starts without empty slots; most browser tests are
+ * built on the D8 shape (an empty Subject picture and Logo, a text named Headline), so the project is given that shape
+ * unless `fresh` asks for a new project as a user gets it.
+ */
+export async function setupAndCreateProject(page: Page, webUrl: string, name: string, opts: { fresh?: boolean } = {}): Promise<{ teamId: string; projectId: string }> {
   await page.goto(webUrl);
   await page.getByText('First run? Set up the workspace').click();
   await page.getByLabel('Your name').fill('Ada');
@@ -68,6 +74,14 @@ export async function setupAndCreateProject(page: Page, webUrl: string, name: st
   // D49: the board shows once the Layer Comp group is up.
   await page.locator('.sc-comp-group').waitFor();
   const [, teamId = '', projectId = ''] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];
+  if (!opts.fresh) {
+    const url = `${webUrl}api/teams/${teamId}/projects/${projectId}`;
+    const { rev } = (await (await page.request.get(url)).json()) as { rev: number };
+    const put = await page.request.put(url, { data: { rev, doc: createBoardProject(name, { legacySlots: true }) } });
+    if (put.status() !== 200) throw new Error(`could not give the project its test shape: ${put.status()}`);
+    await page.reload();
+    await page.locator('.sc-comp-group').waitFor();
+  }
   return { teamId, projectId };
 }
 
