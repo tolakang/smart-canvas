@@ -118,8 +118,8 @@ Save. Dokploy's Traefik routes the domain to `web:80`, and nginx inside `web` fo
    - In the same dialog, admins change roles, remove members and revoke pending invites.
 
 Smoke check:
-1. Create a project, upload an image to *Subject* and type a headline.
-2. Connect the inputs and add an output (e.g. *Instagram square*).
+1. Create a project, drop an image on the *Image* node and type a text on the *Text* node.
+2. In the *Export Group*, pick a family (e.g. *IG*): each size gets a Preview.
 3. Click **Export**, choose PNG and download the file. If the download works, `web → api → postgres/minio → worker` all work.
 
 ## 8. Updates

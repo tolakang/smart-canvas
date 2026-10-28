@@ -15,6 +15,9 @@ and the look are in `DESIGN-SYSTEM.md`.
 
 CSS that stays CSS, and why:
 - **Tokens, base styles, fonts, keyframes** (`styles.css`): Tailwind reads the tokens; keyframes have no utility.
+  `styles.css` also still holds the shared components from before Tailwind (about 146 rules: `sc-card`, `sc-dialog`,
+  `sc-rows`, `sc-btn`, `sc-seg`, `sc-field`…). They move to utilities only if the owner schedules it (clean-up 2, K3);
+  don't add to them.
 - **React Flow's own DOM** — pane, wires, minimap, handles (`board/chrome.css`), and React Flow's sheet in the lowest
   layer (`board/reactflow.css`): React Flow draws those elements, not our markup.
 - **The editors' transform box** (`editor/editor.css`, `.tb-*`, D36): placed by math, its handles keep their size at
@@ -77,7 +80,7 @@ CSS that stays CSS, and why:
 
 ## 3. The board with React Flow
 
-The board (D49: asset nodes → Layer Comp + Core preset → Preset nodes → Previews) is `@xyflow/react` v12.
+The board (D49: asset nodes → Main Comps + Export Group → Preset nodes → Previews; names D66) is `@xyflow/react` v12.
 
 - **The doc is the source of truth; React Flow state is a view.** `ProjectDoc` (packages/core) owns positions, wires
   (typed `edges`, D32) and groups. `docToNodes` / `docToEdges` (`board/flow.ts`) build the view; `syncNodes` (`Board.tsx`) keeps
@@ -89,7 +92,7 @@ The board (D49: asset nodes → Layer Comp + Core preset → Preset nodes → Pr
 - **Layout is computed, never stored.** Group frames, the Preset node's "in" edge (`setInEdgeId`) and asset-card edges
   (`cardEdgeId`, D49.1) are drawn from the doc each render. — Only overrides are stored (CLAUDE.md).
 - **Ids: one prefix per kind, always through the helpers** in `flow.ts`: `src:` input, `stk:` asset card, `hl:`
-  Headline card, `set:` Preset node, `main` / `comp:` Layer Comp, `out:` Preview, `grp:` group. Handles: `out`,
+  Headline card, `set:` Preset node, `main` / `comp:` Main Comps, `out:` Preview, `grp:` group (`isGroupNode`). Handles: `out`,
   `layers` (`LAYERS_HANDLE`), `p<N>` ports, `row:<outputId>`. — Never string-build ids in components.
 - **Register a node type once**, in `nodeTypes` (`board/nodes.tsx`); edge types in `edgeTypes` (`Board.tsx`). — A new
   object each render remounts every node. Never name a type `input`, `output` or `default` (React Flow's built-ins).

@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P28 are done (P28 through T7; T8 is optional) — see below. New UI is built with Tailwind (`docs/FRONTEND.md`). Then BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P29 are done (P28 through T7; T8 is optional; P29 the UX review fixes, D66–D70) — see below. The second clean-up review (P30) is under way. New UI is built with Tailwind (`docs/FRONTEND.md`). Then BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -229,9 +229,37 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] T6 — History, comments, approval; `board/review.css` → `board/panel.ts` (lists) and the approval in `OutputEditor.tsx` — [#192](https://github.com/tolakang/smart-canvas/pull/192)
 - [x] T7a — Editor shell: screen, bar, stage and its overlays, the panels' layout, phone tabs → `editor/shell.ts` — [#193](https://github.com/tolakang/smart-canvas/pull/193)
 - [x] T7b — Editor panels: Layers, Design, override inspector, text properties → `editor/panels.ts` — [#194](https://github.com/tolakang/smart-canvas/pull/194)
-- [x] T7c — Comments and pins → `editor/panels.ts`; `editor/editor.css` keeps only the transform box (D36) (this PR)
+- [x] T7c — Comments and pins → `editor/panels.ts`; `editor/editor.css` keeps only the transform box (D36) — [#195](https://github.com/tolakang/smart-canvas/pull/195)
 - [ ] T8 — Optional: Preflight instead of our base styles; drop unused `sc-` modifiers; retire the parity test again
 
+## P29 UX review fixes (`docs/UX-REVIEW.md`; owner, 2026-10-27/28: "Go ahead" on A, then B with the decision changes D66–D70)
+- [x] A1, A2, A7 — the board by keyboard (file pickers as Tab stops, card focus ring, wires and the credit link out of the Tab order) — [#202](https://github.com/tolakang/smart-canvas/pull/202)
+- [x] A3 — field and tile edges (WCAG 1.4.11) — [#203](https://github.com/tolakang/smart-canvas/pull/203)
+- [x] A4, A5 — copy pass, dialog titles, no cut-off status and sizes — [#204](https://github.com/tolakang/smart-canvas/pull/204)
+- [x] A6, A7 — health badge words, inspector clean-up — [#205](https://github.com/tolakang/smart-canvas/pull/205)
+- [x] F8 — field edges at 3:1 (`--field-line`) — [#206](https://github.com/tolakang/smart-canvas/pull/206)
+- [x] B1 (D66) — Main Comps and Export Group — [#207](https://github.com/tolakang/smart-canvas/pull/207)
+- [x] B2 — "Add sizes" in the empty Export Group — [#208](https://github.com/tolakang/smart-canvas/pull/208)
+- [x] B4 — move Previews and pictures without dragging (WCAG 2.5.7) — [#209](https://github.com/tolakang/smart-canvas/pull/209)
+- [x] B6 — Preset node inspector, one "Add a size" — [#210](https://github.com/tolakang/smart-canvas/pull/210)
+- [x] B5 — editor layers: one row per headline pair — [#211](https://github.com/tolakang/smart-canvas/pull/211)
+- [x] B9 — Export grouped by Preset node, with a note about empty layers — [#212](https://github.com/tolakang/smart-canvas/pull/212)
+- [x] B8 (D67) — slot actions that don't collide — [#213](https://github.com/tolakang/smart-canvas/pull/213)
+- [x] B10 (D68) — new projects start without empty layers — [#214](https://github.com/tolakang/smart-canvas/pull/214)
+- [x] B3 (D69) — Preview grid, Fit floor, Fit all, zoom to a panel, tags that don't overlap — [#215](https://github.com/tolakang/smart-canvas/pull/215)
+- [x] B7 (D70) — the phone board, thumb first — [#216](https://github.com/tolakang/smart-canvas/pull/216)
+- C1–C3 (bigger rethinks) — on hold; the owner reviews them later.
+
+## P30 Clean-up review 2 (`docs/archive/CLEANUP-AUDIT-2.md`; owner, 2026-10-28: "start (1)", "go group (2)")
+- [x] (1) R1–R4 — dead code only its tests used — [#217](https://github.com/tolakang/smart-canvas/pull/217)
+- [x] (2) U1, U2 — one copy of the empty-layer test and of the saved-history rule — [#218](https://github.com/tolakang/smart-canvas/pull/218)
+- [x] (2) U3–U5 — the board follows the react-flow rules (`flow.ts` id helpers, `NO_CANVAS` / `NO_DRAG`, a React Flow rule into `chrome.css`) — [#219](https://github.com/tolakang/smart-canvas/pull/219)
+- [x] (2) U7, U9 — parity tests fit a local full run (three times the nominal time, the editors test in three parts); parity Fit shows every panel — [#220](https://github.com/tolakang/smart-canvas/pull/220)
+- [x] (2) U6 — comments and test titles say Main Comps and Export Group — [#221](https://github.com/tolakang/smart-canvas/pull/221)
+- [x] (2) U20–U25 — docs brought up to date, this audit archived (this PR)
+- [ ] (2) U10–U19 — the UI fixes, one piece per PR, in the audit's order; U8 (splitting `Board.tsx`) optional, last
+- [ ] (3) K1–K6 — wait for the owner's decisions
+
 ## Next (see BACKLOG; proposals, the owner picks)
-- [x] Q9 — Editor colour variables: the `--line` / `--muted` loop in `.sc-fig` (this PR)
+- [x] Q9 — Editor colour variables: the `--line` / `--muted` loop in `.sc-fig` — [#201](https://github.com/tolakang/smart-canvas/pull/201)
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`

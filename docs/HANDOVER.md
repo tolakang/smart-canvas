@@ -1,6 +1,6 @@
-# Handover — 2026-10-26 (P28 Tailwind conversion under way)
+# Handover — 2026-10-28 (UX review fixes done; clean-up review 2 under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D65**), `docs/BACKLOG.md` (P15–P24 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D70**), `docs/BACKLOG.md` (P15–P30 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -23,7 +23,9 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D6
 - **CI:** `.github/workflows/ci.yml` caches Playwright's Chromium (`~/.cache/ms-playwright`, keyed by the Playwright version) and gives the check job 25 minutes; a fresh browser download once took 11 minutes and cut the tests off (#128). The check job takes about 4–5 minutes with the cache.
 - **CI flakes seen:** e2e suites once timed out in `beforeAll` on a slow runner; a canvas test once read the doc before autosave (800 ms) had saved it — poll with a longer timeout rather than re-running.
 
-## What changed recently (P15–P28, #108–#183)
+## What changed recently (P15–P30, #108–#217)
+- **P29 (#202–#216, D66–D70):** the UX review fixes (`docs/UX-REVIEW.md` A and B): keyboard reach and focus rings, field edges at 3:1, copy, health badge words; the master is **Main Comps** and the card beside it the **Export Group** (D66); "Add sizes" in the empty Export Group; moves without dragging; the Preset node inspector; one editor row per headline pair; Export by Preset node; an empty slot's bar has Delete only (D67); new projects start without empty Image and Logo slots, the first text "Text 1" (D68); Previews in a grid of up to three columns, Fit to screen no smaller than 40 % plus Fit all, Enter zooms to a panel, tags don't overlap (D69); on a phone Add in the bottom toolbar and the board opens on the asset nodes (D70).
+- **P30 (#217–):** the second clean-up review (`docs/archive/CLEANUP-AUDIT-2.md`): dead code removed (#217), then the updates one PR at a time.
 - **P25 (#145–#151, D64):** the UI refresh: tokens and Inter (U1), board chrome (U2), floating panels and new cards (U3), editors (U4), Projects home, sign-in and dialogs (U5, U6), real project thumbnails (U5b), one name per thing and AA contrast (U7).
 - **P26 (#153–#161):** asset and pipeline nodes redesigned (V1–V6): calm headers and solid icons, Core preset, phone editors' Layers | Design tabs, empty asset nodes keep their wire (D49.1).
 - **P27 (#163–#176):** CSS cleanup with no visual change: every colour a token, unused rules removed, one file per board area, the lint guard (`scripts/check-css.mjs`).
@@ -45,10 +47,10 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D6
 ```
 Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset nodes (purple), one ✂ wire each
                      ↓ into the top of the dashed group
-        [ Layer Comp | Core preset ]                            ← the master (blue / mint)
-                     ↓ drag out of the group's bottom port → preset popup
+        [ Main Comps | Export Group ]                           ← the master (blue / mint); names D66
+                     ↓ a family in the empty Export Group, or drag out of the group's bottom port → preset popup
         Preset node (FB, IG, Story, GDN, App banner, Website, Gift, PR, team, Custom)   ← green
-           each size row  ── eye · trash ──→ Preview (Edit = its overrides, Export)
+           each size row  ── eye · trash ──→ Preview (Edit = its overrides, Export); Previews in rows of three (D69)
 ```
 
 **Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG. A PDF's page is kept as vector — a PDF of several pages asks which one first (D59, `ui/PdfPageDialog.tsx`): the API draws it as a sanitized SVG with Poppler (D55, `apps/api/src/assets/pdf.ts`, `?page=N`); slots that take only pixels, or a server without the converter, get the browser's PNG of the same page (D52, `apps/web/src/pdf.ts`). All go through `uploadAsset` (cancel = `UploadCancelled`, no error shown).
@@ -57,12 +59,12 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 - **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch. **Add headline** adds more pairs to the same node (D53: `more`, `addPairRow`, `deletePairRow`, `pairInputs`); **Use** switches them all. Since V4 a pair shares one layout: switching hands the language coming in the place, size, rotation and Preview edits of the one going out (`shareLayout`), so only the picture changes. V4.1: with the pictures' measured sizes (`layoutDeps.assets`) `swapFrame` keeps the centre, area and stretch in the other picture's shape — exactly reversible, so switching never shrinks it.
 - **Background** is one input with vertical and horizontal slots (D43). A square output uses either slot.
 
-**Layer Comp.**
+**Main Comps** (Layer Comp before D66).
 - The layer order is shown as four groups; drag them or use ↑ ↓ to reorder (D48: `ProjectDoc.layerOrder`, `moveLayerGroup`).
 - **Square, Vertical, Horizontal** each open that layout's editor. A missing layout is added the first time it's opened (D42 guides).
 - All three editors share the master's layers: order, wiring, show/hide, **lock** and delete apply everywhere. Position and size are per layout (D50: `masterScene` of a guide, `InputSource.locked`).
 
-**Core preset** (V2; was "Core Rule").
+**Export Group** (D66; Core preset in V2, Core Rule before).
 - Always shows three sections listing Previews by the closest shape. Dragging a chip into another section sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`); × puts it back.
 - The layout engine places each layer by its behaviour and its frame on the master (D38); since V2 the board doesn't show those rules (the Core Auto Layout Guide is gone).
 
@@ -116,12 +118,12 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` (`addLanguagePair`, `addPairRow`, `deletePairRow`, `pairRows`, `pairInputs`) |
 | Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
 | Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`, `layerSpots`), `render.ts` (`masterScene`); layers a row can show: `layers.ts` (`layerSources`) |
-| Core preset data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`; all derived) |
+| Export Group data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`; all derived) |
 | Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies` by `SizePreset.family`, D54); built-in families in `packages/presets`; a Preset node's **Save as team preset** in `PresetNode.tsx`; families renamed / deleted in `shell/PresetsDialog.tsx` (M4) |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
 | Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `withPositions`, `LAYERS_HANDLE`, `cardEdgeId`); the Delete key: `delete-nodes.ts` |
 | Board placement | `apps/web/src/board/tidy.ts`: `clearSpot` (a new Preset node and its Previews land clear of other nodes), `tidyPositions` (**Tidy board** in the canvas toolbar and the canvas menu, one undo step), `tidySelectionPositions` (**Tidy selection**, two or more selected), `onGrid` |
-| Board UI | `Inspector.tsx` (Layer Comp: its three layouts via `useOpenLayout` from `MainNode.tsx`; Preview; asset nodes by kind), `Board.tsx` (wiring, menus, `+ Add`, preset popup, conversion on open), `MainNode.tsx` (Layer Comp + Core Rule group), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
+| Board UI | `Inspector.tsx` (Main Comps: its three layouts via `useOpenLayout` from `MainNode.tsx`; Preview; asset nodes by kind), `Board.tsx` (wiring, menus, `+ Add`, preset popup, conversion on open), `MainNode.tsx` (Main Comps + Export Group), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
 | Resets (owner, 2026-10-23: keep as is) | A reset never moves the element. Handle double-click: `resetForHandle` (that handle's drags removed from the history). The selection's **Reset rotation** / **Reset transform** buttons clear the rotation / skew **in place** (`resetRotation`, `resetTransform` in `geometry.ts`: centre and size kept). Replaying the history for the buttons was tried (#115) and reverted: it can move the element. |
 | Editors | `apps/web/src/editor/` (`MainEditor` lists the master's layers in every layout; `CanvasEditor` skips locked layers; `LayersPanel`, `board/LayerRow.tsx` `LayerActions` incl. lock). Transform box: `editor/transform/` (`math.ts` history and resets, `frame.ts` `snapMove` / `snapResize`, `transform-box.ts`) |
 | PDF uploads | API: `apps/api/src/assets/pdf.ts` (`pdftocairo -svg`, then the SVG sanitizer; 501 / 422 make the browser fall back). Browser: `apps/web/src/pdf.ts` (`pdfToPng`; pdf.js 5.4, lazy), from `uploadAsset` in `api.ts` (`{ pdf: 'image' }` for pixel-only slots) |
@@ -129,23 +131,24 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | API schema | `apps/api/src/routes/project-doc.schema.ts` (v3, plus v2 / v1 from clients that haven't reloaded, picked by `schema`; every new doc field must be added: `additionalProperties: false`) |
 | Export | `packages/core/src/exports.ts` (`exportRoute`, `zipOnServer`), `apps/web/src/board/ExportDialog.tsx`, API `routes/exports.ts` (jobs, file, streamed ZIP) |
 | Styling (D65) | Tokens: `apps/web/src/styles.css`; Tailwind theme: `tailwind.css`; shared class lists: `ui/tw.ts`, `ui/Brand.tsx`, `board/topbar.ts`, `board/panel.ts`, `board/frame.ts`, `board/card.ts`, `editor/shell.ts`, `editor/panels.ts`; CSS left as CSS: tokens and base (`styles.css`), React Flow's DOM (`board/chrome.css`, `board/reactflow.css`), the transform box (`editor/editor.css`); guard: `scripts/check-css.mjs`; rules: `docs/FRONTEND.md` |
-| e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` (the Layer Comp's buttons; the inspector has the same ones) |
+| e2e helpers | `apps/worker/src/test/stack.ts`: `setupAndCreateProject` (waits for `.sc-comp-group`), `boardNode`, `putPicture`, `openLayout` (Main Comps' layout buttons; the inspector has the same ones). Since D68 a new project has no empty Image or Logo slot; `setupAndCreateProject` gives it the D8 shape (`createBoardProject(name, { legacySlots: true })`) unless `fresh` |
 
 ## Testing tips (learned the hard way)
 - **CSS parity (P28):** `service postgresql start`, then `cd apps/worker && TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres npx vitest run src/css-parity-` (six files that run side by side; `SC_PARITY_ONLY=word,word` compares only the screens whose name has one of the words, commands in `TAILWIND-PLAN.md`). It compares every covered screen with main's built CSS; a conversion PR adds screens for the states it touches. The probe that lists what a sheet decides: `TAILWIND-PLAN.md`. If Postgres stopped (container restart), start it again.
-- **Off‑screen nodes:** press **Fit to screen** before clicking a node the test just added, or one placed by the conversion.
+- **Off‑screen nodes:** press **Fit to screen** before clicking a node the test just added, or one placed by the conversion. Since D69 Fit to screen stops at 40 % from tablet width up: press **Fit all** when the test needs every panel on screen. Since D70 a phone board opens on the first asset nodes: phone tests press Fit to screen first.
+- **API tests need Postgres:** run `pnpm test` with `TEST_DATABASE_URL` set, or the API's database tests are skipped (#214 reached CI with one broken that way). If Postgres stopped (a container restart), `service postgresql start` again.
 - **Draggable rows:** a draggable row (HTML5 `draggable`) swallows wire drags that start on a handle inside it. Make only the grip draggable.
-- **Shared ports:** many wires meet at the Layer Comp's `layers` port. Grab a wire by its node end (`edgeupdater-source`).
+- **Shared ports:** many wires meet at the Main Comps `layers` port. Grab a wire by its node end (`edgeupdater-source`).
 - **Hidden buttons:** buttons shown only on hover aren't in the accessibility tree. Use a CSS locator plus `dispatchEvent('click')`.
 - **Lazy deps in e2e:** the e2e tests run the Vite dev server. A dependency imported lazily must be listed in `optimizeDeps.include` (`apps/web/vite.config.ts`), or Vite finds it mid‑test and reloads the page. pdf.js 6+ needs `Map.getOrInsertComputed`, which the test Chromium lacks; stay on 5.4.
 - **Touch in e2e:** Chrome moves a touch that lands a few px from a panel onto the panel (touch adjustment): start a touch box-select well clear of panels. The first tap right after a CDP touch drag can be swallowed; wait ~600 ms.
 - **Presets load late:** team presets load after the board. Re‑open a menu until a preset family is listed.
 - **No-op passes:** when a test checks that an action changes something (Tidy, a nudge), set up a state where it must change, then require the change. Accepting "already tidy" let the Tidy test pass with nothing moved (#129).
-- **Default project:** a new project wires every asset node. Tests that need fewer layers filter the layer edges in a PUT doc.
+- **Default project:** a new project wires every asset node (since D68 with no empty Image or Logo slot; tests get the D8 shape, see e2e helpers). Tests that need fewer layers filter the layer edges in a PUT doc.
 
 ## Known limits
 - History keeps whole docs, so an old version shows the pictures and fonts it used only while those assets exist; assets are never deleted today.
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next
-P28 (Tailwind conversion, `TASKS.md`) is in progress: T1–T5 done; T6, T7 one PR at a time, T8 optional. **UI/UX review (2026-10-27): `docs/UX-REVIEW.md`** — 22 findings and proposals A1–C3 with a suggested PR order; none approved yet, so build none until the owner picks (proposals tagged with a decision change a locked one). P1–P27 are done. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.
+P1–P29 are done. **Clean-up review 2 (P30, `docs/archive/CLEANUP-AUDIT-2.md`):** group (1) is done; group (2) runs one piece per PR in the audit's order; group (3) (K1–K6) waits for the owner's decisions. The UX review's C1–C3 are on hold until the owner reviews them. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.
