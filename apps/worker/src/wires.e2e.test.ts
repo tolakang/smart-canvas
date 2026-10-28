@@ -115,7 +115,7 @@ describe.skipIf(!adminUrl)('wires attach and detach (T8.5, D49)', () => {
     const before = (await doc()).edges.length;
     // Under load a drag can end before React Flow sees it over the port; drag again until the refusal shows
     // (as the Preset-node test above does for its menu).
-    const alert = page.getByRole('alert').filter({ hasText: 'An asset node wires into the Layer Comp.' });
+    const alert = page.getByRole('alert').filter({ hasText: 'An asset node wires into Main Comps.' });
     await expect
       .poll(async () => {
         if (!(await alert.count())) await drag(nodeHandle(boardNode(page, 'Logo')), page.locator('.react-flow__node-presetNode .react-flow__handle.target'));

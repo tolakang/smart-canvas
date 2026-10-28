@@ -156,7 +156,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
           {error}
         </p>
       )}
-      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire every headline into the Layer Comp" />
+      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire every headline into Main Comps" />
     </div>
   );
 }

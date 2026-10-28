@@ -40,7 +40,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
       <div className={PANEL_TITLE}>Text · {source.label}</div>
       <fieldset className={PROPS_BODY} disabled={readOnly}>
         {outputId ? (
-          <p className={`sc-muted ${NOTE}`}>Text is shared by every Preview; edit it on the Layer Comp. Style changes here apply to this Preview only.</p>
+          <p className={`sc-muted ${NOTE}`}>Text is shared by every Preview; edit it in Main Comps. Style changes here apply to this Preview only.</p>
         ) : (
         <label className="sc-field sc-field--col">
           Text

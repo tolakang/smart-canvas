@@ -46,7 +46,7 @@ describe.skipIf(!adminUrl)('snap to the layer’s spot in the other layouts (M1)
   });
 
   let square: NFrame = { x: 0, y: 0, w: 0, h: 0 };
-  const editor = () => page.getByRole('dialog', { name: /Layer Comp editor/ });
+  const editor = () => page.getByRole('dialog', { name: /Main Comps editor/ });
   const saved = () => page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;
 

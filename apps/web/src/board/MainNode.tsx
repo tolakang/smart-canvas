@@ -85,10 +85,10 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
 
   const healthUi = useHealth(health);
   return (
-    <div className={GROUP} aria-label="Layer Comp and Core preset">
+    <div className={GROUP} aria-label="Main Comps and Export Group">
       <Handle type="target" position={Position.Top} id={LAYERS_HANDLE} isConnectable={!readOnly} className="sc-handle--layer" title="Asset nodes wire in here" />
-      <section className={cardClass('main')} aria-label="Layer Comp">
-        <NodeHead icon="arrange" tone="[--head:var(--head-master)]" title="Layer Comp" sub={`${layerCount} ${layerCount === 1 ? 'layer' : 'layers'} · front to back`} extra={healthUi.badge} />
+      <section className={cardClass('main')} aria-label="Main Comps">
+        <NodeHead icon="arrange" tone="[--head:var(--head-master)]" title="Main Comps" sub={`${layerCount} ${layerCount === 1 ? 'layer' : 'layers'} · front to back`} extra={healthUi.badge} />
         {healthUi.list}
         <div className={LABEL}>Layer order</div>
         <ol className={`sc-comp__groups m-0 grid list-none gap-6 p-0 ${NO_DRAG}`} aria-label="Layer order (front first)">
@@ -145,10 +145,10 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
         </div>
       </section>
 
-      <section className={cardClass('rule')} aria-label="Core preset">
-        <NodeHead icon="grid" tone="[--head:var(--head-rule)]" title="Core preset" sub={`${previewCount} ${previewCount === 1 ? 'Preview' : 'Previews'} · sorted by shape`} />
+      <section className={cardClass('rule')} aria-label="Export Group">
+        <NodeHead icon="grid" tone="[--head:var(--head-rule)]" title="Export Group" sub={`${previewCount} ${previewCount === 1 ? 'Preview' : 'Previews'} · sorted by shape`} />
         {/* D50: each Preview in its layout's section (closest shape, or as chosen); drag one into another section. */}
-        <div className={`sc-rule__sections grid gap-10 ${NO_DRAG}`} role="list" aria-label="Core preset">
+        <div className={`sc-rule__sections grid gap-10 ${NO_DRAG}`} role="list" aria-label="Export Group">
           {guides.map((g) => (
             <section
               key={g.family}

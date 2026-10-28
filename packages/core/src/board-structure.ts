@@ -78,7 +78,7 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
     next = {
       ...next,
       outputs: next.outputs.map((o) => (at.has(o.id) ? { ...o, board: at.get(o.id) ?? o.board } : o)),
-      presetSets: [...(next.presetSets ?? []), { id: uniqueId(next, 'sizes'), label: 'Sizes', board: { ...BOARD_LAYOUT.preset }, outputs: loose2 }],
+      presetSets: [...(next.presetSets ?? []), { id: uniqueId(next, 'sizes'), label: 'Other sizes', board: { ...BOARD_LAYOUT.preset }, outputs: loose2 }],
     };
   }
 

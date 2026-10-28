@@ -1,6 +1,6 @@
 # Artwork Adaptation App — READ FIRST
 
-One master artwork → many sizes. The board (D49, the owner's page-3 design) wires **asset nodes** (Logo, Headline KH/EN, Text, Image, Background V/H) → the **Layer Comp + Core preset** group (the master, with Square / Vertical / Horizontal layouts) → **Preset nodes** (a family of sizes) → one **Preview** per size.
+One master artwork → many sizes. The board (D49, the owner's page-3 design) wires **asset nodes** (Logo, Headline KH/EN, Text, Image, Background V/H) → the **Main Comps + Export Group** group (D66; once Layer Comp + Core preset) (the master, with Square / Vertical / Horizontal layouts) → **Preset nodes** (a family of sizes) → one **Preview** per size.
 Rules-based auto-adapt (no AI in v1), manual overrides are kept, export PNG/JPG/WebP/SVG/PDF (single or ZIP).
 Team app (login), deployed on Dokploy. Khmer + Latin text.
 

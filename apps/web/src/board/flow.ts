@@ -251,16 +251,16 @@ export function edgeOfConnection(c: Conn): { from: string; to: string; kind: Edg
  * feed outputs, D56) and one master preview per output.
  */
 export function connectionRefusal(doc: ProjectDoc, c: Conn & { targetHandle?: string | null }): string | null {
-  if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'An asset node wires into the Layer Comp.';
+  if (isCardNode(c.source)) return compositionIdOfNode(c.target) ? null : 'An asset node wires into Main Comps.';
   // D46 / D49: the Layer Comp group wires into a Preset node; a Preset node's row wires into its own Preview.
-  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) ? null : 'Only the Layer Comp group wires into a Preset node.';
+  if (setIdOfNode(c.target)) return compositionIdOfNode(c.source) ? null : 'Only the Main Comps group wires into a Preset node.';
   if (setIdOfNode(c.source)) return outputOfSetRow(c.sourceHandle) && c.target === outputNodeId(outputOfSetRow(c.sourceHandle) ?? '') ? null : 'A size row wires into its own preview.';
   const e = edgeOfConnection(c);
   if (!e) return 'Drop the wire on a port.';
   const refusal = connectRefusal(doc, e.from, e.to, e.kind);
-  if (refusal === 'wrong_type') return e.kind === 'composition' ? 'A Layer Comp wires into a Preview.' : 'An input wires into a row of a Layer Comp.';
+  if (refusal === 'wrong_type') return e.kind === 'composition' ? 'Main Comps wire into a Preview.' : 'An input wires into a row of Main Comps.';
   if (refusal) return 'Drop the wire on a port.';
-  if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This Preview already has a Layer Comp: drag its wire off first.';
+  if (e.kind === 'composition' && isOutputConnected(doc, e.to)) return 'This Preview is already wired to Main Comps: drag its wire off first.';
   return null;
 }
 

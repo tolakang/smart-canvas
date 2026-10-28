@@ -32,7 +32,7 @@ describe.skipIf(!adminUrl)('master preview editor: direct move / resize (T8.6)',
     await stack?.close();
   });
 
-  const editor = () => page.getByRole('dialog', { name: /Layer Comp editor/ });
+  const editor = () => page.getByRole('dialog', { name: /Main Comps editor/ });
   const layer = (id: string) => editor().locator(`.sc-editor__canvas .sc-render [data-source-id="${id}"]`);
   const selection = async () => ((await editor().getByTestId('selection').count()) ? (await editor().getByTestId('selection').innerText()).replace('Selected: ', '') : null);
   const doc = async (): Promise<ProjectDoc> => (await (await page.request.get(url)).json()).doc;

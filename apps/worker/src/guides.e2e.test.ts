@@ -48,7 +48,7 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
     const before = (await doc()).doc;
     for (const family of ['Vertical', 'Horizontal'] as const) {
       await openLayout(page, family);
-      const editor = page.getByRole('dialog', { name: /Layer Comp editor/ });
+      const editor = page.getByRole('dialog', { name: /Main Comps editor/ });
       await editor.waitFor();
       await page.keyboard.press('Escape');
       await editor.waitFor({ state: 'detached' });

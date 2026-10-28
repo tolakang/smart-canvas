@@ -315,7 +315,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
   const setSize = (patch: Partial<typeof comp.size>) => run((d) => setCompositionSize(d, comp.id, { ...comp.size, ...patch }));
   return (
     <>
-      <Section title="Layer Comp">
+      <Section title="Main Comps">
         <p className={HINT}>
           {wired.size} of {comp.layers.length} layers wired · {outputs} {outputs === 1 ? 'size follows' : 'sizes follow'} it
         </p>
@@ -326,7 +326,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
             </button>
           ))}
         </div>
-        <p className={`sc-muted ${HINT}`}>Each size uses the layout closest to its shape; change that in the Core preset.</p>
+        <p className={`sc-muted ${HINT}`}>Each size uses the layout closest to its shape; change that in the Export Group.</p>
       </Section>
       <HealthSection health={health} />
       <Section title="Square layout size">
@@ -390,7 +390,7 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
               <strong className={TIP_KEY}>+ Add</strong> in the top bar, or right-click the canvas: asset nodes and Preset nodes.
             </li>
             <li>
-              <strong className={TIP_KEY}>Drag a wire</strong> out of the Layer Comp group: a Preset node of sizes.
+              <strong className={TIP_KEY}>Drag a wire</strong> out of the Main Comps group: a Preset node of sizes.
             </li>
             <li>
               <strong className={TIP_KEY}>Drop pictures</strong> on the canvas: an Image node with them.

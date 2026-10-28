@@ -55,7 +55,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
 
   it('the editor frame is the badge; stretching the right edge stretches the picture', async () => {
     await openLayout(page);
-    const editor = page.getByRole('dialog', { name: /Layer Comp editor/ });
+    const editor = page.getByRole('dialog', { name: /Main Comps editor/ });
     const layer = editor.locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
     const lb = await layer.boundingBox();
     if (!lb) throw new Error('no layer');
@@ -131,7 +131,7 @@ describe.skipIf(!adminUrl)('picture frames fitted to their visible pixels (D37)'
   }, 120_000);
 
   it('rotated, stretched, editor closed and reopened: a double-click on the edge brings back the picture’s shape', async () => {
-    const editor = page.getByRole('dialog', { name: /Layer Comp editor/ });
+    const editor = page.getByRole('dialog', { name: /Main Comps editor/ });
     const layer = editor.locator('.sc-editor__canvas .sc-render [data-source-id="subject"]');
     const handle = async (h: string) => {
       const b = await editor.locator(`[data-tb-handle="${h}"]`).boundingBox();

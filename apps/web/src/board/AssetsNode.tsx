@@ -161,7 +161,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
           {drop.errors.join(' ')}
         </p>
       )}
-      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire every picture into the Layer Comp" />
+      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire every picture into Main Comps" />
     </div>
   );
 }

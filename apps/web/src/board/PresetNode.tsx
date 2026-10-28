@@ -85,11 +85,11 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
 
   return (
     <div className={cardClass('preset')} aria-label={`Preset ${set.label}`}>
-      <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="sc-handle--composition" title="From the Layer Comp group: feeds every size" />
+      <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="sc-handle--composition" title="From the Main Comps group: feeds every size" />
       <NodeHead
         icon="grid"
         tone="[--head:var(--head-preset)]"
-        title={`${set.label} Preset`}
+        title={set.label}
         sub={`${rows.length} ${rows.length === 1 ? 'size' : 'sizes'}`}
         onRename={readOnly ? undefined : (name) => run((d) => renameSet(d, set.id, name))}
         renameValue={set.label}

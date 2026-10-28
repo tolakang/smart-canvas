@@ -32,7 +32,7 @@ function InputNodeView({ data, selected }: NodeProps<InputFlowNode>) {
       <SourceHeader source={source} />
       {/* D43.1: a Background node is its square, vertical and horizontal slots; each output uses the one of its group. */}
       {source.behavesLike === 'background' ? <BackgroundSlots source={source} selected={selected} /> : <NodePreview source={source} upload={upload} />}
-      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire into the Layer Comp" />
+      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire into Main Comps" />
     </div>
   );
 }

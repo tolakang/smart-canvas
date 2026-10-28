@@ -37,7 +37,7 @@ describe('page-3 board structure (D49)', () => {
     const next = boardStructure(doc);
     expect(assetStacks(next).find((st) => stackKind(st) === 'text')?.items).toEqual(['headline']);
     expect(languagePairs(next)).toHaveLength(1); // and a Headline node
-    expect(next.presetSets).toEqual([expect.objectContaining({ label: 'Sizes', outputs: ['o1'] })]);
+    expect(next.presetSets).toEqual([expect.objectContaining({ label: 'Other sizes', outputs: ['o1'] })]);
     expect(next.edges).toContainEqual(expect.objectContaining({ from: MAIN, to: 'o1', kind: 'composition' }));
   });
 

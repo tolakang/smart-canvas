@@ -38,7 +38,7 @@ export function panelTitle(doc: ProjectDoc, nodeId: string): string | null {
     return s ? `${s.label} · ${s.outputs.length} ${s.outputs.length === 1 ? 'size' : 'sizes'}` : null;
   }
   const comp = compositionIdOfNode(nodeId);
-  return comp && compositionById(doc, comp) ? 'Layer Comp' : null;
+  return comp && compositionById(doc, comp) ? 'Main Comps' : null;
 }
 
 export function ZoomLabels(props: {
