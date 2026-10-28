@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { connectRefusal, edgeId, layerOrder, mainComposition, migrateProjectDoc, outputComposition, portOf, setEdgePoints, wiredLayers } from './graph';
+import { connectRefusal, edgeId, layerOrder, mainComposition, migrateProjectDoc, outputComposition, setEdgePoints, wiredLayers } from './graph';
 import type { ProjectDoc } from './model';
 import { createProjectDoc } from './project';
 
@@ -138,8 +138,8 @@ describe('graph helpers', () => {
 
   it('rows, ports and wired layers per composition', () => {
     expect(layerOrder(doc)).toEqual(['logo', 'headline', 'subject', 'background']);
-    expect(portOf(doc, 'subject')).toBe(2);
-    expect(portOf(doc, 'subject', 'c2')).toBe(0);
+    expect(layerOrder(doc).indexOf('subject')).toBe(2);
+    expect(layerOrder(doc, 'c2').indexOf('subject')).toBe(0);
     expect([...wiredLayers(doc, 'c2')]).toEqual(['subject']);
     expect(outputComposition(doc, 'o')).toBe('main');
   });

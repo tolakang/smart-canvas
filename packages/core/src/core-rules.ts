@@ -1,14 +1,12 @@
 /**
- * What the Layer Comp + Core Rule group shows (D49, PDF page 3 "Core Rule" with "Core Preset Guide" and "Core
- * Auto Layout Guide"): the master's layer comp groups (D45/D48), which layout each output uses (D42/D50) and the
- * auto layout rule each layer follows (D38). All derived from the doc. Pure.
+ * What the Main Comps + Export Group group shows (D49, D66; once Layer Comp + Core preset): the master's layer comp
+ * groups (D45/D48) and which layout each output uses (D42/D50). All derived from the doc. Pure.
  */
 import { compositionById, outputComposition } from './graph';
 import { addGuides, familyOfShape, GUIDE_FAMILIES, layoutOf, masterOf } from './guides';
 import { layerGroup, layerOrderOf, type LayerGroup } from './layer-order';
 import { languagePairs, pairInputs } from './languages';
-import { FILL_TOLERANCE, pinOf, type Pin } from './layout/grid';
-import { canvasMetrics, type Composition, type GuideFamily, type NFrame, type ProjectDoc } from './model';
+import { canvasMetrics, type Composition, type GuideFamily, type ProjectDoc } from './model';
 import { layerSources, type LayerSource } from './layers';
 import type { SourceResult } from './sources';
 
@@ -19,36 +17,6 @@ export function layerComp(doc: ProjectDoc, compositionId: string): { group: Laye
   const headline = new Set(languagePairs(doc).flatMap(pairInputs));
   const rows = (comp?.layers ?? []).flatMap((id) => byId.get(id) ?? []);
   return layerOrderOf(doc).map((group) => ({ group, layers: rows.filter((s) => layerGroup(s, headline) === group) }));
-}
-
-/** The auto layout rule (D38) a layer follows in every output, from its behaviour and its frame on the master. */
-export type LayerRule =
-  | { kind: 'cover' } // fills the output, scaled proportionally (backgrounds; layers touching all four edges)
-  | { kind: 'stretch'; axis: 'x' | 'y' } // edge to edge on one axis: stretches with the grid
-  | { kind: 'scale'; pin: { x: Pin; y: Pin }; minimum?: true }; // keeps its grid coordinate, scales proportionally
-
-const fills = (lo: number, size: number) => lo <= FILL_TOLERANCE && lo + size >= 1 - FILL_TOLERANCE;
-
-export function layerRule(source: Pick<LayerSource, 'behavesLike'>, frame: NFrame | undefined): LayerRule {
-  if (source.behavesLike === 'background' || !frame) return { kind: 'cover' };
-  const fx = fills(frame.x, frame.w);
-  const fy = fills(frame.y, frame.h);
-  const pin = { x: pinOf(frame.x, frame.w, 1), y: pinOf(frame.y, frame.h, 1) };
-  // A logo keeps its proportions (and a minimum size) whatever it touches.
-  if (source.behavesLike === 'logo') return { kind: 'scale', pin, minimum: true };
-  if (fx && fy) return { kind: 'cover' };
-  if (fx !== fy) return { kind: 'stretch', axis: fx ? 'x' : 'y' };
-  return { kind: 'scale', pin };
-}
-
-const PIN_WORD: Record<'x' | 'y', Record<Pin, string>> = { x: { start: 'left', centre: 'centre', end: 'right' }, y: { start: 'top', centre: 'middle', end: 'bottom' } };
-
-/** The rule in a few words, e.g. "Scales, pinned top left". */
-export function layerRuleText(rule: LayerRule): string {
-  if (rule.kind === 'cover') return 'Covers the output';
-  if (rule.kind === 'stretch') return rule.axis === 'x' ? 'Stretches edge to edge across' : 'Stretches edge to edge down';
-  const at = rule.pin.x === 'centre' && rule.pin.y === 'centre' ? 'centre' : `${PIN_WORD.y[rule.pin.y]} ${PIN_WORD.x[rule.pin.x]}`;
-  return `Scales, pinned ${at}${rule.minimum ? ' (minimum size)' : ''}`;
 }
 
 /**
