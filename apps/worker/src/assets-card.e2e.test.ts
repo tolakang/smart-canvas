@@ -119,4 +119,23 @@ describe.skipIf(!adminUrl)('Assets card: many pictures in one input (D40)', () =
     expect(card?.items.map((id) => d.sources.find((s) => s.id === id)?.label)).toEqual(['drop-1', 'drop-2']);
     for (const id of card?.items ?? []) expect(wiredLayers(d, 'main').has(id)).toBe(true);
   }, 60_000);
+  it('UX B4 (F9): the inspector moves a picture left or right without dragging', async () => {
+    const order = async () => {
+      const d = await doc();
+      const label = (id: string) => d.sources.find((s) => s.id === id)?.label;
+      return (d.stacks?.find((st) => st.items.some((id) => label(id) === 'pic-1'))?.items ?? []).map(label);
+    };
+    const before = await order();
+    const first = before[0] ?? '';
+    await added().getByRole('button', { name: `Select ${first}` }).click();
+    const inspector = page.getByRole('complementary', { name: 'Inspector' });
+    expect(await inspector.getByRole('button', { name: `Move ${first} left` }).isDisabled()).toBe(true);
+    await inspector.getByRole('button', { name: `Move ${first} right` }).focus();
+    await page.keyboard.press('Enter');
+    await saved();
+    await expect.poll(order).toEqual([before[1], first, ...before.slice(2)]);
+    await inspector.getByRole('button', { name: `Move ${first} left` }).click();
+    await saved();
+    await expect.poll(order).toEqual(before);
+  }, 60_000);
 });

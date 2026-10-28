@@ -101,5 +101,13 @@ describe.skipIf(!adminUrl)('layouts and the Core preset (D50)', () => {
     await section('Horizontal').getByRole('button', { name: /back to the closest layout/ }).click();
     await saved();
     expect((await doc()).outputs.find((o) => o.id === 'g2')?.layout).toBeUndefined();
+    // UX B4 (F9): the same move without dragging — the chip's "Move to" menu, by keyboard.
+    const move = section('Horizontal').getByRole('button', { name: /Move .* to another layout/ }).first();
+    await move.focus();
+    await page.keyboard.press('Enter');
+    await page.getByRole('menuitem', { name: 'Move to Vertical' }).focus();
+    await page.keyboard.press('Enter');
+    await saved();
+    expect((await doc()).outputs.find((o) => o.id === 'g2')?.layout).toBe('vertical');
   }, 60_000);
 });

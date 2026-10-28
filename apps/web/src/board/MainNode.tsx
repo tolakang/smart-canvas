@@ -55,8 +55,13 @@ const CHIP =
 /** UX B2: a size family to add, in the empty Export Group. */
 const ADD_CHIP =
   'inline-flex h-30 cursor-pointer items-center gap-6 rounded-[99px] border border-line-strong bg-surface px-11 text-[12px] font-[600] text-fg hover:border-accent hover:text-accent';
+/** UX B4: the chip's "Move to" menu and its items. */
+const MOVE_MENU =
+  'sc-rule__move absolute top-[calc(100%+4px)] left-0 z-20 grid min-w-140 gap-2 rounded-md border border-line bg-surface p-4 [box-shadow:var(--shadow-2)]';
+const MOVE_ITEM = 'cursor-pointer rounded-sm bg-transparent px-8 py-6 text-left text-[12px] font-[550] text-fg [border:0] hover:bg-surface-2 focus-visible:bg-surface-2';
 const CHIP_RESET =
   'sc-rule__chip-reset mr-[-4px] grid size-18 cursor-pointer place-items-center rounded-[50%] bg-transparent p-0 [color:inherit] [border:0] hover:bg-accent-soft';
+const CHIP_MOVE = 'sc-rule__chip-move mr-[-4px] grid size-18 cursor-pointer place-items-center rounded-[50%] bg-transparent p-0 [color:inherit] [border:0] hover:bg-accent-soft';
 
 export function useOpenLayout(compositionId: string) {
   const { readOnly, run, openMainEditor, doc } = useBoard();
@@ -76,6 +81,8 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
   const health = useMemo(() => compositionHealth(doc, compositionId, missingFonts), [doc, compositionId, missingFonts]);
   const [dropAt, setDropAt] = useState<number | null>(null);
   const [overFamily, setOverFamily] = useState<GuideFamily | null>(null);
+  // UX B4 (F9): the chip whose "Move to" menu is open — the drag's keyboard and tap alternative (WCAG 2.5.7).
+  const [moving, setMoving] = useState<string | null>(null);
   const { groups, guides } = useMemo(() => {
     const wired = wiredLayers(doc, compositionId);
     const groups = layerComp(doc, compositionId).map((g) => ({ ...g, layers: g.layers.filter((l) => wired.has(l.id)) }));
@@ -204,6 +211,40 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
                 {g.outputs.map((o) => (
                   <li key={o.id} className={`sc-chip sc-rule__chip ${CHIP} ${o.chosen ? 'sc-rule__chip--chosen border-[color-mix(in_srgb,var(--accent)_45%,var(--line))] text-accent [outline:1px_solid_var(--accent)]' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)]'}`} draggable={!readOnly} onDragStart={(e) => e.dataTransfer.setData(OUTPUT_DRAG, o.id)} data-output={o.id} title={o.chosen ? 'Chosen by hand' : 'Closest to its shape'}>
                     {o.label}
+                    {!readOnly && (
+                      <span className="relative inline-flex">
+                        <button
+                          type="button"
+                          className={CHIP_MOVE}
+                          aria-label={`Move ${o.label} to another layout`}
+                          aria-haspopup="menu"
+                          aria-expanded={moving === o.id}
+                          title="Move to another layout"
+                          onClick={() => setMoving((m) => (m === o.id ? null : o.id))}
+                          onKeyDown={(e) => e.key === 'Escape' && setMoving(null)}
+                        >
+                          <Icon name="more" size={12} />
+                        </button>
+                        {moving === o.id && (
+                          <span role="menu" aria-label={`Move ${o.label} to`} className={MOVE_MENU} onKeyDown={(e) => e.key === 'Escape' && setMoving(null)}>
+                            {GUIDE_FAMILIES.filter((f) => f !== g.family).map((f) => (
+                              <button
+                                key={f}
+                                type="button"
+                                role="menuitem"
+                                className={MOVE_ITEM}
+                                onClick={() => {
+                                  setMoving(null);
+                                  run((d) => setOutputLayout(d, o.id, f, newId()));
+                                }}
+                              >
+                                Move to {FAMILY_LABEL[f]}
+                              </button>
+                            ))}
+                          </span>
+                        )}
+                      </span>
+                    )}
                     {o.chosen && !readOnly && (
                       <button type="button" className={CHIP_RESET} aria-label={`${o.label}: back to the closest layout`} title="Back to the closest layout" onClick={() => run((d) => setOutputLayout(d, o.id, null, newId()))}>
                         <Icon name="close" size={12} />
