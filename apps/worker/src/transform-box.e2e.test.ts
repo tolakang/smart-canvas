@@ -201,6 +201,10 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     const phone = await ctx.newPage();
     const cdp = await ctx.newCDPSession(phone);
     await phone.goto(page.url().split('#')[0] + '#' + (page.url().split('#')[1] ?? ''));
+    // D70: a phone opens on the asset nodes; Fit shows Main Comps.
+    await phone.locator('.react-flow__node[data-id="main"]').waitFor();
+    await phone.getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(400);
     // Zoomed out (Q8), the first tap zooms to the panel; then Edit takes the tap.
     const edit = phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first();
     await edit.tap();
