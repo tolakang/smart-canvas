@@ -1174,7 +1174,23 @@ function BoardCanvas(props: {
     props.history.toggle();
   };
 
-  /** Phone top bar (T13.6): what doesn't fit goes in a "More" menu under the button. */
+  /**
+   * D70 (UX B7, F11): the phone's Add, from the bottom toolbar — a sectioned sheet (asset nodes, then Preset nodes),
+   * at the bottom of the screen where it was tapped.
+   */
+  const openPhoneAdd = () => {
+    const spot = nextSpot();
+    const presets = presetItems(spot.preset);
+    const assets = addItems(spot.asset).slice(0, -presets.length || undefined);
+    setMenu({
+      x: 8,
+      y: window.innerHeight,
+      title: 'Add',
+      items: [...assets.map((it, i) => (i === 0 ? { ...it, heading: 'Asset nodes' } : it)), ...presets.map((it, i) => (i === 0 ? { ...it, heading: 'Preset nodes of sizes', separated: false } : { ...it, separated: false }))],
+    });
+  };
+
+  /** Phone top bar (T13.6): what doesn't fit goes in a "More" menu under the button (D70: no node list in it). */
   const openMore = (button: HTMLElement) => {
     const r = button.getBoundingClientRect();
     const edit: MenuItem[] = readOnly
@@ -1182,7 +1198,6 @@ function BoardCanvas(props: {
       : [
           { label: 'Undo', disabled: !canStep.undo, onSelect: undo },
           { label: 'Redo', disabled: !canStep.redo, onSelect: redo },
-          ...addItems(nextSpot().asset).map((item, i) => ({ ...item, separated: i === 0 })),
         ];
     setMenu({
       x: r.right - 220,
@@ -1488,6 +1503,16 @@ function BoardCanvas(props: {
             onInit={(instance) => {
               flow.current = instance;
               zoomChanged(instance.getZoom());
+              // D70 (UX B7): a phone opens on the asset nodes, the first two readable, not on the whole board at
+              // ~20 % (Fit to screen still shows it all).
+              if (screen === 'phone')
+                requestAnimationFrame(() => {
+                  const first = nodesRef.current
+                    .filter((n) => ['assetsNode', 'textNode', 'headlineNode', 'inputNode'].includes(n.type ?? '') && !n.hidden)
+                    .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x)
+                    .slice(0, 2);
+                  if (first.length) void instance.fitView({ nodes: first.map((n) => ({ id: n.id })), padding: 0.08, maxZoom: 1 });
+                });
             }}
             onConnect={onConnect}
             onEdgesChange={onEdgesChange}
@@ -1554,6 +1579,7 @@ function BoardCanvas(props: {
                 }
               }
               compact={screen === 'phone'}
+              onAdd={screen === 'phone' && !readOnly ? openPhoneAdd : undefined}
               minimapToggle={screen === 'desktop'}
               onTidy={readOnly ? undefined : tidy}
               tidySelection={selectedCount >= 2}

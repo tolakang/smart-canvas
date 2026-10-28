@@ -69,13 +69,23 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect(390 - ((exportBox?.x ?? 0) + (exportBox?.width ?? 0))).toBeGreaterThanOrEqual(6);
     await phone.getByRole('button', { name: 'More' }).tap();
     const menu = phone.getByRole('menu', { name: 'More' });
-    for (const item of [/^Undo/, 'Logo node', 'Text node', 'Image node', 'Team fonts', 'Team library', /theme$/]) expect(await menu.getByRole('menuitem', { name: item }).count()).toBe(1);
+    for (const item of [/^Undo/, 'Team fonts', 'Team library', /theme$/]) expect(await menu.getByRole('menuitem', { name: item }).count()).toBe(1);
+    // D70: nodes are no longer in More; the bottom toolbar's Add opens them, in sections.
+    expect(await menu.getByRole('menuitem', { name: 'Logo node' }).count()).toBe(0);
     const box = await menu.boundingBox();
     expect((box?.x ?? -1) >= 0 && (box?.x ?? 0) + (box?.width ?? 0) <= 390).toBe(true);
     await phone.keyboard.press('Escape');
+    await bar(phone).getByRole('button', { name: 'Add', exact: true }).tap();
+    const add = phone.getByRole('menu', { name: 'Add' });
+    for (const item of ['Logo node', 'Text node', 'Image node']) expect(await add.getByRole('menuitem', { name: item }).count()).toBe(1);
+    expect(await add.getByText('Asset nodes', { exact: true }).count()).toBe(1);
+    expect(await add.getByText('Preset nodes of sizes', { exact: true }).count()).toBe(1);
+    const addBox = await add.boundingBox();
+    expect((addBox?.y ?? 0) + (addBox?.height ?? 0)).toBeLessThanOrEqual(844);
+    await phone.keyboard.press('Escape');
   }, 60_000);
 
-  it('phone: the inspector is a bottom sheet (D49: no node library; nodes are added from More)', async () => {
+  it('phone: the inspector is a bottom sheet (D49: no node library; D70: nodes are added from the toolbar\'s Add)', async () => {
     expect(await bar(phone).getByRole('button', { name: 'Add nodes' }).count()).toBe(0);
     await bar(phone).getByRole('button', { name: 'Inspector' }).tap();
     const sheet = await phone.getByRole('complementary', { name: 'Inspector' }).boundingBox();
@@ -367,6 +377,10 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     expect((await phone.request.put(url, { data: { rev: cur.rev, doc: wired.doc } })).status()).toBe(200);
     await phone.reload();
     await bar(phone).waitFor();
+    // D70: a phone opens on the first asset nodes, readable; Fit to screen shows the whole board.
+    await expect.poll(async () => (await viewport()).zoom, { timeout: 10_000 }).toBeGreaterThan(0.4);
+    await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
+    await phone.waitForTimeout(500);
     // Zoomed out (Q8), the first tap zooms to the panel; then Edit takes the tap.
     const edit = phone.locator('.react-flow__node[data-id="main"]').getByRole('button', { name: /^Edit/ }).first();
     await edit.tap();

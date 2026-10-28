@@ -113,6 +113,9 @@ describe.skipIf(!adminUrl)('comments on Previews (D63)', () => {
       const phone = await ctx.newPage();
       await phone.goto(board);
       await node(phone).waitFor();
+      // D70: a phone opens on the asset nodes; Fit shows the Previews.
+      await phone.getByRole('button', { name: /^Fit to screen/ }).tap();
+      await phone.waitForTimeout(400);
       // Zoomed out on touch, the first tap on a panel zooms to it (D58, Q8); the second presses Edit.
       const edit = node(phone).getByRole('button', { name: 'Edit Preview Banner' });
       await edit.tap();
