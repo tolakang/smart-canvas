@@ -61,7 +61,6 @@ const MOVE_MENU =
 const MOVE_ITEM = 'cursor-pointer rounded-sm bg-transparent px-8 py-6 text-left text-[12px] font-[550] text-fg [border:0] hover:bg-surface-2 focus-visible:bg-surface-2';
 const CHIP_RESET =
   'sc-rule__chip-reset mr-[-4px] grid size-18 cursor-pointer place-items-center rounded-[50%] bg-transparent p-0 [color:inherit] [border:0] hover:bg-accent-soft';
-const CHIP_MOVE = 'sc-rule__chip-move mr-[-4px] grid size-18 cursor-pointer place-items-center rounded-[50%] bg-transparent p-0 [color:inherit] [border:0] hover:bg-accent-soft';
 
 export function useOpenLayout(compositionId: string) {
   const { readOnly, run, openMainEditor, doc } = useBoard();
@@ -210,20 +209,22 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
               <ul className="sc-rule__chips m-0 flex list-none flex-wrap gap-6 p-0 text-[11px]">
                 {g.outputs.map((o) => (
                   <li key={o.id} className={`sc-chip sc-rule__chip ${CHIP} ${o.chosen ? 'sc-rule__chip--chosen border-[color-mix(in_srgb,var(--accent)_45%,var(--line))] text-accent [outline:1px_solid_var(--accent)]' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)]'}`} draggable={!readOnly} onDragStart={(e) => e.dataTransfer.setData(OUTPUT_DRAG, o.id)} data-output={o.id} title={o.chosen ? 'Chosen by hand' : 'Closest to its shape'}>
-                    {o.label}
-                    {!readOnly && (
+                    {readOnly ? (
+                      o.label
+                    ) : (
+                      // UX B4 (F9): the chip's label opens "Move to" — the drag's keyboard and tap alternative (WCAG 2.5.7),
+                      // at the chip's own size (an extra button would widen every chip and the group with it).
                       <span className="relative inline-flex">
                         <button
                           type="button"
-                          className={CHIP_MOVE}
-                          aria-label={`Move ${o.label} to another layout`}
+                          className="sc-rule__chip-move cursor-pointer bg-transparent p-0 [font:inherit] [color:inherit] [border:0]"
+                          aria-label={`${o.label}: move to another layout`}
                           aria-haspopup="menu"
                           aria-expanded={moving === o.id}
-                          title="Move to another layout"
                           onClick={() => setMoving((m) => (m === o.id ? null : o.id))}
                           onKeyDown={(e) => e.key === 'Escape' && setMoving(null)}
                         >
-                          <Icon name="more" size={12} />
+                          {o.label}
                         </button>
                         {moving === o.id && (
                           <span role="menu" aria-label={`Move ${o.label} to`} className={MOVE_MENU} onKeyDown={(e) => e.key === 'Escape' && setMoving(null)}>
