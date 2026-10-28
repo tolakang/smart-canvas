@@ -26,16 +26,6 @@ export function toBox(f: NFrame, canvas: Canvas, scale: number): Box {
   };
 }
 
-export function toNFrame(b: Box, canvas: Canvas, scale: number): NFrame {
-  return {
-    x: b.x / scale / canvas.width,
-    y: b.y / scale / canvas.height,
-    w: b.w / scale / canvas.width,
-    h: b.h / scale / canvas.height,
-    ...(b.rotation ? { rotation: b.rotation } : {}),
-  };
-}
-
 /** Moves a placement by whole design px (arrow keys: 1, with Shift: 10). */
 export function nudge(f: NFrame, dx: number, dy: number, canvas: Canvas): NFrame {
   return { ...f, x: f.x + dx / canvas.width, y: f.y + dy / canvas.height };

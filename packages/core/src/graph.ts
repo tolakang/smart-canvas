@@ -35,11 +35,6 @@ export function layerOrder(doc: ProjectDoc, compositionId: string = MAIN): strin
   return compositionById(doc, compositionId)?.layers ?? [];
 }
 
-/** A node's row in a composition (0 = front), or -1. */
-export function portOf(doc: ProjectDoc, nodeId: string, compositionId: string = MAIN): number {
-  return layerOrder(doc, compositionId).indexOf(nodeId);
-}
-
 /** The nodes that feed a composition's rows. */
 export function wiredLayers(doc: ProjectDoc, compositionId: string = MAIN): Set<string> {
   return new Set(doc.edges.filter((e) => e.kind === 'layer' && e.to === compositionId).map((e) => e.from));

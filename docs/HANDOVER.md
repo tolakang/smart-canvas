@@ -64,7 +64,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 
 **Core preset** (V2; was "Core Rule").
 - Always shows three sections listing Previews by the closest shape. Dragging a chip into another section sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`); × puts it back.
-- The per-layer rules (`layerRule`) still drive every layout; since V2 they are not shown on the board (the Core Auto Layout Guide is gone).
+- The layout engine places each layer by its behaviour and its frame on the master (D38); since V2 the board doesn't show those rules (the Core Auto Layout Guide is gone).
 
 **Preset node (D46, D51).**
 - **Its team family (D60, Q2):** `setFamily(doc, setId, presets)` finds the family its sizes came from (by `presetId`); the node offers "Rename to “…”" when the family's name changed and "Add N new sizes" when the family grew.
@@ -116,7 +116,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` (`addLanguagePair`, `addPairRow`, `deletePairRow`, `pairRows`, `pairInputs`) |
 | Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
 | Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`, `layerSpots`), `render.ts` (`masterScene`); layers a row can show: `layers.ts` (`layerSources`) |
-| Core preset data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`, `layerRule`; all derived) |
+| Core preset data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`; all derived) |
 | Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies` by `SizePreset.family`, D54); built-in families in `packages/presets`; a Preset node's **Save as team preset** in `PresetNode.tsx`; families renamed / deleted in `shell/PresetsDialog.tsx` (M4) |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
 | Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `withPositions`, `LAYERS_HANDLE`, `cardEdgeId`); the Delete key: `delete-nodes.ts` |

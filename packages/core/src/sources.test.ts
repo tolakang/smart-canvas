@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layerOrder, MAIN, mainComposition, portOf, withComposition } from './graph';
+import { layerOrder, MAIN, mainComposition, withComposition } from './graph';
 import { LIMITS, type ProjectDoc } from './model';
 import { createProjectDoc } from './project';
 import { addOutput } from './outputs';
@@ -20,14 +20,14 @@ const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(`expected ok, got ${r.error}`);
   return r.doc;
 };
-const ports = (doc: ProjectDoc) => Object.fromEntries(doc.sources.map((s) => [s.id, portOf(doc, s.id)]));
+const ports = (doc: ProjectDoc) => Object.fromEntries(doc.sources.map((s) => [s.id, layerOrder(doc).indexOf(s.id)]));
 const placements = (doc: ProjectDoc) => mainComposition(doc).placements;
 /** Every source is a row of main exactly once (ports 0..n-1). */
 const contiguous = (doc: ProjectDoc) => {
   const rows = layerOrder(doc);
   return rows.length === doc.sources.length && new Set(rows).size === rows.length;
 };
-const wired = (doc: ProjectDoc) => doc.edges.filter((e) => e.kind === 'layer' && e.to === MAIN).map((e) => [e.from, portOf(doc, e.from)]);
+const wired = (doc: ProjectDoc) => doc.edges.filter((e) => e.kind === 'layer' && e.to === MAIN).map((e) => [e.from, layerOrder(doc).indexOf(e.from)]);
 
 describe('default sources (D8)', () => {
   it('are Background, Subject, Headline, Logo with Logo in front and Background at the back', () => {
@@ -192,16 +192,16 @@ describe('placing new nodes (T8.4)', () => {
 describe('setBehavior (T8.7)', () => {
   it('changes the behaviour within what the kind allows; a new background goes to the back', () => {
     let doc = ok(addSource(createProjectDoc('P'), { id: 'g', kind: 'fill', label: 'Gradient', behavesLike: 'decoration' }));
-    expect(portOf(doc, 'g')).toBe(0);
+    expect(layerOrder(doc).indexOf('g')).toBe(0);
     doc = ok(setBehavior(doc, 'g', 'background'));
     expect(doc.sources.find((s) => s.id === 'g')).toMatchObject({ behavesLike: 'background' });
-    expect(portOf(doc, 'g')).toBe(4);
+    expect(layerOrder(doc).indexOf('g')).toBe(4);
     expect(layerOrder(doc)).toHaveLength(5);
     expect(setBehavior(doc, 'g', 'subject')).toEqual({ ok: false, error: 'bad_behavior' }); // a fill can't be a subject
     expect(setBehavior(doc, 'nope', 'logo')).toEqual({ ok: false, error: 'not_found' });
     const d2 = ok(setBehavior(doc, 'logo', 'decoration'));
     expect(d2.sources.find((s) => s.id === 'logo')).toMatchObject({ behavesLike: 'decoration' });
-    expect(portOf(d2, 'logo')).toBe(0);
+    expect(layerOrder(d2).indexOf('logo')).toBe(0);
   });
 });
 

@@ -35,4 +35,3 @@ export * from './core-rules';
 export * from './board-structure';
 export * from './review';
 
-export const CORE_VERSION = '0.0.0';

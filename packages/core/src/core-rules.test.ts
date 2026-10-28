@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { guideRows, layerComp, layerRule, layerRuleText, setOutputLayout } from './core-rules';
+import { guideRows, layerComp, setOutputLayout } from './core-rules';
 import { guideFor } from './guides';
 import { canvasMetrics } from './model';
 import { masterScene } from './render';
@@ -23,19 +23,6 @@ describe('Core Rule (D47, D49)', () => {
       ['elements', ['subject']],
       ['background', ['background']],
     ]);
-  });
-
-  it('auto layout rule per layer (D38): cover, stretch on one axis, or scale from its pin', () => {
-    expect(layerRule({ behavesLike: 'background' }, undefined)).toEqual({ kind: 'cover' });
-    expect(layerRule({ behavesLike: 'subject' }, { x: 0, y: 0, w: 1, h: 1 })).toEqual({ kind: 'cover' });
-    expect(layerRule({ behavesLike: 'decoration' }, { x: 0, y: 0.8, w: 1, h: 0.2 })).toEqual({ kind: 'stretch', axis: 'x' });
-    expect(layerRule({ behavesLike: 'decoration' }, { x: 0.4, y: 0, w: 0.2, h: 1 })).toEqual({ kind: 'stretch', axis: 'y' });
-    const subject = layerRule({ behavesLike: 'subject' }, { x: 0.05, y: 0.7, w: 0.2, h: 0.2 });
-    expect(subject).toEqual({ kind: 'scale', pin: { x: 'start', y: 'end' } });
-    expect(layerRuleText(subject)).toBe('Scales, pinned bottom left');
-    expect(layerRuleText(layerRule({ behavesLike: 'logo' }, { x: 0, y: 0, w: 1, h: 0.1 }))).toBe('Scales, pinned top centre (minimum size)');
-    expect(layerRuleText(layerRule({ behavesLike: 'text' }, { x: 0.3, y: 0.4, w: 0.4, h: 0.2 }))).toBe('Scales, pinned centre');
-    expect(layerRuleText({ kind: 'stretch', axis: 'x' })).toBe('Stretches edge to edge across');
   });
 
   it('core preset guide: each output in the section closest to its shape, or the one chosen for it (D42, D50)', () => {

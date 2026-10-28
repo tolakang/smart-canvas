@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layerOrder, portOf } from './graph';
+import { layerOrder } from './graph';
 import type { ProjectDoc } from './model';
 import { connectSource, disconnectSource, moveSourceToPort } from './ports';
 import { createProjectDoc } from './project';
@@ -11,7 +11,7 @@ const ok = (r: SourceResult): ProjectDoc => {
 };
 // Default stack, front→back: logo 0, headline 1, subject 2, background 3.
 const stack = (doc: ProjectDoc) => layerOrder(doc);
-const wirePorts = (doc: ProjectDoc) => Object.fromEntries(doc.edges.filter((e) => e.kind === 'layer' && e.to === 'main').map((e) => [e.from, portOf(doc, e.from)]));
+const wirePorts = (doc: ProjectDoc) => Object.fromEntries(doc.edges.filter((e) => e.kind === 'layer' && e.to === 'main').map((e) => [e.from, layerOrder(doc).indexOf(e.from)]));
 /** Every source is a row of main exactly once (rows = ports, contiguous by construction). */
 const consistent = (doc: ProjectDoc) => {
   const rows = layerOrder(doc);
@@ -35,7 +35,7 @@ describe('connect / disconnect', () => {
   it('wiring an input creates one layer edge into its row', () => {
     const doc = ok(connectSource(createProjectDoc('P'), 'subject'));
     expect(doc.edges).toEqual([{ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' }]);
-    expect(portOf(doc, 'subject')).toBe(2);
+    expect(layerOrder(doc).indexOf('subject')).toBe(2);
     expect(ok(connectSource(doc, 'subject')).edges).toHaveLength(1); // idempotent
   });
 

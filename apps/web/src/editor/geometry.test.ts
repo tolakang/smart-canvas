@@ -1,17 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { fitScale, nudge, resetRotation, resetTransform, toBox, toNFrame } from './geometry';
+import { fitScale, nudge, resetRotation, resetTransform, toBox } from './geometry';
 
 const canvas = { width: 3000, height: 2000 };
 
 describe('editor geometry', () => {
-  it('converts placements to screen boxes and back without drift', () => {
+  it('converts placements to screen boxes', () => {
     const f = { x: 0.1, y: 0.25, w: 0.5, h: 0.3, rotation: 15 };
-    const box = toBox(f, canvas, 0.2);
-    expect(box).toEqual({ x: 60, y: 100, w: 300, h: 120, rotation: 15 });
-    const back = toNFrame(box, canvas, 0.2);
-    for (const k of ['x', 'y', 'w', 'h'] as const) expect(back[k]).toBeCloseTo(f[k], 12);
-    expect(back.rotation).toBe(15);
-    expect(toNFrame({ ...box, rotation: 0 }, canvas, 0.2)).not.toHaveProperty('rotation');
+    expect(toBox(f, canvas, 0.2)).toEqual({ x: 60, y: 100, w: 300, h: 120, rotation: 15 });
   });
 
   it('nudges by design px', () => {
