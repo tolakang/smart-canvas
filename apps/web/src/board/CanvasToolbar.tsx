@@ -11,8 +11,14 @@ import { Icon } from './LayerRow';
 
 export type CanvasTool = 'select' | 'hand';
 
-/** Fit leaves room for this toolbar at the bottom, so no node ends up under it. */
-export const FIT_OPTIONS = { maxZoom: 1, padding: { top: '24px', left: '24px', right: '24px', bottom: '96px' } } as const;
+/** Fit leaves room for this toolbar at the bottom, so no node ends up under it. Fit all shows every panel, however small. */
+export const FIT_ALL_OPTIONS = { maxZoom: 1, padding: { top: '24px', left: '24px', right: '24px', bottom: '96px' } } as const;
+/**
+ * D69 (UX B3, F4): Fit to screen stops at 40%, where a card's buttons and text stay readable; a larger board is then
+ * centred and the rest is a pan away (or "Fit all").
+ */
+export const FIT_MIN_ZOOM = 0.4;
+export const FIT_OPTIONS = { ...FIT_ALL_OPTIONS, minZoom: FIT_MIN_ZOOM } as const;
 
 /** What each button does, shown under its name in the tooltip. */
 const TIPS: Record<string, string> = {
@@ -24,7 +30,8 @@ const TIPS: Record<string, string> = {
   'Select several': 'Tap panels to add or take them out; drag on empty canvas to draw a box around them. Done when finished',
   'Zoom out': 'Zoom out (Ctrl/⌘ + wheel, or pinch)',
   'Zoom in': 'Zoom in (Ctrl/⌘ + wheel, or pinch)',
-  'Fit to screen (Shift+1)': 'Show every panel',
+  'Fit to screen (Shift+1)': 'Show the board, no smaller than 40% so it stays readable',
+  'Fit all': 'Show every panel, however small',
   'Tidy board': 'Arrange all panels: asset nodes in a row, Main Comps under them, Preset nodes and their Previews below',
   'Tidy selection': 'Arrange the selected panels in an even grid',
   'Snap to grid': 'Panels snap to the 16 px grid when moved (hold Alt to place one freely)',
@@ -179,6 +186,7 @@ export function CanvasToolbar(props: {
       </span>
       {!compact && btn('Zoom in', undefined, () => void zoomIn({ duration: 150 }), <Icon name="plus" />)}
       {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ ...FIT_OPTIONS, duration: 200 }), <Icon name="fit" />)}
+      {!compact && btn('Fit all', undefined, () => void fitView({ ...FIT_ALL_OPTIONS, duration: 200 }), <Icon name="map" />)}
       {props.onTidy && btn(props.tidySelection ? 'Tidy selection' : 'Tidy board', undefined, props.onTidy, <Icon name="arrange" />)}
       <span className={SEP} aria-hidden="true" />
       {btn('Snap to grid', props.grid, () => props.onGrid(!props.grid), <Icon name="grid" />)}

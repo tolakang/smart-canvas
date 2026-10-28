@@ -736,6 +736,10 @@ function BoardCanvas(props: {
       setStackFocus,
       run,
       addSizes: (family: string | null) => addSizesRef.current(family),
+      zoomTo: (nodeId: string) => {
+        setNodes((ns) => ns.map((n) => (n.selected !== (n.id === nodeId) ? { ...n, selected: n.id === nodeId } : n)));
+        void flow.current?.fitView({ nodes: [{ id: nodeId }], duration: 300, maxZoom: 1, padding: 0.15 });
+      },
     }),
     [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );

@@ -2,9 +2,10 @@
  * U3 (D64): zoomed out, panel text is too small to read, so each panel gets a name tag above it, like a design tool's
  * frame names: the panel's name, and for a Preview its approval and open comments. The tags keep their screen size
  * at any zoom (`--zoom` on the board) and never take a click — every control underneath still works.
+ * D69 (UX B3, F4): a tag that would cover one already placed is left out, so tags never pile up on each other.
  */
 import { assetStacks, compositionById, languagePairs, presetSets, type ProjectDoc } from '@smart-canvas/core';
-import { ViewportPortal, type Node } from '@xyflow/react';
+import { useStore, ViewportPortal, type Node } from '@xyflow/react';
 import { compositionIdOfNode } from './flow';
 import { nameWithoutSize } from './OutputNode';
 import { approvalOf, type ApprovalState } from './review';
@@ -41,22 +42,48 @@ export function panelTitle(doc: ProjectDoc, nodeId: string): string | null {
   return comp && compositionById(doc, comp) ? 'Main Comps' : null;
 }
 
+/** A tag's size on screen: about 7 px a character plus its padding, 26 px tall, at most 320 px wide (TAG). */
+const tagSize = (title: string, marks: number) => ({ w: Math.min(320, title.length * 7 + 18 + marks * 26), h: 26 });
+
+/**
+ * D69: which tags to draw at `zoom` — in board order, each tag (above its panel's top-left corner, at its screen size)
+ * unless it would overlap a tag already kept. Pure.
+ */
+export function visibleTags(tags: readonly { id: string; x: number; y: number; w: number; h: number }[], zoom: number): Set<string> {
+  const kept: { x: number; y: number; w: number; h: number }[] = [];
+  const shown = new Set<string>();
+  for (const t of tags) {
+    const box = { x: t.x, y: t.y - (t.h + 6) / zoom, w: t.w / zoom, h: t.h / zoom };
+    if (kept.some((k) => box.x < k.x + k.w && k.x < box.x + box.w && box.y < k.y + k.h && k.y < box.y + box.h)) continue;
+    kept.push(box);
+    shown.add(t.id);
+  }
+  return shown;
+}
+
 export function ZoomLabels(props: {
   nodes: readonly Node[];
   doc: ProjectDoc;
   approvals: ReadonlyMap<string, ApprovalState>;
   openComments: ReadonlyMap<string, number>;
 }) {
+  const zoom = useStore((st) => st.transform[2]);
+  const tags = props.nodes.flatMap((n) => {
+    if (n.hidden || n.id.startsWith('grp:')) return [];
+    const title = panelTitle(props.doc, n.id);
+    if (!title) return [];
+    const outputId = n.id.startsWith('out:') ? n.id.slice(4) : null;
+    const state = outputId ? approvalOf(props.approvals, outputId).state : 'none';
+    const open = outputId ? (props.openComments.get(outputId) ?? 0) : 0;
+    const marks = (state === 'none' ? 0 : 1) + (open > 0 ? 1 : 0);
+    return [{ n, title, state, open, ...tagSize(title, marks), x: n.position.x, y: n.position.y, id: n.id }];
+  });
+  const shown = visibleTags(tags, zoom || 1);
   return (
     <ViewportPortal>
       <div className="sc-zlabels pointer-events-none absolute top-0 left-0" aria-hidden="true">
-        {props.nodes.map((n) => {
-          if (n.hidden || n.id.startsWith('grp:')) return null;
-          const title = panelTitle(props.doc, n.id);
-          if (!title) return null;
-          const outputId = n.id.startsWith('out:') ? n.id.slice(4) : null;
-          const state = outputId ? approvalOf(props.approvals, outputId).state : 'none';
-          const open = outputId ? (props.openComments.get(outputId) ?? 0) : 0;
+        {tags.map(({ n, title, state, open }) => {
+          if (!shown.has(n.id)) return null;
           return (
             <div key={n.id} className="sc-zlabel pointer-events-none absolute top-0 left-0" style={{ transform: `translate(${n.position.x}px, ${n.position.y}px)`, width: n.measured?.width ?? n.width }}>
               <span className={TAG}>

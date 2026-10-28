@@ -55,6 +55,8 @@ export interface BoardActions {
   run: (op: (doc: ProjectDoc) => SourceResult, opts?: { silent?: boolean }) => SourceResult;
   /** UX B2: adds a Preset node of a family's sizes (null: a custom one) under the Main Comps group. */
   addSizes: (family: string | null) => void;
+  /** D69 (UX B3): brings one panel close (selects it and zooms to it, at most 100%). */
+  zoomTo: (nodeId: string) => void;
 }
 
 export const BoardContext = createContext<BoardActions | null>(null);

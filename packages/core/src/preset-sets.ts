@@ -23,10 +23,20 @@ const withSets = (doc: ProjectDoc, sets: PresetSet[]): ProjectDoc => {
 
 /** Where a set's previews go on the board: a column to its right, one per row. */
 export const PREVIEW_OFFSET = { x: 420, rowGap: 380 };
+/**
+ * D69 (UX B3, amends D57 / N4): a Preset node's Previews sit in a grid of up to `cols` columns to its right, so a
+ * family of many sizes is a block, not a tall column the Fit zoom has to shrink the board for.
+ */
+export const PREVIEW_GRID = { cols: 3, colGap: 320 };
+/** Where the `i`th Preview of a Preset node at `at` goes: row by row in the grid right of the node. */
+export const previewSpot = (at: { x: number; y: number }, i: number): { x: number; y: number } => ({
+  x: at.x + PREVIEW_OFFSET.x + (i % PREVIEW_GRID.cols) * PREVIEW_GRID.colGap,
+  y: at.y + Math.floor(i / PREVIEW_GRID.cols) * PREVIEW_OFFSET.rowGap,
+});
 
 /**
  * Adds a Preset node with its sizes: each becomes an output wired to `composition` (the master preview by
- * default), its Preview placed in a column right of the node. One result, so one undo step.
+ * default), its Preview placed in the grid right of the node (D69). One result, so one undo step.
  */
 export function addPresetSet(
   doc: ProjectDoc,
@@ -37,7 +47,7 @@ export function addPresetSet(
   if (!compositionById(doc, composition)) return { ok: false, error: 'not_found' };
   let next = doc;
   for (const [i, s] of spec.sizes.entries()) {
-    const r = addOutput(next, { ...s, composition, board: { x: spec.board.x + PREVIEW_OFFSET.x, y: spec.board.y + i * PREVIEW_OFFSET.rowGap } });
+    const r = addOutput(next, { ...s, composition, board: previewSpot(spec.board, i) });
     if (!r.ok) return r;
     next = r.doc;
   }
@@ -62,7 +72,7 @@ export function setComposition(doc: ProjectDoc, setId: string): string {
 export function addSizeToSet(doc: ProjectDoc, setId: string, size: { id: string; label: string; size: Size } & OutputSettings): SourceResult {
   const set = presetSets(doc).find((s) => s.id === setId);
   if (!set) return { ok: false, error: 'not_found' };
-  const r = addOutput(doc, { ...size, composition: setComposition(doc, setId), board: { x: set.board.x + PREVIEW_OFFSET.x, y: set.board.y + set.outputs.length * PREVIEW_OFFSET.rowGap } });
+  const r = addOutput(doc, { ...size, composition: setComposition(doc, setId), board: previewSpot(set.board, set.outputs.length) });
   return r.ok ? editSet(r.doc, setId, (s) => ({ ...s, outputs: [...s.outputs, size.id] })) : r;
 }
 

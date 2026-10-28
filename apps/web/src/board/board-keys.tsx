@@ -95,6 +95,9 @@ export function BoardKeys({ disabled, ...actions }: BoardKeyActions & { disabled
       else if (e.code === 'Digit1' && e.shiftKey) void fitView({ ...FIT_OPTIONS, duration: 200 });
       else if (e.code === 'KeyT' && e.shiftKey && on.onTidy) on.onTidy();
       else if ((e.key === 'Delete' || e.key === 'Backspace') && on.onDelete) on.onDelete();
+      // D69 (UX B3): Enter on a panel reached with Tab brings it close, readable whatever the board's zoom.
+      else if (e.key === 'Enter' && e.target instanceof HTMLElement && e.target.classList.contains('react-flow__node') && e.target.dataset.id)
+        void fitView({ nodes: [{ id: e.target.dataset.id }], duration: 300, maxZoom: 1, padding: 0.15 });
       else return;
       e.preventDefault();
       // A focused panel's own key handling (React Flow re-selects it on Esc) stays out; menus and popovers still
