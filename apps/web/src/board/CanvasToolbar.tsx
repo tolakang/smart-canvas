@@ -15,10 +15,12 @@ export type CanvasTool = 'select' | 'hand';
 export const FIT_ALL_OPTIONS = { maxZoom: 1, padding: { top: '24px', left: '24px', right: '24px', bottom: '96px' } } as const;
 /**
  * D69 (UX B3, F4): Fit to screen stops at 40%, where a card's buttons and text stay readable; a larger board is then
- * centred and the rest is a pan away (or "Fit all").
+ * centred and the rest is a pan away (or "Fit all"). Not on a phone: there 40% shows about one card, so Fit still
+ * shows the whole board and a tap on a panel brings it close (Q8).
  */
 export const FIT_MIN_ZOOM = 0.4;
-export const FIT_OPTIONS = { ...FIT_ALL_OPTIONS, minZoom: FIT_MIN_ZOOM } as const;
+export const fitOptions = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches ? FIT_ALL_OPTIONS : ({ ...FIT_ALL_OPTIONS, minZoom: FIT_MIN_ZOOM } as const);
 
 /** What each button does, shown under its name in the tooltip. */
 const TIPS: Record<string, string> = {
@@ -185,7 +187,7 @@ export function CanvasToolbar(props: {
         {Math.round(zoom * 100)}%
       </span>
       {!compact && btn('Zoom in', undefined, () => void zoomIn({ duration: 150 }), <Icon name="plus" />)}
-      {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ ...FIT_OPTIONS, duration: 200 }), <Icon name="fit" />)}
+      {btn('Fit to screen (Shift+1)', undefined, () => void fitView({ ...fitOptions(), duration: 200 }), <Icon name="fit" />)}
       {!compact && btn('Fit all', undefined, () => void fitView({ ...FIT_ALL_OPTIONS, duration: 200 }), <Icon name="map" />)}
       {props.onTidy && btn(props.tidySelection ? 'Tidy selection' : 'Tidy board', undefined, props.onTidy, <Icon name="arrange" />)}
       <span className={SEP} aria-hidden="true" />

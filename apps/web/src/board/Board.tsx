@@ -94,7 +94,7 @@ import { useTheme } from '../ui/theme';
 import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
 import { boxOf, clearSpot, onGrid, presetBlock, tidyPositions, tidySelectionPositions } from './tidy';
-import { CanvasToolbar, MultiSelect, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
+import { CanvasToolbar, MultiSelect, fitOptions, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
@@ -1230,7 +1230,7 @@ function BoardCanvas(props: {
     setTimeout(() => setTidying(false), 320);
     show(withPositions(docRef.current, moves), true);
     setToast(selection ? `${picked.length} panels tidied` : 'Board tidied');
-    if (!selection) requestAnimationFrame(() => void flow.current?.fitView({ ...FIT_OPTIONS, duration: 200 }));
+    if (!selection) requestAnimationFrame(() => void flow.current?.fitView({ ...fitOptions(), duration: 200 }));
   };
 
   /**
@@ -1510,7 +1510,7 @@ function BoardCanvas(props: {
             edgesFocusable={false}
             deleteKeyCode={null}
             fitView
-            fitViewOptions={FIT_OPTIONS}
+            fitViewOptions={fitOptions()}
             // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
             panOnScroll
             zoomOnScroll={false}
