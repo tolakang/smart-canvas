@@ -93,7 +93,7 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await drag(page.locator(`.react-flow__edge[data-id="${wire}"] .react-flow__edgeupdater-target`), await emptySpot());
     await expect.poll(compositionWires).not.toContain(id);
     expect((await doc()).outputs.find((o) => o.id === id)?.frozen).toBeDefined();
-    await expect.poll(() => preset().locator(`[data-output="${id}"]`).innerText()).toContain('disconnected');
+    await expect.poll(() => preset().locator(`[data-output="${id}"]`).innerText()).toContain('Disconnected');
     await drag(preset().locator(`.react-flow__handle[data-handleid="row:${id}"]`), page.locator(`.react-flow__node-outputNode[data-id="out:${id}"] .sc-handle--composition`));
     await expect.poll(compositionWires).toContain(id);
   }, 60_000);
