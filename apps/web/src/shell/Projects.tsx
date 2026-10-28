@@ -230,7 +230,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
   );
 
   return (
-    <section className="sc-home mx-auto my-0 max-w-[1180px] px-28 pt-18 pb-64 max-md:min-h-dvh max-md:[align-content:start] max-md:px-12 max-md:pt-10 max-md:pb-40">
+    <main className="sc-home mx-auto my-0 max-w-[1180px] px-28 pt-18 pb-64 max-md:min-h-dvh max-md:[align-content:start] max-md:px-12 max-md:pt-10 max-md:pb-40">
       <nav className="sc-home__nav flex h-56 items-center gap-14 rounded-[16px] border border-[color-mix(in_srgb,var(--line)_80%,transparent)] bg-glass py-0 pr-10 pl-14 [backdrop-filter:blur(16px)] [box-shadow:var(--shadow-2)]" aria-label="App">
         <span className={BRAND}>
           <BrandMark />
@@ -369,7 +369,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
       )}
       {showTeam && <TeamDialog teamId={team.id} teamName={team.name} userId={props.userId} isAdmin={team.role === 'admin'} onClose={() => setShowTeam(false)} />}
       {showPresets && <PresetsDialog teamId={team.id} isAdmin={team.role === 'admin'} onClose={() => setShowPresets(false)} />}
-    </section>
+    </main>
   );
 }
 

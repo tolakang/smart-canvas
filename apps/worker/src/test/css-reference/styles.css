@@ -1,4 +1,4 @@
-/* The app's CSS at 573c9977d373ebea1827723918d2bd140a81e68b (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at aabdcee3acd5615c9f799bbee9984c25647456a8 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -3810,6 +3810,29 @@
 
   .hover\:\[background\:var\(--fig-hover\)\]:hover {
     background: var(--fig-hover);
+  }
+
+  .focus\:not-sr-only:focus {
+    clip-path: none;
+    white-space: normal;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    position: static;
+    overflow: visible;
+  }
+
+  .focus\:fixed:focus {
+    position: fixed;
+  }
+
+  .focus\:top-12:focus {
+    top: 12px;
+  }
+
+  .focus\:left-12:focus {
+    left: 12px;
   }
 
   .focus\:\[box-shadow\:0_0_0_3px_var\(--ring\)\]:focus {

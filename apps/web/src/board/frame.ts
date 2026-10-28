@@ -8,6 +8,9 @@
  *  bottom bar show, which pushed the top bar or the canvas toolbar out of view. The page itself never scrolls. */
 export const BOARD =
   'sc-board flex h-dvh flex-col pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-0 pl-[env(safe-area-inset-left)] [background:var(--ambient)]';
+/** WCAG 2.4.1: the skip link, shown only while it has keyboard focus. */
+export const SKIP =
+  'sc-skip sr-only z-50 rounded-md bg-fg px-12 py-8 text-sm font-[600] text-bg focus:not-sr-only focus:fixed focus:top-12 focus:left-12';
 export const CANVAS = 'sc-board__canvas relative flex min-h-0 flex-1 gap-12 px-12 pt-10 pb-12 max-md:p-6';
 /** The board itself: a glass card on the backdrop (darker glass in the dark theme). */
 export const FLOW =

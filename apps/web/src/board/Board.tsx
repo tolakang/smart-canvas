@@ -112,7 +112,7 @@ import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 import { ADD, COUNT, COUNTS, GHOST, GROUP_ADD, GROUP_END, GROUP_START, ICON, NAME, PRIMARY, SAVE_BUTTON, SAVE_LONG, SAVE_SHORT, saveClass, saveDotClass, SEP, TOPBAR } from './topbar';
-import { BOARD, CANVAS, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON, VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
+import { BOARD, CANVAS, SKIP, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON, VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
 
 interface Loaded {
   rev: number;
@@ -1337,6 +1337,17 @@ function BoardCanvas(props: {
 
   return (
     <div className={BOARD}>
+      {/* WCAG 2.4.1: past the top bar to the board in one key press (a hash link would change the app's route). */}
+      <a
+        href="#board"
+        className={SKIP}
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById('board')?.focus();
+        }}
+      >
+        Skip to board
+      </a>
       <header className={TOPBAR}>
         <div className={GROUP_START}>
           <button type="button" className={ICON} onClick={props.onBack} aria-label="Back to projects" title="All projects">
@@ -1461,7 +1472,10 @@ function BoardCanvas(props: {
           </span>
         </div>
       )}
-      <div
+      <main
+        id="board"
+        tabIndex={-1}
+        aria-label="Board"
         className={CANVAS}
         // A file dropped outside an input must not make the browser open it (and leave the board).
         onDragOver={(e) => e.dataTransfer.types.includes('Files') && e.preventDefault()}
@@ -1662,7 +1676,7 @@ function BoardCanvas(props: {
           {editingMain && <MainEditor compositionId={editingMain} onClose={() => setEditingMain(null)} />}
           {editingOutput && <OutputEditor outputId={editingOutput} comments={outputComments} onClose={() => setEditingOutput(null)} />}
         </BoardContext.Provider>
-      </div>
+      </main>
       {reconnecting && (
         <ReconnectDialog
           label={doc.outputs.find((o) => o.id === reconnecting.outputId)?.label ?? 'Preview'}
