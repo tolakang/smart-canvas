@@ -1,4 +1,4 @@
-/* The app's CSS at 6894419b9c4b4602a56365e5902c9646c874bdfa (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at b81afe203e9d793f3e3bf4e7d9001ca11e150e9b (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -1488,6 +1488,10 @@
 
   .border-line-strong {
     border-color: var(--line-strong);
+  }
+
+  .border-muted {
+    border-color: var(--muted);
   }
 
   .border-ok {
@@ -3207,16 +3211,16 @@
     }
   }
 
-  .\[border\:1px_solid_transparent\] {
-    border: 1px solid #0000;
-  }
-
   .\[border\:1px_solid_var\(--fig-line\)\] {
     border: 1px solid var(--fig-line);
   }
 
   .\[border\:1px_solid_var\(--line\)\] {
     border: 1px solid var(--line);
+  }
+
+  .\[border\:1px_solid_var\(--line-strong\)\] {
+    border: 1px solid var(--line-strong);
   }
 
   .\[border\:1px_solid_var\(--line-strong\)\]\! {
@@ -4410,8 +4414,8 @@
     border-style: solid;
   }
 
-  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:border-transparent :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
-    border-color: #0000;
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:border-line-strong :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    border-color: var(--line-strong);
   }
 
   .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:bg-surface-2 :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
@@ -4486,8 +4490,8 @@
     border-radius: 5px;
   }
 
-  .\[\&_\:is\(select\,input\[type\=number\]\)\]\:\[border-color\:transparent\] :is(select, input[type="number"]) {
-    border-color: #0000;
+  .\[\&_\:is\(select\,input\[type\=number\]\)\]\:\[border-color\:var\(--line-strong\)\] :is(select, input[type="number"]) {
+    border-color: var(--line-strong);
   }
 
   .\[\&_\:is\(select\,input\[type\=number\]\)\]\:\[background-color\:var\(--fig-hover\)\] :is(select, input[type="number"]) {
@@ -4526,16 +4530,16 @@
     background-color: var(--surface);
   }
 
-  .\[\&_\:is\(select\,textarea\)\:hover\:not\(\:focus\)\]\:border-line-strong :is(select, textarea):hover:not(:focus) {
-    border-color: var(--line-strong);
+  .\[\&_\:is\(select\,textarea\)\:hover\:not\(\:focus\)\]\:border-muted :is(select, textarea):hover:not(:focus) {
+    border-color: var(--muted);
   }
 
   .\[\&_\:is\(select\,textarea\)\:not\(\:focus\)\]\:bg-surface-2 :is(select, textarea):not(:focus) {
     background-color: var(--surface-2);
   }
 
-  .\[\&_\:is\(select\,textarea\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-transparent :is(select, textarea):not(:hover):not(:focus) {
-    border-color: #0000;
+  .\[\&_\:is\(select\,textarea\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-line-strong :is(select, textarea):not(:hover):not(:focus) {
+    border-color: var(--line-strong);
   }
 
   .\[\&_\:is\(td\,th\)\]\:px-4 :is(td, th) {
@@ -4779,12 +4783,16 @@
     font-size: 14px;
   }
 
-  .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\]\:border-transparent input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]) {
-    border-color: #0000;
-  }
-
   .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\]\:bg-surface-2 input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]) {
     background-color: var(--surface-2);
+  }
+
+  .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\:hover\:not\(\:focus\)\]\:border-muted input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]):hover:not(:focus) {
+    border-color: var(--muted);
+  }
+
+  .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-line-strong input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]):not(:hover):not(:focus) {
+    border-color: var(--line-strong);
   }
 
   .\[\&_input\[type\=color\]\]\:size-\(--field-h\) input[type="color"] {
@@ -4974,8 +4982,8 @@
     background: var(--fig-hover);
   }
 
-  .\[\&\:hover\:not\(\:focus-within\)\]\:\[border-color\:var\(--fig-line\)\]:hover:not(:focus-within) {
-    border-color: var(--fig-line);
+  .\[\&\:hover\:not\(\:focus-within\)\]\:\[border-color\:var\(--muted\)\]:hover:not(:focus-within) {
+    border-color: var(--muted);
   }
 
   .\[\&\:hover\:not\(\[aria-pressed\=true\]\)\]\:bg-surface-2:hover:not([aria-pressed="true"]) {
@@ -6740,7 +6748,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-node__preview .sc-thumb:not(.sc-thumb--empty) { display: block; width: auto; height: auto; max-width: 100%; max-height: 140px; }
 .sc-node__preview .sc-thumb--empty, .sc-node__preview .sc-swatch { width: 100%; }
 .sc-node__preview .sc-thumb--empty { height: 72px; text-align: center; padding: 0 var(--sp-2); }
-.sc-thumb--upload { cursor: pointer; border-style: dashed; }
+.sc-thumb--upload { cursor: pointer; border-style: dashed; border-color: var(--muted); }
 .sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
 .sc-node .sc-render--thumb { max-width: 100%; }
 .sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }
