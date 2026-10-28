@@ -43,6 +43,13 @@ describe('OutputRenderer', () => {
     expect(html(scene, sources, 1, 'preview')).toContain('sc-render__placeholder');
   });
 
+  it('an empty text layer: a placeholder in preview (D68, so the editors show it), nothing in export', () => {
+    const blank = src('headline', { content: { kind: 'text', text: '  ', style: DEFAULT_TEXT_STYLE } });
+    const one: RenderScene = { width: 100, height: 100, items: [{ sourceId: 'headline', frame: { x: 10, y: 10, w: 80, h: 20 } }] };
+    expect(html(one, [blank], 1, 'preview')).toContain('sc-render__placeholder');
+    expect(order(html(one, [blank]))).toEqual([]);
+  });
+
   it('covers for backgrounds, contains otherwise', () => {
     const bg = src('subject', { id: 'photo', behavesLike: 'background', content: { kind: 'image', assetId: 'p', focal: { x: 0.5, y: 0.5 } } });
     expect(html({ width: 10, height: 10, items: [{ sourceId: 'photo', frame: { x: 0, y: 0, w: 10, h: 10 } }] }, [bg])).toContain(
