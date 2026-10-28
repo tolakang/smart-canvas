@@ -53,6 +53,8 @@ export interface BoardActions {
   setStackFocus: (sourceId: string | null) => void;
   /** Applies a core source operation; returns its error, if any. `silent` skips the undo step (metadata saves). */
   run: (op: (doc: ProjectDoc) => SourceResult, opts?: { silent?: boolean }) => SourceResult;
+  /** UX B2: adds a Preset node of a family's sizes (null: a custom one) under the Main Comps group. */
+  addSizes: (family: string | null) => void;
 }
 
 export const BoardContext = createContext<BoardActions | null>(null);

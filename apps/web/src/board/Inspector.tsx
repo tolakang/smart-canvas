@@ -347,6 +347,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
 function ProjectOverview({ onHide }: { onHide?: () => void }) {
   const { doc, review, approvals, exportOutputs, readOnly } = useBoard();
   const previews = doc.outputs.length;
+  const hasArtwork = doc.sources.some((s) => (s.content.kind === 'image' || s.content.kind === 'vector' ? Boolean(s.content.assetId) : s.content.kind === 'text' && s.content.text.trim() !== ''));
   const approved = doc.outputs.filter((o) => approvals.get(o.id)?.state === 'approved').length;
   const open = (review?.comments ?? []).filter((c) => !c.parentId && !c.resolvedAt && doc.outputs.some((o) => o.id === c.outputId)).length;
   const stats = [
@@ -368,6 +369,27 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
           )}
         </div>
         <p className={`sc-muted ${HINT}`}>Nothing selected. Click a panel on the board to see its settings here.</p>
+        {!readOnly && previews === 0 && (
+          // UX B2 (F3): a new project's three steps, the next one marked.
+          <ol className="sc-overview__steps m-0 grid list-none gap-6 p-0 text-[12.5px]" aria-label="Getting started">
+            {[
+              { label: 'Add your artwork to the asset nodes', done: hasArtwork },
+              { label: 'Add sizes in the Export Group', done: false },
+              { label: 'Export', done: false },
+            ].map((step, i, all) => {
+              const next = !step.done && all.slice(0, i).every((s) => s.done);
+              return (
+                <li key={step.label} className={`flex items-center gap-8 ${step.done ? 'text-muted line-through' : next ? 'font-[600] text-fg' : 'text-muted'}`} aria-current={next ? 'step' : undefined}>
+                  <span className={`grid size-20 flex-none place-items-center rounded-[50%] text-[11px] font-[700] ${step.done ? 'bg-ok-soft text-ok' : next ? 'bg-accent text-on-accent' : 'bg-surface-2'}`} aria-hidden="true">
+                    {step.done ? <Icon name="check" size={12} /> : i + 1}
+                  </span>
+                  {step.label}
+                  {step.done && <span className="sr-only">(done)</span>}
+                </li>
+              );
+            })}
+          </ol>
+        )}
         <dl className={STATS}>
           {stats.map((s) => (
             <div key={s.label} className={STAT}>

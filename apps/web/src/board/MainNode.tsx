@@ -15,6 +15,7 @@ import {
   LAYER_GROUP_LABEL,
   layerComp,
   moveLayerGroup,
+  presetFamilies,
   setOutputLayout,
   wiredLayers,
   type GuideFamily,
@@ -51,6 +52,9 @@ const COUNT = 'min-w-22 rounded-[99px] bg-surface px-7 py-1 text-center text-[11
 const SECTION = 'grid gap-8 rounded-[14px] border p-12 [transition:border-color_var(--t-fast),background_var(--t-fast)]';
 const CHIP =
   'inline-flex max-w-full cursor-grab items-center gap-4 rounded-[99px] border bg-surface px-10 py-5 text-[12px] font-[550] [box-shadow:0_1px_1px_rgb(16_24_40/0.04)]';
+/** UX B2: a size family to add, in the empty Export Group. */
+const ADD_CHIP =
+  'inline-flex h-30 cursor-pointer items-center gap-6 rounded-[99px] border border-line-strong bg-surface px-11 text-[12px] font-[600] text-fg hover:border-accent hover:text-accent';
 const CHIP_RESET =
   'sc-rule__chip-reset mr-[-4px] grid size-18 cursor-pointer place-items-center rounded-[50%] bg-transparent p-0 [color:inherit] [border:0] hover:bg-accent-soft';
 
@@ -67,7 +71,7 @@ export function useOpenLayout(compositionId: string) {
 }
 
 export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
-  const { readOnly, run, doc, missingFonts } = useBoard();
+  const { readOnly, run, doc, missingFonts, presets, addSizes } = useBoard();
   const { compositionId } = data;
   const health = useMemo(() => compositionHealth(doc, compositionId, missingFonts), [doc, compositionId, missingFonts]);
   const [dropAt, setDropAt] = useState<number | null>(null);
@@ -146,8 +150,30 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
       </section>
 
       <section className={cardClass('rule')} aria-label="Export Group">
-        <NodeHead icon="grid" tone="[--head:var(--head-rule)]" title="Export Group" sub={`${previewCount} ${previewCount === 1 ? 'Preview' : 'Previews'} · sorted by shape`} />
-        {/* D50: each Preview in its layout's section (closest shape, or as chosen); drag one into another section. */}
+        <NodeHead icon="grid" tone="[--head:var(--head-rule)]" title="Export Group" sub={previewCount ? `${previewCount} ${previewCount === 1 ? 'Preview' : 'Previews'} · sorted by shape` : 'No sizes yet'} />
+        {previewCount === 0 ? (
+          // UX B2 (F3): no Previews yet — the size families as one-tap chips, not three empty drop sections.
+          <div className={`sc-rule__empty-state grid gap-8 ${NO_DRAG}`}>
+            <p className="m-0 text-[12.5px] text-muted">{readOnly ? 'No sizes yet.' : 'Pick the sizes to make. Each one becomes a Preview.'}</p>
+            {!readOnly && (
+              <ul className="sc-rule__families m-0 flex list-none flex-wrap gap-6 p-0" aria-label="Add sizes">
+                {presetFamilies(presets).map((f) => (
+                  <li key={f.label}>
+                    <button type="button" className={ADD_CHIP} onClick={() => addSizes(f.label)} aria-label={`Add ${f.label} sizes (${f.presets.length})`}>
+                      {f.label} <span className="text-muted font-[500]">{f.presets.length}</span>
+                    </button>
+                  </li>
+                ))}
+                <li>
+                  <button type="button" className={`${ADD_CHIP} border-dashed text-accent`} onClick={() => addSizes(null)}>
+                    <Icon name="plus" size={12} /> Custom size…
+                  </button>
+                </li>
+              </ul>
+            )}
+          </div>
+        ) : (
+        /* D50: each Preview in its layout's section (closest shape, or as chosen); drag one into another section. */
         <div className={`sc-rule__sections grid gap-10 ${NO_DRAG}`} role="list" aria-label="Export Group">
           {guides.map((g) => (
             <section
@@ -190,6 +216,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
             </section>
           ))}
         </div>
+        )}
       </section>
       <Handle type="source" position={Position.Bottom} id={OUTPUT_HANDLE} isConnectable={!readOnly} className="sc-handle--composition" title="Drag out to add a Preset node (FB, GDN, Website…)" />
     </div>

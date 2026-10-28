@@ -288,6 +288,7 @@ function BoardCanvas(props: {
   /** D49: the page-3 shape is applied once, when the project opens. */
   const structured = useRef(false);
   const presetItemsRef = useRef<(at: { x: number; y: number }) => MenuItem[]>(() => []);
+  const addSizesRef = useRef<(family: string | null) => void>(() => undefined);
   const [doc, setDoc] = useState(initial.doc);
   /** The composition open in the master preview editor (the master or one of its layouts). */
   const [editingMain, setEditingMain] = useState<string | null>(null);
@@ -734,6 +735,7 @@ function BoardCanvas(props: {
       stackFocus,
       setStackFocus,
       run,
+      addSizes: (family: string | null) => addSizesRef.current(family),
     }),
     [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );
@@ -1064,8 +1066,17 @@ function BoardCanvas(props: {
     ];
   };
 
+  /** UX B2: the Export Group's "Add sizes" chips — a Preset node placed under the Main Comps group. */
+  const addSizes = (family: string | null) => {
+    const main = nodesRef.current.find((n) => n.id === MAIN_ID);
+    const at = main ? { x: main.position.x, y: main.position.y + (main.measured?.height ?? 400) + 120 } : { x: 0, y: 0 };
+    if (family) addSet(family, at);
+    else run((d) => addPresetSet(d, { id: newId(), label: window.prompt('Preset name', 'Custom')?.trim() || 'Custom', board: clearAt(at, 1), sizes: [] }));
+  };
+
   useEffect(() => {
     presetItemsRef.current = presetItems;
+    addSizesRef.current = addSizes;
   });
 
   /** D49 (page 3): what can be added on the board — the asset nodes, then the Preset nodes. */
@@ -1403,7 +1414,7 @@ function BoardCanvas(props: {
               aria-label="Export"
               onClick={() => void autosave.flush().then(() => setExporting({}))}
               disabled={outputCount === 0}
-              title={outputCount === 0 ? 'Add a Preview first' : 'Export Previews'}
+              title={outputCount === 0 ? 'Add sizes first: pick them in the Export Group' : 'Export Previews'}
             >
               <Icon name="export" /> Export
             </button>
