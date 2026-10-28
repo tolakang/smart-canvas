@@ -1,4 +1,4 @@
-/* The app's CSS at b81afe203e9d793f3e3bf4e7d9001ca11e150e9b (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 02855136402792faaf634c9d7711b1bca26345ec (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -139,10 +139,6 @@
 
   .top-\[50\%\] {
     top: 50%;
-  }
-
-  .top-\[calc\(100\%\+6px\)\] {
-    top: calc(100% + 6px);
   }
 
   .-right-4 {
@@ -880,10 +876,6 @@
     min-width: 18px;
   }
 
-  .min-w-20 {
-    min-width: 20px;
-  }
-
   .min-w-22 {
     min-width: 22px;
   }
@@ -1116,6 +1108,10 @@
     align-items: flex-start;
   }
 
+  .items-stretch {
+    align-items: stretch;
+  }
+
   .justify-between {
     justify-content: space-between;
   }
@@ -1166,6 +1162,10 @@
 
   .gap-4 {
     gap: 4px;
+  }
+
+  .gap-5 {
+    gap: 5px;
   }
 
   .gap-6 {
@@ -1230,6 +1230,10 @@
 
   .justify-self-center {
     justify-self: center;
+  }
+
+  .justify-self-start {
+    justify-self: flex-start;
   }
 
   .overflow-auto {
@@ -4723,6 +4727,18 @@
     object-fit: contain;
   }
 
+  .\[\&_input\]\:sr-only input {
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    position: absolute;
+    overflow: hidden;
+  }
+
   .\[\&_input\]\:h-26 input {
     height: 26px;
   }
@@ -4839,6 +4855,54 @@
 
   .\[\&_input\[type\=color\]\]\:\[border\:1px_solid_var\(--line\)\] input[type="color"] {
     border: 1px solid var(--line);
+  }
+
+  .\[\&_label\]\:relative label {
+    position: relative;
+  }
+
+  .\[\&_label\]\:inline-flex label {
+    display: inline-flex;
+  }
+
+  .\[\&_label\]\:cursor-pointer label {
+    cursor: pointer;
+  }
+
+  .\[\&_label\]\:items-center label {
+    align-items: center;
+  }
+
+  .\[\&_label\]\:rounded-sm label {
+    border-radius: var(--r-sm);
+  }
+
+  .\[\&_label\]\:px-\(--sp-2\) label {
+    padding-inline: var(--sp-2);
+  }
+
+  .\[\&_label\]\:text-xs label {
+    font-size: var(--fs-xs);
+  }
+
+  .\[\&_label\]\:text-muted label {
+    color: var(--muted);
+  }
+
+  .\[\&_label\:has\(\:checked\)\]\:bg-surface label:has(:checked) {
+    background-color: var(--surface);
+  }
+
+  .\[\&_label\:has\(\:checked\)\]\:text-fg label:has(:checked) {
+    color: var(--fg);
+  }
+
+  .\[\&_label\:has\(\:checked\)\]\:\[box-shadow\:var\(--shadow-1\)\] label:has(:checked) {
+    box-shadow: var(--shadow-1);
+  }
+
+  .\[\&_label\:has\(\:focus-visible\)\]\:\[outline\:2px_solid_var\(--accent\)\] label:has(:focus-visible) {
+    outline: 2px solid var(--accent);
   }
 
   .\[\&_select\]\:w-full select {
