@@ -30,7 +30,7 @@ export function AskDialog({ ask, onDone, fieldClass = '' }: { ask: AskSpec; onDo
   return (
     <dialog ref={ref} className={DIALOG} aria-labelledby="ask-title" onCancel={() => onDone(null)}>
       <form className="sc-card sc-ask grid" onSubmit={submit}>
-        <h2 id="ask-title">{ask.title}</h2>
+        <h1 id="ask-title">{ask.title}</h1>
         {ask.message && <p className="sc-muted m-0">{ask.message}</p>}
         {ask.input && (
           <label className={`sc-field sc-field--col ${fieldClass}`}>

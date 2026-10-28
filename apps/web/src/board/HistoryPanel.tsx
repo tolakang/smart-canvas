@@ -109,7 +109,7 @@ export function HistoryPanel(props: {
       </div>
       {!props.readOnly && !props.previewing && (
         <form className={`${SECTION} sc-history__name grid-cols-[1fr_auto] items-center`} onSubmit={(e) => void name(e)}>
-          <input aria-label="Version name" placeholder="Name this version, e.g. Sent to client" maxLength={100} value={naming} onChange={(e) => setNaming(e.target.value)} />
+          <input aria-label="Version name" placeholder="e.g. Sent to client" maxLength={100} value={naming} onChange={(e) => setNaming(e.target.value)} />
           <button type="submit" className="sc-btn" disabled={!naming.trim()}>
             Save version
           </button>

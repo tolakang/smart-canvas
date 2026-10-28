@@ -276,7 +276,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
                   <li key={t.id} className="sc-tcard relative rounded-[16px] border border-line bg-surface [box-shadow:var(--shadow-1)] [transition:transform_var(--t-med),box-shadow_var(--t-med)] hover:border-line-strong hover:[transform:translateY(-2px)] hover:[box-shadow:var(--shadow-3)]" data-template={t.name}>
                     <button type="button" className="sc-tcard__main grid w-full grid-cols-[auto_1fr] items-center justify-items-start gap-x-12 gap-y-(--sp-1) rounded-[inherit] py-14 pr-44 pl-14 text-left text-inherit [background:none] [border:0]" onClick={() => (canEdit ? setCreating({ templateId: t.id }) : props.onOpen(t.id))} aria-label={canEdit ? `New project from ${t.name}` : `View template ${t.name}`}>
                       <Cover teamId={team.id} row={t} spot="card" />
-                      <span className="sc-tcard__name max-w-full overflow-hidden font-[600] text-ellipsis whitespace-nowrap">{t.name}</span>
+                      <span className="sc-tcard__name max-w-full font-[600] [overflow-wrap:anywhere]">{t.name}</span>
                       <span className="sc-rows__meta">{canEdit ? 'Use template' : 'Template'}</span>
                     </button>
                     {more(t, 'card')}
@@ -416,7 +416,7 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
   return (
     <dialog ref={ref} className={DIALOG} aria-labelledby="new-project-title" onCancel={props.onClose}>
       <form className="sc-card sc-ask sc-newproj grid" onSubmit={submit}>
-        <h2 id="new-project-title">New project</h2>
+        <h1 id="new-project-title">New project</h1>
         <label className="sc-field sc-field--col">
           Name
           <input placeholder="New project name" value={name} autoFocus maxLength={200} required onChange={(e) => setName(e.target.value)} />

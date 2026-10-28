@@ -84,9 +84,9 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
   const dropGroup = (group: LayerGroup, to: number) => run((d) => ({ ok: true, doc: moveLayerGroup(d, group, to) }));
 
   return (
-    <div className={GROUP} aria-label="Layer comp and core preset">
+    <div className={GROUP} aria-label="Layer Comp and Core preset">
       <Handle type="target" position={Position.Top} id={LAYERS_HANDLE} isConnectable={!readOnly} className="sc-handle--layer" title="Asset nodes wire in here" />
-      <section className={cardClass('main')} aria-label="Layer comp">
+      <section className={cardClass('main')} aria-label="Layer Comp">
         <NodeHead icon="arrange" tone="[--head:var(--head-master)]" title="Layer Comp" sub={`${layerCount} ${layerCount === 1 ? 'layer' : 'layers'} · front to back`} extra={<HealthBadge health={health} />} />
         <div className={LABEL}>Layer order</div>
         <ol className={`sc-comp__groups m-0 grid list-none gap-6 p-0 ${NO_DRAG}`} aria-label="Layer order (front first)">

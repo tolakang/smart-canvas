@@ -54,7 +54,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
         </span>
         <div className="sc-auth__pitch max-w-[520px]">
           <h2 className="mt-0 mb-14 text-[40px] leading-[1.08] font-[750] tracking-[-0.03em]">One master artwork. Every size, on brand.</h2>
-          <p className="m-0 text-[16px] leading-[1.55] text-[rgb(255_255_255/0.78)]">Design once in the Layer Comp, and every Facebook post, story, banner and print size lays itself out — Khmer and English alike.</p>
+          <p className="m-0 text-[16px] leading-[1.55] text-[rgb(255_255_255/0.78)]">Design one master artwork, and every Facebook post, story, banner and print size lays itself out — Khmer and English alike.</p>
         </div>
         <div className="sc-auth__art relative h-200">
           <span className={`sc-auth__frame sc-auth__frame--a ${FRAME} bottom-0 left-0 h-190 w-150`} />

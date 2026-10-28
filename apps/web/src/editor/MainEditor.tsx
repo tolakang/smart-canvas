@@ -51,7 +51,7 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
       label="Layer Comp editor"
       title={
         <>
-          <strong>{main.label}</strong>
+          <strong>Layer Comp</strong>
           <span className="sc-muted">
             {main.size.width} × {main.size.height} {main.size.unit}
           </span>

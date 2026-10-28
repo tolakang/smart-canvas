@@ -37,7 +37,7 @@ function PdfPageDialog({ name, pdf, onDone }: { name: string; pdf: OpenPdf; onDo
   return (
     <dialog ref={ref} className={DIALOG} aria-labelledby="pdf-page-title" onCancel={() => onDone(null)}>
       <div className="sc-card sc-pdfpages grid grid-rows-[auto_auto_minmax(0,1fr)_auto]">
-        <h2 id="pdf-page-title">Which page?</h2>
+        <h1 id="pdf-page-title">Which page?</h1>
         <p className="sc-muted">
           {name} has {pdf.pages} pages. Pick the one to use.
         </p>
