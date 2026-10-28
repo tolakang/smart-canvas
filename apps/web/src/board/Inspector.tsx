@@ -49,9 +49,10 @@ import { NumberField } from '../ui/NumberField';
 import { compositionIdOfNode, inputNodeId, outputNodeId, pairNodeId, setIdOfNode, stackNodeId } from './flow';
 import { useSaveAsFamily } from './preset-save';
 import { HEALTH_PILL, HealthIssues, healthSummary } from './HealthBadge';
-import { confirmDelete, Icon } from './LayerRow';
+import { confirmDelete, Icon, KIND_LABEL } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
 import { FAMILY_LABEL, useOpenLayout } from './MainNode';
+import { nameWithoutSize } from './OutputNode';
 import { OUTPUT_ROW, OutputSettings } from './OutputSettings';
 import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
 
@@ -60,7 +61,6 @@ const DELETE_NODE = 'sc-btn sc-btn--ghost sc-btn--danger justify-self-start';
 /** UX A7: the language switch — two segments; the chosen one raised. */
 const SWITCH =
   'items-stretch [&_label]:relative [&_label]:inline-flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:rounded-sm [&_label]:px-(--sp-2) [&_label]:text-xs [&_label]:text-muted [&_label:has(:checked)]:bg-surface [&_label:has(:checked)]:text-fg [&_label:has(:checked)]:[box-shadow:var(--shadow-1)] [&_label:has(:focus-visible)]:[outline:2px_solid_var(--accent)] [&_input]:sr-only';
-const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
 /** A picture of an asset node, in the inspector's grid: contained on a checkerboard. */
 const PICK =
   'sc-assets__pick grid aspect-square size-full cursor-pointer [grid-template:minmax(0,1fr)/minmax(0,1fr)] place-items-center rounded-md border border-line p-2 [background:repeating-conic-gradient(var(--checker-a)_0_25%,var(--checker-b)_0_50%)_0_0/12px_12px]';
@@ -229,7 +229,7 @@ function InputActions({ source }: { source: InputSource }) {
           <Icon name={saved === 'saved' ? 'check' : 'library'} /> {saved === 'saved' ? 'Saved to library' : saved === 'failed' ? 'Try again' : 'Save to library'}
         </button>
         <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${source.label}`} onClick={() => confirmDelete(source.label) && run((d) => deleteSource(d, source.id))}>
-          <Icon name="trash" /> Delete
+          <Icon name="trash" /> Delete layer
         </button>
       </div>
       <p className={`sc-muted ${HINT}`}>Or select nodes and press Delete.</p>
@@ -269,6 +269,13 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
   );
 }
 
+/** What an asset node holds, in its own words: logos, pictures or text slots; none yet says how to add one. */
+function assetsHint(kind: 'logo' | 'image' | 'text', n: number): string {
+  const [one, many] = kind === 'text' ? ['text slot', 'text slots'] : kind === 'logo' ? ['logo', 'logos'] : ['picture', 'pictures'];
+  if (n === 0) return kind === 'text' ? 'No text slots yet. Add one on the node.' : `No ${many} yet. Drop files on the node.`;
+  return `${n} ${n === 1 ? one : many}, each its own layer. ${kind === 'text' ? 'Add more on the node.' : 'Drop more files on the node.'}`;
+}
+
 /** D40: an Assets card — its name and pictures; the picture picked on the card (or here) is set below. */
 function AssetsInspector({ stackId }: { stackId: string }) {
   const { doc, run, readOnly, stackFocus, setStackFocus, teamId } = useBoard();
@@ -282,7 +289,7 @@ function AssetsInspector({ stackId }: { stackId: string }) {
       <Section title={`${STACK_LABEL[kind]} node`}>
         <NameField label={`${STACK_LABEL[kind]} node name`} value={stack.label} onCommit={(label) => run((d) => renameStack(d, stack.id, label))} />
         <p className={HINT}>
-          {items.length} {kind === 'text' ? (items.length === 1 ? 'text slot' : 'text slots') : items.length === 1 ? 'picture' : 'pictures'}, each its own layer.{kind === 'text' ? ' Add slots on the node.' : ' Drop more files on the node.'}
+          {assetsHint(kind, items.length)}
         </p>
         {items.length > 0 && (
           <div className="sc-assets sc-assets--inspector my-8 grid list-none p-0 grid-cols-[repeat(2,minmax(0,1fr))] gap-12" role="list" aria-label={kind === 'text' ? 'Text slots' : 'Pictures'}>
@@ -352,7 +359,7 @@ function PresetInspector({ setId }: { setId: string }) {
         <ul className="sc-preset-inspector__sizes m-0 grid list-none gap-2 p-0 text-[12.5px]" aria-label="Sizes">
           {outputs.map((o) => (
             <li key={o.id} className="flex justify-between gap-8">
-              <span className="overflow-hidden text-ellipsis whitespace-nowrap">{o.label}</span>
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap">{nameWithoutSize(o.label) || 'Custom size'}</span>
               <span className="flex-none text-muted [font-variant-numeric:tabular-nums]">
                 {o.size.width} × {o.size.height} {o.size.unit}
               </span>
