@@ -76,7 +76,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
           <Icon name="plus" /> Add text
         </button>
       )}
-      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire every text into the Layer Comp" />
+      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="sc-handle--layer" title="Wire every text into Main Comps" />
     </div>
   );
 }

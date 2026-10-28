@@ -13,7 +13,7 @@ export function healthSummary(h: Health): string {
   if (h.level === 'error') return `${n} ${n === 1 ? 'problem' : 'problems'}`;
   if (h.level === 'warning') return `${n} ${n === 1 ? 'warning' : 'warnings'}`;
   if (h.level === 'empty') return `${n} empty ${n === 1 ? 'layer' : 'layers'}`;
-  if (h.level === 'frozen') return 'Frozen: disconnected, layout no longer follows the Layer Comp';
+  if (h.level === 'frozen') return 'Frozen: disconnected, layout no longer follows Main Comps';
   return 'Layout OK';
 }
 

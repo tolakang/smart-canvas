@@ -251,10 +251,10 @@ describe('typed connections (T12.2, D32)', () => {
     const doc = sampleDoc();
     expect(connectionRefusal(doc, { source: 'src:bg', target: MAIN_ID })).toBeNull();
     expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:a4' })).toBeNull();
-    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:ig' })).toBe('This Preview already has a Layer Comp: drag its wire off first.');
+    expect(connectionRefusal(doc, { source: MAIN_ID, target: 'out:ig' })).toBe('This Preview is already wired to Main Comps: drag its wire off first.');
     // D56: no output-only layers.
-    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBe('An input wires into a row of a Layer Comp.');
-    expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of a Layer Comp.');
+    expect(connectionRefusal(doc, { source: 'src:bg', target: 'out:ig', targetHandle: 'p0' })).toBe('An input wires into a row of Main Comps.');
+    expect(connectionRefusal(doc, { source: 'out:ig', target: MAIN_ID })).toBe('An input wires into a row of Main Comps.');
   });
 });
 
@@ -284,7 +284,7 @@ describe('Assets cards on the board (D40)', () => {
   it('a card wires into a master preview only; moving it writes its position', () => {
     const doc = withCard();
     expect(connectionRefusal(doc, { source: stackNodeId('st'), target: MAIN_ID })).toBeNull();
-    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/Layer Comp/);
+    expect(connectionRefusal(doc, { source: stackNodeId('st'), target: 'out:x' })).toMatch(/Main Comps/);
     expect(withPositions(doc, [{ id: stackNodeId('st'), position: { x: 10.4, y: 20.6 } }]).stacks?.[0]?.board).toEqual({ x: 10, y: 21 });
   });
 });

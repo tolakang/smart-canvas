@@ -29,7 +29,7 @@ describe.skipIf(!adminUrl)('CSS parity: tablet and phone', () => {
     await same('tablet-inspector');
     await page.getByRole('button', { name: 'Close inspector' }).click();
     await page.locator('.react-flow__node-mainNode').getByRole('button', { name: /^(Edit|View) Square layout$/ }).click({ force: true });
-    const comp = page.getByRole('dialog', { name: /Layer Comp editor/ });
+    const comp = page.getByRole('dialog', { name: /Main Comps editor/ });
     await comp.waitFor();
     await imagesLoaded();
     await same('tablet-editor');

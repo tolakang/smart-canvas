@@ -106,7 +106,7 @@ describe.skipIf(!adminUrl)('board look (T10.2)', () => {
   it('N1: the inspector names the page-3 nodes — Layer Comp with its three layouts (no "Layout guides"), Text node, Preview', async () => {
     const panel = page.getByRole('complementary', { name: 'Inspector' });
     await page.locator('.sc-node--main .sc-node__title').click();
-    await panel.getByText('Layer Comp', { exact: true }).waitFor();
+    await panel.getByText('Main Comps', { exact: true }).waitFor();
     for (const f of ['Square', 'Vertical', 'Horizontal']) expect(await panel.getByRole('button', { name: `Edit ${f} layout` }).count()).toBe(1);
     expect(await panel.getByText('Layout guides').count()).toBe(0);
     expect(await panel.getByText('Master preview').count()).toBe(0);

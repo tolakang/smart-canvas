@@ -48,7 +48,7 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
     page.once('dialog', (d) => void d.accept('Social'));
     await page.getByRole('button', { name: '+ Add' }).click();
     await page.getByRole('menuitem', { name: 'Custom preset…' }).click();
-    const set = boardNode(page, 'Social Preset');
+    const set = boardNode(page, 'Social');
     await set.waitFor();
     for (const name of ['Instagram portrait 4:5', 'Instagram square', 'A5 flyer']) await set.getByLabel('Add a size to Social').selectOption({ label: name });
     await saved();

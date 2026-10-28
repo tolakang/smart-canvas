@@ -25,7 +25,7 @@ const TIPS: Record<string, string> = {
   'Zoom out': 'Zoom out (Ctrl/⌘ + wheel, or pinch)',
   'Zoom in': 'Zoom in (Ctrl/⌘ + wheel, or pinch)',
   'Fit to screen (Shift+1)': 'Show every panel',
-  'Tidy board': 'Arrange all panels: asset nodes in a row, the Layer Comp under them, Preset nodes and their Previews below',
+  'Tidy board': 'Arrange all panels: asset nodes in a row, Main Comps under them, Preset nodes and their Previews below',
   'Tidy selection': 'Arrange the selected panels in an even grid',
   'Snap to grid': 'Panels snap to the 16 px grid when moved (hold Alt to place one freely)',
   Minimap: 'Show a small map of the whole board',

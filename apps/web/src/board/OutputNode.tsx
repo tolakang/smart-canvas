@@ -161,7 +161,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
       {(guide || bleed > 0) && (
         <div className={`${META} ${META_PILLS}`}>
           {bleed > 0 && `bleed ${bleed} mm`}
-          {guide && <span title="Its layout comes from this layout of the Layer Comp, the closest to its shape (D42)">{guide}</span>}
+          {guide && <span title="Its layout comes from this layout of Main Comps, the closest to its shape (D42)">{guide}</span>}
         </div>
       )}
       {output.overrides.length > 0 && (

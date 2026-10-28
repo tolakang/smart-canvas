@@ -48,10 +48,10 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
   );
   return (
     <CanvasEditor
-      label="Layer Comp editor"
+      label="Main Comps editor"
       title={
         <>
-          <strong>Layer Comp</strong>
+          <strong>Main Comps</strong>
           <span className="sc-muted">
             {main.size.width} × {main.size.height} {main.size.unit}
           </span>

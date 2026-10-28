@@ -18,7 +18,7 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
 
   it('editors: Layer Comp, a Preview, its Comments panel', async () => {
     await page.locator('.react-flow__node-mainNode').getByRole('button', { name: /^(Edit|View) Square layout$/ }).click({ force: true });
-    const comp = page.getByRole('dialog', { name: /Layer Comp editor/ });
+    const comp = page.getByRole('dialog', { name: /Main Comps editor/ });
     await comp.waitFor();
     await imagesLoaded();
     await same('layer-comp-editor');

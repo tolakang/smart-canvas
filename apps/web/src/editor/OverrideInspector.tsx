@@ -36,7 +36,7 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
     <section className={INSPECTOR} aria-label="Overrides">
       <div className={PANEL_TITLE}>{override ? 'Edited by hand on this Preview' : 'Automatic layout'}</div>
       {fields.length === 0 ? (
-        <p className={`sc-muted ${INSPECTOR_NOTE}`}>{override ? 'Same as auto.' : 'No overrides: this layer follows the Layer Comp.'}</p>
+        <p className={`sc-muted ${INSPECTOR_NOTE}`}>{override ? 'Same as auto.' : 'No overrides: this layer follows Main Comps.'}</p>
       ) : (
         <table className={INSPECTOR_TABLE}>
           <thead>
