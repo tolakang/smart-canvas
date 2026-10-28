@@ -107,7 +107,7 @@ export function Slot(p: SlotProps) {
     inUse
       ? 'border-2 border-solid border-accent'
       : empty
-        ? `border-[1.5px] ${over ? 'border-solid' : 'border-dashed'} ${lit ? 'border-accent' : 'border-line-strong group-hover/slot:border-accent'}`
+        ? `border-[1.5px] ${over ? 'border-solid' : 'border-dashed'} ${lit ? 'border-accent' : 'border-muted group-hover/slot:border-accent'}`
         : `border border-solid ${lit ? 'border-accent' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)]'}`,
     inUse || (over && !p.focused) ? RING_4 : p.focused ? RING_3 : '',
     over ? ACCENT_FILL : empty ? '[background:transparent] group-hover/slot:[background:color-mix(in_srgb,var(--accent-soft)_70%,transparent)]' : CHECKER,

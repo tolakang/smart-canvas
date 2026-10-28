@@ -131,7 +131,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
       {!readOnly && (
         // One drop area: click to pick, or drop files anywhere on the card.
         <label
-          className={`${DROPZONE} ${over ? 'border-accent bg-[color-mix(in_srgb,var(--accent-soft)_75%,transparent)]' : 'border-line-strong bg-[color-mix(in_srgb,var(--surface-2)_55%,transparent)]'} ${drop.busy ? 'sc-dropzone--busy cursor-progress' : 'cursor-pointer'} ${NO_CANVAS}`}
+          className={`${DROPZONE} ${over ? 'border-accent bg-[color-mix(in_srgb,var(--accent-soft)_75%,transparent)]' : 'border-muted bg-[color-mix(in_srgb,var(--surface-2)_55%,transparent)]'} ${drop.busy ? 'sc-dropzone--busy cursor-progress' : 'cursor-pointer'} ${NO_CANVAS}`}
           {...FILE_PICK}
         >
           <span className={DROPZONE_ICON} aria-hidden="true">
