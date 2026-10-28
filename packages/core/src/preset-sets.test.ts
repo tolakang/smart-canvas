@@ -20,14 +20,16 @@ const deps = { measure: (t: string, f: number) => t.length * 0.5 * f, assets: {}
 const withSet = () => ok(addPresetSet({ ...project(output()), outputs: [] }, { id: 'gdn', label: 'GDN', board: { x: 800, y: 0 }, sizes: GDN }));
 
 describe('Preset nodes (D46)', () => {
-  it('adds one output per size, all following the master preview, previews in a column to the right', () => {
+  it('adds one output per size, all following the master preview, previews in a grid to the right (D69)', () => {
     const doc = withSet();
     expect(presetSets(doc)).toEqual([{ id: 'gdn', label: 'GDN', board: { x: 800, y: 0 }, outputs: ['g1', 'g2', 'g3'] }]);
     expect(doc.outputs.map((o) => [o.label, o.board])).toEqual([
       ['GDN 1200×628', { x: 1220, y: 0 }],
-      ['GDN 300×250', { x: 1220, y: 380 }],
-      ['GDN 728×90', { x: 1220, y: 760 }],
+      ['GDN 300×250', { x: 1540, y: 0 }],
+      ['GDN 728×90', { x: 1860, y: 0 }],
     ]);
+    // A fourth size starts the next row.
+    expect(ok(addSizeToSet(doc, 'gdn', { id: 'g4', label: 'GDN 320×100', size: px(320, 100) })).outputs.find((o) => o.id === 'g4')?.board).toEqual({ x: 1220, y: 380 });
     for (const o of ['g1', 'g2', 'g3']) expect(outputComposition(doc, o)).toBe('main');
   });
 

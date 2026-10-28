@@ -14,7 +14,7 @@ import { MAIN } from './graph';
 import { addLanguagePair, languagePairs, pairInputs } from './languages';
 import { orderLayers } from './layer-order';
 import type { ProjectDoc } from './model';
-import { PREVIEW_OFFSET } from './preset-sets';
+import { previewSpot } from './preset-sets';
 import { createProjectDoc } from './project';
 import { connectSource } from './ports';
 import { addSource, deleteSource } from './sources';
@@ -73,8 +73,8 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
   const inSets = new Set((next.presetSets ?? []).flatMap((s) => s.outputs));
   const loose2 = next.outputs.filter((o) => !inSets.has(o.id)).map((o) => o.id);
   if (loose2.length) {
-    // Its Previews in a column to its right (as a new Preset node's).
-    const at = new Map(loose2.map((id, i) => [id, { x: BOARD_LAYOUT.preset.x + PREVIEW_OFFSET.x, y: BOARD_LAYOUT.preset.y + i * PREVIEW_OFFSET.rowGap }]));
+    // Its Previews in the grid to its right (as a new Preset node's, D69).
+    const at = new Map(loose2.map((id, i) => [id, previewSpot(BOARD_LAYOUT.preset, i)]));
     next = {
       ...next,
       outputs: next.outputs.map((o) => (at.has(o.id) ? { ...o, board: at.get(o.id) ?? o.board } : o)),

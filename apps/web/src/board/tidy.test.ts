@@ -27,7 +27,7 @@ describe('clearSpot (N4)', () => {
 describe('tidyPositions (N4)', () => {
   const base: ProjectDoc = { schemaVersion: 1, sources: [], compositions: [], outputs: [], edges: [] } as unknown as ProjectDoc;
 
-  it('asset nodes in a row on top (their order kept), the group under them, Preset nodes in a column under it with their Previews to the right, packed by height', () => {
+  it('asset nodes in a row on top (their order kept), the group under them, Preset nodes in a column under it with their Previews in a grid to the right (D69)', () => {
     const r = addPresetSet({ ...base, compositions: [{ id: MAIN_ID, label: 'Main', size: { width: 1080, height: 1080, unit: 'px' }, layers: [], placements: {}, board: { x: 0, y: 0 } }] } as unknown as ProjectDoc, {
       id: 's',
       label: 'GDN',
@@ -54,7 +54,8 @@ describe('tidyPositions (N4)', () => {
     const set = at.get(setNodeId('s'));
     expect(set).toEqual({ x: 100, y: 420 + GAP * 3 + 500 + GAP * 3 });
     expect(at.get(outputNodeId('a'))).toEqual({ x: 100 + PREVIEW_OFFSET.x, y: set?.y });
-    expect(at.get(outputNodeId('b'))).toEqual({ x: 100 + PREVIEW_OFFSET.x, y: (set?.y ?? 0) + 300 + GAP });
+    // D69: side by side, each column as wide as its Preview.
+    expect(at.get(outputNodeId('b'))).toEqual({ x: 100 + PREVIEW_OFFSET.x + 300 + GAP, y: set?.y });
   });
 });
 

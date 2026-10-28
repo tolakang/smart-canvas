@@ -94,7 +94,7 @@ import { useTheme } from '../ui/theme';
 import { align } from './guides';
 import { BoardKeys, useStoredFlag } from './board-keys';
 import { boxOf, clearSpot, onGrid, presetBlock, tidyPositions, tidySelectionPositions } from './tidy';
-import { CanvasToolbar, MultiSelect, FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
+import { CanvasToolbar, MultiSelect, fitOptions, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
@@ -736,6 +736,10 @@ function BoardCanvas(props: {
       setStackFocus,
       run,
       addSizes: (family: string | null) => addSizesRef.current(family),
+      zoomTo: (nodeId: string) => {
+        setNodes((ns) => ns.map((n) => (n.selected !== (n.id === nodeId) ? { ...n, selected: n.id === nodeId } : n)));
+        void flow.current?.fitView({ nodes: [{ id: nodeId }], duration: 300, maxZoom: 1, padding: 0.15 });
+      },
     }),
     [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );
@@ -1226,7 +1230,7 @@ function BoardCanvas(props: {
     setTimeout(() => setTidying(false), 320);
     show(withPositions(docRef.current, moves), true);
     setToast(selection ? `${picked.length} panels tidied` : 'Board tidied');
-    if (!selection) requestAnimationFrame(() => void flow.current?.fitView({ ...FIT_OPTIONS, duration: 200 }));
+    if (!selection) requestAnimationFrame(() => void flow.current?.fitView({ ...fitOptions(), duration: 200 }));
   };
 
   /**
@@ -1506,7 +1510,7 @@ function BoardCanvas(props: {
             edgesFocusable={false}
             deleteKeyCode={null}
             fitView
-            fitViewOptions={FIT_OPTIONS}
+            fitViewOptions={fitOptions()}
             // T13.5: Figma-style — wheel pans, Ctrl/⌘ + wheel or pinch zooms; drag empty canvas to select (Hand / Space to pan).
             panOnScroll
             zoomOnScroll={false}

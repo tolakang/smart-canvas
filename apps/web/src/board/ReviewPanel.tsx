@@ -5,6 +5,7 @@
  */
 import { presetSets } from '@smart-canvas/core';
 import { useBoard } from './context';
+import { outputNodeId } from './flow';
 import { Icon } from './LayerRow';
 import { APPROVAL, APPROVAL_PILL } from './OutputNode';
 import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass } from './panel';
@@ -13,7 +14,7 @@ import { approvalOf, openCounts } from './review';
 const STATE_LABEL = { approved: '✓ Approved', changed: 'Changed since approved', none: 'Not approved' } as const;
 
 export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: () => void }) {
-  const { doc, review, approvals, openOutputEditor } = useBoard();
+  const { doc, review, approvals, openOutputEditor, zoomTo } = useBoard();
   const counts = openCounts(review);
   const sets = presetSets(doc);
   const inSets = new Set(sets.flatMap((s) => s.outputs));
@@ -53,6 +54,9 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
                       <span className={`sc-preview__approval sc-preview__approval--${a.state} ${APPROVAL_PILL} ${APPROVAL[a.state]}`}>{STATE_LABEL[a.state]}</span>
                       {n > 0 && <span className="sc-muted">{`${n} open ${n === 1 ? 'comment' : 'comments'}`}</span>}
                     </span>
+                  </button>
+                  <button type="button" className="sc-icon-btn flex-none self-center" onClick={() => zoomTo(outputNodeId(o.id))} aria-label={`Show ${o.label} on the board`} title="Show on the board">
+                    <Icon name="search" />
                   </button>
                 </li>
               );

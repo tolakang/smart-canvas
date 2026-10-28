@@ -1,7 +1,7 @@
 /** Board keyboard shortcuts and remembered toggles (T13.5). */
 import { useReactFlow } from '@xyflow/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { FIT_OPTIONS, type CanvasTool } from './CanvasToolbar';
+import { fitOptions, type CanvasTool } from './CanvasToolbar';
 
 /** A boolean remembered in localStorage (falls back to page memory in private mode). */
 export function useStoredFlag(key: string, initial: boolean): [boolean, (v: boolean) => void] {
@@ -92,9 +92,12 @@ export function BoardKeys({ disabled, ...actions }: BoardKeyActions & { disabled
       else if (e.key === 'Escape') on.onClear();
       else if (e.code === 'KeyV' && !e.shiftKey) on.onTool('select');
       else if (e.code === 'KeyH' && !e.shiftKey) on.onTool('hand');
-      else if (e.code === 'Digit1' && e.shiftKey) void fitView({ ...FIT_OPTIONS, duration: 200 });
+      else if (e.code === 'Digit1' && e.shiftKey) void fitView({ ...fitOptions(), duration: 200 });
       else if (e.code === 'KeyT' && e.shiftKey && on.onTidy) on.onTidy();
       else if ((e.key === 'Delete' || e.key === 'Backspace') && on.onDelete) on.onDelete();
+      // D69 (UX B3): Enter on a panel reached with Tab brings it close, readable whatever the board's zoom.
+      else if (e.key === 'Enter' && e.target instanceof HTMLElement && e.target.classList.contains('react-flow__node') && e.target.dataset.id)
+        void fitView({ nodes: [{ id: e.target.dataset.id }], duration: 300, maxZoom: 1, padding: 0.15 });
       else return;
       e.preventDefault();
       // A focused panel's own key handling (React Flow re-selects it on Esc) stays out; menus and popovers still

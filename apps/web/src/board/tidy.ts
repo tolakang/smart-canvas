@@ -1,10 +1,10 @@
 /**
  * N4: where nodes go on the board. `clearSpot` finds the nearest place for a new block (a Preset node with its
  * Previews) that overlaps nothing; `tidyPositions` lays the whole board out the page-3 way — asset nodes in a row
- * on top, the Layer Comp group under them, the Preset nodes in a column under the group, each with its Previews
- * in a column to its right. Pure: works on node boxes, returns positions.
+ * on top, the Main Comps group under them, the Preset nodes in a column under the group, each with its Previews
+ * in a grid of up to three columns to its right (D69). Pure: works on node boxes, returns positions.
  */
-import { PREVIEW_OFFSET, presetSets, type ProjectDoc } from '@smart-canvas/core';
+import { PREVIEW_GRID, PREVIEW_OFFSET, presetSets, type ProjectDoc } from '@smart-canvas/core';
 import { MAIN_ID, compositionNodeId, outputNodeId, setNodeId } from './flow';
 
 export interface Box {
@@ -42,8 +42,11 @@ export function clearSpot(occupied: readonly Box[], size: { w: number; h: number
   return best ? { x: Math.round(best.x), y: Math.round(best.y) } : { x: Math.round(Math.max(...xs)), y: Math.round(at.y) };
 }
 
-/** The block a Preset node of `rows` sizes takes: the node plus its column of Previews to the right. */
-export const presetBlock = (rows: number): { w: number; h: number } => ({ w: PREVIEW_OFFSET.x + DEFAULT_SIZE.w, h: Math.max(DEFAULT_SIZE.h, rows * PREVIEW_OFFSET.rowGap) });
+/** The block a Preset node of `rows` sizes takes: the node plus its grid of Previews to the right (D69). */
+export const presetBlock = (rows: number): { w: number; h: number } => {
+  const cols = Math.max(1, Math.min(rows, PREVIEW_GRID.cols));
+  return { w: PREVIEW_OFFSET.x + (cols - 1) * PREVIEW_GRID.colGap + DEFAULT_SIZE.w, h: Math.max(DEFAULT_SIZE.h, Math.ceil(Math.max(rows, 1) / PREVIEW_GRID.cols) * PREVIEW_OFFSET.rowGap) };
+};
 
 export interface BoardBox {
   id: string;
@@ -93,12 +96,20 @@ export function tidyPositions(doc: ProjectDoc, nodes: readonly BoardBox[]): { id
     .sort((a, b) => a.node.position.y - b.node.position.y || a.node.position.x - b.node.position.x);
   for (const { set, node } of sets) {
     out.push({ id: node.id, position: { x: left, y } });
+    // D69: its Previews row by row in up to three columns, each column as wide as its widest Preview, each row as
+    // tall as its tallest.
+    const previews = set.outputs.flatMap((o) => byId.get(outputNodeId(o)) ?? []).filter((p) => !p.hidden);
+    const cols = Math.min(PREVIEW_GRID.cols, previews.length);
+    const colW = Array.from({ length: cols }, (_, c) => Math.max(0, ...previews.filter((_, i) => i % cols === c).map((p) => boxOf(p).w)));
     let py = y;
-    for (const o of set.outputs) {
-      const preview = byId.get(outputNodeId(o));
-      if (!preview || preview.hidden) continue;
-      out.push({ id: preview.id, position: { x: left + PREVIEW_OFFSET.x, y: py } });
-      py += boxOf(preview).h + GAP;
+    for (let r = 0; r * cols < previews.length; r++) {
+      const row = previews.slice(r * cols, r * cols + cols);
+      let px = left + PREVIEW_OFFSET.x;
+      row.forEach((p, c) => {
+        out.push({ id: p.id, position: { x: px, y: py } });
+        px += (colW[c] ?? 0) + GAP;
+      });
+      py += Math.max(...row.map((p) => boxOf(p).h)) + GAP;
     }
     y = Math.max(y + boxOf(node).h, py) + GAP * 2;
   }
