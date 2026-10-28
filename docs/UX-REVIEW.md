@@ -5,9 +5,9 @@ inspector, History and Review, both editors and the dialogs, from a new user to 
 desktop, tablet and phone. The page with screenshots and before/after mockups:
 https://claude.ai/artifact/9EerLLPtprERQhDNZdV2TK (private; ask the owner).
 
-**Status: proposals only.** Nothing is approved yet. The owner picks; each approved change is its own PR, and the
-"no visual change" rule of the Tailwind conversion does not apply to them. Proposals tagged with a decision change a
-locked decision and need the owner's approval first (CLAUDE.md).
+**Status (2026-10-28):** A1–A7 and B1–B10 are done (#202–#216; decisions D66–D70; `TASKS.md` P29). C1–C3 are on
+hold until the owner reviews them. Of the minor findings, F22 (Size presets lists families twice) is still open: the
+second clean-up audit (`archive/CLEANUP-AUDIT-2.md`, U15) picks it up.
 
 **How it was checked:** the real app with seeded data (6 Previews in two Preset nodes, an approval, a comment, a Khmer
 headline, uploads that wait or fail), about 120 screenshots, an in-page audit on each screen (text contrast, target

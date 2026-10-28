@@ -5,9 +5,10 @@ description: How this project's flow board is built on @xyflow/react v12, and ho
 
 # React Flow on this board
 
-The board (D49: asset nodes → Layer Comp + Core preset → Preset nodes → Previews) is React Flow v12 (`@xyflow/react`
+The board (D49: asset nodes → Main Comps + Export Group → Preset nodes → Previews; names D66) is React Flow v12 (`@xyflow/react`
 ^12.12, `apps/web/package.json`). Read this before touching `apps/web/src/board/`. Locked decisions in
-`docs/DECISIONS.md` win over anything here; the ones that matter most are named inline (D32, D36, D49, D57, D58, D64).
+`docs/DECISIONS.md` win over anything here; the ones that matter most are named inline (D32, D36, D49, D57, D58, D64,
+D69, D70).
 This skill is the board's rules; how to style anything (Tailwind on our tokens, what stays CSS, the checks) is in
 `docs/FRONTEND.md`.
 
@@ -15,15 +16,15 @@ This skill is the board's rules; how to style anything (Tailwind on our tokens, 
 
 | Piece | Where | What it does |
 |---|---|---|
-| `<ReactFlow>` and every handler | `board/Board.tsx` (~line 1443) | One instance. Controlled `nodes` / `edges`, `colorMode={theme}`, `fitView`, `panOnScroll`, `zoomOnScroll={false}`, `deleteKeyCode={null}` (Delete is ours, `board-keys.tsx`). |
+| `<ReactFlow>` and every handler | `board/Board.tsx` (~line 1490) | One instance. Controlled `nodes` / `edges`, `colorMode={theme}`, `fitView`, `panOnScroll`, `zoomOnScroll={false}`, `deleteKeyCode={null}` (Delete is ours, `board-keys.tsx`). |
 | Doc ↔ flow | `board/flow.ts` | `docToNodes(doc)`, `docToEdges(doc)`, `syncNodes(current, fresh)`, the id helpers. |
 | Node types | `board/nodes.tsx:111` (`nodeTypes`) | `inputNode`, `assetsNode`, `textNode`, `headlineNode`, `presetNode`, `mainNode`, `outputNode`, `groupNode`. Module-level constant. |
-| Edge types | `board/Board.tsx:244` (`edgeTypes = { routed: RoutedEdge }`) | One edge type: `board/RoutedEdge.tsx` (bezier or reroute points, ✂ badge on hover/selection). |
+| Edge types | `board/Board.tsx:247` (`edgeTypes = { routed: RoutedEdge }`) | One edge type: `board/RoutedEdge.tsx` (bezier or reroute points, ✂ badge on hover/selection). |
 | Board actions for nodes | `board/context.ts` (`useBoard()`) | Nodes call `run(doc => …)`, `readOnly`, etc. They never edit React Flow state for doc changes. |
-| Zoomed-out name tags | `board/ZoomLabels.tsx` | `ViewportPortal`, fixed screen size via `--zoom`; never takes a click. |
-| Toolbar, minimap | `board/CanvasToolbar.tsx`, `<MiniMap>` in Board | Zoom, fit, Select/Hand, grid, Tidy. Minimap only on desktop. |
+| Zoomed-out name tags | `board/ZoomLabels.tsx` | `ViewportPortal`, fixed screen size via `--zoom`; never takes a click; a tag that would cover another is left out (`visibleTags`, D69). |
+| Toolbar, minimap | `board/CanvasToolbar.tsx`, `<MiniMap>` in Board | Zoom, Fit to screen and Fit all (D69), Select/Hand, grid, Tidy; on a phone Add first (`onAdd`, D70). Minimap only on desktop. |
 | Touch | `board/pinch.ts` (`usePinch`, `TOUCH_NO_PAN`) | D58: two-finger pinch and pan are ours; one finger moves the board. |
-| Grid snap, Tidy | `board/tidy.ts`, `guides.ts` | D57: 16 px grid; alignment guides while dragging (`align()` inside `onNodesChange`). |
+| Grid snap, Tidy | `board/tidy.ts`, `guides.ts` | D57: 16 px grid; alignment guides while dragging (`align()` inside `onNodesChange`). D69: a Preset node's Previews in a grid of up to three columns (`PREVIEW_GRID`, `previewSpot` in core). |
 | Groups | `board/GroupNode.tsx` | T13.7: frames are derived from members every render, never stored. Dragging a frame moves its members. |
 
 ### The doc is the source of truth
@@ -58,7 +59,7 @@ Preset rows. Always use the helpers (`stackNodeId`, `outputIdOfNode`, `docIdOfNo
 
 ## 4. Viewport, zoom, touch
 
-- Wheel pans and Ctrl/⌘ + wheel zooms (T13.5); pinch is `usePinch`. Zoom limits are `ZOOM_LIMITS`. Fit uses `FIT_OPTIONS`.
+- Wheel pans and Ctrl/⌘ + wheel zooms (T13.5); pinch is `usePinch`. Zoom limits are `ZOOM_LIMITS`. Fit to screen uses `fitOptions()`: no smaller than `FIT_MIN_ZOOM` (40 %) from tablet width up, the whole board on a phone; Fit all uses `FIT_ALL_OPTIONS` (D69). Enter on a focused panel, and Review's "Show on the board", zoom to it (`zoomTo`). A phone board opens on the first two asset nodes (D70).
 - Anything that must keep its screen size at every zoom (name tags, badges) reads `--zoom`, or lives in `ViewportPortal` with a counter-scale. ZoomLabels is the model.
 - `onlyRenderVisibleElements` stays off: zoomed-out boards need every node for the tags and the minimap.
 - Don't add `<Controls>`: `CanvasToolbar` is the zoom UI.
@@ -139,7 +140,7 @@ what is named instead.
   - `.react-flow__node-<type>[data-id="out:banner"]`
   - a node by title: `.react-flow__node` filtered by `.sc-node__title`
   - `.react-flow__edge`, `.react-flow__pane`
-  - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything
+  - `getByRole('button', { name: /^Fit to screen/ })` before measuring anything; `getByRole('button', { name: 'Fit all', exact: true })` when the test needs every panel on screen (Fit to screen stops at 40 %, D69; not on phones, where Fit to screen shows it all)
 - Seed a board through the API with core functions (`addOutput`, …) and `page.request.put`, as `comments.e2e.test.ts` does, rather than many UI clicks.
 - **Styling** and the parity test: `docs/FRONTEND.md`.
 

@@ -185,6 +185,12 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 ## P28 — Tailwind conversion (owner, 2026-10-26; D65)
 - T1–T7 — **Done.** The web app is styled with Tailwind on our tokens; only tokens, base styles, React Flow's DOM and the transform box stay CSS (`docs/FRONTEND.md`). T8 (Preflight, unused `sc-` hooks, retiring the parity test) is optional. Plan: `TAILWIND-PLAN.md`.
 
+## P29 — UX review fixes (owner, 2026-10-27/28: "Go ahead"; D66–D70)
+- A1–A7, F8, B1–B10 — **Done.** The fixes from `docs/UX-REVIEW.md`: keyboard reach and focus, field edges, copy, health words, Main Comps and Export Group (D66), "Add sizes", moves without dragging, the Preset node inspector, editor layer rows, Export by Preset node, slot actions (D67), no empty default layers (D68), a board readable at Fit (D69), the phone board (D70). Tickets and PRs: `TASKS.md` P29. C1–C3 wait for the owner.
+
+## P30 — Clean-up review 2 (owner, 2026-10-28)
+- The second audit of code, tests, docs and UI: `docs/archive/CLEANUP-AUDIT-2.md`. Group (1) is done; group (2) runs one piece per PR; group (3) waits for the owner's decisions.
+
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q9 — Editor colour variables (bug, found by the 2026-10-27 clean-up audit). **Done.** The editor screen redefined `--line` / `--muted` from `--fig-line` / `--fig-muted`, which were defined from them; the loop left both empty, so the editors lost their panel outlines, section dividers, field borders, dropdown chevrons and grey text. `.sc-fig` no longer redefines them (`editor/shell.ts`).
 - Q6 — Print colour: CMYK / PDF-X export (D2 left it for v2). **Planned, on hold** (owner, 2026-10-24: "Write this Q6 plan for later. Do not dev it yet."): full plan in `docs/plans/Q6-print-colour.md` — Ghostscript after Chromium in the worker, FOGRA39 / SWOP profiles, three PRs, three open questions for the owner.
