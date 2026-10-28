@@ -1,5 +1,5 @@
 /**
- * CSS parity (P28, TAILWIND-PLAN.md): the editors (Layer Comp, a Preview, comments) and the dark theme. Each screen is
+ * CSS parity (P28, TAILWIND-PLAN.md): the editors (Main Comps, a Preview, comments, approval) and the dark theme. Each screen is
  * drawn with this branch's CSS and with main's, and every computed style and pixel must match. Runs on its own stack
  * and seeded project (test/parity-suite.ts).
  */
@@ -8,7 +8,7 @@ import type { Page } from 'playwright';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { limit, paritySuite } from './test/parity-suite';
 
-describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comments, dark theme', () => {
+describe.skipIf(!adminUrl)('CSS parity: the editors: Main Comps, a Preview, comments, dark theme', () => {
   const { s, same, node, fit, imagesLoaded, seed } = paritySuite();
   let page: Page;
   beforeAll(async () => {
@@ -16,7 +16,8 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await seed();
   }, limit(180_000));
 
-  it('editors: Layer Comp, a Preview, its Comments panel', async () => {
+  // Three tests, not one: the 15 screens took ~185 s in one test, over its 150 s local limit (clean-up 2, U7).
+  it('Main Comps editor: shortcuts, a selection, the Hand tool, text properties', async () => {
     await page.locator('.react-flow__node-mainNode').getByRole('button', { name: /^(Edit|View) Square layout$/ }).click({ force: true });
     const comp = page.getByRole('dialog', { name: /Main Comps editor/ });
     await comp.waitFor();
@@ -41,7 +42,9 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await comp.locator('.sc-layer:not(.sc-layer--selected)').first().hover();
     await same('editor-text-props');
     await comp.getByRole('button', { name: 'Close', exact: true }).click();
+  }, limit(90_000));
 
+  it('a Preview editor: its override inspector and the Comments panel', async () => {
     await page.getByRole('button', { name: 'Edit Preview Banner' }).click();
     const preview = page.getByRole('dialog', { name: 'Preview editor Banner' });
     await preview.waitFor();
@@ -67,7 +70,9 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await preview.getByRole('button', { name: 'Reply', exact: true }).first().hover();
     await same('comments-pinned');
     await preview.getByRole('button', { name: 'Close', exact: true }).click();
+  }, limit(90_000));
 
+  it('approval in the Preview editor bar', async () => {
     // Approval in the bar: changed since approved (Square post approved with an older fingerprint), Approve again hovered.
     const approved = await page.request.put(`${s.api}/review/approvals/sq`, { data: { fingerprint: 'before' } });
     expect(approved.status()).toBe(200);
@@ -82,7 +87,7 @@ describe.skipIf(!adminUrl)('CSS parity: the editors: Layer Comp, a Preview, comm
     await square.getByRole('button', { name: 'Approve again' }).hover();
     await same('approve-hover');
     await square.getByRole('button', { name: 'Close', exact: true }).click();
-  }, limit(150_000)); // many screens since T7a–T7c
+  }, limit(60_000));
 
   it('dark theme: board and an editor', async () => {
     await page.getByRole('button', { name: 'Dark theme' }).click();

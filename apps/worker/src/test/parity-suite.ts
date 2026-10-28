@@ -13,8 +13,11 @@ import { afterAll, beforeAll, expect } from 'vitest';
 import { cssParity, STRAY } from './css-parity';
 import { setupAndCreateProject, startStack, type Stack } from './stack';
 
-/** Probing which rules win (test/css-winners.ts) is slow; CI runners can be several times slower than a laptop. */
-export const limit = (ms: number) => (process.env.SC_PROBE_OUT ? 900_000 : process.env.CI ? ms * 3 : ms);
+/**
+ * Probing which rules win (test/css-winners.ts) is slow. The limits only catch a hang: a full local run (every e2e file,
+ * two at a time) is as slow as a CI runner, so both get three times the nominal time (clean-up 2, U7).
+ */
+export const limit = (ms: number) => (process.env.SC_PROBE_OUT ? 900_000 : ms * 3);
 
 export const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);
@@ -69,8 +72,9 @@ export function paritySuite() {
     }
   };
   const imagesLoaded = () => until('images to load', () => s.page.locator('img').evaluateAll((els) => els.every((e) => (e as HTMLImageElement).complete)));
+  /** Every panel on screen: Fit all, since Fit to screen stops at 40% (D69) and could leave a panel off it. */
   const fit = async () => {
-    await s.page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await s.page.getByRole('button', { name: 'Fit all', exact: true }).click();
     await s.page.waitForTimeout(400);
   };
   /** A phone (touch: `pointer: coarse`, `hover: none`) signed in as the desktop page is. */
