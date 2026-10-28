@@ -6,7 +6,7 @@
  */
 import { assetStacks, compositionById, languagePairs, presetSets, type ProjectDoc } from '@smart-canvas/core';
 import { useStore, ViewportPortal, type Node } from '@xyflow/react';
-import { compositionIdOfNode } from './flow';
+import { compositionIdOfNode, isGroupNode, outputIdOfNode, pairIdOfNode, setIdOfNode, sourceIdOfNode, stackIdOfNode } from './flow';
 import { nameWithoutSize } from './OutputNode';
 import { approvalOf, type ApprovalState } from './review';
 
@@ -21,21 +21,24 @@ const MARK = 'sc-zlabel__mark rounded-[6px] px-6 py-0 text-[11px]';
 
 /** The name a panel goes by on the board, or null for nodes without one (group frames have their own). */
 export function panelTitle(doc: ProjectDoc, nodeId: string): string | null {
-  const [kind, ...rest] = nodeId.split(':');
-  const id = rest.join(':');
-  if (kind === 'src') return doc.sources.find((s) => s.id === id)?.label ?? null;
-  if (kind === 'stk') return assetStacks(doc).find((s) => s.id === id)?.label ?? null;
-  if (kind === 'hl') return languagePairs(doc).find((p) => p.id === id)?.label ?? null;
-  if (kind === 'out') {
-    const o = doc.outputs.find((x) => x.id === id);
+  const source = sourceIdOfNode(nodeId);
+  if (source) return doc.sources.find((s) => s.id === source)?.label ?? null;
+  const stack = stackIdOfNode(nodeId);
+  if (stack) return assetStacks(doc).find((s) => s.id === stack)?.label ?? null;
+  const pair = pairIdOfNode(nodeId);
+  if (pair) return languagePairs(doc).find((p) => p.id === pair)?.label ?? null;
+  const output = outputIdOfNode(nodeId);
+  if (output) {
+    const o = doc.outputs.find((x) => x.id === output);
     if (!o) return null;
     // Once: "GDN 1200×200", not "GDN 1200×200 · 1200 × 200 px" (owner: "redundant").
     const size = `${o.size.width}×${o.size.height}${o.size.unit === 'px' ? '' : ` ${o.size.unit}`}`;
     const name = nameWithoutSize(o.label);
     return name ? `${name} ${size}` : size;
   }
-  if (kind === 'set') {
-    const s = presetSets(doc).find((x) => x.id === id);
+  const set = setIdOfNode(nodeId);
+  if (set) {
+    const s = presetSets(doc).find((x) => x.id === set);
     return s ? `${s.label} · ${s.outputs.length} ${s.outputs.length === 1 ? 'size' : 'sizes'}` : null;
   }
   const comp = compositionIdOfNode(nodeId);
@@ -69,10 +72,10 @@ export function ZoomLabels(props: {
 }) {
   const zoom = useStore((st) => st.transform[2]);
   const tags = props.nodes.flatMap((n) => {
-    if (n.hidden || n.id.startsWith('grp:')) return [];
+    if (n.hidden || isGroupNode(n.id)) return [];
     const title = panelTitle(props.doc, n.id);
     if (!title) return [];
-    const outputId = n.id.startsWith('out:') ? n.id.slice(4) : null;
+    const outputId = outputIdOfNode(n.id) ?? null;
     const state = outputId ? approvalOf(props.approvals, outputId).state : 'none';
     const open = outputId ? (props.openComments.get(outputId) ?? 0) : 0;
     const marks = (state === 'none' ? 0 : 1) + (open > 0 ? 1 : 0);

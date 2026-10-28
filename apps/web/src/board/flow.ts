@@ -52,6 +52,8 @@ export type BoardNode = InputFlowNode | StackFlowNode | PairFlowNode | SetFlowNo
 export type FlowNode = BoardNode | GroupFlowNode;
 export const groupNodeId = (groupId: string) => `grp:${groupId}`;
 export const groupIdOfNode = (nodeId: string) => (nodeId.startsWith('grp:') ? nodeId.slice(4) : undefined);
+/** A group frame (derived, T13.7), not a node of the doc. */
+export const isGroupNode = (nodeId: string) => groupIdOfNode(nodeId) !== undefined;
 
 /** The doc id a board node stands for (input, asset or Headline node, Preset node, the master, Preview). */
 export const docIdOfNode = (nodeId: string) => sourceIdOfNode(nodeId) ?? stackIdOfNode(nodeId) ?? pairIdOfNode(nodeId) ?? setIdOfNode(nodeId) ?? compositionIdOfNode(nodeId) ?? outputIdOfNode(nodeId);

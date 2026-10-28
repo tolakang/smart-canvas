@@ -243,10 +243,9 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
   --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 .sc-theme-toggle .sc-icon { margin: 0; }
-/* Touch: icon buttons get a 44 px tap target, and the port a wire starts from a wider glow. */
+/* Touch: icon buttons get a 44 px tap target. */
 @media (pointer: coarse) {
   .sc-icon-btn { min-width: 44px; min-height: 44px; }
-  .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
 .sc-layers__title .sc-muted { font-weight: 400; }
 /* Tablets (and phones turned sideways): slimmer side panels so the canvas keeps most of the width. */

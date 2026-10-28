@@ -51,8 +51,10 @@
 .react-flow__handle.sc-handle--layer:hover, .react-flow__handle.sc-handle--layer.connectingto.valid { background: var(--type-input); }
 .react-flow__handle.sc-handle--composition:hover, .react-flow__handle.sc-handle--composition.connectingto.valid { background: var(--type-main); }
 .react-flow__handle.connectingto:not(.valid) { border-color: var(--danger); background: var(--danger-soft); }
+/* Touch: a wider hit area, and the port a wire starts from a wider glow. */
 @media (pointer: coarse) {
   .react-flow__handle::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
+  .react-flow__handle.connectingfrom, .react-flow__handle.clickconnecting { box-shadow: 0 0 0 4px var(--accent-soft); }
 }
 .react-flow__handle { width: 12px; height: 12px; border: 2.5px solid var(--surface); background: var(--head-master); box-shadow: 0 0 0 1px color-mix(in srgb, var(--head-master) 50%, transparent), 0 1px 3px rgb(16 24 40 / 0.25); }
 .react-flow__handle.connectingto, .react-flow__handle:hover { background: var(--accent); transform: scale(1.2); }
