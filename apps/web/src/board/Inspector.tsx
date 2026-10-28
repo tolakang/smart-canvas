@@ -36,6 +36,9 @@ import {
   type Health,
   type InputSource,
   type OutputNode,
+  deletePresetSet,
+  presetSets,
+  renameSet,
 } from '@smart-canvas/core';
 import { useMemo, useState, type ReactNode } from 'react';
 import { api, assetUrl } from '../api';
@@ -43,7 +46,8 @@ import { newId } from './ids';
 import { useBoard } from './context';
 import { BackgroundSlots, useAssetUpload } from './editors';
 import { NumberField } from '../ui/NumberField';
-import { compositionIdOfNode, inputNodeId, outputNodeId, pairNodeId, stackNodeId } from './flow';
+import { compositionIdOfNode, inputNodeId, outputNodeId, pairNodeId, setIdOfNode, stackNodeId } from './flow';
+import { useSaveAsFamily } from './preset-save';
 import { HEALTH_PILL, HealthIssues, healthSummary } from './HealthBadge';
 import { confirmDelete, Icon } from './LayerRow';
 import { BehaviorPicker, SourceEditor } from './nodes';
@@ -69,6 +73,7 @@ export function Inspector({ selected, floating, onClose, onHide }: { selected: s
   const composition = compositionIdOfNode(selected);
   const stack = assetStacks(doc).find((st) => stackNodeId(st.id) === selected);
   const pair = languagePairs(doc).find((p) => pairNodeId(p.id) === selected);
+  const set = presetSets(doc).find((st) => st.id === setIdOfNode(selected));
   return (
     <aside className={panelClass(floating)} aria-label="Inspector">
       {floating && (
@@ -85,6 +90,8 @@ export function Inspector({ selected, floating, onClose, onHide }: { selected: s
         <AssetsInspector key={stack.id} stackId={stack.id} />
       ) : source ? (
         <InputInspector key={source.id} source={source} />
+      ) : set ? (
+        <PresetInspector key={set.id} setId={set.id} />
       ) : output ? (
         <OutputInspector key={output.id} output={output} />
       ) : composition && compositionById(doc, composition) ? (
@@ -316,6 +323,59 @@ function AssetsInspector({ stackId }: { stackId: string }) {
       </Section>
       {focused && <InputInspector key={focused.id} source={focused} />}
     </>
+  );
+}
+
+/** UX B6 (F12): a selected Preset node — its name, its sizes, Export and Save as team preset; sizes are added on the card. */
+function PresetInspector({ setId }: { setId: string }) {
+  const { doc, run, readOnly, exportOutputs } = useBoard();
+  const set = presetSets(doc).find((st) => st.id === setId);
+  const outputs = (set?.outputs ?? []).flatMap((id) => doc.outputs.filter((o) => o.id === id));
+  const saving = useSaveAsFamily(set ?? { id: setId, label: '', board: { x: 0, y: 0 }, outputs: [] }, outputs);
+  if (!set) return null;
+  return (
+    <Section
+      title="Preset node"
+      aside={
+        outputs.length > 0 && (
+          <button type="button" className="sc-btn" onClick={() => exportOutputs(outputs.map((o) => o.id), set.id)}>
+            <Icon name="export" /> Export {outputs.length}
+          </button>
+        )
+      }
+    >
+      <NameField label="Preset node name" value={set.label} onCommit={(label) => run((d) => renameSet(d, set.id, label))} />
+      <p className={`sc-muted ${HINT}`}>
+        {outputs.length ? `${outputs.length} ${outputs.length === 1 ? 'size' : 'sizes'}, each its own Preview.` : 'No sizes yet.'} Add sizes with “Add a size” on the node.
+      </p>
+      {outputs.length > 0 && (
+        <ul className="sc-preset-inspector__sizes m-0 grid list-none gap-2 p-0 text-[12.5px]" aria-label="Sizes">
+          {outputs.map((o) => (
+            <li key={o.id} className="flex justify-between gap-8">
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap">{o.label}</span>
+              <span className="flex-none text-muted [font-variant-numeric:tabular-nums]">
+                {o.size.width} × {o.size.height} {o.size.unit}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!readOnly && outputs.length > 0 && (
+        <button type="button" className="sc-btn justify-self-start" onClick={() => void saving.save()}>
+          <Icon name="library" /> Save as team preset
+        </button>
+      )}
+      {saving.note && (
+        <p className={`sc-muted ${HINT}`} role="status">
+          {saving.note}
+        </p>
+      )}
+      {!readOnly && (
+        <button type="button" className={DELETE_NODE} aria-label={`Delete ${set.label}`} onClick={() => window.confirm(`Delete “${set.label}” and its ${outputs.length} sizes?`) && run((d) => deletePresetSet(d, set.id))}>
+          <Icon name="trash" /> Delete node
+        </button>
+      )}
+    </Section>
   );
 }
 

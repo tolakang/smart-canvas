@@ -5,8 +5,7 @@
  * or as a custom W × H, or removed. N5: "Save as team preset" saves the node's sizes as a team preset family, so
  * it is offered as a Preset node from then on.
  */
-import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, presetFamilies, renameSet, setFamily, setPreviewHidden, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
-import { api, ApiError } from '../api';
+import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, renameSet, setFamily, setPreviewHidden, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState } from 'react';
 import { cardClass, HEAD_ACTION } from './card';
@@ -17,6 +16,7 @@ import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { nameWithoutSize, presetSettings } from './OutputNode';
 import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
+import { useSaveAsFamily } from './preset-save';
 
 
 /** A row's name without its trailing size, or '' when what is left is just the preset's name. */
@@ -34,10 +34,12 @@ export function rowName(label: string, setLabel: string): string {
   return name === setLabel.trim() ? '' : name;
 }
 const ROW_DRAG = 'application/x-sc-preset-row';
+/** The "Add a size" choice that opens the custom W × H fields. */
+const CUSTOM = '__custom';
 
 export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   const { set, rows } = data;
-  const { doc, readOnly, run, presets, reloadPresets, exportOutputs, teamId } = useBoard();
+  const { doc, readOnly, run, presets, exportOutputs } = useBoard();
   const updateInternals = useUpdateNodeInternals();
   const rowKey = rows.map((r) => r.output.id).join(',');
   useEffect(() => updateInternals(id), [id, rowKey, updateInternals]);
@@ -63,25 +65,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
       (family?.missing ?? []).reduce<SourceResult>((r, p) => (r.ok ? addSizeToSet(r.doc, set.id, { id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } }) : r), { ok: true, doc: d as ProjectDoc }),
     );
 
-  /** N5: saves the node's sizes as the team's preset family `name` (sizes the family already has are skipped). */
-  const [savedNote, setSavedNote] = useState<string | null>(null);
-  async function saveAsFamily() {
-    const name = window.prompt('Save these sizes as a team preset family named', set.label)?.trim();
-    if (!name) return;
-    const family = presetFamilies(presets).find((f) => f.label === name);
-    if (family?.presets.some((p) => p.teamId === null)) return setSavedNote(`“${name}” is a built-in preset; pick another name.`);
-    const has = new Set(family?.presets.map((p) => `${p.size.width}×${p.size.height}${p.size.unit}`));
-    const todo = rows.filter(({ output: o }) => !has.has(`${o.size.width}×${o.size.height}${o.size.unit}`));
-    try {
-      for (const { output: o } of todo)
-        await api('POST', `/teams/${teamId}/presets`, { group: o.size.unit === 'mm' ? 'print' : 'social', name: `${name} ${o.size.width}×${o.size.height}`, family: name, size: { ...o.size } });
-      setSavedNote(`Saved as team preset “${name}” (${(family?.presets.length ?? 0) + todo.length} sizes).`);
-      reloadPresets();
-    } catch (err) {
-      setSavedNote(err instanceof ApiError && err.status === 403 ? 'Only team admins can save presets.' : 'Could not save the preset.');
-      reloadPresets();
-    }
-  }
+  const saving = useSaveAsFamily(set, rows.map((r) => r.output));
 
   return (
     <div className={cardClass('preset')} aria-label={`Preset ${set.label}`}>
@@ -98,7 +82,11 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         menu={
           readOnly
             ? []
-            : [{ label: `Delete preset ${set.label}`, danger: true, onSelect: () => window.confirm(`Delete “${set.label}” and its ${rows.length} sizes?`) && run((d) => deletePresetSet(d, set.id)) }]
+            : [
+                // UX B6 (F20): saving the sizes is an occasional job; it lives in ⋯, not as a third button on the card.
+                ...(rows.length > 0 ? [{ label: 'Save as team preset', onSelect: () => void saving.save() }] : []),
+                { label: `Delete preset ${set.label}`, danger: true, separated: rows.length > 0, onSelect: () => window.confirm(`Delete “${set.label}” and its ${rows.length} sizes?`) && run((d) => deletePresetSet(d, set.id)) },
+              ]
         }
         extra={
           rows.length > 0 && (
@@ -204,27 +192,19 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           </button>
         </form>
       )}
-      {!readOnly && !custom && (
-        <button type="button" className={`sc-btn sc-preset__add-custom mt-8 w-full justify-center ${NO_CANVAS}`} onClick={() => setCustom({ w: '', h: '' })}>
-          <Icon name="plus" /> Custom size
-        </button>
-      )}
-      {!readOnly && rows.length > 0 && (
-        <button type="button" className={`sc-btn sc-preset__save mt-6 w-full ${NO_CANVAS}`} onClick={() => void saveAsFamily()}>
-          <Icon name="library" /> Save as team preset
-        </button>
-      )}
-      {savedNote && (
+      {saving.note && (
         <p className="sc-muted sc-preset__note mx-0 mt-6 mb-0 text-[11px]" role="status">
-          {savedNote}
+          {saving.note}
         </p>
       )}
-      {!readOnly && addable.length > 0 && (
+      {!readOnly && !custom && (
+        // UX B6 (F20): one way to add a size — the team's presets not on the node yet, then a custom size.
         <select
           className={`sc-preset__add mt-8 w-full ${NO_CANVAS}`}
           aria-label={`Add a size to ${set.label}`}
           value=""
           onChange={(e) => {
+            if (e.target.value === CUSTOM) return setCustom({ w: '', h: '' });
             const p = addable.find((x) => x.id === e.target.value);
             if (p) run((d) => addSizeToSet(d, set.id, { id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } }));
           }}
@@ -235,6 +215,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
               {p.name}
             </option>
           ))}
+          <option value={CUSTOM}>Custom size…</option>
         </select>
       )}
     </div>
