@@ -60,7 +60,7 @@ describe.skipIf(!adminUrl)('CSS parity: the node cards: Layer Comp, Presets, Pre
     await page.keyboard.press('Escape');
     await page.locator('.sc-health__btn[aria-expanded="true"]').first().click().catch(() => undefined);
     const gdn = page.locator('[aria-label="Preset GDN"]');
-    await gdn.getByRole('button', { name: /Custom size/ }).click();
+    await gdn.getByLabel('Add a size to GDN').selectOption({ label: 'Custom size…' });
     await gdn.getByRole('textbox', { name: 'Width (px)' }).waitFor();
     await same('preset-custom');
     await gdn.getByRole('button', { name: 'Cancel' }).click();

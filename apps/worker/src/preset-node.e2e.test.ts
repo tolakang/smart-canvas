@@ -159,7 +159,7 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await page.getByRole('menu').getByRole('menuitem', { name: 'Custom preset…' }).click();
     await preset().waitFor();
     for (const [w, h] of [['300', '250'], ['728', '90']] as const) {
-      await preset().getByRole('button', { name: 'Custom size' }).click();
+      await preset().getByLabel(/^Add a size to /).selectOption({ label: 'Custom size…' });
       await preset().getByLabel('Width (px)').fill(w);
       await preset().getByLabel('Height (px)').fill(h);
       await preset().getByRole('button', { name: 'Add', exact: true }).click();
@@ -167,7 +167,8 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await expect.poll(() => preset().locator('.sc-preset__size').count()).toBe(2);
     // The prompt offers the node's name.
     page.once('dialog', (d) => void d.accept(d.defaultValue()));
-    await preset().getByRole('button', { name: 'Save as team preset' }).click();
+    await preset().getByRole('button', { name: /actions$/ }).click();
+    await page.getByRole('menuitem', { name: 'Save as team preset' }).click();
     await preset().getByRole('status').getByText('Saved as team preset “Promo” (2 sizes).').waitFor();
     const list = (await (await page.request.get(url.replace(/projects\/.*$/, 'presets'))).json()) as { name: string; family?: string }[];
     expect(list.filter((p) => p.family === 'Promo').map((p) => p.name).sort()).toEqual(['Promo 300×250', 'Promo 728×90']);
@@ -176,13 +177,22 @@ describe.skipIf(!adminUrl)('Preset node (D46)', () => {
     await page.keyboard.press('Escape');
     // A built-in family's name is refused.
     page.once('dialog', (d) => void d.accept('GDN'));
-    await preset().getByRole('button', { name: 'Save as team preset' }).click();
+    await preset().getByRole('button', { name: /actions$/ }).click();
+    await page.getByRole('menuitem', { name: 'Save as team preset' }).click();
     await preset().getByRole('status').getByText('“GDN” is a built-in preset; pick another name.').waitFor();
+  }, 60_000);
+
+  it('UX B6 (F12): a selected Preset node fills the inspector: its name and sizes', async () => {
+    await preset().locator('.sc-node__title').click();
+    const inspector = page.getByRole('complementary', { name: 'Inspector' });
+    await expect.poll(() => inspector.getByLabel('Preset node name').inputValue()).toBe('Promo');
+    expect(await inspector.getByRole('list', { name: 'Sizes' }).getByRole('listitem').count()).toBe(2);
+    expect(await inspector.getByText('Nothing selected', { exact: false }).count()).toBe(0);
   }, 60_000);
 
   it('M6: a Preset node too large to zip in the browser is made and zipped on the server', async () => {
     for (let i = 0; i < 3; i++) {
-      await preset().getByRole('button', { name: 'Custom size' }).click();
+      await preset().getByLabel(/^Add a size to /).selectOption({ label: 'Custom size…' });
       await preset().getByLabel('Width (px)').fill('4000');
       await preset().getByLabel('Height (px)').fill(String(4000 - i));
       await preset().getByRole('button', { name: 'Add', exact: true }).click();
