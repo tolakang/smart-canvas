@@ -42,4 +42,14 @@ describe.skipIf(!adminUrl)('Add sizes from the empty Export Group (UX B2)', () =
     await expect.poll(() => group().locator('.sc-rule__chip').count()).toBeGreaterThan(1);
     expect(await page.getByRole('button', { name: 'Export', exact: true }).isDisabled()).toBe(false);
   }, 60_000);
+
+  it('UX B9 (F21): Export groups the Previews by Preset node and says which layers are still empty', async () => {
+    await page.getByRole('button', { name: 'Export', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    const gdn = dialog.getByRole('group', { name: 'Previews' }).getByRole('group', { name: 'GDN' });
+    await gdn.waitFor();
+    expect(await gdn.getByRole('checkbox').count()).toBeGreaterThan(1);
+    expect(await dialog.getByRole('note').innerText()).toMatch(/no file or text yet \(.*Subject.*\): they are not in these files/);
+    await page.keyboard.press('Escape');
+  }, 60_000);
 });
