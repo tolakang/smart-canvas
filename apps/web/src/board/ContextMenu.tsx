@@ -14,6 +14,8 @@ export interface MenuItem {
   danger?: boolean;
   /** Starts a new group (a divider above). */
   separated?: boolean;
+  /** D70: a section title shown above this item (a sectioned menu, e.g. the phone's Add sheet). */
+  heading?: string;
 }
 
 export interface MenuState {
@@ -56,11 +58,18 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
   // Keep the menu inside the window.
   const left = Math.max(8, Math.min(menu.x, window.innerWidth - 220));
   const row = window.matchMedia?.(COARSE_QUERY).matches ? 44 : 30; // T13.6: 44 px rows on touch
-  const top = Math.max(8, Math.min(menu.y, window.innerHeight - 40 - menu.items.length * row));
+  const headings = menu.items.filter((i) => i.heading).length;
+  const top = Math.max(8, Math.min(menu.y, window.innerHeight - 40 - menu.items.length * row - headings * 28));
   return (
-    <div ref={ref} className={MENU} role="menu" aria-label={menu.title ?? 'Menu'} style={{ left, top }} onContextMenu={(e) => e.preventDefault()}>
+    // A menu taller than the window (the phone's Add sheet, D70) scrolls inside it.
+    <div ref={ref} className={MENU} role="menu" aria-label={menu.title ?? 'Menu'} style={{ left, top, maxHeight: window.innerHeight - top - 8, overflowY: 'auto' }} onContextMenu={(e) => e.preventDefault()}>
       {menu.title && <div className={MENU_TITLE}>{menu.title}</div>}
-      {menu.items.map((item) => (
+      {menu.items.map((item) => [
+        item.heading && (
+          <div key={`h:${item.heading}`} className={MENU_TITLE} role="presentation">
+            {item.heading}
+          </div>
+        ),
         <button
           key={item.label}
           type="button"
@@ -73,8 +82,8 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
           }}
         >
           {item.label}
-        </button>
-      ))}
+        </button>,
+      ])}
     </div>
   );
 }

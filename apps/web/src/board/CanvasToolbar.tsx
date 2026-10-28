@@ -25,6 +25,7 @@ export const fitOptions = () =>
 /** What each button does, shown under its name in the tooltip. */
 const TIPS: Record<string, string> = {
   'Add nodes': 'Add asset and Preset nodes',
+  Add: 'Add an asset node or a Preset node of sizes',
   Inspector: 'Settings of the selected node',
   'Select (V)':
     'Click a panel to select it, drag to move it; Shift-click adds one; drag on empty canvas to select several. Arrows nudge, Esc clears, Ctrl/⌘ + A selects all',
@@ -159,6 +160,8 @@ export function CanvasToolbar(props: {
    * selects).
    */
   several?: { on: boolean; onToggle: () => void };
+  /** D70 (UX B7, phone): Add sits first in this bar, where a thumb reaches it, instead of inside the ⋯ menu. */
+  onAdd?: () => void;
 }) {
   const { panels, compact } = props;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -170,6 +173,8 @@ export function CanvasToolbar(props: {
   );
   return (
     <Panel position="bottom-center" className={BAR} aria-label="Canvas tools" role="toolbar">
+      {props.onAdd && btn('Add', undefined, props.onAdd, <Icon name="plus" />)}
+      {props.onAdd && <span className={SEP} aria-hidden="true" />}
       {panels?.library && btn('Add nodes', panels.open === 'library', () => panels.onOpen(panels.open === 'library' ? null : 'library'), <Icon name="plus" />)}
       {panels && btn('Inspector', panels.open === 'inspector', () => panels.onOpen(panels.open === 'inspector' ? null : 'inspector'), <Icon name="panel" />)}
       {panels && <span className={SEP} aria-hidden="true" />}
