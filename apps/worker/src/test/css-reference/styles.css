@@ -1,4 +1,4 @@
-/* The app's CSS at 017f3cc4ca917006f607969762d64ce2cc089089 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 689f04a9b8bd680edaf4ffb7fe18ad92dc833f6c (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -77,6 +77,18 @@
     visibility: visible;
   }
 
+  .sr-only {
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    position: absolute;
+    overflow: hidden;
+  }
+
   .absolute {
     position: absolute;
   }
@@ -139,6 +151,10 @@
 
   .top-\[50\%\] {
     top: 50%;
+  }
+
+  .top-\[calc\(100\%\+4px\)\] {
+    top: calc(100% + 4px);
   }
 
   .-right-4 {
@@ -894,6 +910,10 @@
 
   .min-w-92 {
     min-width: 92px;
+  }
+
+  .min-w-140 {
+    min-width: 140px;
   }
 
   .min-w-200 {
@@ -1796,6 +1816,10 @@
     padding: 0 !important;
   }
 
+  .p-1 {
+    padding: 1px;
+  }
+
   .p-2 {
     padding: 2px;
   }
@@ -1894,6 +1918,10 @@
 
   .px-10 {
     padding-inline: 10px;
+  }
+
+  .px-11 {
+    padding-inline: 11px;
   }
 
   .px-12 {
@@ -2554,6 +2582,10 @@
 
   .\[font-variant-numeric\:tabular-nums\] {
     font-variant-numeric: tabular-nums;
+  }
+
+  .line-through {
+    text-decoration-line: line-through;
   }
 
   .underline {
@@ -3748,6 +3780,10 @@
     color: var(--fig-fg);
   }
 
+  .hover\:text-accent:hover {
+    color: var(--accent);
+  }
+
   .hover\:text-danger:hover {
     color: var(--danger);
   }
@@ -3778,6 +3814,10 @@
 
   .focus-visible\:bg-input:focus-visible {
     background-color: var(--input);
+  }
+
+  .focus-visible\:bg-surface-2:focus-visible {
+    background-color: var(--surface-2);
   }
 
   .focus-visible\:\[outline\:2px_solid_var\(--accent\)\]:focus-visible {
@@ -3858,6 +3898,10 @@
     color: var(--fig-blue);
   }
 
+  .aria-pressed\:\[color\:var\(--fig-fg\)\][aria-pressed="true"] {
+    color: var(--fig-fg);
+  }
+
   .aria-pressed\:text-accent[aria-pressed="true"] {
     color: var(--accent);
   }
@@ -3884,8 +3928,16 @@
     }
   }
 
+  .aria-pressed\:\[box-shadow\:var\(--shadow-1\)\][aria-pressed="true"] {
+    box-shadow: var(--shadow-1);
+  }
+
   .aria-pressed\:\[background\:var\(--accent\)\][aria-pressed="true"] {
     background: var(--accent);
+  }
+
+  .aria-pressed\:\[background\:var\(--fig-panel\)\][aria-pressed="true"] {
+    background: var(--fig-panel);
   }
 
   .aria-pressed\:\[background\:var\(--fig-select\)\][aria-pressed="true"] {
