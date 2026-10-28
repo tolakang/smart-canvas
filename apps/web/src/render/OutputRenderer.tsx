@@ -30,7 +30,7 @@ export interface OutputRendererProps {
   assetUrl: (assetId: string) => string;
   /** Output pixels per design px. Export uses exportScaleOf(); previews fit a box. */
   scale: number;
-  /** 'preview' draws placeholders for inputs that have no file yet; 'export' draws nothing for them. */
+  /** 'preview' draws placeholders for inputs that have no file or text yet; 'export' draws nothing for them. */
   mode?: 'preview' | 'export';
   className?: string;
 }
@@ -122,6 +122,15 @@ function Layer({
     case 'text': {
       const style = item.style ? { ...content.style, ...item.style } : content.style;
       const { text } = content;
+      // D68: an empty text layer gets the same placeholder box as an empty picture in the editors, so it can be found
+      // and placed there; export draws nothing for it.
+      if (!text.trim()) {
+        return mode === 'preview' ? (
+          <div {...data} className="sc-render__placeholder" style={box}>
+            {source.label}
+          </div>
+        ) : null;
+      }
       const shown = applyTransform(text, style);
       const khmer = isKhmerText(style, shown);
       const fontSize = item.fontSizePx ?? style.fontSizePx;

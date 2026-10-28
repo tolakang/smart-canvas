@@ -259,8 +259,9 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (2) U20–U25 — docs brought up to date, this audit archived — [#222](https://github.com/tolakang/smart-canvas/pull/222)
 - [x] (2) U10 — inspector copy: one name per kind, asset hints in their own words, each size once, Delete layer — [#223](https://github.com/tolakang/smart-canvas/pull/223)
 - [x] (2) U11, U12 — Fit all has its own icon; the editor's small targets reach 24 px — [#224](https://github.com/tolakang/smart-canvas/pull/224)
-- [x] (2) U13 — a skip link and one main landmark on the board and the projects page (this PR)
-- [ ] (2) U14–U19 — the UI fixes, one piece per PR, in the audit's order; U8 (splitting `Board.tsx`) optional, last
+- [x] (2) U13 — a skip link and one main landmark on the board and the projects page — [#225](https://github.com/tolakang/smart-canvas/pull/225)
+- [x] (2) U14 — an empty text layer shows a placeholder in the editors and previews, nothing in export (this PR)
+- [ ] (2) U15–U19 — the UI fixes, one piece per PR, in the audit's order; U8 (splitting `Board.tsx`) optional, last
 - [ ] (3) K1–K6 — wait for the owner's decisions
 
 ## Next (see BACKLOG; proposals, the owner picks)
