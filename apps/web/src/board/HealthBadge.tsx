@@ -1,10 +1,10 @@
 /**
  * Layout health on a node (D35): a status dot (green ok, grey empty layers to fill (D64), amber warnings, red errors,
  * grey frozen) with the
- * number of issues; click it for the list (layer + what happened). Export progress is not shown here.
+ * number of issues in words; click it for the list (layer + what happened), shown inside the card. Export progress is not shown here.
  */
 import type { Health } from '@smart-canvas/core';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { NO_CANVAS } from './pinch';
 
 
@@ -34,19 +34,34 @@ const DOT: Record<Health['level'], string> = {
   frozen: 'bg-faint',
   empty: 'bg-transparent [box-shadow:inset_0_0_0_1.5px_var(--muted)]',
 };
+/** UX A6 (F7, F18): the count says what it counts ("2 empty", "1 warning"), on a 24 px target. */
 const BADGE =
-  'inline-flex h-20 min-w-20 cursor-default items-center gap-4 rounded-[99px] px-6 py-0 text-xs font-[600] [font-variant-numeric:tabular-nums] [border:0] [&[aria-expanded]]:cursor-pointer';
-/** The issues pop-up under a badge. */
-export const ISSUES_POPUP =
-  'sc-health__list absolute top-[calc(100%+6px)] right-0 z-20 m-0 grid w-240 list-none gap-2 rounded-md border border-line bg-surface p-(--sp-1) text-xs [box-shadow:var(--shadow-2)] [&_strong]:block [&_strong]:font-[600] [&>li]:rounded-sm [&>li]:bg-surface-2 [&>li]:px-(--sp-2) [&>li]:py-6 [&>li]:[border-left:3px_solid_var(--warn)] [&>li[data-level=error]]:[border-left-color:var(--danger)] [&>li[data-level=todo]]:[border-left-color:var(--faint)]';
+  'inline-flex h-24 min-w-24 cursor-default items-center gap-5 rounded-[99px] px-8 py-0 text-xs font-[600] [font-variant-numeric:tabular-nums] [border:0] [&[aria-expanded]]:cursor-pointer';
+/** The issues list, inside the card under its header (UX A6: a pop-up was cut off by the cards around it). */
+export const ISSUES_IN_CARD =
+  'sc-health__list m-0 grid list-none gap-2 p-0 text-xs [&_strong]:block [&_strong]:font-[600] [&>li]:rounded-sm [&>li]:bg-surface-2 [&>li]:px-(--sp-2) [&>li]:py-6 [&>li]:[border-left:3px_solid_var(--warn)] [&>li[data-level=error]]:[border-left-color:var(--danger)] [&>li[data-level=todo]]:[border-left-color:var(--faint)]';
 
-export function HealthBadge({ health }: { health: Health }) {
+/** The badge's short word for its count. */
+function countWord(h: Health, n: number): string {
+  if (h.level === 'error') return n === 1 ? 'problem' : 'problems';
+  if (h.level === 'warning') return n === 1 ? 'warning' : 'warnings';
+  return 'empty';
+}
+
+/**
+ * A card's health: the badge for its header and, while the badge is open, the list for under the header. Escape or a
+ * click outside the card closes it.
+ */
+export function useHealth(health: Health | null | undefined): { badge: ReactNode; list: ReactNode } {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLSpanElement>(null);
+  const count = health?.issues.length ?? 0;
+  const shown = open && count > 0;
   useEffect(() => {
-    if (!open) return;
+    if (!shown) return;
+    const card = root.current?.closest('.react-flow__node') ?? root.current;
     const close = (e: Event) => {
-      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !root.current?.contains(e.target as Node)) setOpen(false);
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !card?.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener('pointerdown', close);
     document.addEventListener('keydown', close);
@@ -54,25 +69,25 @@ export function HealthBadge({ health }: { health: Health }) {
       document.removeEventListener('pointerdown', close);
       document.removeEventListener('keydown', close);
     };
-  }, [open]);
+  }, [shown]);
+  if (!health) return { badge: null, list: null };
   const summary = healthSummary(health);
-  const count = health.issues.length;
-  return (
+  const badge = (
     <span ref={root} className={`sc-health relative inline-flex flex-none ${NO_CANVAS}`} data-health={health.level}>
       <button
         type="button"
         className={`sc-health__btn sc-health--${health.level} ${BADGE} ${HEALTH_TONE[health.level] || '[background:none]'}`}
         aria-label={`Layout health: ${summary}`}
-        aria-expanded={count ? open : undefined}
+        aria-expanded={count ? shown : undefined}
         title={summary}
         onClick={() => count && setOpen((o) => !o)}
       >
         <span className={`sc-health__dot size-8 rounded-[50%] ${DOT[health.level]}`} aria-hidden="true" />
-        {count > 0 && <span className="sc-health__count">{count}</span>}
+        {count > 0 && <span className="sc-health__count">{count} {countWord(health, count)}</span>}
       </button>
-      {open && count > 0 && <HealthIssues health={health} className={ISSUES_POPUP} />}
     </span>
   );
+  return { badge, list: shown ? <HealthIssues health={health} className={`${ISSUES_IN_CARD} ${NO_CANVAS}`} /> : null };
 }
 
 /** The issues, one per layer and kind (the badge's pop-up and the inspector's list). */
