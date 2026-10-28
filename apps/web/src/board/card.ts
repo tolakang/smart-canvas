@@ -33,15 +33,15 @@ const FIELDS = [
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:rounded-md',
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:text-fg',
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:[transition:border-color_var(--t-fast),background_var(--t-fast)]',
-  // UX A3 (F8): a field shows a 1px edge, not only its fill; hover darkens it.
-  '[&_input:not([type=radio],[type=checkbox],[type=color],[type=file]):not(:hover):not(:focus)]:border-line-strong',
+  // UX A3 (F8): a field shows a 1px edge (3:1, WCAG 1.4.11), not only its fill; hover darkens it.
+  '[&_input:not([type=radio],[type=checkbox],[type=color],[type=file]):not(:hover):not(:focus)]:border-field-line',
   '[&_input:not([type=radio],[type=checkbox],[type=color],[type=file]):hover:not(:focus)]:border-muted',
   '[&_input:not([type=radio],[type=checkbox],[type=color],[type=file])]:bg-surface-2',
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select)]:h-(--field-h)',
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select)]:px-(--sp-2)',
   '[&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select)]:py-0',
   '[&_select]:w-full',
-  '[&_:is(select,textarea):not(:hover):not(:focus)]:border-line-strong',
+  '[&_:is(select,textarea):not(:hover):not(:focus)]:border-field-line',
   '[&_:is(select,textarea):hover:not(:focus)]:border-muted',
   '[&_:is(select,textarea):focus]:border-accent',
   '[&_:is(select,textarea):not(:focus)]:bg-surface-2',

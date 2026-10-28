@@ -10,7 +10,7 @@ D65): how to write those classes is in `FRONTEND.md`. The editor screen (`.sc-fi
 
 | Group | Tokens | Notes |
 |---|---|---|
-| Neutrals | `--bg` #f4f5f7 · `--surface` #fff · `--surface-2` #f1f3f5 · `--surface-3` #e9ecef · `--fg` #14171c · `--muted` #5e6672 · `--line` #e4e7eb · `--line-strong` #cfd4da | Cool greys. `--muted` is 5.9:1 on white, so small grey text passes AA |
+| Neutrals | `--bg` #f4f5f7 · `--surface` #fff · `--surface-2` #f1f3f5 · `--surface-3` #e9ecef · `--fg` #14171c · `--muted` #5e6672 · `--line` #e4e7eb · `--line-strong` #cfd4da · `--field-line` #858d97 (dark #666e7a): a field's edge, 3:1 (WCAG 1.4.11) | Cool greys. `--muted` is 5.9:1 on white, so small grey text passes AA |
 | Accent / state | `--accent` #0965cf · `--accent-hover` · `--accent-soft` #e7f0fc · `--on-accent` · `--ring` (focus halo) · `--danger` #c8321b · `--warn` #9a5200 · `--ok` #0d7a3f | U7: every text colour is AA (4.5:1) on every surface in both themes; text on a solid accent or status fill uses `--on-accent` (white in light, near-black in dark, where white on the lighter accent is only 2.8:1) |
 | Node types | `--type-input` blue · `--type-main` violet · `--type-output` green (`--type-process` orange-red is kept as a group / tile colour) | Only the 3 px stripe on top of a node |
 | Type | `--fs-xs` 11 · `--fs-sm` 12 · `--fs-md` 13 · `--fs-lg` 15 · `--fs-xl` 20; `--font-ui` | **Inter** (bundled, `@fontsource-variable/inter`) for the interface only; artwork fonts are separate (`fonts/bundled.css`) |

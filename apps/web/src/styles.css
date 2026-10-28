@@ -10,6 +10,7 @@
   --muted: #5e6672; /* 5.9:1 on white */
   --line: #e4e7eb;
   --line-strong: #cfd4da;
+  --field-line: #858d97; /* a field's edge: 3.4:1 on white, 3.1:1 on --bg (WCAG 1.4.11) */
   --accent: #0965cf; /* U7: 5.6:1 with white text, 4.7:1 as text on every light surface */
   --scrim: rgb(15 17 21 / 0.36); /* behind an open dialog */
   --wire-reconnecting: #777; /* React Flow's colour for a wire being dragged to a new port */
@@ -213,6 +214,7 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
   --muted: #9aa3ae;
   --line: #262b33;
   --line-strong: #363c46;
+  --field-line: #666e7a; /* 3.4:1 on --surface, 3.7:1 on --bg */
   --accent: #4b9dff;
   --accent-hover: #6aaeff;
   --on-accent: #06101f; /* U7: white on this lighter accent is only 2.8:1; near-black is 6.9:1 */

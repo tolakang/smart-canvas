@@ -1,4 +1,4 @@
-/* The app's CSS at 02855136402792faaf634c9d7711b1bca26345ec (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 017f3cc4ca917006f607969762d64ce2cc089089 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -3215,16 +3215,16 @@
     }
   }
 
+  .\[border\:1px_solid_var\(--field-line\)\] {
+    border: 1px solid var(--field-line);
+  }
+
   .\[border\:1px_solid_var\(--fig-line\)\] {
     border: 1px solid var(--fig-line);
   }
 
   .\[border\:1px_solid_var\(--line\)\] {
     border: 1px solid var(--line);
-  }
-
-  .\[border\:1px_solid_var\(--line-strong\)\] {
-    border: 1px solid var(--line-strong);
   }
 
   .\[border\:1px_solid_var\(--line-strong\)\]\! {
@@ -4418,8 +4418,8 @@
     border-style: solid;
   }
 
-  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:border-line-strong :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
-    border-color: var(--line-strong);
+  .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:border-field-line :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
+    border-color: var(--field-line);
   }
 
   .\[\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\]\:bg-surface-2 :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea) {
@@ -4494,8 +4494,8 @@
     border-radius: 5px;
   }
 
-  .\[\&_\:is\(select\,input\[type\=number\]\)\]\:\[border-color\:var\(--line-strong\)\] :is(select, input[type="number"]) {
-    border-color: var(--line-strong);
+  .\[\&_\:is\(select\,input\[type\=number\]\)\]\:\[border-color\:var\(--field-line\)\] :is(select, input[type="number"]) {
+    border-color: var(--field-line);
   }
 
   .\[\&_\:is\(select\,input\[type\=number\]\)\]\:\[background-color\:var\(--fig-hover\)\] :is(select, input[type="number"]) {
@@ -4542,8 +4542,8 @@
     background-color: var(--surface-2);
   }
 
-  .\[\&_\:is\(select\,textarea\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-line-strong :is(select, textarea):not(:hover):not(:focus) {
-    border-color: var(--line-strong);
+  .\[\&_\:is\(select\,textarea\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-field-line :is(select, textarea):not(:hover):not(:focus) {
+    border-color: var(--field-line);
   }
 
   .\[\&_\:is\(td\,th\)\]\:px-4 :is(td, th) {
@@ -4807,8 +4807,8 @@
     border-color: var(--muted);
   }
 
-  .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-line-strong input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]):not(:hover):not(:focus) {
-    border-color: var(--line-strong);
+  .\[\&_input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\:not\(\:hover\)\:not\(\:focus\)\]\:border-field-line input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]):not(:hover):not(:focus) {
+    border-color: var(--field-line);
   }
 
   .\[\&_input\[type\=color\]\]\:size-\(--field-h\) input[type="color"] {
@@ -6500,6 +6500,7 @@ svg.react-flow__connectionline {
   --muted: #5e6672; /* 5.9:1 on white */
   --line: #e4e7eb;
   --line-strong: #cfd4da;
+  --field-line: #858d97; /* a field's edge: 3.4:1 on white, 3.1:1 on --bg (WCAG 1.4.11) */
   --accent: #0965cf; /* U7: 5.6:1 with white text, 4.7:1 as text on every light surface */
   --scrim: rgb(15 17 21 / 0.36); /* behind an open dialog */
   --wire-reconnecting: #777; /* React Flow's colour for a wire being dragged to a new port */
@@ -6703,6 +6704,7 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
   --muted: #9aa3ae;
   --line: #262b33;
   --line-strong: #363c46;
+  --field-line: #666e7a; /* 3.4:1 on --surface, 3.7:1 on --bg */
   --accent: #4b9dff;
   --accent-hover: #6aaeff;
   --on-accent: #06101f; /* U7: white on this lighter accent is only 2.8:1; near-black is 6.9:1 */
