@@ -176,7 +176,7 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-icon-btn { line-height: 1.4; width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
 .sc-icon-btn:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); border-color: transparent; }
 
-.sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; }
+.sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; }
 .sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
 .sc-fill { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; font-size: var(--fs-xs); color: var(--muted); }
@@ -196,7 +196,7 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 /* Hand (or Space held): the board pans from anywhere, panels included; the cursor says so. */
 .sc-board__flow--hand .react-flow__pane, .sc-board__flow--hand .react-flow__node { cursor: grab; }
 .sc-board__flow--hand .react-flow__pane.dragging, .sc-board__flow--hand:active .react-flow__node { cursor: grabbing; }
-.sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 2px; gap: 2px; display: inline-flex; }
+.sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; display: inline-flex; }
 .sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
 .sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
 .sc-inspector-panel .sc-upload, .sc-inspector-panel .sc-fill button, .sc-inspector-panel .sc-link { display: inline-flex; align-items: center; height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); justify-self: start; }
