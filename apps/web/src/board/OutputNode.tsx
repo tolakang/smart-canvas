@@ -115,7 +115,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
         tone={connected ? '[--head:var(--head-preview)]' : '[--head:var(--head-frozen)]'}
         title={nameWithoutSize(output.label) || output.label}
         sub={
-          <span className="sc-preview__size min-w-0 flex-1 overflow-hidden text-[11px] text-ellipsis whitespace-nowrap text-muted [font-variant-numeric:tabular-nums]" title={output.label}>
+          <span className="sc-preview__size min-w-0 flex-1 text-[11px] text-muted [font-variant-numeric:tabular-nums]" title={output.label}>
             {output.size.width} × {output.size.height} {output.size.unit}
           </span>
         }
@@ -173,7 +173,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
               className={`sc-btn sc-btn--ghost ${NO_CANVAS}`}
               onClick={() => window.confirm(`Reset all overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}
             >
-              Reset output
+              Reset this Preview
             </button>
           )}
         </div>

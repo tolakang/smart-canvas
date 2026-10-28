@@ -154,8 +154,10 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             </span>
             <span className="sc-port__label flex-1 overflow-hidden text-[12.5px] text-ellipsis whitespace-nowrap text-muted" title={output.label}>
               {/* V2: the size is already shown; a name that only repeats the preset and the size says nothing more. */}
-              {[rowName(output.label, set.label), connected ? '' : 'disconnected'].filter(Boolean).join(' · ')}
+              {rowName(output.label, set.label)}
             </span>
+            {/* UX A5 (F16): the state is never cut off; only the name gives way. */}
+            {!connected && <span className="sc-preset__state flex-none text-[12px] text-warn">Disconnected</span>}
             {/* D51: the eye shows / hides this size's Preview on the board (it still exports); the trash removes the size. */}
             <button
               type="button"

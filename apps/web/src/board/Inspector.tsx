@@ -150,7 +150,7 @@ function OutputInspector({ output }: { output: OutputNode }) {
           </p>
           {!readOnly && (
             <button type="button" className="sc-btn" onClick={() => window.confirm(`Reset all overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}>
-              Reset output
+              Reset this Preview
             </button>
           )}
         </Section>
@@ -159,12 +159,13 @@ function OutputInspector({ output }: { output: OutputNode }) {
   );
 }
 
-function InputInspector({ source }: { source: InputSource }) {
+/** `headline`: the picture of a Headline node's language (UX A4: named for what it is, not its file kind). */
+function InputInspector({ source, headline }: { source: InputSource; headline?: boolean }) {
   const { run, readOnly } = useBoard();
   const upload = useAssetUpload(source);
   return (
     <>
-      <Section title={KIND_LABEL[source.kind]}>
+      <Section title={headline ? 'Headline picture' : KIND_LABEL[source.kind]}>
         <NameField label="Input name" value={source.label} onCommit={(label) => run((d) => renameSource(d, source.id, label))} />
         <label className="sc-field sc-field--col">
           Behaves like
@@ -242,14 +243,14 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
             </label>
           ))}
         </div>
-        <p className={HINT}>Every Preview draws the language in use. Each language keeps its own position and size.</p>
+        <p className={HINT}>Every Preview draws the language in use. Switching swaps the picture only: it keeps its place and size (V4).</p>
         {!readOnly && (
           <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and edits on Previews go with them.`) && run((d) => deletePair(d, pair.id))}>
             <Icon name="trash" /> Delete node
           </button>
         )}
       </Section>
-      {focused && <InputInspector key={focused.id} source={focused} />}
+      {focused && <InputInspector key={focused.id} source={focused} headline />}
     </>
   );
 }
@@ -340,7 +341,7 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
   const stats = [
     { label: previews === 1 ? 'Preview' : 'Previews', value: previews },
     { label: 'Approved', value: `${approved}/${previews}` },
-    { label: open === 1 ? 'Comment' : 'Comments', value: open },
+    { label: 'Comments', value: open },
   ];
   return (
     <>

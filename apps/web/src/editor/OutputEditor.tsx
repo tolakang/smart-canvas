@@ -85,7 +85,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
               disabled={output.overrides.length === 0}
               onClick={() => window.confirm(`Reset all ${output.overrides.length} overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}
             >
-              Reset output
+              Reset this Preview
             </button>
           )}
         </>
