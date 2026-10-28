@@ -2,7 +2,7 @@
  * The right inspector (T13.2): settings of the selected node, so node cards stay small (thumbnail, name, size,
  * health). An output: name, layout health (D35), size / preset / scale / bleed, connection, hand edits. An
  * input: name, behaviour, visibility, its content editor and its actions (duplicate, save to library, delete). The
- * Layer Comp group (D49, N1): layer count, the three layout editors, health and the square layout's size.
+ * Main Comps group (D49, N1): layer count, the three layout editors, health and the square layout's size.
  */
 import {
   deletePair,

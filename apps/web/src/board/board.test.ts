@@ -57,7 +57,7 @@ describe('docToNodes / docToEdges', () => {
     ]);
   });
 
-  it('maps wires to edges: asset nodes into the Layer Comp top (D49); an output outside a Preset node has no wire', () => {
+  it('maps wires to edges: asset nodes into the top of Main Comps (D49); an output outside a Preset node has no wire', () => {
     expect(docToEdges(sampleDoc())).toEqual([
       // T13.8: every wire is a 'routed' edge carrying its reroute points.
       { id: 'w1', type: 'routed', data: { points: [] }, source: 'src:bg', target: 'main', targetHandle: 'layers', className: 'sc-edge--layer', deletable: true },
@@ -270,7 +270,7 @@ describe('Assets cards on the board (D40)', () => {
     return filled.doc;
   };
 
-  it('draws one card for its pictures (not a node each), and one wire from the card into the Layer Comp (D49)', () => {
+  it('draws one card for its pictures (not a node each), and one wire from the card into Main Comps (D49)', () => {
     const doc = withCard();
     const nodes = docToNodes(doc);
     const card = nodes.find((n) => n.id === stackNodeId('st'));

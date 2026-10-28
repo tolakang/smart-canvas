@@ -9,7 +9,7 @@ const ok = (r: SourceResult): ProjectDoc => {
 };
 
 describe('an empty Image / Logo node keeps its wire (D49.1)', () => {
-  it('is drawn wired into the Layer Comp; once cut, it is not', () => {
+  it('is drawn wired into Main Comps; once cut, it is not', () => {
     const doc = ok(addStack(createProjectDoc('P'), { id: 'st', board: { x: 0, y: 0 } }));
     const wire = (d: ProjectDoc) => docToEdges(d).find((e) => e.id === cardEdgeId(stackNodeId('st')));
     expect(wire(doc)).toMatchObject({ source: stackNodeId('st'), target: 'main', targetHandle: 'layers' });

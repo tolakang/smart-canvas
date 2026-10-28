@@ -237,7 +237,7 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     await bar(phone).getByRole('button', { name: /^Fit to screen/ }).tap();
     await phone.waitForTimeout(400);
     const pane = await boxOf('.react-flow__pane');
-    // Both fingers on the Layer Comp panel, one on its Edit button.
+    // Both fingers on the Main Comps panel, one on its Edit button.
     const panel = await boxOf(MAIN);
     const edit = await boxOf(`${MAIN} button`);
     const c = { x: Math.min(panel.x + panel.width / 2, pane.x + pane.width - 60), y: Math.min(panel.y + panel.height / 2, pane.y + pane.height - 60) };

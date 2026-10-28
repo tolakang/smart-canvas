@@ -15,7 +15,7 @@ function sample(): ProjectDoc {
 }
 
 describe('Delete key on the board', () => {
-  it('lists what can go (not the Layer Comp group), with one question', () => {
+  it('lists what can go (not the Main Comps group), with one question', () => {
     const d = sample();
     const t = deletableNodes(d, [inputNodeId('logo'), MAIN_ID, outputNodeId('o1')]);
     expect(t.map((x) => x.kind)).toEqual(['input', 'output']);

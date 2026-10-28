@@ -15,7 +15,7 @@ const ok = (r: SourceResult): ProjectDoc => {
 };
 
 describe('page-3 board structure (D49)', () => {
-  it('a new project: Logo, Headline (KH/EN), Text, Image, Background, all wired into the Layer Comp', () => {
+  it('a new project: Logo, Headline (KH/EN), Text, Image, Background, all wired into Main Comps', () => {
     const doc = createBoardProject('P');
     // D68: the Logo and Image nodes start empty (no empty slot to fill); the first text is "Text 1".
     expect(assetStacks(doc).map((st) => [stackKind(st), st.items])).toEqual([

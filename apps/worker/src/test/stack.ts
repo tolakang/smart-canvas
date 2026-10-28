@@ -71,7 +71,7 @@ export async function setupAndCreateProject(page: Page, webUrl: string, name: st
   await page.getByRole('button', { name: 'New project' }).first().click();
   await page.getByRole('dialog', { name: 'New project' }).getByPlaceholder('New project name').fill(name);
   await page.getByRole('dialog', { name: 'New project' }).getByRole('button', { name: 'Create', exact: true }).click();
-  // D49: the board shows once the Layer Comp group is up.
+  // D49: the board shows once the Main Comps group is up.
   await page.locator('.sc-comp-group').waitFor();
   const [, teamId = '', projectId = ''] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];
   if (!opts.fresh) {
@@ -90,5 +90,5 @@ export const boardNode = (page: Page, title: string) =>
   page.locator('.react-flow__node').filter({ has: page.locator('.sc-node__title', { hasText: new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) });
 /** D49: a file put into a named picture of an Image or Logo node (its Replace input; the layer keeps its place). */
 export const putPicture = (page: Page, label: string, file: { name: string; mimeType: string; buffer: Buffer }) => page.getByLabel(`Replace ${label}`, { exact: true }).setInputFiles(file);
-/** D49: opens one of the Layer Comp's layout editors (Square is the master). */
+/** D49: opens one of Main Comps' layout editors (Square is the master). */
 export const openLayout = (page: Page, family: 'Square' | 'Vertical' | 'Horizontal' = 'Square') => page.locator('.react-flow__node-mainNode').getByRole('button', { name: new RegExp(`^(Edit|View) ${family} layout$`) }).click();

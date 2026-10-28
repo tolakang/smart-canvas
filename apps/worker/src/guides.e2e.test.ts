@@ -44,7 +44,7 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
   const doc = async (): Promise<{ rev: number; doc: ProjectDoc }> => (await page.request.get(url)).json();
   const subjectIn = (d: ProjectDoc, output: string) => computeLayout(d, output, { measure, assets: {} }).items.find((i) => i.sourceId === 'subject')?.frame;
 
-  it('the Layer Comp’s Vertical and Horizontal buttons add those layouts (D49); outputs say which they follow; nothing moves', async () => {
+  it('Main Comps’ Vertical and Horizontal buttons add those layouts (D49); outputs say which they follow; nothing moves', async () => {
     const before = (await doc()).doc;
     for (const family of ['Vertical', 'Horizontal'] as const) {
       await openLayout(page, family);
@@ -56,7 +56,7 @@ describe.skipIf(!adminUrl)('layout guides (D42)', () => {
     await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
     const d = (await doc()).doc;
     expect(guidesOf(d, MAIN).map((g) => g.label)).toEqual(['Vertical guide', 'Horizontal guide']);
-    // Still one Layer Comp on the board: the layouts open from it.
+    // Still one Main Comps on the board: the layouts open from it.
     expect(await page.locator('.react-flow__node-mainNode').count()).toBe(1);
     await page.getByLabel('Preview Story', { exact: true }).getByText('Vertical guide').waitFor();
     expect(await page.getByLabel('Preview Post', { exact: true }).getByText('guide').count()).toBe(0);

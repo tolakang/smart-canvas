@@ -20,7 +20,7 @@ describe.skipIf(!adminUrl)('wire polish (T13.8)', () => {
     const ids = await setupAndCreateProject(page, stack.env.webUrl, 'Wires2');
     url = `${stack.env.webUrl}api/teams/${ids.teamId}/projects/${ids.projectId}`;
     const p = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
-    // D49: every asset node is wired into the Layer Comp; the Background node's wire is its own edge.
+    // D49: every asset node is wired into Main Comps; the Background node's wire is its own edge.
     expect(p.doc.edges.some((e) => e.id === 'in:background')).toBe(true);
     await page.locator('.react-flow__edge[data-id="in:background"]').waitFor();
     await page.getByRole('button', { name: /^Fit to screen/ }).click();

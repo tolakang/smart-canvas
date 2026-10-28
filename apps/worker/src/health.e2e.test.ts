@@ -1,5 +1,5 @@
 /**
- * T13.1 (D35) end to end: nodes show their layout health. A new project's Layer Comp lists wired
+ * T13.1 (D35) end to end: nodes show their layout health. A new project's Main Comps lists wired
  * inputs that are still empty, in grey (D64); an output warns when its text can't fit; a disconnected output is grey.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
@@ -48,7 +48,7 @@ describe.skipIf(!adminUrl)('layout health on nodes (T13.1)', () => {
   const main = () => page.locator('.react-flow__node-mainNode');
   const banner = () => page.locator('.react-flow__node-outputNode[data-id="out:banner"]');
 
-  it('the Layer Comp shows a wired input with no file yet as a grey to-do, and lists it', async () => {
+  it('Main Comps shows a wired input with no file yet as a grey to-do, and lists it', async () => {
     await expect.poll(() => badge(main()).getAttribute('data-health')).toBe('empty');
     const btn = main().getByRole('button', { name: /^Layout health: 1 empty layer$/ });
     await btn.click();

@@ -1,6 +1,6 @@
 /**
  * D40 / D49: an Image node (or a Logo node: its pictures behave as logos) — one board node holding many pictures. Drop several files on it (or pick them) and each
- * becomes its own layer, wired into the Layer Comp (and its layouts). Click a picture to set it in the inspector,
+ * becomes its own layer, wired into Main Comps (and its layouts). Click a picture to set it in the inspector,
  * drag pictures to reorder the card. V1: each slot's Replace / Remove picture / Delete show on hover or once tapped;
  * grid / list (remembered per card, in this browser) and Delete node are in the ⋯ menu.
  */

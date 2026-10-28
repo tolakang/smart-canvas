@@ -6,7 +6,7 @@
  *
  * `boardStructure` brings any document into that shape, keeping what fits (process nodes, other master previews
  * and Core Rule nodes left the document in the v3 migration, D56): inputs outside a node join the node of their kind (logo, text, picture); an output outside a Preset
- * node joins a "Sizes" preset node; a missing Logo / Headline / Text / Image / Background node is added. (The Layer Comp's vertical and horizontal
+ * node joins a "Sizes" preset node; a missing Logo / Headline / Text / Image / Background node is added. (Main Comps' vertical and horizontal
  * layouts are added when first opened; until then outputs follow the master on the stretched grid.) It returns `doc` itself
  * when the document is already in shape. Pure; ids of what it adds are derived from the doc, so it is repeatable.
  */
@@ -87,7 +87,7 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
 }
 
 /**
- * A new project on the page-3 board: every asset node wired into the Layer Comp, nothing else.
+ * A new project on the page-3 board: every asset node wired into Main Comps, nothing else.
  * D68 (UX B10, amends D8 / D49): the Image and Logo nodes start with no slot (their drop area is the way in), so no
  * empty layer is a to-do or a placeholder from the start; the Text node's first text is "Text 1". `legacySlots`
  * keeps the D8 shape (an empty Subject picture and Logo, a text named Headline) for the browser tests built on it.
