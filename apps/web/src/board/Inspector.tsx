@@ -50,6 +50,11 @@ import { FAMILY_LABEL, useOpenLayout } from './MainNode';
 import { OUTPUT_ROW, OutputSettings } from './OutputSettings';
 import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
 
+/** UX A7 (F17): Delete node is a quiet row at the section's end, not a full-width red button under the pictures. */
+const DELETE_NODE = 'sc-btn sc-btn--ghost sc-btn--danger justify-self-start';
+/** UX A7: the language switch — two segments; the chosen one raised. */
+const SWITCH =
+  'items-stretch [&_label]:relative [&_label]:inline-flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:rounded-sm [&_label]:px-(--sp-2) [&_label]:text-xs [&_label]:text-muted [&_label:has(:checked)]:bg-surface [&_label:has(:checked)]:text-fg [&_label:has(:checked)]:[box-shadow:var(--shadow-1)] [&_label:has(:focus-visible)]:[outline:2px_solid_var(--accent)] [&_input]:sr-only';
 const KIND_LABEL = { image: 'Image', vector: 'Logo / SVG', text: 'Text', fill: 'Colour / gradient' } as const;
 /** A picture of an asset node, in the inspector's grid: contained on a checkerboard. */
 const PICK =
@@ -235,7 +240,8 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
     <>
       <Section title="Headline node">
         <NameField label="Headline name" value={pair.label} onCommit={(label) => run((d) => renamePair(d, pair.id, label))} />
-        <div className="sc-seg" role="radiogroup" aria-label="Language every Preview uses">
+        {/* UX A7 (F17): a segmented switch, not native radios (the radios stay, hidden, for the keyboard and screen readers). */}
+        <div className={`sc-seg ${SWITCH}`} role="radiogroup" aria-label="Language every Preview uses">
           {(['km', 'en'] as const).map((lang) => (
             <label key={lang}>
               <input type="radio" name={`inspector-use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang, layoutDeps?.assets))} />
@@ -245,7 +251,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
         </div>
         <p className={HINT}>Every Preview draws the language in use. Switching swaps the picture only: it keeps its place and size (V4).</p>
         {!readOnly && (
-          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and edits on Previews go with them.`) && run((d) => deletePair(d, pair.id))}>
+          <button type="button" className={DELETE_NODE} aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and edits on Previews go with them.`) && run((d) => deletePair(d, pair.id))}>
             <Icon name="trash" /> Delete node
           </button>
         )}
@@ -276,14 +282,19 @@ function AssetsInspector({ stackId }: { stackId: string }) {
               const asset = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null;
               return (
                 <button key={s.id} type="button" role="listitem" className={`${PICK}${s.id === focused?.id ? ' sc-assets__item--focus [outline:2px_solid_var(--accent)] outline-offset-1 focus-visible:outline-offset-2' : ''}`} title={s.label} aria-label={`Set ${s.label}`} onClick={() => setStackFocus(s.id)}>
-                  {asset ? <img className="size-full object-contain" src={assetUrl(teamId, asset)} alt="" draggable={false} /> : '?'}
+                  {asset ? <img className="size-full object-contain" src={assetUrl(teamId, asset)} alt="" draggable={false} /> : (
+                    // UX A7 (F17): an empty slot shows what it holds, not a "?".
+                    <span className="text-muted" aria-hidden="true">
+                      <Icon name={s.content.kind === 'text' ? 'text' : 'image'} />
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
         )}
         {!readOnly && (
-          <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${stack.label}`} onClick={() => window.confirm(`Delete “${stack.label}” and its ${items.length} ${kind === 'text' ? 'text slots' : 'pictures'}? Their wires and edits on Previews go with them.`) && run((d) => deleteStack(d, stack.id))}>
+          <button type="button" className={DELETE_NODE} aria-label={`Delete ${stack.label}`} onClick={() => window.confirm(`Delete “${stack.label}” and its ${items.length} ${kind === 'text' ? 'text slots' : 'pictures'}? Their wires and edits on Previews go with them.`) && run((d) => deleteStack(d, stack.id))}>
             <Icon name="trash" /> Delete node
           </button>
         )}

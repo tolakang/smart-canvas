@@ -26,7 +26,7 @@ import { RenderThumbnail } from '../render/OutputRenderer';
 import { cardClass, HEAD_ACTION, META } from './card';
 import { useBoard } from './context';
 import type { OutputFlowNode } from './flow';
-import { HealthBadge } from './HealthBadge';
+import { useHealth } from './HealthBadge';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { approvalOf, threadsOf } from './review';
@@ -105,6 +105,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
     return g?.guide ? g.label : null;
   }, [shownDoc, output, connected]);
 
+  const healthUi = useHealth(health);
   return (
     // D49 (page 3): a Preview — one size of a Preset node, its live layout, Edit (its own overrides) and Export.
     <div className={cardClass('output', { frozen: !connected })} aria-label={`Preview ${output.label}`}>
@@ -121,7 +122,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
         }
         extra={
           <>
-            {health && <HealthBadge health={health} />}
+            {healthUi.badge}
             <button type="button" className={`${HEAD_ACTION} ${NO_CANVAS}`} onClick={() => openOutputEditor(output.id)} aria-label={`${readOnly ? 'View' : 'Edit'} Preview ${output.label}`}>
               <Icon name={readOnly ? 'eye' : 'pencil'} size={13} />
               {readOnly ? 'View' : 'Edit'}
@@ -129,6 +130,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
           </>
         }
       />
+      {healthUi.list}
       {(approval.state !== 'none' || openThreads > 0) && (
         // D63: the Preview's review — its approval and open comments.
         <div className="sc-preview__review flex flex-wrap items-center gap-6 px-12 pt-6 pb-0">
