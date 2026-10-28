@@ -196,13 +196,13 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
 
   it('duplicates a project as a full detached copy (T7.3)', async () => {
     const p = await create('Spring');
-    const doc = { ...p.doc, sources: p.doc.sources.map((x) => (x.id === 'subject' ? { ...x, label: 'Title' } : x)) };
+    const doc = { ...p.doc, sources: p.doc.sources.map((x) => (x.id === 'headline' ? { ...x, label: 'Title' } : x)) };
     expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: p.rev, doc })).statusCode).toBe(200);
     const res = await call('POST', `${base()}/${p.id}/duplicate`, editor, {});
     expect(res.statusCode).toBe(201);
     const copy = res.json<{ id: string; rev: number; doc: ProjectDoc; isTemplate: boolean }>();
     expect(copy).toMatchObject({ rev: 0, isTemplate: false, doc: { name: 'Spring (copy)', rev: 0 } });
-    expect(copy.doc.sources.find((x) => x.id === 'subject')?.label).toBe('Title');
+    expect(copy.doc.sources.find((x) => x.id === 'headline')?.label).toBe('Title');
     expect(copy.id).not.toBe(p.id);
     expect((await call('POST', `${base()}/${p.id}/duplicate`, viewer, {})).statusCode).toBe(403);
   });

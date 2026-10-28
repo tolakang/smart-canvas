@@ -73,10 +73,10 @@ describe('OutputRenderer', () => {
     expect(out).not.toContain('ignored');
   });
 
-  it('thumbnail fits the box keeping aspect', () => {
+  it('thumbnail fits the box keeping aspect, with no placeholder for an empty layer (D68)', () => {
     const out = renderToStaticMarkup(<RenderThumbnail scene={scene} sources={sources} assetUrl={assetUrl} maxWidth={200} maxHeight={200} />);
     expect(out).toContain('width:200px;height:100px');
-    expect(out).toContain('sc-render__placeholder');
+    expect(out).not.toContain('sc-render__placeholder');
   });
 });
 

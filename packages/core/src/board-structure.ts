@@ -17,7 +17,7 @@ import type { ProjectDoc } from './model';
 import { PREVIEW_OFFSET } from './preset-sets';
 import { createProjectDoc } from './project';
 import { connectSource } from './ports';
-import { addSource } from './sources';
+import { addSource, deleteSource } from './sources';
 import { addStack, assetStacks, stackKind } from './stacks';
 
 /** Where the page-3 nodes go on a new board (board px). */
@@ -86,13 +86,22 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
   return next === doc ? doc : next;
 }
 
-/** A new project on the page-3 board: every asset node wired into the Layer Comp, nothing else. */
-export function createBoardProject(name: string): ProjectDoc {
+/**
+ * A new project on the page-3 board: every asset node wired into the Layer Comp, nothing else.
+ * D68 (UX B10, amends D8 / D49): the Image and Logo nodes start with no slot (their drop area is the way in), so no
+ * empty layer is a to-do or a placeholder from the start; the Text node's first text is "Text 1". `legacySlots`
+ * keeps the D8 shape (an empty Subject picture and Logo, a text named Headline) for the browser tests built on it.
+ */
+export function createBoardProject(name: string, opts: { legacySlots?: boolean } = {}): ProjectDoc {
   let doc = createProjectDoc(name);
   // Wired first, so the master's layouts (added by the structure) get every layer too.
   for (const s of doc.sources) doc = step(doc, connectSource(doc, s.id));
   doc = { ...doc, compositions: doc.compositions.map((c) => (c.id === MAIN ? { ...c, label: 'Layer comp', board: { ...BOARD_LAYOUT.comp } } : c)) };
   doc = boardStructure(doc);
+  if (!opts.legacySlots) {
+    for (const id of ['subject', 'logo']) doc = step(doc, deleteSource(doc, id));
+    doc = { ...doc, sources: doc.sources.map((s) => (s.id === 'headline' ? { ...s, label: 'Text 1' } : s)) };
+  }
   return {
     ...doc,
     sources: doc.sources.map((s) => (s.behavesLike === 'background' ? { ...s, board: { ...BOARD_LAYOUT.background } } : s)),

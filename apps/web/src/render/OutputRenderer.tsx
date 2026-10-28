@@ -155,9 +155,10 @@ function Layer({
   }
 }
 
-/** A scene scaled to fit a box (main node, output nodes, lists). */
+/** A scene scaled to fit a box (main node, output nodes, lists). D68 (UX B10): no placeholders — a board Preview shows
+ * only real artwork, as its export will; placeholders for empty layers are drawn in the editors only. */
 export function RenderThumbnail(props: Omit<OutputRendererProps, 'scale' | 'mode'> & { maxWidth: number; maxHeight: number }) {
   const { maxWidth, maxHeight, ...rest } = props;
   const scale = Math.min(maxWidth / props.scene.width, maxHeight / props.scene.height);
-  return <OutputRenderer {...rest} scale={scale} mode="preview" className="sc-render--thumb" />;
+  return <OutputRenderer {...rest} scale={scale} mode="export" className="sc-render--thumb" />;
 }
