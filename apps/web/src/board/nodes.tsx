@@ -80,7 +80,7 @@ export function BehaviorPicker({ source, id }: { source: InputSource; id?: strin
   return (
     <select
       id={id}
-      className="sc-behavior border border-line bg-surface px-2 py-0 [font-family:inherit] [font-weight:inherit] [line-height:inherit] text-[12px] text-fg nodrag nopan nowheel"
+      className={`sc-behavior border border-line bg-surface px-2 py-0 [font-family:inherit] [font-weight:inherit] [line-height:inherit] text-[12px] text-fg ${NO_CANVAS}`}
       aria-label={`${source.label} behaves like`}
       title="How this input adapts in Previews"
       value={source.behavesLike}

@@ -83,6 +83,7 @@ import {
   type FlowNode,
   docIdOfNode,
   groupIdOfNode,
+  isGroupNode,
   withGroupFrames,
   stackIdOfNode,
   pairIdOfNode,
@@ -100,7 +101,7 @@ import { RoutedEdge } from './RoutedEdge';
 import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
 import { useCoarsePointer, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
-import { TOUCH_NO_PAN, usePinch } from './pinch';
+import { NO_CANVAS, NO_DRAG, TOUCH_NO_PAN, usePinch } from './pinch';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
 import { presetSettings } from './OutputNode';
@@ -405,7 +406,7 @@ function BoardCanvas(props: {
    * so large panels never trap the view.
    */
   const flowNodes = useMemo(() => (coarse ? displayNodes.map((n) => (n.draggable === false || n.selected ? n : { ...n, draggable: false })) : displayNodes), [displayNodes, coarse]);
-  const selectedCount = useMemo(() => displayNodes.filter((n) => n.selected && !n.id.startsWith('grp:')).length, [displayNodes]);
+  const selectedCount = useMemo(() => displayNodes.filter((n) => n.selected && !isGroupNode(n.id)).length, [displayNodes]);
   const displayEdges = useMemo(() => {
     const selectedNodes = new Set(displayNodes.filter((n) => n.selected).map((n) => n.id));
     const selectedEdges = new Set(edges.filter((e) => e.selected).map((e) => e.id));
@@ -429,7 +430,7 @@ function BoardCanvas(props: {
     // T13.7: group frames are derived; selecting one is tracked here, dragging one moves its members.
     const changes: NodeChange<BoardNode>[] = [];
     for (const c of all) {
-      const groupNode = 'id' in c && c.id.startsWith('grp:') ? c.id : null;
+      const groupNode = 'id' in c && isGroupNode(c.id) ? c.id : null;
       if (!groupNode) changes.push(c as NodeChange<BoardNode>);
       else if (c.type === 'select') setSelectedGroups((sel) => (c.selected ? new Set(sel).add(groupNode) : new Set([...sel].filter((x) => x !== groupNode))));
       else if (c.type === 'position' && c.position) {
@@ -1000,7 +1001,7 @@ function BoardCanvas(props: {
   /** Right-click on a selection of two or more nodes: group them. */
   const onSelectionContextMenu = useCallback(
     (e: React.MouseEvent, picked: Node[]) => {
-      const count = picked.filter((n) => !n.id.startsWith('grp:')).length;
+      const count = picked.filter((n) => !isGroupNode(n.id)).length;
       if (readOnly || count < 2) return;
       e.preventDefault();
       setMenu({ x: e.clientX, y: e.clientY, title: `${count} nodes`, items: [{ label: `Group ${count} nodes (Ctrl/⌘+G)`, onSelect: groupSelection }] });
@@ -1229,7 +1230,7 @@ function BoardCanvas(props: {
    */
   const tidy = () => {
     if (readOnly) return;
-    const picked = displayNodesRef.current.filter((n) => n.selected && !n.hidden && !n.id.startsWith('grp:'));
+    const picked = displayNodesRef.current.filter((n) => n.selected && !n.hidden && !isGroupNode(n.id));
     const selection = picked.length >= 2;
     let moves = selection ? tidySelectionPositions(picked) : tidyPositions(docRef.current, nodesRef.current);
     if (gridRef.current) moves = moves.map((m) => ({ ...m, position: onGrid(m.position, 16) }));
@@ -1587,7 +1588,7 @@ function BoardCanvas(props: {
             />
             {coarse && <MultiSelect on={several} />}
             {!readOnly && activeTool === 'select' && (selectedCount >= 2 || several) && (
-              <Panel position="top-center" className={`${SELBAR} nodrag nopan nowheel`} aria-label="Selection" role="toolbar">
+              <Panel position="top-center" className={`${SELBAR} ${NO_CANVAS}`} aria-label="Selection" role="toolbar">
                 <span className={SELBAR_COUNT}>{selectedCount} selected</span>
                 <button type="button" className="sc-btn" onClick={groupSelection} disabled={selectedCount < 2} title="Group the selected panels (Ctrl/⌘ + G)">
                   Group
@@ -1611,7 +1612,7 @@ function BoardCanvas(props: {
               {guides.horizontal !== undefined && <div className={GUIDE_H} style={{ transform: `translateY(${guides.horizontal}px)` }} />}
             </ViewportPortal>
             {toast && (
-              <Panel position="bottom-center" className={`${TOAST} nodrag nopan`} role="status">
+              <Panel position="bottom-center" className={`${TOAST} ${NO_DRAG}`} role="status">
                 <span>{toast}</span>
                 {/already tidy$/.test(toast) ? null : (
                   <button

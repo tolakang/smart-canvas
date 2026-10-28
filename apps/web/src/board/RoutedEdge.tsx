@@ -9,6 +9,7 @@ import { setEdgePoints } from '@smart-canvas/core';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type Edge, type EdgeProps } from '@xyflow/react';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useBoard } from './context';
+import { NO_DRAG } from './pinch';
 import { routePath } from './wires';
 
 type XY = { x: number; y: number };
@@ -73,7 +74,7 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
         <EdgeLabelRenderer>
           <button
             type="button"
-            className={`${CUT} ${selected ? CUT_SELECTED : CUT_HOVER} nodrag nopan`}
+            className={`${CUT} ${selected ? CUT_SELECTED : CUT_HOVER} ${NO_DRAG}`}
             onPointerEnter={enter}
             onPointerLeave={exit}
             // Just above the wire, never on it: a double-click there (adding a reroute point) must not hit it.
@@ -94,7 +95,7 @@ export function RoutedEdge(props: EdgeProps<RoutedFlowEdge>) {
         points.map((p, i) => (
           <circle
             key={i}
-            className="sc-reroute nodrag nopan cursor-move fill-surface stroke-accent stroke-2 [pointer-events:all] hover:fill-accent-soft"
+            className={`sc-reroute ${NO_DRAG} cursor-move fill-surface stroke-accent stroke-2 [pointer-events:all] hover:fill-accent-soft`}
             cx={p.x}
             cy={p.y}
             r={5}

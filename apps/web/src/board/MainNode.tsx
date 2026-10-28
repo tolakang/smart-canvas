@@ -30,9 +30,9 @@ import { useHealth } from './HealthBadge';
 import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
+import { NO_DRAG } from './pinch';
 
 /** Controls that don't scroll: the wheel still zooms and pans the board over them. */
-const NO_DRAG = 'nodrag nopan';
 const GROUP_DRAG = 'application/x-sc-layer-group';
 const OUTPUT_DRAG = 'application/x-sc-output-layout';
 export const FAMILY_LABEL: Record<GuideFamily, string> = { square: 'Square', vertical: 'Vertical', horizontal: 'Horizontal' };
