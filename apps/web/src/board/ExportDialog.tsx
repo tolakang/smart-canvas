@@ -15,7 +15,9 @@ import {
   exportPixelTotal,
   exportRoute,
   exportZipName,
+  compositionHealth,
   LIMITS,
+  outputComposition,
   presetSets,
   type ExportFormat,
   type ExportJob,
@@ -71,6 +73,14 @@ export function ExportDialog(props: {
   const set = props.presetSet ? presetSets(doc).find((s) => s.id === props.presetSet) : undefined;
   const hidden = new Set(set?.hidden ?? []);
   const listed = set ? set.outputs.flatMap((id) => doc.outputs.find((o) => o.id === id) ?? []) : doc.outputs;
+  // UX B9 (F21): the Previews grouped by their Preset node (in the board's order); Previews in none come last.
+  const groups = (() => {
+    const sets = presetSets(doc);
+    const inSet = new Map(sets.flatMap((st) => st.outputs.map((id) => [id, st.id] as const)));
+    const byGroup = sets.map((st) => ({ key: st.id, label: st.label, outputs: listed.filter((o) => inSet.get(o.id) === st.id) }));
+    const loose = listed.filter((o) => !inSet.has(o.id));
+    return [...byGroup, { key: '', label: 'Other Previews', outputs: loose }].filter((g) => g.outputs.length > 0);
+  })();
   const base = `/teams/${props.teamId}/projects/${props.projectId}/exports`;
   const [selected, setSelected] = useState<string[]>(() => props.initialOutputs ?? doc.outputs.map((o) => o.id));
   const [format, setFormat] = useState<ExportFormat>('png');
@@ -227,6 +237,13 @@ export function ExportDialog(props: {
   const plan = inBrowserNow
     ? doc.outputs.filter((o) => selected.includes(o.id)).reduce((n, o) => n + (exportRoute(o, format, options()) === 'browser' ? 1 : 0), 0)
     : 0;
+  const emptyLayers = [
+    ...new Set(
+      [...new Set(selected.map((id) => outputComposition(doc, id)).filter((c): c is string => !!c))].flatMap((c) =>
+        compositionHealth(doc, c).issues.filter((i) => i.level === 'todo').map((i) => i.label),
+      ),
+    ),
+  ];
   const label = (id: string) => doc.outputs.find((o) => o.id === id)?.label ?? id;
   // D63: a warning, never a block — and only once someone in the project approves Previews.
   const approvals = props.approvals ?? new Map<string, ApprovalState>();
@@ -242,23 +259,34 @@ export function ExportDialog(props: {
             <fieldset className="sc-export__outputs grid max-h-[280px] gap-2 overflow-auto rounded-[12px] border border-line bg-surface-2 p-6">
               <legend className="px-6 text-[12px] font-[650] tracking-[0.04em] text-muted uppercase">Previews</legend>
               {listed.length === 0 && <p className="sc-muted">Add a Preview first.</p>}
-              {listed.map((o) => (
-                <label key={o.id} className="flex cursor-pointer items-center gap-6 rounded-[9px] bg-surface px-10 py-8 [box-shadow:0_0_0_1px_color-mix(in_srgb,var(--line)_60%,transparent)] hover:[box-shadow:0_0_0_1px_var(--accent)] [label+&]:mt-4">
-                  <input
-                    type="checkbox"
-                    className="size-16"
-                    checked={selected.includes(o.id)}
-                    onChange={(e) => setSelected((s) => (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)))}
-                  />
-                  {o.label}{' '}
-                  <span className="sc-muted">
-                    {o.size.width} × {o.size.height} {o.size.unit}
-                    {hidden.has(o.id) ? ' · hidden on the board' : ''}
-                    {APPROVAL_NOTE[approvalOf(approvals, o.id).state]}
-                  </span>
-                </label>
+              {groups.map((g) => (
+                <div key={g.key} className="sc-export__group grid gap-2 [&+&]:mt-8" role="group" aria-label={g.label}>
+                  {groups.length > 1 && <p className="m-0 px-4 pt-2 text-[12px] font-[650] text-muted">{g.label}</p>}
+                      {g.outputs.map((o) => (
+                    <label key={o.id} className="flex cursor-pointer items-center gap-6 rounded-[9px] bg-surface px-10 py-8 [box-shadow:0_0_0_1px_color-mix(in_srgb,var(--line)_60%,transparent)] hover:[box-shadow:0_0_0_1px_var(--accent)] [label+&]:mt-4">
+                      <input
+                        type="checkbox"
+                        className="size-16"
+                        checked={selected.includes(o.id)}
+                        onChange={(e) => setSelected((s) => (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)))}
+                      />
+                      {o.label}{' '}
+                      <span className="sc-muted">
+                        {o.size.width} × {o.size.height} {o.size.unit}
+                        {hidden.has(o.id) ? ' · hidden on the board' : ''}
+                        {APPROVAL_NOTE[approvalOf(approvals, o.id).state]}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               ))}
             </fieldset>
+            {emptyLayers.length > 0 && (
+              // UX B9 (F21): layers wired in but still empty draw nothing in the files.
+              <p className="sc-export__empty m-0 text-[12.5px] text-muted" role="note">
+                {emptyLayers.length} {emptyLayers.length === 1 ? 'layer has' : 'layers have'} no file or text yet ({emptyLayers.join(', ')}): {emptyLayers.length === 1 ? 'it is' : 'they are'} not in these files.
+              </p>
+            )}
             {set && hidden.size > 0 && (
               <label className="sc-check font-[500]">
                 <input type="checkbox" checked={[...hidden].every((id) => selected.includes(id))} onChange={(e) => setSelected((s) => (e.target.checked ? [...s.filter((id) => !hidden.has(id)), ...hidden] : s.filter((id) => !hidden.has(id))))} /> Include hidden
