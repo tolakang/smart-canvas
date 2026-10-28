@@ -4,6 +4,8 @@
  * actions — Replace, Remove picture (the slot and its place in every layout stay) and Delete slot — float over the
  * tile only on hover or keyboard focus, and on touch once the slot is tapped (selected). An empty slot is one
  * "Add" target: click it or drop a file on it.
+ * D67 (UX B8, amends V1): an empty slot's bar has Delete only (the tile is its Add), and on touch the selected slot's
+ * bar sits under its tile instead of over it.
  */
 import { useId, useState, type DragEvent, type ReactNode } from 'react';
 import { Icon } from './LayerRow';
@@ -126,7 +128,9 @@ export function Slot(p: SlotProps) {
       ? shown
       : `pointer-events-none opacity-0 group-focus-within/slot:opacity-100 group-focus-within/slot:pointer-events-auto group-hover/slot:opacity-100 group-hover/slot:pointer-events-auto [@media(hover:none)]:group-hover/slot:opacity-0 [@media(hover:none)]:group-hover/slot:pointer-events-none ${row ? '' : 'group-focus-within/slot:[transform:none] group-hover/slot:[transform:none]'}`,
     row ? '[transform:translateY(-50%)]' : p.focused ? '' : '[transform:translateY(-3px)_scale(0.96)]',
-    empty && !p.focused && (p.onDelete ? 'hidden group-hover/slot:flex' : 'hidden'),
+    empty && (!p.onDelete ? 'hidden' : !p.focused && 'hidden group-hover/slot:flex'),
+    // D67 (UX B8): on touch a selected slot's bar sits under its tile, so it never covers the picture or the tile's Add.
+    !row && (p.focused ? 'pointer-coarse:static pointer-coarse:mt-6 pointer-coarse:max-w-none pointer-coarse:justify-center' : 'pointer-coarse:hidden'),
   ]
     .filter(Boolean)
     .join(' ');
@@ -154,6 +158,7 @@ export function Slot(p: SlotProps) {
           {p.caption}
         </span>
       )}
+      <div className={row ? 'contents' : 'sc-slot__frame relative grid'}>
       <div className={tile}>
         {empty && !p.readOnly ? (
           // An empty slot: the whole tile picks a file (and selects the slot, for the inspector).
@@ -165,11 +170,15 @@ export function Slot(p: SlotProps) {
             {picture}
           </button>
         )}
+      </div>
         {!p.readOnly && (
           <div className={actions}>
-            <label className={ACT_PLAIN} htmlFor={fileId} title={empty ? 'Add a picture' : 'Replace (keeps its place in every layout)'} aria-label={empty ? 'Add a picture' : 'Replace picture'} {...FILE_PICK}>
-              <Icon name={empty ? 'plus' : 'replace'} size={14} />
-            </label>
+            {/* D67 (UX B8): an empty slot's tile is its Add, so its bar has Delete only (two Adds collided on touch). */}
+            {!empty && (
+              <label className={ACT_PLAIN} htmlFor={fileId} title="Replace (keeps its place in every layout)" aria-label="Replace picture" {...FILE_PICK}>
+                <Icon name="replace" size={14} />
+              </label>
+            )}
             {!empty && p.onRemovePicture && (
               <button type="button" className={ACT_PLAIN} aria-label={p.names.remove} title="Remove picture (keeps the slot)" onClick={p.onRemovePicture}>
                 <Icon name="eraser" size={14} />
