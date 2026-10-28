@@ -246,6 +246,8 @@ const FAR_ZOOM = 0.5;
 
 /** T13.8: every wire can carry reroute points. */
 const edgeTypes = { routed: RoutedEdge };
+/** D70: on a phone the board opens with its first asset nodes this far under the canvas's top edge (screen px). */
+const PHONE_TOP = 16;
 
 /** A layer wire into a composition row (D56: the only kind); the node id from React Flow. */
 /** UX A7 (F19): React Flow's credit link stays on screen but out of the Tab order (it sat between the board and its panels). */
@@ -1410,15 +1412,16 @@ function BoardCanvas(props: {
           ) : (
           <>
           <span className={SEP} aria-hidden="true" />
-          {/* U2: the team's fonts and library under one Assets menu; History, Review and the theme as icons. */}
+          {/* U2: the team's fonts and library under one Assets menu; History and Review with their names too (icons only
+              at 1100 px and narrower, like Assets); the theme as an icon. */}
           <button type="button" className={GHOST} aria-haspopup="menu" onClick={(e) => openAssets(e.currentTarget)} title="Team fonts and library">
             <Icon name="library" /> Assets
           </button>
-          <button type="button" className={ICON} onClick={openHistory} aria-label="History" aria-pressed={props.history.open} title="History: earlier versions of this project">
-            <Icon name="history" />
+          <button type="button" className={`${GHOST} aria-pressed:bg-accent-soft`} onClick={openHistory} aria-label="History" aria-pressed={props.history.open} title="History: earlier versions of this project">
+            <Icon name="history" /> History
           </button>
-          <button type="button" className={`${ICON} sc-topbar__review relative`} onClick={openReview} aria-label="Review" aria-pressed={reviewOpen} title="Review: approval and comments on every Preview">
-            <Icon name="check" />
+          <button type="button" className={`${GHOST} sc-topbar__review relative aria-pressed:bg-accent-soft`} onClick={openReview} aria-label="Review" aria-pressed={reviewOpen} title="Review: approval and comments on every Preview">
+            <Icon name="check" /> Review
             {openComments > 0 && <span className={COUNT} aria-hidden="true">{openComments}</span>}
           </button>
           <button
@@ -1526,7 +1529,13 @@ function BoardCanvas(props: {
                     .filter((n) => ['assetsNode', 'textNode', 'headlineNode', 'inputNode'].includes(n.type ?? '') && !n.hidden)
                     .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x)
                     .slice(0, 2);
-                  if (first.length) void instance.fitView({ nodes: first.map((n) => ({ id: n.id })), padding: 0.08, maxZoom: 1 });
+                  if (!first.length) return;
+                  // Top-aligned under the bar, not centred in the screen's height (clean-up 2, U19).
+                  const top = Math.min(...first.map((n) => n.position.y));
+                  void instance.fitView({ nodes: first.map((n) => ({ id: n.id })), padding: 0.08, maxZoom: 1 }).then(() => {
+                    const vp = instance.getViewport();
+                    void instance.setViewport({ ...vp, y: PHONE_TOP - top * vp.zoom });
+                  });
                 });
             }}
             onConnect={onConnect}
