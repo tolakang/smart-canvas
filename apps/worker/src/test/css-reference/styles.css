@@ -1,4 +1,4 @@
-/* The app's CSS at aabdcee3acd5615c9f799bbee9984c25647456a8 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at bc96e57932ce9cc538f775b6996a94e6232b0ec2 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -6736,7 +6736,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 
 label.sc-check { display: flex; gap: 6px; align-items: center; }
-.sc-button { display: inline-block; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: inherit; text-decoration: none; }
 
 .sc-lib .sc-list li { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; }
 

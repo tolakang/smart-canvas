@@ -408,7 +408,7 @@ export function ExportDialog(props: {
             )}
             <div className="sc-row">
               {(done.length > 1 || (set && done.length > 0)) && (
-                <button type="button" className="sc-button" disabled={zipping} onClick={() => void downloadAll(done)}>
+                <button type="button" className="sc-btn" disabled={zipping} onClick={() => void downloadAll(done)}>
                   {zipping ? 'Making ZIP…' : set ? `Download ${set.label} (ZIP, ${done.length})` : `Download all (ZIP, ${done.length})`}
                 </button>
               )}

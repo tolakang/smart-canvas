@@ -153,7 +153,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="presets-title">
       <div className={`sc-card sc-presets ${DIALOG_LONG_CARD}`}>
         <h1 id="presets-title">Size presets</h1>
-        <p className="sc-muted sc-lede mx-0 -mt-4 mb-0">Sizes for new Previews. Built-in ones are fixed{props.isAdmin ? '; add your team’s own below.' : '; admins can add the team’s own.'}</p>
+        <p className="sc-muted sc-lede mx-0 -mt-4 mb-0">Sizes for new Previews. Built-in sizes are fixed; the team’s own are marked Team{props.isAdmin ? '; add and edit them below.' : '. Admins add and edit them.'}</p>
         {list !== null && familiesOf(list).length > 0 && (
           <section aria-label="Preset node families">
             <h2>Preset node families</h2>
@@ -202,26 +202,24 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
               <h2>{group === 'print' ? 'Print' : 'Social'}</h2>
               <ul className="sc-list sc-rows">
                 {list
-                  .filter((p) => p.group === group)
+                  // F22: a built-in family's sizes are listed under their family above, not again here.
+                  .filter((p) => p.group === group && !(p.teamId === null && p.family))
                   .map((p) => (
                     <li key={p.id} data-preset={p.name}>
                       <span className="sc-rows__main">
                         <span className="sc-rows__name">{p.name}</span>
                         <span className="sc-rows__meta">{sizeText(p)}</span>
                       </span>
-                      {p.teamId === null ? (
-                        <span className="sc-badge">Built-in</span>
-                      ) : (
-                        props.isAdmin && (
-                          <span className="sc-rows__actions">
-                            <button type="button" className="sc-btn sc-btn--ghost" onClick={() => edit(p)} aria-label={`Edit ${p.name}`}>
-                              Edit
-                            </button>
-                            <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void remove(p)} aria-label={`Delete ${p.name}`}>
-                              Delete
-                            </button>
-                          </span>
-                        )
+                      {p.teamId !== null && <span className="sc-badge">Team</span>}
+                      {p.teamId !== null && props.isAdmin && (
+                        <span className="sc-rows__actions">
+                          <button type="button" className="sc-btn sc-btn--ghost" onClick={() => edit(p)} aria-label={`Edit ${p.name}`}>
+                            Edit
+                          </button>
+                          <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void remove(p)} aria-label={`Delete ${p.name}`}>
+                            Delete
+                          </button>
+                        </span>
                       )}
                     </li>
                   ))}
