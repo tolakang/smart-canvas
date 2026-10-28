@@ -5,7 +5,7 @@
  * D63: the Comment tool turns a click or tap on the Preview into a pinned comment; the Comments panel takes the
  * Design panel's place while it is on.
  */
-import { computeLayout, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type OutputNode, type TransformHistory } from '@smart-canvas/core';
+import { computeLayout, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '../board/context';
 import { threadsOf } from '../board/review';
@@ -93,7 +93,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       scene={scene}
       onCommit={onCommit}
       onHistory={onHistory}
-      histories={layerHistories(output, scene ? { width: scene.width, height: scene.height } : null)}
+      histories={savedTransforms(output.transforms, scene)}
       // Delete key: a layer can't be deleted from one output; it's hidden there (eye in the layers panel).
       spotsOf={spotsOf}
       onDelete={readOnly ? undefined : (id) => run((d) => setOverrideHidden(d, output.id, id, true, author()))}
@@ -138,13 +138,6 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       onClose={onClose}
     />
   );
-}
-
-
-/** The output's saved histories, only while they were saved for the scene's current size. */
-function layerHistories(output: OutputNode, scene: { width: number; height: number } | null): Record<string, TransformHistory> | undefined {
-  const saved = output.transforms;
-  return scene && saved && saved.scene.width === scene.width && saved.scene.height === scene.height ? saved.layers : undefined;
 }
 
 /**
