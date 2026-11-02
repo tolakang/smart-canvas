@@ -59,6 +59,41 @@ describe.skipIf(!adminUrl)('guided start (UX C1)', () => {
     expect(doc.sources.find((s) => s.label === 'hero')?.behavesLike).toBe('subject');
   }, 90_000);
 
+  it('the getting-started strip: done steps ticked, Review next; Review opens its panel; a first export ends it', async () => {
+    const strip = page.getByRole('navigation', { name: 'Getting started' });
+    const step = (name: string) => strip.getByRole('button', { name: new RegExp(`^Step \\d: ${name}`) });
+    expect(await step('Artwork').getAttribute('data-state')).toBe('done');
+    expect(await step('Sizes').getAttribute('data-state')).toBe('done');
+    expect(await strip.locator('[aria-current="step"]').innerText()).toContain('Review');
+    await step('Review').click();
+    await expect.poll(() => page.getByRole('button', { name: 'Review', exact: true }).getAttribute('aria-pressed')).toBe('true');
+    await step('Export').click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: /^Export 7 Previews/ }).click();
+    const rows = dialog.getByRole('list', { name: 'Export progress' }).locator('li[data-status="done"]');
+    await expect.poll(() => rows.count(), { timeout: 90_000 }).toBeGreaterThan(0);
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await expect.poll(() => strip.count()).toBe(0);
+    await page.reload();
+    await page.locator('.sc-comp-group').waitFor();
+    expect(await strip.count()).toBe(0);
+  }, 150_000);
+
+  it('× hides the strip, and it stays hidden', async () => {
+    const [, teamId = ''] = /#\/t\/([^/]+)\//.exec(page.url()) ?? [];
+    const { id } = (await (await page.request.post(`${stack.env.webUrl}api/teams/${teamId}/projects`, { data: { name: 'Second' } })).json()) as { id: string };
+    await page.goto(`${stack.env.webUrl}#/t/${teamId}/p/${id}`);
+    await page.reload();
+    await page.locator('.sc-comp-group').waitFor();
+    const strip = page.getByRole('navigation', { name: 'Getting started' });
+    expect(await strip.locator('[aria-current="step"]').innerText()).toContain('Artwork');
+    await strip.getByRole('button', { name: 'Hide the getting-started steps' }).click();
+    expect(await strip.count()).toBe(0);
+    await page.reload();
+    await page.locator('.sc-comp-group').waitFor();
+    expect(await strip.count()).toBe(0);
+  }, 60_000);
+
   it('a template start hides the sizes and artwork', async () => {
     // The project above becomes a template through its ⋯ menu would take many steps; the API is enough here.
     const [, teamId = ''] = /#\/t\/([^/]+)\//.exec(page.url()) ?? [];

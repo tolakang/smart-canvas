@@ -33,6 +33,8 @@ import { NO_CANVAS, NO_DRAG, TOUCH_NO_PAN, useFarTap, usePinch } from './pinch';
 import { useWires } from './use-wires';
 import { useAddMenus } from './use-add-menus';
 import { TopBar, VersionBar } from './BoardTopBar';
+import { GuideBar } from './GuideBar';
+import { guideSteps, type GuideStepId } from './progress';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
 import { addPictures, uploadPictures } from './stack-upload';
@@ -508,6 +510,15 @@ function BoardCanvas(props: {
   const { sizes, remember } = useAssetSizes(teamId, usedAssetsKey(doc));
   const { deps: layoutDeps, missingFonts } = useLayoutDeps(doc, sizes, teamFonts.map((f) => f.id).join(','));
   const approvals = useApprovalStates(doc, layoutDeps, review.data);
+  /** Selects a panel and brings it close (at most 100 %). */
+  const zoomTo = useCallback((nodeId: string) => {
+    setNodes((ns) => ns.map((n) => (n.selected !== (n.id === nodeId) ? { ...n, selected: n.id === nodeId } : n)));
+    void flow.current?.fitView({ nodes: [{ id: nodeId }], duration: 300, maxZoom: 1, padding: 0.15 });
+  }, []);
+  // UX C1 (D71): the getting-started strip, until the first export from this browser or until it is hidden.
+  const [exported, setExported] = useStoredFlag(`sc-exported:${projectId}`, false);
+  const [guideHidden, setGuideHidden] = useStoredFlag(`sc-guide-hidden:${projectId}`, false);
+  const steps = useMemo(() => guideSteps(doc, approvals, exported), [doc, approvals, exported]);
   useProjectThumbnail({ teamId, projectUrl: url, doc, deps: layoutDeps, saveState, canEdit: !readOnly });
 
   // D37: once a picture's visible pixels are known, its unfitted frames hug them (in place: nothing moves on
@@ -585,12 +596,9 @@ function BoardCanvas(props: {
       setStackFocus,
       run,
       addSizes: (family: string | null) => addSizesRef.current(family),
-      zoomTo: (nodeId: string) => {
-        setNodes((ns) => ns.map((n) => (n.selected !== (n.id === nodeId) ? { ...n, selected: n.id === nodeId } : n)));
-        void flow.current?.fitView({ nodes: [{ id: nodeId }], duration: 300, maxZoom: 1, padding: 0.15 });
-      },
+      zoomTo,
     }),
-    [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
+    [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus, zoomTo],
   );
 
   /** D49: a wire dragged out of the Main Comps group onto empty canvas (or a right-click on its out port) offers the Preset nodes. */
@@ -922,6 +930,15 @@ function BoardCanvas(props: {
   );
 
 
+  /** UX C1: where each getting-started step takes you. */
+  const guideStep = (id: GuideStepId) => {
+    const firstAsset = nodesRef.current.find((n) => ['assetsNode', 'textNode', 'headlineNode', 'inputNode'].includes(n.type ?? '') && !n.hidden);
+    if (id === 'assets' && firstAsset) zoomTo(firstAsset.id);
+    else if (id === 'review' && docRef.current.outputs.length) {
+      if (!reviewOpen) openReview();
+    } else if (id === 'export' && docRef.current.outputs.length) void autosave.flush().then(() => setExporting({}));
+    else zoomTo(MAIN_ID);
+  };
   return (
     <div className={BOARD}>
       {/* WCAG 2.4.1: past the top bar to the board in one key press (a hash link would change the app's route). */}
@@ -964,6 +981,7 @@ function BoardCanvas(props: {
         onInspectorHidden={setInspectorHidden}
         onExport={() => void autosave.flush().then(() => setExporting({}))}
       />
+      {!readOnly && !props.history.previewing && !exported && !guideHidden && <GuideBar steps={steps} onStep={guideStep} onHide={() => setGuideHidden(true)} />}
       {props.history.previewing && (
         <VersionBar version={props.history.previewing} error={props.history.error} canEdit={props.canEdit} onRestore={() => void props.history.restore()} onClose={props.history.close} />
       )}
@@ -1190,7 +1208,7 @@ function BoardCanvas(props: {
         />
       )}
       {showLibrary && <LibraryDialog teamId={teamId} readOnly={readOnly} sourceCount={sourceCount} run={run} onClose={() => setShowLibrary(false)} />}
-      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} approvals={approvals} initialOutputs={exporting.outputs} presetSet={exporting.set} onClose={() => setExporting(false)} />}
+      {exporting && <ExportDialog teamId={teamId} projectId={projectId} doc={doc} layoutDeps={layoutDeps} approvals={approvals} initialOutputs={exporting.outputs} presetSet={exporting.set} onExported={() => setExported(true)} onClose={() => setExporting(false)} />}
       {showFonts && (
         <FontsDialog
           teamId={teamId}

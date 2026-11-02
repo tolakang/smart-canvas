@@ -67,6 +67,8 @@ export function ExportDialog(props: {
   approvals?: ReadonlyMap<string, ApprovalState>;
   initialOutputs?: string[];
   presetSet?: string;
+  /** UX C1: a first file has been made (the getting-started strip is done). */
+  onExported?: () => void;
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -229,6 +231,12 @@ export function ExportDialog(props: {
   const done = rows?.filter((r) => r.status === 'done') ?? [];
   // N6: a Preset node's export downloads its ZIP once every size has finished.
   const finished = !!rows && rows.length > 0 && rows.every((r) => r.status === 'done' || r.status === 'failed');
+  const told = useRef(false);
+  useEffect(() => {
+    if (told.current || done.length === 0) return;
+    told.current = true;
+    props.onExported?.();
+  });
   const zipped = useRef(false);
   useEffect(() => {
     if (!set || !finished || zipped.current || done.length === 0) return;

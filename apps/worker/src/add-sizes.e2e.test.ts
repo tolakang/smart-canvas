@@ -24,12 +24,13 @@ describe.skipIf(!adminUrl)('Add sizes from the empty Export Group (UX B2)', () =
 
   const group = () => page.locator('[aria-label="Export Group"]').first();
 
-  it('a new project: family chips, the three steps, and Export says to add sizes first', async () => {
+  it('a new project: family chips, the getting-started steps, and Export says to add sizes first', async () => {
     await expect.poll(() => group().getByRole('list', { name: 'Add sizes' }).getByRole('button').count()).toBeGreaterThan(3);
     expect(await group().getByText('Drop a Preview here').count()).toBe(0);
-    const steps = page.getByRole('list', { name: 'Getting started' });
-    expect(await steps.getByRole('listitem').count()).toBe(3);
-    expect(await steps.locator('[aria-current="step"]').innerText()).toContain('Add your artwork');
+    // UX C1 (D71): the getting-started strip under the top bar.
+    const steps = page.getByRole('navigation', { name: 'Getting started' });
+    expect(await steps.getByRole('listitem').count()).toBe(4);
+    expect(await steps.locator('[aria-current="step"]').innerText()).toContain('Artwork');
     const exp = page.getByRole('button', { name: 'Export', exact: true });
     expect(await exp.isDisabled()).toBe(true);
     expect(await exp.getAttribute('title')).toMatch(/^Add sizes first/);

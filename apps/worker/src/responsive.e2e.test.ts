@@ -61,7 +61,7 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     }
     await phone.setViewportSize({ width: 390, height: 844 });
     // UI audit: the top bar's end group (save, More, Export) sits at the right edge.
-    const exportBox = await phone.getByRole('button', { name: 'Export' }).boundingBox();
+    const exportBox = await phone.getByRole('button', { name: 'Export', exact: true }).boundingBox();
     expect((exportBox?.x ?? 0) + (exportBox?.width ?? 0)).toBeGreaterThan(390 - 16);
     // ...as a 36 px icon button clear of the screen edge (it filled the bar's corner on a device).
     expect(exportBox?.width ?? 99).toBeLessThanOrEqual(36);

@@ -48,6 +48,8 @@ describe.skipIf(!adminUrl)('CSS parity: first run, Projects home, sign-in', () =
     await page.getByRole('dialog').waitFor({ state: 'detached' });
     await page.getByRole('button', { name: 'New project', exact: true }).click();
     await page.getByRole('dialog', { name: 'New project' }).waitFor();
+    // UX C1: the size families load after the dialog opens; both screenshots wait for them.
+    await page.getByRole('group', { name: 'Size families' }).waitFor();
     await same('new-project-dialog');
     await page.keyboard.press('Escape');
     await page.getByRole('dialog').waitFor({ state: 'detached' });
