@@ -1,6 +1,6 @@
 # Handover — 2026-10-28 (UX review fixes done; clean-up review 2 under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D73**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D74**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -54,7 +54,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 ```
 
 **Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG. A PDF's page is kept as vector — a PDF of several pages asks which one first (D59, `ui/PdfPageDialog.tsx`): the API draws it as a sanitized SVG with Poppler (D55, `apps/api/src/assets/pdf.ts`, `?page=N`); slots that take only pixels, or a server without the converter, get the browser's PNG of the same page (D52, `apps/web/src/pdf.ts`). All go through `uploadAsset` (cancel = `UploadCancelled`, no error shown).
-- **Logo, Image and Text** are `AssetStack`s with `kind: 'logo' | 'image' | 'text'`. Logo items behave as logos (they get a minimum size).
+- **Logo, Image and Text** are `AssetStack`s with `kind: 'logo' | 'image' | 'text'`. Logo items behave as logos (they get a minimum size); each shows Square, Vertical and Horizontal slots, the last two being D43's `variants`, which vertical and horizontal Previews draw (D74).
 - **Text** slots are each their own text layer. You type on the card, and the slot grows with its text. `addTextToStack` adds one.
 - **Headline** is a `LanguagePair` (D44): a Khmer and an English picture, with a **Use** switch. **Add headline** adds more pairs to the same node (D53: `more`, `addPairRow`, `deletePairRow`, `pairInputs`); **Use** switches them all. Since V4 a pair shares one layout: switching hands the language coming in the place, size, rotation and Preview edits of the one going out (`shareLayout`), so only the picture changes. V4.1: with the pictures' measured sizes (`layoutDeps.assets`) `swapFrame` keeps the centre, area and stretch in the other picture's shape — exactly reversible, so switching never shrinks it.
 - **Background** is one input with vertical and horizontal slots (D43). A square output uses either slot.

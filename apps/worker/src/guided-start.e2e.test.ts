@@ -49,7 +49,8 @@ describe.skipIf(!adminUrl)('guided start (UX C1)', () => {
     await page.locator('.sc-comp-group').waitFor();
     await page.locator('.react-flow__node-presetNode').filter({ hasText: 'GDN' }).waitFor();
     expect(await page.locator('.react-flow__node-outputNode').count()).toBe(7);
-    expect(await boardNode(page, 'Logo').locator('.sc-slot').count()).toBe(1);
+    // D74: the logo's Square, Vertical and Horizontal slots.
+    expect(await boardNode(page, 'Logo').locator('.sc-slot').count()).toBe(3);
     expect(await boardNode(page, 'Image').locator('.sc-slot').count()).toBe(1);
 
     const [, teamId = '', projectId = ''] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];
