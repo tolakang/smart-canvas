@@ -5,7 +5,7 @@ One ticket per session. Tick a box when its PR is merged and add the PR link.
 
 Legend: `[x]` done · `[ ]` to do
 
-**Next:** P1–P29 are done (P28 through T7; T8 is optional; P29 the UX review fixes, D66–D70) — see below. The second clean-up review (P30) is under way. New UI is built with Tailwind (`docs/FRONTEND.md`). Then BACKLOG **Next** (Q6, planned and on hold until the owner says go: `docs/plans/Q6-print-colour.md`). Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
+**Next:** P1–P31 are done (P28 the Tailwind conversion, D65; P29 the UX review fixes, D66–D70; P30 the second clean-up review; P31 the guided start and one place for sizes, D71–D72) — see below. New UI is built with Tailwind (`docs/FRONTEND.md`). Nothing else is planned; the owner picks what comes next. Retired: T12.3–T12.8 and T13.4 (D49 board, D56 model and engine).
 
 ## P0 Spikes (time-box 1 session each)
 - [~] ~~S1 — Affinity 3 `.af` reader check~~ — dropped (D6)
@@ -230,7 +230,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] T7a — Editor shell: screen, bar, stage and its overlays, the panels' layout, phone tabs → `editor/shell.ts` — [#193](https://github.com/tolakang/smart-canvas/pull/193)
 - [x] T7b — Editor panels: Layers, Design, override inspector, text properties → `editor/panels.ts` — [#194](https://github.com/tolakang/smart-canvas/pull/194)
 - [x] T7c — Comments and pins → `editor/panels.ts`; `editor/editor.css` keeps only the transform box (D36) — [#195](https://github.com/tolakang/smart-canvas/pull/195)
-- [ ] T8 — Optional: Preflight instead of our base styles; drop unused `sc-` modifiers; retire the parity test again
+- [x] T8 — Preflight left out, the last shared rules to utilities, the parity test kept (owner's option A) — done as K4, P30 — [#236](https://github.com/tolakang/smart-canvas/pull/236)
 
 ## P29 UX review fixes (`docs/UX-REVIEW.md`; owner, 2026-10-27/28: "Go ahead" on A, then B with the decision changes D66–D70)
 - [x] A1, A2, A7 — the board by keyboard (file pickers as Tab stops, card focus ring, wires and the credit link out of the Tab order) — [#202](https://github.com/tolakang/smart-canvas/pull/202)
@@ -263,23 +263,22 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (2) U14 — an empty text layer shows a placeholder in the editors and previews, nothing in export — [#226](https://github.com/tolakang/smart-canvas/pull/226)
 - [x] (2) U15, U17 — the Presets dialog lists each size once, team sizes marked Team; one button class — [#227](https://github.com/tolakang/smart-canvas/pull/227)
 - [x] (2) U16, U18, U19 — History and Review named in the top bar; the group tag names both cards; the phone board opens at the top — [#228](https://github.com/tolakang/smart-canvas/pull/228)
-- [x] (2) U8 — `Board.tsx` split (1,713 → about 1,200 lines): wire handlers, + Add items, top bar and three small hooks moved out as they were (this PR)
+- [x] (2) U8 — `Board.tsx` split (1,713 → about 1,200 lines): wire handlers, + Add items, top bar and three small hooks moved out as they were — [#229](https://github.com/tolakang/smart-canvas/pull/229)
 - [x] (3) K1 — the API refuses v1 / v2 saves; stored ones still migrate on read — [#230](https://github.com/tolakang/smart-canvas/pull/230)
 - [x] (3) K2 — `legacySlots` stays the e2e test fixture (D68); no work
-- [x] (3) K5 — a name tag that would overlap is shortened to its card's width, not left out (amends D69) (this PR)
+- [x] (3) K5 — a name tag that would overlap is shortened to its card's width, not left out (amends D69) — [#232](https://github.com/tolakang/smart-canvas/pull/232)
 - [x] (3) K6 — a note beside Approve when every layer of the Preview is empty (D63) — [#231](https://github.com/tolakang/smart-canvas/pull/231)
 - [x] (3) K3 — "T9": the shared component rules in `styles.css` to Tailwind, in three PRs with the parity test
   - [x] T9a — buttons, icon buttons, badges, chips, the spinner and the toast (`ui/button.ts`) — [#233](https://github.com/tolakang/smart-canvas/pull/233)
   - [x] T9b — cards, dialogs, forms, fields and rows, the home page's tiles (`ui/tw.ts`, `shell/Projects.tsx`) — [#234](https://github.com/tolakang/smart-canvas/pull/234)
   - [x] T9c — fields, check boxes, segmented controls, pictures, swatches, fills, upload labels, links, grips, the renderer placeholder (`ui/controls.ts`) — [#235](https://github.com/tolakang/smart-canvas/pull/235); the one-property atoms (`sc-muted`, `sc-error`, `sc-icon`), the inspector's field rules and the dropdown chevron stay with the base styles for K4 (T8)
-- [x] (3) K4 — T8, owner's option A (2026-11-02): Preflight left out (8 of 24 parity screens changed, mostly every element's border style); the last shared bits (`sc-muted`, `sc-error`, `sc-icon`, the inspector's field rings, the dropdown chevron, the node buttons' focus ring) to utilities; the `sc-` hooks and the parity test stay (this PR)
+- [x] (3) K4 — T8, owner's option A (2026-11-02): Preflight left out (8 of 24 parity screens changed, mostly every element's border style); the last shared bits (`sc-muted`, `sc-error`, `sc-icon`, the inspector's field rings, the dropdown chevron, the node buttons' focus ring) to utilities; the `sc-` hooks and the parity test stay — [#236](https://github.com/tolakang/smart-canvas/pull/236)
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [x] Q9 — Editor colour variables: the `--line` / `--muted` loop in `.sc-fig` — [#201](https://github.com/tolakang/smart-canvas/pull/201)
-- [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`
 
 ## P31 — UX review (c): guided start and one place for sizes (owner, 2026-11-02: "C1 and C3, go ahead"; D71, D72)
 - [x] C1a (D71) — sizes and artwork in New project — [#237](https://github.com/tolakang/smart-canvas/pull/237)
 - [x] C1b (D71) — the getting-started strip until the first export — [#238](https://github.com/tolakang/smart-canvas/pull/238)
-- [x] C3 (D72) — the layout choice on each size row; the Export Group card goes
+- [x] C3 (D72) — the layout choice on each size row; the Export Group card goes — [#239](https://github.com/tolakang/smart-canvas/pull/239)
 - C2 (pipeline lanes) — not now: D69 already makes the board readable at Fit

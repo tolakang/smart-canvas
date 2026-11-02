@@ -101,4 +101,4 @@ No item needs a DATA-MODEL.ts change or a new dependency. The UX review's C1–C
 - **Docs:**
   - No broken links between docs (`AFFINITY-IMPORT.md` is already noted as never written).
   - `docs/STYLING.md` stays as a pointer, because D65 links it.
-  - The spikes stay (first audit, Q3), and the Q6 plan stays on hold.
+  - The spikes stay (first audit, Q3).
