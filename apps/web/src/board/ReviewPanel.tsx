@@ -10,6 +10,7 @@ import { Icon } from './LayerRow';
 import { APPROVAL, APPROVAL_PILL } from './OutputNode';
 import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass } from './panel';
 import { approvalOf, openCounts } from './review';
+import { iconBtn } from '../ui/button';
 
 const STATE_LABEL = { approved: '✓ Approved', changed: 'Changed since approved', none: 'Not approved' } as const;
 
@@ -29,7 +30,7 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
     <aside className={panelClass(floating, 'sc-history sc-review')} aria-label="Review">
       <div className={PANEL_HEAD}>
         <span>Review</span>
-        <button type="button" className="sc-icon-btn" onClick={props.onClose} aria-label="Close review" title="Close">
+        <button type="button" className={iconBtn()} onClick={props.onClose} aria-label="Close review" title="Close">
           <Icon name="close" />
         </button>
       </div>
@@ -55,7 +56,7 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
                       {n > 0 && <span className="sc-muted">{`${n} open ${n === 1 ? 'comment' : 'comments'}`}</span>}
                     </span>
                   </button>
-                  <button type="button" className="sc-icon-btn flex-none self-center" onClick={() => zoomTo(outputNodeId(o.id))} aria-label={`Show ${o.label} on the board`} title="Show on the board">
+                  <button type="button" className={`${iconBtn()} flex-none self-center`} onClick={() => zoomTo(outputNodeId(o.id))} aria-label={`Show ${o.label} on the board`} title="Show on the board">
                     <Icon name="search" />
                   </button>
                 </li>

@@ -13,6 +13,7 @@ import { AskDialog, type AskSpec } from '../ui/AskDialog';
 import { PresetsDialog } from './PresetsDialog';
 import { TeamDialog } from './TeamDialog';
 import { DIALOG } from '../ui/tw';
+import { btn, iconBtn, TOAST } from '../ui/button';
 
 interface ProjectRow {
   id: string;
@@ -86,8 +87,8 @@ const THUMB_IMG: Record<'card' | 'row', string> = {
 };
 /** The ⋯ button: in a template card's corner, or floating on a row's cover until the row is hovered (always on touch). */
 const MORE: Record<'card' | 'row', string> = {
-  card: 'sc-icon-btn sc-more absolute top-(--sp-2) right-(--sp-2) size-32 flex-none pointer-coarse:size-44',
-  row: 'sc-icon-btn sc-more absolute top-10 right-10 size-32 flex-none rounded-[10px] bg-glass opacity-0 [backdrop-filter:blur(8px)] [box-shadow:var(--shadow-1)] [transition:opacity_var(--t-fast)] pointer-coarse:size-44 group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100',
+  card: `${iconBtn({ size: 'size-32 pointer-coarse:size-44' })} sc-more absolute top-(--sp-2) right-(--sp-2) flex-none`,
+  row: `${iconBtn({ size: 'size-32 pointer-coarse:size-44', round: 'rounded-[10px]', bg: 'bg-glass', hoverBg: '', transition: '[transition:opacity_var(--t-fast)]' })} sc-more absolute top-10 right-10 flex-none opacity-0 [backdrop-filter:blur(8px)] [box-shadow:var(--shadow-1)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100`,
 };
 /** A section's heading: small capitals. */
 const SECTION_TITLE = 'm-0 text-[13px] font-[650] tracking-[0.04em] text-muted uppercase';
@@ -243,10 +244,10 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
           {team.name}
         </span>
         <span className="sc-home__tools ml-auto flex gap-4">
-          <button type="button" className="sc-btn sc-btn--quiet" onClick={() => setShowTeam(true)}>
+          <button type="button" className={btn('quiet')} onClick={() => setShowTeam(true)}>
             Team
           </button>
-          <button type="button" className="sc-btn sc-btn--quiet" onClick={() => setShowPresets(true)}>
+          <button type="button" className={btn('quiet')} onClick={() => setShowPresets(true)}>
             Size presets
           </button>
         </span>
@@ -258,7 +259,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
           <p className="sc-muted sc-home__lede m-0 text-[15px]">Every campaign, every size. Open a board or start a new one.</p>
         </div>
         {canEdit && (
-          <button type="button" className="sc-btn sc-btn--primary sc-home__new-btn h-44 gap-8 rounded-[12px] px-22 py-0 text-[14px] [box-shadow:0_8px_20px_-8px_color-mix(in_srgb,var(--accent)_70%,transparent),inset_0_1px_0_rgb(255_255_255/0.15)]" onClick={() => setCreating({ templateId: null })}>
+          <button type="button" className={`${btn('primary', 'plain', { h: 'h-44', gap: 'gap-8', round: 'rounded-[12px]', px: 'px-22', text: 'text-[14px]', shadow: '[box-shadow:0_8px_20px_-8px_color-mix(in_srgb,var(--accent)_70%,transparent),inset_0_1px_0_rgb(255_255_255/0.15)]' })} sc-home__new-btn`} onClick={() => setCreating({ templateId: null })}>
             <Icon name="plus" /> New project
           </button>
         )}
@@ -308,7 +309,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
               <div className={EMPTY}>
                 <p>{canEdit ? 'No projects yet.' : 'No projects yet. An editor of the team can create one.'}</p>
                 {canEdit && (
-                  <button type="button" className="sc-btn sc-btn--primary" onClick={() => setCreating({ templateId: null })}>
+                  <button type="button" className={btn('primary')} onClick={() => setCreating({ templateId: null })}>
                     <Icon name="plus" /> New project
                   </button>
                 )}
@@ -316,7 +317,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
             ) : projects.length === 0 ? (
               <div className={EMPTY}>
                 <p>No projects match “{query.trim()}”.</p>
-                <button type="button" className="sc-btn" onClick={() => setQuery('')}>
+                <button type="button" className={btn()} onClick={() => setQuery('')}>
                   Clear search
                 </button>
               </div>
@@ -342,7 +343,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
         </>
       )}
       {note && (
-        <p className="sc-toast" role="status">
+        <p className={TOAST} role="status">
           {note}
         </p>
       )}
@@ -440,10 +441,10 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
           </p>
         )}
         <div className="sc-form__actions">
-          <button type="button" className="sc-btn" onClick={props.onClose}>
+          <button type="button" className={btn('default', 'card')} onClick={props.onClose}>
             Cancel
           </button>
-          <button type="submit" className="sc-btn sc-btn--primary" disabled={!name.trim() || busy}>
+          <button type="submit" className={btn('primary', 'card')} disabled={!name.trim() || busy}>
             {busy ? 'Creating…' : 'Create'}
           </button>
         </div>

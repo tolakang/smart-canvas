@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api';
 import { Icon } from './LayerRow';
 import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass, SECTION } from './panel';
+import { btn, iconBtn } from '../ui/button';
 
 export type VersionKind = 'auto' | 'before-delete' | 'before-restore' | 'named';
 export interface Version {
@@ -103,14 +104,14 @@ export function HistoryPanel(props: {
     <aside className={panelClass(floating, 'sc-history')} aria-label="History">
       <div className={PANEL_HEAD}>
         <span>History</span>
-        <button type="button" className="sc-icon-btn" onClick={props.onClose} aria-label="Close history" title="Close">
+        <button type="button" className={iconBtn()} onClick={props.onClose} aria-label="Close history" title="Close">
           <Icon name="close" />
         </button>
       </div>
       {!props.readOnly && !props.previewing && (
         <form className={`${SECTION} sc-history__name grid-cols-[1fr_auto] items-center`} onSubmit={(e) => void name(e)}>
           <input aria-label="Version name" placeholder="e.g. Sent to client" maxLength={100} value={naming} onChange={(e) => setNaming(e.target.value)} />
-          <button type="submit" className="sc-btn" disabled={!naming.trim()}>
+          <button type="submit" className={btn()} disabled={!naming.trim()}>
             Save version
           </button>
         </form>
@@ -136,7 +137,7 @@ export function HistoryPanel(props: {
                   </span>
                 </button>
                 {v.kind === 'named' && !props.readOnly && (
-                  <button type="button" className="sc-icon-btn" aria-label={`Delete version ${v.label}`} title="Delete" onClick={() => void remove(v)}>
+                  <button type="button" className={iconBtn()} aria-label={`Delete version ${v.label}`} title="Delete" onClick={() => void remove(v)}>
                     <Icon name="trash" />
                   </button>
                 )}

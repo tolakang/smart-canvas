@@ -104,7 +104,6 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 .sc-link { background: none; border: 0; padding: 0; color: var(--accent); text-align: left; }
 .sc-muted { color: var(--muted); }
 .sc-error { color: var(--danger); margin: 0; }
-.sc-badge { padding: 2px 8px; border-radius: 99px; background: var(--line); font-size: 12px; }
 
 /* The board page never scrolls; the board itself takes the visible height (dvh, see chrome.css). */
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -160,20 +159,14 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 
 .sc-thumb { width: 100%; height: 110px; object-fit: contain; background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; border: 1px solid var(--line); border-radius: var(--r-md); border-color: var(--line); }
 
-/* Buttons: one size, three variants (default, ghost, icon). Links in nodes become buttons. */
-.sc-btn, .sc-upload, .sc-fill button, .sc-node .sc-link {
+/* Upload labels, colour-fill buttons and links in nodes look like buttons (ui/button.ts builds the real ones). */
+.sc-upload, .sc-fill button, .sc-node .sc-link {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1); height: var(--field-h); padding: 0 var(--sp-3);
   border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); line-height: 1; text-decoration: none; cursor: pointer; transition: background var(--t-fast), border-color var(--t-fast);
 }
-.sc-btn .sc-icon { margin: 0; } /* sits next to its label (the button centres it) */
-.sc-btn:hover:not(:disabled), .sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
-.sc-btn:focus-visible, .sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
-.sc-btn--ghost { border-color: transparent; background: none; color: var(--accent); padding: 0 var(--sp-2); }
-.sc-btn--ghost:hover:not(:disabled) { background: var(--accent-soft); }
-.sc-node > .sc-btn { justify-self: start; }
+.sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
+.sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
 .sc-node .sc-link { justify-self: start; }
-.sc-icon-btn { line-height: 1.4; width: 24px; height: 24px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
-.sc-icon-btn:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); border-color: transparent; }
 
 .sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; }
 .sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
@@ -183,8 +176,6 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-fill .sc-field { color: var(--fg); }
 .sc-swatch { border: 1px solid var(--line); height: 48px; border-radius: var(--r-md); border-color: var(--line); }
 
-/* A chip: a small rounded label (a Preview's hand-edits count). */
-.sc-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--sp-2); border-radius: 99px; background: var(--warn-soft); color: var(--warn); font-size: var(--fs-xs); font-weight: 500; }
 
 
  .sc-topbar .sc-icon { margin: 0; }
@@ -242,10 +233,6 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
   --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 .sc-theme-toggle .sc-icon { margin: 0; }
-/* Touch: icon buttons get a 44 px tap target. */
-@media (pointer: coarse) {
-  .sc-icon-btn { min-width: 44px; min-height: 44px; }
-}
 .sc-layers__title .sc-muted { font-weight: 400; }
 /* Tablets (and phones turned sideways): slimmer side panels so the canvas keeps most of the width. */
 
@@ -257,13 +244,7 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 /* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
    One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider
    than a phone: fields wrap into a grid, rows stack their actions under the name. */
-.sc-btn--primary { font-weight: 600; }
-.sc-btn--primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, black); }
-.sc-btn--danger { color: var(--danger); }
-.sc-btn--danger:hover:not(:disabled) { background: var(--danger-soft); }
-.sc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.sc-card .sc-btn { height: 32px; font-size: var(--fs-md); }
-/* Plain card buttons (sign in, invite page, older dialogs) look like .sc-btn; a card's submit is its primary. */
+/* Plain card buttons (sign in, invite page, older dialogs) look like the app's buttons (ui/button.ts); a card's submit is its primary. */
 .sc-card button:not([class]) {
   display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 var(--sp-3);
   border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); transition: background var(--t-fast);
@@ -283,9 +264,6 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-rows__main.sc-rows__main--tile { display: flex; align-items: center; gap: var(--sp-3); }
 .sc-rows__text { display: grid; gap: 2px; min-width: 0; }
 .sc-more .sc-icon { margin: 0; }
-.sc-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 70; margin: 0; padding: 8px 14px; border-radius: var(--r-md); background: var(--fg); color: var(--surface); font-size: var(--fs-sm); box-shadow: var(--shadow-2); transform: translateX(-50%); }
-.sc-btn--danger-solid { border-color: var(--danger); background: var(--danger); color: var(--on-accent); font-weight: 600; }
-.sc-btn--danger-solid:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 88%, black); }
 
 /* Rows: name over a muted line, actions on the right (under it on phones). */
 .sc-rows { gap: 0; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
@@ -298,8 +276,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-rows__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sc-rows__meta { color: var(--muted); font-size: var(--fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sc-rows__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sp-1); flex: none; }
-.sc-rows .sc-btn--ghost { color: var(--fg); }
-.sc-rows .sc-btn--ghost.sc-btn--danger { color: var(--danger); }
 
 /* Forms in dialogs: a grid that wraps instead of overflowing. */
 .sc-form { display: grid; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
@@ -314,7 +290,7 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
   .sc-rows__actions { margin-left: auto; }
     .sc-dialog .sc-card { --card-pad: var(--sp-4); }
   /* Visually hidden, still read: the heading stays "Studio · Projects". */
-    .sc-card .sc-btn, .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
+    .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
   .sc-card :is(input, select) { font-size: 16px; } /* iOS zooms into smaller fields */
 }
 
@@ -325,7 +301,6 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 .sc-thumb--upload { cursor: pointer; border-style: dashed; border-color: var(--muted); }
 .sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
 .sc-node .sc-render--thumb { max-width: 100%; }
-.sc-inspector-panel__actions .sc-btn { gap: var(--sp-1); }
 
 
 
@@ -354,14 +329,14 @@ input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color:
 h1, h2, h3 { letter-spacing: -0.011em; }
 
 /* Buttons: one height, one radius, a soft press. */
-.sc-btn, .sc-card button:not([class]), .sc-history .sc-btn {
+.sc-card button:not([class]) {
   border-radius: var(--r-md); transition: background var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
 }
-.sc-btn:active:not(:disabled), .sc-card button:not([class]):active:not(:disabled) { transform: translateY(0.5px); }
-.sc-btn--primary, .sc-card button[type='submit']:not([class]) {
+.sc-card button:not([class]):active:not(:disabled) { transform: translateY(0.5px); }
+.sc-card button[type='submit']:not([class]) {
   border-color: var(--accent); background: var(--accent); color: var(--on-accent); box-shadow: 0 1px 2px rgb(16 24 40 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.12);
 }
-.sc-btn--primary:hover:not(:disabled), .sc-card button[type='submit']:not([class]):hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.sc-card button[type='submit']:not([class]):hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
 
 /* Fields: a quiet border, an accent ring on focus (not a heavy outline). */
 .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select, textarea),
@@ -398,11 +373,9 @@ h1, h2, h3 { letter-spacing: -0.011em; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
-.sc-overview .sc-btn--primary { justify-content: center; height: 34px; gap: var(--sp-2); }
 
 
 
-.sc-node .sc-btn { border-radius: 9px; }
 
 
 
@@ -413,8 +386,6 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 /* ===== U5 (2026-10-24) projects home and sign-in: an app page on the ambient backdrop — brand bar, a large title
    with the main action, project cards with big covers; sign-in with a brand panel. ===== */
 body { margin: 0; background: var(--ambient); background-attachment: fixed; min-height: 100vh; }
-.sc-btn--quiet { border-color: transparent; background: transparent; }
-.sc-btn--quiet:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, transparent); }
 
 
 /* Project and template cards: a big cover (the project's colour and initial) over the name and when it was edited. */
@@ -446,12 +417,9 @@ body { margin: 0; background: var(--ambient); background-attachment: fixed; min-
 
 
 
-/* The busy spinner (uploads, exports). */
-.sc-spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent); border-top-color: var(--accent); animation: sc-spin 0.8s linear infinite; }
+/* The busy spinner's turn (ui/button.ts SPINNER). */
 @keyframes sc-spin { to { transform: rotate(360deg); } }
 
-.sc-btn--soft { border-color: transparent; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.sc-btn--soft:hover:not(:disabled) { border-color: transparent; background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent-hover); }
 
 
 
@@ -462,7 +430,7 @@ body { margin: 0; background: var(--ambient); background-attachment: fixed; min-
 
 
 /* The global `.sc-icon { margin: auto }` centres a lone icon; beside a label it must sit next to it. */
-:is(.sc-preview__export, .sc-head__action, .sc-btn--soft, .sc-preview__comments, .sc-slot__state) .sc-icon { margin: 0; }
+:is(.sc-preview__export, .sc-head__action, .sc-preview__comments, .sc-slot__state) .sc-icon { margin: 0; }
 
 /* Touch: no browser tap flash — the app's own pressed and selected states show the tap. */
 button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent; }

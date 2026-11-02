@@ -14,6 +14,7 @@ import { newId } from './ids';
 import { confirmDelete, Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { NO_CANVAS } from './pinch';
+import { btn } from '../ui/button';
 
 
 /** Its Delete: shown on hover or while typing (on touch: while typing, or once the slot is selected). */
@@ -72,7 +73,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         })}
       </ol>
       {!readOnly && (
-        <button type="button" className={`sc-btn sc-btn--soft sc-text-slots__add w-full justify-center ${NO_CANVAS}`} onClick={() => run((d) => addTextToStack(d, stack.id, { id: newId() }))}>
+        <button type="button" className={`${btn('soft', 'node')} sc-text-slots__add w-full [justify-self:start] ${NO_CANVAS}`} onClick={() => run((d) => addTextToStack(d, stack.id, { id: newId() }))}>
           <Icon name="plus" /> Add text
         </button>
       )}

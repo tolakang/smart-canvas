@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { DIALOG } from './tw';
+import { btn } from './button';
 
 export interface AskSpec {
   title: string;
@@ -39,10 +40,10 @@ export function AskDialog({ ask, onDone, fieldClass = '' }: { ask: AskSpec; onDo
           </label>
         )}
         <div className="sc-form__actions">
-          <button type="button" className="sc-btn" onClick={() => onDone(null)}>
+          <button type="button" className={btn('default', 'card')} onClick={() => onDone(null)}>
             Cancel
           </button>
-          <button type="submit" className={`sc-btn ${ask.danger ? 'sc-btn--danger-solid' : 'sc-btn--primary'}`} autoFocus={!ask.input} disabled={!!ask.input && !value.trim()}>
+          <button type="submit" className={btn(ask.danger ? 'danger-solid' : 'primary', 'card')} autoFocus={!ask.input} disabled={!!ask.input && !value.trim()}>
             {ask.confirm}
           </button>
         </div>

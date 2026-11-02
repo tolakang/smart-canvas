@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
 import { DIALOG, DIALOG_LONG_CARD, DIALOG_SELECT, DIALOG_STICKY_FOOT, PRESET_FIELD } from '../ui/tw';
+import { BADGE, btn } from '../ui/button';
 
 interface Draft {
   id: string | null;
@@ -176,14 +177,14 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
                     </ul>
                   </details>
                   {f.builtIn ? (
-                    <span className="sc-badge">Built-in</span>
+                    <span className={BADGE}>Built-in</span>
                   ) : (
                     props.isAdmin && (
                       <span className="sc-rows__actions">
-                        <button type="button" className="sc-btn sc-btn--ghost" onClick={() => renameFamily(f.name)} aria-label={`Rename family ${f.name}`}>
+                        <button type="button" className={btn('ghost', 'card-row')} onClick={() => renameFamily(f.name)} aria-label={`Rename family ${f.name}`}>
                           Rename
                         </button>
-                        <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => deleteFamily(f.name, f.sizes.length)} aria-label={`Delete family ${f.name}`}>
+                        <button type="button" className={btn('ghost-danger', 'card-row')} onClick={() => deleteFamily(f.name, f.sizes.length)} aria-label={`Delete family ${f.name}`}>
                           Delete
                         </button>
                       </span>
@@ -210,13 +211,13 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
                         <span className="sc-rows__name">{p.name}</span>
                         <span className="sc-rows__meta">{sizeText(p)}</span>
                       </span>
-                      {p.teamId !== null && <span className="sc-badge">Team</span>}
+                      {p.teamId !== null && <span className={BADGE}>Team</span>}
                       {p.teamId !== null && props.isAdmin && (
                         <span className="sc-rows__actions">
-                          <button type="button" className="sc-btn sc-btn--ghost" onClick={() => edit(p)} aria-label={`Edit ${p.name}`}>
+                          <button type="button" className={btn('ghost', 'card-row')} onClick={() => edit(p)} aria-label={`Edit ${p.name}`}>
                             Edit
                           </button>
-                          <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void remove(p)} aria-label={`Delete ${p.name}`}>
+                          <button type="button" className={btn('ghost-danger', 'card-row')} onClick={() => void remove(p)} aria-label={`Delete ${p.name}`}>
                             Delete
                           </button>
                         </span>
@@ -272,11 +273,11 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
             </div>
             <div className="sc-form__actions">
               {draft.id && (
-                <button type="button" className="sc-btn" onClick={() => setDraft(EMPTY)}>
+                <button type="button" className={btn('default', 'card')} onClick={() => setDraft(EMPTY)}>
                   Cancel edit
                 </button>
               )}
-              <button type="submit" className="sc-btn sc-btn--primary">
+              <button type="submit" className={btn('primary', 'card')}>
                 {draft.id ? 'Save changes' : 'Add preset'}
               </button>
             </div>
@@ -298,7 +299,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           />
         )}
         <div className={DIALOG_STICKY_FOOT}>
-          <button type="button" className="sc-btn" onClick={() => ref.current?.close()}>
+          <button type="button" className={btn('default', 'card')} onClick={() => ref.current?.close()}>
             Close
           </button>
         </div>

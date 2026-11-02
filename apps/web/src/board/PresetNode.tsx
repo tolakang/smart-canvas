@@ -17,6 +17,7 @@ import { NodeHead } from './NodeHead';
 import { nameWithoutSize, presetSettings } from './OutputNode';
 import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
 import { useSaveAsFamily } from './preset-save';
+import { btn, iconBtn } from '../ui/button';
 
 
 /** A row's name without its trailing size, or '' when what is left is just the preset's name. */
@@ -100,12 +101,12 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
       {!readOnly && family && (family.label !== set.label || family.missing.length > 0) && (
         <div className={`sc-preset__family flex flex-wrap gap-4 px-(--sp-2) pt-0 pb-(--sp-1) [&_.sc-btn]:text-sm ${NO_CANVAS}`} role="group" aria-label={`Team family ${family.label}`}>
           {family.label !== set.label && (
-            <button type="button" className="sc-btn sc-btn--ghost" onClick={() => run((d) => renameSet(d, set.id, family.label))} title="The team family these sizes came from has this name now">
+            <button type="button" className={btn('ghost', 'node')} onClick={() => run((d) => renameSet(d, set.id, family.label))} title="The team family these sizes came from has this name now">
               Rename to “{family.label}”
             </button>
           )}
           {family.missing.length > 0 && (
-            <button type="button" className="sc-btn sc-btn--ghost" onClick={addMissing} title={family.missing.map((p) => p.name).join(', ')}>
+            <button type="button" className={btn('ghost', 'node')} onClick={addMissing} title={family.missing.map((p) => p.name).join(', ')}>
               Add {family.missing.length} new {family.missing.length === 1 ? 'size' : 'sizes'}
             </button>
           )}
@@ -149,7 +150,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             {/* D51: the eye shows / hides this size's Preview on the board (it still exports); the trash removes the size. */}
             <button
               type="button"
-              className={`sc-icon-btn sc-preset__eye ml-auto ${ROW_ACTION} aria-pressed:text-muted aria-pressed:opacity-100 ${NO_CANVAS}`}
+              className={`${iconBtn({ transition: '[transition:opacity_var(--t-fast)]' })} sc-preset__eye ml-auto ${ROW_ACTION} aria-pressed:text-muted aria-pressed:opacity-100 ${NO_CANVAS}`}
               aria-label={`${hidden.has(output.id) ? 'Show' : 'Hide'} preview ${output.label}`}
               aria-pressed={hidden.has(output.id)}
               disabled={readOnly}
@@ -161,7 +162,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             {!readOnly && (
               <button
                 type="button"
-                className={`sc-icon-btn sc-preset__remove ${ROW_ACTION} ${NO_CANVAS}`}
+                className={`${iconBtn({ transition: '[transition:opacity_var(--t-fast)]' })} sc-preset__remove ${ROW_ACTION} ${NO_CANVAS}`}
                 aria-label={`Remove ${output.label} from ${set.label}`}
                 title="Remove this size (deletes its preview)"
                 onClick={() => window.confirm(`Remove “${output.label}”? Its preview is deleted.`) && run((d) => deleteOutput(d, output.id))}
@@ -184,10 +185,10 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           <input aria-label="Width (px)" inputMode="numeric" placeholder="W" value={custom.w} autoFocus onChange={(e) => setCustom({ ...custom, w: e.target.value })} />
           <span>×</span>
           <input aria-label="Height (px)" inputMode="numeric" placeholder="H" value={custom.h} onChange={(e) => setCustom({ ...custom, h: e.target.value })} />
-          <button type="submit" className="sc-btn">
+          <button type="submit" className={btn('default', 'node')}>
             Add
           </button>
-          <button type="button" className="sc-icon-btn" aria-label="Cancel" onClick={() => setCustom(null)}>
+          <button type="button" className={iconBtn()} aria-label="Cancel" onClick={() => setCustom(null)}>
             <Icon name="close" />
           </button>
         </form>

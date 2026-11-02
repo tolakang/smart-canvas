@@ -1,5 +1,38 @@
 {
-  "ref": "c7e45b1693fc9aca08eca021a02c54a989855ebe",
-  "sheets": [],
-  "subjects": []
+  "ref": "3e0903b13a28ec3c4377ff7c92aca4421e15edd2",
+  "sheets": [
+    "apps/web/src/styles.css"
+  ],
+  "subjects": [
+    ".sc-badge",
+    ".sc-btn",
+    ".sc-btn .sc-icon",
+    ".sc-btn--danger",
+    ".sc-btn--danger-solid",
+    ".sc-btn--danger-solid:not()",
+    ".sc-btn--danger:not()",
+    ".sc-btn--ghost",
+    ".sc-btn--ghost:not()",
+    ".sc-btn--primary",
+    ".sc-btn--primary:not()",
+    ".sc-btn--quiet",
+    ".sc-btn--quiet:not()",
+    ".sc-btn--soft",
+    ".sc-btn--soft:not()",
+    ".sc-btn:not()",
+    ".sc-card .sc-btn",
+    ".sc-chip",
+    ".sc-history .sc-btn",
+    ".sc-icon-btn",
+    ".sc-icon-btn:not()",
+    ".sc-inspector-panel__actions .sc-btn",
+    ".sc-node .sc-btn",
+    ".sc-node > .sc-btn",
+    ".sc-overview .sc-btn--primary",
+    ".sc-rows .sc-btn--ghost",
+    ".sc-rows .sc-btn--ghost.sc-btn--danger",
+    ".sc-spinner",
+    ".sc-toast",
+    ":is(.sc-preview__export, .sc-head__action, .sc-btn--soft, .sc-preview__comments, .sc-slot__state) .sc-icon"
+  ]
 }

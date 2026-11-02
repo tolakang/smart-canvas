@@ -33,6 +33,7 @@ import { exportInBrowser, type BrowserFormat } from '../render/browserExport';
 import { browserExportSupported } from '../render/exportFile';
 import { zipStore } from '../ui/zip';
 import { DIALOG, DIALOG_SELECT } from '../ui/tw';
+import { btn } from '../ui/button';
 
 /** “2 of 3 chosen Previews aren’t approved”, with its Only approved button on the right. */
 const APPROVAL = 'sc-export__approval m-0 flex flex-wrap items-center gap-8 rounded-sm border-l-3 border-l-warn bg-surface-2 px-10 py-8 text-sm [&>button]:ml-auto';
@@ -408,7 +409,7 @@ export function ExportDialog(props: {
             )}
             <div className="sc-row">
               {(done.length > 1 || (set && done.length > 0)) && (
-                <button type="button" className="sc-btn" disabled={zipping} onClick={() => void downloadAll(done)}>
+                <button type="button" className={btn('default', 'card')} disabled={zipping} onClick={() => void downloadAll(done)}>
                   {zipping ? 'Making ZIP…' : set ? `Download ${set.label} (ZIP, ${done.length})` : `Download all (ZIP, ${done.length})`}
                 </button>
               )}
