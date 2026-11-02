@@ -21,7 +21,7 @@ This skill is the board's rules; how to style anything (Tailwind on our tokens, 
 | Node types | `board/nodes.tsx:111` (`nodeTypes`) | `inputNode`, `assetsNode`, `textNode`, `headlineNode`, `presetNode`, `mainNode`, `outputNode`, `groupNode`. Module-level constant. |
 | Edge types | `board/Board.tsx:165` (`edgeTypes = { routed: RoutedEdge }`) | One edge type: `board/RoutedEdge.tsx` (bezier or reroute points, ✂ badge on hover/selection). |
 | Board actions for nodes | `board/context.ts` (`useBoard()`) | Nodes call `run(doc => …)`, `readOnly`, etc. They never edit React Flow state for doc changes. |
-| Zoomed-out name tags | `board/ZoomLabels.tsx` | `ViewportPortal`, fixed screen size via `--zoom`; never takes a click; a tag that would cover another is left out (`visibleTags`, D69). |
+| Zoomed-out name tags | `board/ZoomLabels.tsx` | `ViewportPortal`, fixed screen size via `--zoom`; never takes a click; a tag wider than its panel is cut to the panel's width (at least `MIN_TAG`), and one that still covers another is left out (`visibleTags`, D69, K5). |
 | Toolbar, minimap | `board/CanvasToolbar.tsx`, `<MiniMap>` in Board | Zoom, Fit to screen and Fit all (D69), Select/Hand, grid, Tidy; on a phone Add first (`onAdd`, D70). Minimap only on desktop. |
 | Touch | `board/pinch.ts` (`usePinch`, `TOUCH_NO_PAN`) | D58: two-finger pinch and pan are ours; one finger moves the board. |
 | Grid snap, Tidy | `board/tidy.ts`, `guides.ts` | D57: 16 px grid; alignment guides while dragging (`align()` inside `onNodesChange`). D69: a Preset node's Previews in a grid of up to three columns (`PREVIEW_GRID`, `previewSpot` in core). |

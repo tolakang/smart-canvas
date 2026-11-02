@@ -266,8 +266,8 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (2) U8 — `Board.tsx` split (1,713 → about 1,200 lines): wire handlers, + Add items, top bar and three small hooks moved out as they were (this PR)
 - [x] (3) K1 — the API refuses v1 / v2 saves; stored ones still migrate on read — [#230](https://github.com/tolakang/smart-canvas/pull/230)
 - [x] (3) K2 — `legacySlots` stays the e2e test fixture (D68); no work
-- [ ] (3) K5 — a name tag that would overlap is shortened to its card's width, not left out (amends D69)
-- [x] (3) K6 — a note beside Approve when every layer of the Preview is empty (D63) (this PR)
+- [x] (3) K5 — a name tag that would overlap is shortened to its card's width, not left out (amends D69) (this PR)
+- [x] (3) K6 — a note beside Approve when every layer of the Preview is empty (D63) — [#231](https://github.com/tolakang/smart-canvas/pull/231)
 - [ ] (3) K3 — "T9": the shared component rules in `styles.css` to Tailwind, in three PRs with the parity test
 - [ ] (3) K4 — T8 (Preflight, unused `sc-` hooks, retire the parity test), after K3
 
