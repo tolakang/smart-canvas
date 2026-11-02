@@ -155,7 +155,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Cards:** 16 px corners, 14 px padding, a soft two-layer shadow that lifts on hover, and a 2 px accent ring with a halo when selected. The header is a gentle tint of the card's colour with a coloured icon chip: assets violet `--head-asset`, Main Comps blue `--head-master`, Export Group cyan `--head-rule`, Previews teal `--head-preview`, Presets green `--head-preset`; frozen Previews grey.
 - **Main Comps group** (Main Comps + Export Group): a soft tinted frame (no dashed line).
 - **Wires and ports:** 2 px wires tinted blue, accent with a glow when selected or hovered; 12 px ports with a white ring.
-- **Zoomed out (below 60 %):** each panel gets a dark name tag above it (Preview tags add ✓ approved / changed and the open-comment count). Tags keep their screen size at any zoom (`--zoom-inv`) and never take a click (`board/ZoomLabels.tsx`); a tag that would cover one already placed is left out (D69, `visibleTags`).
+- **Zoomed out (below 60 %):** each panel gets a dark name tag above it (Preview tags add ✓ approved / changed and the open-comment count). Tags keep their screen size at any zoom (`--zoom-inv`) and never take a click (`board/ZoomLabels.tsx`); a tag wider than its panel is cut to the panel's width (at least 48 px, the name ending in …), and one that still covers a tag already placed is left out (D69 as amended by K5, `visibleTags`).
 
 ## Projects home and sign-in (U5)
 - **Brand:** `ui/Brand.tsx` — the mark (three stacked frames on a blue–violet tile) and the name "Smart Canvas".
