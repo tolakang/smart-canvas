@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compositionHealth, isEmptyLayer, outputHealth } from './health';
+import { allLayersEmpty, compositionHealth, isEmptyLayer, outputHealth } from './health';
 import { computeLayout } from './layout';
 import { mockMeasure, output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
@@ -86,5 +86,19 @@ describe('isEmptyLayer (one test for health, Export and the editors)', () => {
     const blank = filledDoc.sources.find((s) => s.content.kind === 'text');
     if (!blank || blank.content.kind !== 'text') throw new Error('no text layer');
     expect(isEmptyLayer({ ...blank, content: { ...blank.content, text: '   ' } })).toBe(true);
+  });
+});
+
+describe('allLayersEmpty (K6: the note beside Approve)', () => {
+  it('true when every layer shown is empty, or none is; one fill or filled layer makes it false', () => {
+    const doc = project();
+    const empties = doc.sources.filter(isEmptyLayer).map((s) => s.id);
+    const fill = doc.sources.find((s) => s.content.kind === 'fill');
+    if (!fill) throw new Error('no fill layer');
+    expect(empties.length).toBeGreaterThan(0);
+    expect(allLayersEmpty(doc, empties)).toBe(true);
+    expect(allLayersEmpty(doc, [])).toBe(true);
+    expect(allLayersEmpty(doc, [...empties, fill.id])).toBe(false);
+    expect(allLayersEmpty(filled(doc), empties)).toBe(false);
   });
 });

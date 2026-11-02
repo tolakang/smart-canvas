@@ -5,7 +5,7 @@
  * D63: the Comment tool turns a click or tap on the Preview into a pinned comment; the Comments panel takes the
  * Design panel's place while it is on.
  */
-import { computeLayout, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
+import { allLayersEmpty, computeLayout, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '../board/context';
 import { threadsOf } from '../board/review';
@@ -78,7 +78,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
             {!connected && ' · disconnected (frozen)'}
           </span>
           <span className="sc-muted">Changes here apply to this Preview only</span>
-          <Approval outputId={output.id} fingerprint={fingerprint} onApprove={reviewApprove} />
+          <Approval outputId={output.id} fingerprint={fingerprint} empty={allLayersEmpty(doc, scene.items.map((i) => i.sourceId))} onApprove={reviewApprove} />
           {!readOnly && (
             <button
               type="button"
@@ -150,7 +150,7 @@ const STATE = 'sc-approval__state text-[11px] font-[600]';
 const APPROVE =
   'sc-approval__approve font-[600] border-ok [&:is(:not(:hover),:disabled)]:bg-ok [&:not(:disabled)]:text-on-accent';
 
-function Approval(props: { outputId: string; fingerprint: string; onApprove: (outputId: string, fingerprint: string | null) => Promise<void> }) {
+function Approval(props: { outputId: string; fingerprint: string; /** K6: nothing to draw yet (approving is still allowed). */ empty: boolean; onApprove: (outputId: string, fingerprint: string | null) => Promise<void> }) {
   const { review, readOnly } = useBoard();
   const [busy, setBusy] = useState(false);
   const approval = review?.approvals.find((a) => a.outputId === props.outputId);
@@ -168,6 +168,7 @@ function Approval(props: { outputId: string; fingerprint: string; onApprove: (ou
       ) : (
         readOnly && <span className={STATE}>Not approved</span>
       )}
+      {!readOnly && (!approval || changed) && props.empty && <span className={`${STATE} text-warn`}>Every layer is empty</span>}
       {!readOnly && (!approval || changed) && (
         <button type="button" className={APPROVE} disabled={busy || !props.fingerprint} onClick={() => act(props.fingerprint)}>
           {approval ? 'Approve again' : 'Approve'}
