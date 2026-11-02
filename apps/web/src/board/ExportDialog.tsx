@@ -28,6 +28,7 @@ import {
 } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { approvalOf, type ApprovalState } from './review';
+import { rowName } from './OutputNode';
 import { api, ApiError, assetUrl } from '../api';
 import { exportInBrowser, type BrowserFormat } from '../render/browserExport';
 import { browserExportSupported } from '../render/exportFile';
@@ -271,7 +272,7 @@ export function ExportDialog(props: {
               {listed.length === 0 && <p className={MUTED_TEXT}>Add a Preview first.</p>}
               {groups.map((g) => (
                 <div key={g.key} className="sc-export__group grid gap-2 [&+&]:mt-8" role="group" aria-label={g.label}>
-                  {groups.length > 1 && <p className="m-0 px-4 pt-2 text-[12px] font-[650] text-muted">{g.label}</p>}
+                  {g.label && <p className="m-0 px-4 pt-2 text-[12px] font-[650] text-muted">{g.label}</p>}
                       {g.outputs.map((o) => (
                     <label key={o.id} className="flex cursor-pointer items-center gap-6 rounded-[9px] bg-surface px-10 py-8 [box-shadow:0_0_0_1px_color-mix(in_srgb,var(--line)_60%,transparent)] hover:[box-shadow:0_0_0_1px_var(--accent)] [label+&]:mt-4">
                       <input
@@ -280,8 +281,9 @@ export function ExportDialog(props: {
                         checked={selected.includes(o.id)}
                         onChange={(e) => setSelected((s) => (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)))}
                       />
-                      {o.label}{' '}
-                      <span className={MUTED_TEXT}>
+                      {/* Owner, 2026-11-02: each name once — the size shows beside it, so the name drops its own size. */}
+                      {rowName(o.label, g.label) && `${rowName(o.label, g.label)} `}
+                      <span className={rowName(o.label, g.label) ? MUTED_TEXT : undefined}>
                         {o.size.width} × {o.size.height} {o.size.unit}
                         {hidden.has(o.id) ? ' · hidden on the board' : ''}
                         {APPROVAL_NOTE[approvalOf(approvals, o.id).state]}

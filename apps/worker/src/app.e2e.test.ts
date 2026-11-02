@@ -62,6 +62,10 @@ describe.skipIf(!adminUrl)('end to end (T7.5)', () => {
 
   it('overrides one output only', async () => {
     const editor = page.getByRole('dialog', { name: 'Preview editor Instagram square' });
+    // Brought close first (Enter on the panel, D69), so no board chrome such as the minimap covers its Edit button.
+    await page.locator('.react-flow__node').filter({ has: page.getByLabel('Preview Instagram square', { exact: true }) }).focus();
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
     // The board may still be placing the three new Previews; a click that lands while the button moves misses it,
     // so click until the editor is open (as wires.e2e does for its drag).
     await expect

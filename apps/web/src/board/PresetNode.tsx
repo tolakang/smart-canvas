@@ -16,7 +16,7 @@ import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { FAMILY_LABEL } from './MainNode';
-import { nameWithoutSize, presetSettings } from './OutputNode';
+import { presetSettings, rowName } from './OutputNode';
 import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
 import { useSaveAsFamily } from './preset-save';
 import { btn, iconBtn } from '../ui/button';
@@ -24,26 +24,21 @@ import { GRIP } from '../ui/controls';
 import { MUTED_TEXT } from '../ui/tw';
 
 
-/** A row's name without its trailing size, or '' when what is left is just the preset's name. */
 /**
  * A size row (D46): the size first, its name, then the eye and the trash, shown on hover or keyboard focus (always
  * on touch, and the eye while it hides a Preview). Only the grip drags it; its handle starts a wire.
  */
 const ROW =
-  'group/row relative flex min-h-44 cursor-grab items-center gap-10 py-6 pr-22 pl-16 text-[12px] [border-top:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:none] [transition:background_var(--t-fast)] hover:bg-surface-2';
+  'group/row relative flex min-h-44 cursor-grab items-center gap-6 py-6 pr-16 pl-16 text-[12px] [border-top:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:none] [transition:background_var(--t-fast)] hover:bg-surface-2';
 const ROW_ACTION =
   'opacity-0 [transition:opacity_var(--t-fast)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100';
 
-export function rowName(label: string, setLabel: string): string {
-  const name = nameWithoutSize(label);
-  return name === setLabel.trim() ? '' : name;
-}
 const ROW_DRAG = 'application/x-sc-preset-row';
 
 /** UX C3: a row's layout choice — three small buttons; the one in use raised, in the accent when picked by hand. */
 const SEG = 'sc-preset__layout inline-flex flex-none gap-1 rounded-[7px] bg-surface-2 p-1';
 const SEG_BUTTON =
-  'h-20 min-w-20 cursor-pointer rounded-[5px] px-4 text-[10.5px] font-[700] text-muted [background:none] [border:0] hover:text-fg disabled:cursor-default aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:[box-shadow:var(--shadow-1)] data-[chosen]:aria-pressed:text-accent pointer-coarse:h-32 pointer-coarse:min-w-32';
+  'h-20 min-w-20 cursor-pointer rounded-[5px] px-4 text-[10.5px] font-[700] text-muted [background:none] [border:0] hover:text-fg disabled:cursor-default aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:[box-shadow:var(--shadow-1)] data-[chosen]:aria-pressed:text-accent pointer-coarse:h-32 pointer-coarse:min-w-28';
 const SHORT: Record<GuideFamily, string> = { square: 'S', vertical: 'V', horizontal: 'H' };
 
 /** The layout an output takes by its shape alone (D50). */
@@ -154,10 +149,10 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
                 <Icon name="grip" />
               </span>
             )}
-            <span className="sc-preset__size min-w-92 flex-none text-[12.5px] font-[600] [font-variant-numeric:tabular-nums]">
+            <span className="sc-preset__size min-w-84 flex-none text-[12.5px] font-[600] [font-variant-numeric:tabular-nums]">
               {output.size.width} × {output.size.height}
             </span>
-            <span className="sc-port__label flex-1 overflow-hidden text-[12.5px] text-ellipsis whitespace-nowrap text-muted" title={output.label}>
+            <span className="sc-port__label min-w-0 flex-1 overflow-hidden text-[12.5px] text-ellipsis whitespace-nowrap text-muted" title={output.label}>
               {/* V2: the size is already shown; a name that only repeats the preset and the size says nothing more. */}
               {rowName(output.label, set.label)}
             </span>

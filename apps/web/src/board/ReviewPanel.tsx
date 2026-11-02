@@ -7,7 +7,7 @@ import { presetSets } from '@smart-canvas/core';
 import { useBoard } from './context';
 import { outputNodeId } from './flow';
 import { Icon } from './LayerRow';
-import { APPROVAL, APPROVAL_PILL } from './OutputNode';
+import { APPROVAL, APPROVAL_PILL, rowName } from './OutputNode';
 import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass } from './panel';
 import { approvalOf, openCounts } from './review';
 import { iconBtn } from '../ui/button';
@@ -51,7 +51,7 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
               return (
                 <li key={o.id} className={listItem()}>
                   <button type="button" className={LIST_OPEN} onClick={() => openOutputEditor(o.id, { comments: n > 0 })} aria-label={`Open ${o.label}`}>
-                    <span className={LIST_TITLE}>{o.label}</span>
+                    <span className={LIST_TITLE}>{rowName(o.label, g.label) || `${o.size.width} × ${o.size.height} ${o.size.unit}`}</span>
                     <span className="sc-review__row flex flex-wrap items-center gap-8">
                       <span className={`sc-preview__approval sc-preview__approval--${a.state} ${APPROVAL_PILL} ${APPROVAL[a.state]}`}>{STATE_LABEL[a.state]}</span>
                       {n > 0 && <span className={MUTED_TEXT}>{`${n} open ${n === 1 ? 'comment' : 'comments'}`}</span>}

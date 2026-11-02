@@ -17,6 +17,7 @@ import { TextPanel } from './TextPanel';
 import { COMMENT_TOOL, COUNT, LOADING } from './shell';
 import { SIDE } from './panels';
 import { MUTED_TEXT } from '../ui/tw';
+import { nameWithoutSize } from '../board/OutputNode';
 
 export function OutputEditor({ outputId, comments = false, onClose }: { outputId: string; comments?: boolean; onClose: () => void }) {
   const { doc, run, layoutDeps, author, readOnly, review, reviewApprove } = useBoard();
@@ -72,7 +73,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       label={`Preview editor ${output.label}`}
       title={
         <>
-          <strong>{output.label}</strong>
+          <strong>{nameWithoutSize(output.label) || output.label}</strong>
           <span className={MUTED_TEXT}>
             {output.size.width} × {output.size.height} {output.size.unit}
             {(output.bleedMm ?? 0) > 0 && ` · bleed ${output.bleedMm} mm`}
