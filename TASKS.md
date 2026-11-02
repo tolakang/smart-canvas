@@ -279,7 +279,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`
 
 ## P31 — UX review (c): guided start and one place for sizes (owner, 2026-11-02: "C1 and C3, go ahead"; D71)
-- [ ] C1a (D71) — sizes and artwork in New project
-- [ ] C1b — a progress strip until the first export
+- [x] C1a (D71) — sizes and artwork in New project — [#237](https://github.com/tolakang/smart-canvas/pull/237)
+- [x] C1b (D71) — the getting-started strip until the first export
 - [ ] C3 — the layout choice on each size row; the Export Group card goes
 - C2 (pipeline lanes) — not now: D69 already makes the board readable at Fit

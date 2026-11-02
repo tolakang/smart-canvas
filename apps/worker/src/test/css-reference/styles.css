@@ -1,4 +1,4 @@
-/* The app's CSS at c726fa458ebbf1cae66929116f7b304224a96ae7 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at dcc963542de8e39f65e74b70a58c1235e9119abc (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -1336,6 +1336,10 @@
     overflow: visible;
   }
 
+  .overflow-x-auto {
+    overflow-x: auto;
+  }
+
   .rounded-\(--panel-r\) {
     border-radius: var(--panel-r);
   }
@@ -1793,6 +1797,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .bg-\[color-mix\(in_srgb\,var\(--surface\)_60\%\,transparent\)\] {
       background-color: color-mix(in srgb,var(--surface) 60%,transparent);
+    }
+  }
+
+  .bg-\[color-mix\(in_srgb\,var\(--surface\)_85\%\,transparent\)\] {
+    background-color: var(--surface);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-\[color-mix\(in_srgb\,var\(--surface\)_85\%\,transparent\)\] {
+      background-color: color-mix(in srgb,var(--surface) 85%,transparent);
     }
   }
 
@@ -2740,10 +2754,6 @@
 
   .\[font-variant-numeric\:tabular-nums\] {
     font-variant-numeric: tabular-nums;
-  }
-
-  .line-through {
-    text-decoration-line: line-through;
   }
 
   .no-underline {
@@ -4217,6 +4227,18 @@
 
   .data-\[over\]\:bg-accent-soft[data-over] {
     background-color: var(--accent-soft);
+  }
+
+  .data-\[state\=done\]\:text-ok[data-state="done"] {
+    color: var(--ok);
+  }
+
+  .data-\[state\=next\]\:border-accent[data-state="next"] {
+    border-color: var(--accent);
+  }
+
+  .data-\[state\=next\]\:text-accent[data-state="next"] {
+    color: var(--accent);
   }
 
   @media (prefers-reduced-motion: reduce) {
