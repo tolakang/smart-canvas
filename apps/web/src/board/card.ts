@@ -68,10 +68,16 @@ const STRIPE: Record<CardKind, string> = {
   preset: 'before:bg-type-input',
   output: 'before:bg-type-output',
 };
+/**
+ * A card's width, chosen so its content always fits inside (owner, 2026-11-02): the asset cards and Previews keep the
+ * board's 280 px column (Tidy and new boards space them by it); Main Comps grows with its content (nothing sits to its
+ * right); a Preset node is as wide as its size rows with their layout choice, eye and trash, up to the gap before its
+ * Previews (`PREVIEW_OFFSET`), and wider on touch, where its buttons are 44 px.
+ */
 const SIZE: Record<CardKind, string> = {
   input: 'w-280 min-w-[160px]',
-  main: 'w-280 min-w-260 min-h-120',
-  preset: 'w-300 min-w-[160px]',
+  main: 'w-max min-w-280 max-w-[440px] min-h-120',
+  preset: 'w-360 pointer-coarse:w-380 min-w-[160px]',
   output: 'w-280 min-w-[160px]',
 };
 

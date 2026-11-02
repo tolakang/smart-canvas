@@ -185,9 +185,9 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Wires:** no resting ✂ badge; it appears on hover (24 px) or on the selected wire.
 
 ## Main Comps, Preset, Preview (V2, D64; names D66; D72)
-- Same cards as V1: 280 px (Preset 300 px), 16 px padding, 20 px corners, the two-line `NodeHead`; a text action in a header (Edit, Export) is a soft pill tinted with the node's colour.
+- Same cards as V1: 280 px; Main Comps grows with its content; Preset 360 px (380 px on touch), so each size row with its layout choice, eye and trash fits inside (owner, 2026-11-02). 16 px padding, 20 px corners, the two-line `NodeHead`; a text action in a header (Edit, Export) is a soft pill tinted with the node's colour.
 - **Main Comps:** the layer order as soft 40 px rows with a count pill; ↑ ↓ on hover. Layouts as three 36 px buttons. With no sizes yet, the families to add as chips (B2, D72).
-- **Preset:** 44 px rows — the size in bold, the name only when it adds something, the S · V · H layout choice (a small soft track; the layout in use raised, in the accent when picked by hand; D72), eye and bin on hover (always on touch).
+- **Preset:** 44 px rows — the size in bold, the name only when it adds something (the same everywhere a size is listed under its Preset node: Export dialog, Review panel; the Preview editor's title drops the size it shows beside it), the S · V · H layout choice (a small soft track; the layout in use raised, in the accent when picked by hand; D72), eye and bin on hover (always on touch).
 - **Preview:** its name, then "W × H unit"; health and Edit at the right; the picture on a soft checkerboard; Export a full-width soft button with its icon.
 
 ## Phone editors (V3, D64)

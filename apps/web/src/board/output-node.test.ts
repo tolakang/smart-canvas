@@ -46,7 +46,7 @@ describe('output name follows its size (T10.2)', () => {
 
 describe('Preset row names (V2)', () => {
   it('drops the size, and a name that only repeats the preset', async () => {
-    const { rowName } = await import('./PresetNode');
+    const { rowName } = await import('./OutputNode');
     expect(rowName('GDN 1200×628', 'GDN')).toBe('');
     expect(rowName('Facebook post 1200×630', 'FB')).toBe('Facebook post');
     expect(rowName('Instagram story', 'IG')).toBe('Instagram story');

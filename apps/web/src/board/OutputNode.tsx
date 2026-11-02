@@ -66,6 +66,12 @@ export const sizeLabel = (s: { width: number; height: number; unit: Unit }) => `
 /** A Preview's name without the size its label may end with ("GDN 1200×200" → "GDN"). */
 export const nameWithoutSize = (label: string) => label.replace(/\s*\d+\s*[×x]\s*\d+(\s*(px|mm))?$/, '').trim();
 
+/** A size's name in a list under its Preset node: without its trailing size, and '' when what is left only repeats the node's name (the size is shown beside it). */
+export function rowName(label: string, setLabel: string): string {
+  const name = nameWithoutSize(label);
+  return name === setLabel.trim() ? '' : name;
+}
+
 /**
  * T10.2: an output still named after its size or preset follows size / preset changes (a "1080×1350 px"
  * node showing 1200×630 was misleading); a name typed by hand stays.
