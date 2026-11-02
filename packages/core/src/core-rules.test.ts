@@ -14,12 +14,13 @@ const ok = (r: SourceResult): ProjectDoc => {
   return r.doc;
 };
 
-describe('Export Group data (D47, D49, D66)', () => {
+describe('Main Comps data (D47, D49, D66, D73)', () => {
   it('layer comp: the rows in their groups, front to back (D45)', () => {
     const groups = layerComp(project(), MAIN);
     expect(groups.map((g) => [g.group, g.layers.map((l) => l.id)])).toEqual([
       ['logo', ['logo']],
-      ['headline', ['headline']],
+      ['headline', []],
+      ['text', ['headline']], // D73: the text layer (still named "headline" in this test doc) is in Text
       ['elements', ['subject']],
       ['background', ['background']],
     ]);

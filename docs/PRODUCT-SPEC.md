@@ -2,7 +2,7 @@
 
 ## Concepts (board as of D49–D70)
 - **Asset nodes**: Logo (one or more logos), Headline (one or more Khmer / English picture pairs, one language in use), Text (text slots, each its own layer), Image (many pictures), Background (vertical and horizontal pictures, or a colour). Each holds items you add, replace or delete; pictures are PNG, JPEG, WebP or SVG, or a PDF's chosen page (D59; kept as vector, D55; as a PNG in pixel-only slots).
-- **Main Comps** (the master; named Layer Comp before D66): the layer order as four groups (logo, headline, elements, background; drag to re-order) and three layouts — Square, Vertical, Horizontal — that share the layers but place them each their own way.
+- **Main Comps** (the master; named Layer Comp before D66): the layer order as five groups, one per asset node (logo, headline, text, image, background, D73; drag to re-order) and three layouts — Square, Vertical, Horizontal — that share the layers but place them each their own way.
 - **Preset node**: a family of sizes (FB, IG, Story, GDN, App banner, Website, Gift, PR, a team family, or custom); one row per size, each wired to its **Preview** (shown or hidden with the row's eye); each row shows which layout its Preview uses — the closest to its shape, or another picked there (S · V · H, D72; the per-layer layout rules work behind the scenes and are not shown). Export makes one ZIP of its sizes; Save as team preset makes it a team family.
 - **Preview** (an output): one target size, laid out automatically from the closest (or chosen) layout; Edit stores overrides; Export.
 - **Override**: a manual change on a Preview; survives master changes.

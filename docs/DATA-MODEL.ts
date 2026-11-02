@@ -191,8 +191,8 @@ export interface ProjectDoc {
   headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en'; more?: { km: string; en: string }[] }[]; // more: N3
   // D46: Preset nodes — each lists output ids (its sizes, in row order).
   presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[]; hidden?: string[] }[]; // hidden: D51
-  // D48: the layer comp's group order, front first; absent = logo, headline, elements, background.
-  layerOrder?: ('logo' | 'headline' | 'elements' | 'background')[];
+  // D48: the layer comp's group order, front first; absent = logo, headline, text, elements (shown as Image), background (D73).
+  layerOrder?: ('logo' | 'headline' | 'text' | 'elements' | 'background')[]; // D48; D73 adds 'text' (four-item orders saved before still read)
 }
 
 /** D40: an Assets card. Each picture is its own input (layer); the card only draws them together, `items` in card order. */

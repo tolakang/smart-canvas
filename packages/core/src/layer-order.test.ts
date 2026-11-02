@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MAIN, mainComposition, withComposition } from './graph';
 import { addLanguagePair } from './languages';
-import { layerGroup, orderLayers } from './layer-order';
+import { layerGroup, layerOrderOf, moveLayerGroup, orderLayers } from './layer-order';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { addSource, type SourceResult } from './sources';
@@ -13,13 +13,21 @@ const ok = (r: SourceResult): ProjectDoc => {
 const rows = (doc: ProjectDoc) => mainComposition(doc).layers;
 const withRows = (doc: ProjectDoc, layers: string[]) => withComposition(doc, MAIN, (c) => ({ ...c, layers }));
 
-describe('layer comp order: logo, headline, elements, background (D45)', () => {
-  it('groups by behaviour; a Headline card\'s pictures are the headline', () => {
+describe('layer comp order: logo, headline, text, image, background (D45, D73)', () => {
+  it('groups by behaviour; a Headline card\'s pictures are the headline; text is its own group (D73)', () => {
     expect(layerGroup({ id: 'a', behavesLike: 'logo' })).toBe('logo');
-    expect(layerGroup({ id: 'a', behavesLike: 'text' })).toBe('headline');
+    expect(layerGroup({ id: 'a', behavesLike: 'text' })).toBe('text');
     expect(layerGroup({ id: 'a', behavesLike: 'subject' }, new Set(['a']))).toBe('headline');
     expect(layerGroup({ id: 'a', behavesLike: 'decoration' })).toBe('elements');
     expect(layerGroup({ id: 'a', behavesLike: 'background' })).toBe('background');
+  });
+
+  it('D73: an order saved with the four old groups reads with Text right behind Headline', () => {
+    expect(layerOrderOf({ layerOrder: ['elements', 'logo', 'headline', 'background'] as never })).toEqual(['elements', 'logo', 'headline', 'text', 'background']);
+    expect(layerOrderOf({ layerOrder: ['headline', 'logo', 'elements', 'background'] as never })).toEqual(['headline', 'text', 'logo', 'elements', 'background']);
+    expect(layerOrderOf({})).toEqual(['logo', 'headline', 'text', 'elements', 'background']);
+    // Moving a group stores all five.
+    expect(moveLayerGroup(project(output()), 'text', 0).layerOrder).toEqual(['text', 'logo', 'headline', 'elements', 'background']);
   });
 
   it('a new project is already in order (nothing changes)', () => {
