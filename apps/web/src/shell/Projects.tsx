@@ -12,7 +12,7 @@ import { Icon } from '../board/LayerRow';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
 import { PresetsDialog } from './PresetsDialog';
 import { TeamDialog } from './TeamDialog';
-import { DIALOG, DIALOG_CARD, FORM_ACTIONS, ROW_META } from '../ui/tw';
+import { DIALOG, DIALOG_CARD, ERROR_TEXT, FORM_ACTIONS, MUTED_TEXT, ROW_META } from '../ui/tw';
 import { btn, iconBtn, TOAST } from '../ui/button';
 import { CHECK, FIELD_COL } from '../ui/controls';
 
@@ -88,8 +88,8 @@ const THUMB_IMG: Record<'card' | 'row', string> = {
 };
 /** The ⋯ button: in a template card's corner, or floating on a row's cover until the row is hovered (always on touch). */
 const MORE: Record<'card' | 'row', string> = {
-  card: `${iconBtn({ size: 'size-32 pointer-coarse:size-44' })} sc-more absolute top-(--sp-2) right-(--sp-2) flex-none`,
-  row: `${iconBtn({ size: 'size-32 pointer-coarse:size-44', round: 'rounded-[10px]', bg: 'bg-glass', hoverBg: '', transition: '[transition:opacity_var(--t-fast)]' })} sc-more absolute top-10 right-10 flex-none opacity-0 [backdrop-filter:blur(8px)] [box-shadow:var(--shadow-1)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100`,
+  card: `${iconBtn({ size: 'size-32 pointer-coarse:size-44' })} sc-more [&_.sc-icon]:m-0 absolute top-(--sp-2) right-(--sp-2) flex-none`,
+  row: `${iconBtn({ size: 'size-32 pointer-coarse:size-44', round: 'rounded-[10px]', bg: 'bg-glass', hoverBg: '', transition: '[transition:opacity_var(--t-fast)]' })} sc-more [&_.sc-icon]:m-0 absolute top-10 right-10 flex-none opacity-0 [backdrop-filter:blur(8px)] [box-shadow:var(--shadow-1)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100`,
 };
 /** The projects as tiles: a big cover over the name and when it was edited (K3 / T9b: was `.sc-home__section .sc-rows`). */
 const TILES =
@@ -265,7 +265,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
         <div className="sc-home__title grid gap-6">
           <span className="sc-home__team hidden text-sm font-[500] text-muted">{team.name}</span>
           <h1 className="m-0 text-[36px] leading-[1.1] font-[750] tracking-[-0.03em] max-md:text-[28px]">Projects</h1>
-          <p className="sc-muted sc-home__lede m-0 text-[15px]">Every campaign, every size. Open a board or start a new one.</p>
+          <p className={`${MUTED_TEXT} sc-home__lede m-0 text-[15px]`}>Every campaign, every size. Open a board or start a new one.</p>
         </div>
         {canEdit && (
           <button type="button" className={`${btn('primary', 'plain', { h: 'h-44', gap: 'gap-8', round: 'rounded-[12px]', px: 'px-22', text: 'text-[14px]', shadow: '[box-shadow:0_8px_20px_-8px_color-mix(in_srgb,var(--accent)_70%,transparent),inset_0_1px_0_rgb(255_255_255/0.15)]' })} sc-home__new-btn`} onClick={() => setCreating({ templateId: null })}>
@@ -275,7 +275,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
       </header>
 
       {rows === null ? (
-        <p className="sc-muted">Loading…</p>
+        <p className={MUTED_TEXT}>Loading…</p>
       ) : (
         <>
           {templates.length > 0 && (
@@ -299,11 +299,11 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
           <section className="sc-home__section mt-32 grid gap-14" aria-labelledby="projects-title">
             <div className="sc-home__bar flex flex-wrap items-center justify-between gap-(--sp-2)">
               <h2 id="projects-title" className={SECTION_TITLE}>
-                All projects <span className="sc-muted sc-home__count ml-4 rounded-[99px] bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] px-8 py-1 text-[11px] font-[500] tracking-[0] text-fg">{allProjects}</span>
+                All projects <span className={`${MUTED_TEXT} sc-home__count ml-4 rounded-[99px] bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] px-8 py-1 text-[11px] font-[500] tracking-[0] text-fg`}>{allProjects}</span>
               </h2>
               {allProjects > 0 && (
                 <span className="sc-home__filters flex flex-wrap gap-(--sp-2)">
-                  <label className="sc-search flex h-38 items-center gap-6 rounded-[10px] border border-line bg-surface px-12 text-muted [box-shadow:var(--shadow-1)] focus-within:border-accent focus-within:[box-shadow:0_0_0_3px_var(--ring)]">
+                  <label className="sc-search [&_.sc-icon]:m-0 flex h-38 items-center gap-6 rounded-[10px] border border-line bg-surface px-12 text-muted [box-shadow:var(--shadow-1)] focus-within:border-accent focus-within:[box-shadow:0_0_0_3px_var(--ring)]">
                     <Icon name="search" />
                     <input className="w-[220px] min-w-0 rounded-none px-0 py-6 [border:0] text-fg [background:none] [outline:none] max-md:w-full" type="search" placeholder="Search projects" aria-label="Search projects" value={query} onChange={(e) => setQuery(e.target.value)} />
                   </label>
@@ -445,7 +445,7 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
           </fieldset>
         )}
         {error && (
-          <p className="sc-error m-0" role="alert">
+          <p className={`${ERROR_TEXT} m-0`} role="alert">
             {error}
           </p>
         )}

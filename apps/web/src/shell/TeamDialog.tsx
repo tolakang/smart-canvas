@@ -6,7 +6,7 @@
 import type { TeamRole } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
-import { DIALOG, DIALOG_CARD, DIALOG_LIST, DIALOG_LONG_CARD, DIALOG_ROW, DIALOG_SELECT, DIALOG_STICKY_FOOT, FIELD_WIDE, FIELDS, FORM, FORM_ACTIONS, HINT, PRESET_FIELD, ROW_ACTIONS, ROW_MAIN, ROW_META, ROW_NAME } from '../ui/tw';
+import { DIALOG, DIALOG_CARD, DIALOG_LIST, DIALOG_LONG_CARD, DIALOG_ROW, DIALOG_SELECT, DIALOG_STICKY_FOOT, ERROR_TEXT, FIELD_WIDE, FIELDS, FORM, FORM_ACTIONS, HINT, MUTED_TEXT, PRESET_FIELD, ROW_ACTIONS, ROW_MAIN, ROW_META, ROW_NAME } from '../ui/tw';
 import { BADGE, btn } from '../ui/button';
 
 interface Member {
@@ -120,7 +120,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
         <section aria-label="Members">
           <h2>Members</h2>
           {members === null ? (
-            <p className="sc-muted">Loading…</p>
+            <p className={MUTED_TEXT}>Loading…</p>
           ) : (
             <ul className={DIALOG_LIST}>
               {members.map((m) => (
@@ -128,7 +128,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                   <span className={ROW_MAIN}>
                     <span className={ROW_NAME}>
                       {m.name || m.email}
-                      {m.userId === props.userId && <span className="sc-muted"> (you)</span>}
+                      {m.userId === props.userId && <span className={MUTED_TEXT}> (you)</span>}
                     </span>
                     {m.name && <span className={ROW_META}>{m.email}</span>}
                   </span>
@@ -215,7 +215,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
           </>
         )}
         {error && (
-          <p className="sc-error" role="alert">
+          <p className={ERROR_TEXT} role="alert">
             {error}
           </p>
         )}

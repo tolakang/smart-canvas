@@ -119,7 +119,7 @@ export function Slot(p: SlotProps) {
     .filter(Boolean)
     .join(' ');
   const pick = `sc-slot__pick grid size-full cursor-pointer [grid-template:minmax(0,1fr)/minmax(0,1fr)] place-items-center rounded-[inherit] [border:0] [background:none] [color:inherit] focus-visible:outline-offset-[-3px] ${row ? 'p-5' : 'p-8'} ${NO_CANVAS}`;
-  const state = `sc-slot__state grid justify-items-center gap-6 text-center text-[12px] font-[600] ${over ? 'text-accent' : empty ? 'text-muted group-hover/slot:text-accent' : 'text-muted'}`;
+  const state = `sc-slot__state [&_.sc-icon]:m-0 grid justify-items-center gap-6 text-center text-[12px] font-[600] ${over ? 'text-accent' : empty ? 'text-muted group-hover/slot:text-accent' : 'text-muted'}`;
   // Shown on hover or keyboard focus, and on touch once the slot is tapped (a touch hover alone doesn't show them).
   const shown = 'opacity-100 [transform:none] pointer-events-auto';
   const actions = [

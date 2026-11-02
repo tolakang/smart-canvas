@@ -189,7 +189,7 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - A1–A7, F8, B1–B10 — **Done.** The fixes from `docs/UX-REVIEW.md`: keyboard reach and focus, field edges, copy, health words, Main Comps and Export Group (D66), "Add sizes", moves without dragging, the Preset node inspector, editor layer rows, Export by Preset node, slot actions (D67), no empty default layers (D68), a board readable at Fit (D69), the phone board (D70). Tickets and PRs: `TASKS.md` P29. C1–C3 wait for the owner.
 
 ## P30 — Clean-up review 2 (owner, 2026-10-28)
-- The second audit of code, tests, docs and UI: `docs/archive/CLEANUP-AUDIT-2.md`. Groups (1) and (2) are done (#217–#229). Group (3): the owner took the recommended picks (2026-11-02, "go with your picks"): K1, K5, K6, then K3 (T9, three PRs) and K4 (T8); K2 stays as it is.
+- The second audit of code, tests, docs and UI: `docs/archive/CLEANUP-AUDIT-2.md`. Done: groups (1) and (2) (#217–#229) and group (3) (#230–#236): the owner took the recommended picks (2026-11-02, "go with your picks"): K1, K5, K6, K3 (T9, three PRs) and K4 (T8, option A: no Preflight); K2 stays as it is.
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q9 — Editor colour variables (bug, found by the 2026-10-27 clean-up audit). **Done.** The editor screen redefined `--line` / `--muted` from `--fig-line` / `--fig-muted`, which were defined from them; the loop left both empty, so the editors lost their panel outlines, section dividers, field borders, dropdown chevrons and grey text. `.sc-fig` no longer redefines them (`editor/shell.ts`).

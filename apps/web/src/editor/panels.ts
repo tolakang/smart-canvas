@@ -11,13 +11,14 @@
  *   clears it, as before.
  * - State rules keep the old selectors' weight: hover beats pressed (the lock), focus beats hover (number fields).
  */
+import { CHEVRON } from '../ui/tw';
 
 /** The Layers panel: rows with a thumbnail, top = front. */
 export const LAYERS = 'sc-layers w-240 flex-none overflow-auto [background:var(--surface)] [border-right:1px_solid_var(--fig-line)]';
 /** "Layers top = front". */
-export const LAYERS_TITLE = 'sc-layers__title flex items-baseline gap-6 px-16 pt-12 pb-8 text-[11px] font-[600] [border-bottom:0]';
+export const LAYERS_TITLE = 'sc-layers__title [&_.sc-muted]:font-[400] flex items-baseline gap-6 px-16 pt-12 pb-8 text-[11px] font-[600] [border-bottom:0]';
 /** A section's title in the Design panel (text properties, overrides). */
-export const PANEL_TITLE = 'sc-layers__title flex items-baseline gap-6 px-16 pt-12 pb-4 text-[11px] font-[600] [border-bottom:0]';
+export const PANEL_TITLE = 'sc-layers__title [&_.sc-muted]:font-[400] flex items-baseline gap-6 px-16 pt-12 pb-4 text-[11px] font-[600] [border-bottom:0]';
 export const LAYERS_LIST = 'sc-layers__list m-0 list-none p-0';
 
 /** A layer row: selected, hidden on this Preview, not wired, or where a dragged row would drop. */
@@ -29,7 +30,7 @@ export function layerRowClass(o: { selected: boolean; hidden: boolean; unwired: 
 }
 /** The row's name and its kind; a hidden layer's name is struck through, an unwired one is faded. */
 export const layerNameClass = (hidden: boolean, unwired: boolean) =>
-  `sc-layer__name grid min-w-0 flex-1 p-2 text-left text-[11px] [background:none] [border:0] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap ${unwired ? ' opacity-60' : ''}${hidden ? ' [&>span:first-child]:line-through [&>span:first-child]:opacity-50' : ''}`;
+  `sc-layer__name [&>span.sc-muted]:text-[11px] [.sc-fig_&>span.sc-muted]:text-[10px] grid min-w-0 flex-1 p-2 text-left text-[11px] [background:none] [border:0] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap ${unwired ? ' opacity-60' : ''}${hidden ? ' [&>span:first-child]:line-through [&>span:first-child]:opacity-50' : ''}`;
 /** The row's buttons: shown on hover, on the selected row, or while one has focus. */
 export const layerActionsClass = (selected: boolean) =>
   `sc-layer__actions flex gap-2 ${selected ? 'opacity-100' : 'opacity-0 group-hover/layer:opacity-100 focus-within:opacity-100'} [&_button]:size-24 [&_button]:rounded-[4px] [&_button]:p-0 [&_button]:text-[11px] [&_button]:text-muted [&_button]:[background:none] [&_button]:[border:1px_solid_transparent] [&_button:hover:not(:disabled)]:border-line [&_button:hover:not(:disabled)]:text-fg [&_button:disabled]:opacity-30`;
@@ -41,7 +42,7 @@ export const EDITED =
   'sc-edited ml-6 rounded-[4px] px-5 py-0 align-[1px] text-[10px] font-[600] text-accent [background:color-mix(in_srgb,var(--accent)_14%,transparent)]';
 
 /** The Design panel (and the Comments panel in its place). */
-const DESIGN_BOX = 'sc-design flex-none overflow-auto [background:var(--fig-panel)] [border-left:1px_solid_var(--fig-line)]';
+const DESIGN_BOX = `sc-design ${CHEVRON} flex-none overflow-auto [background:var(--fig-panel)] [border-left:1px_solid_var(--fig-line)]`;
 export const DESIGN = `${DESIGN_BOX} w-248`;
 export const COMMENTS = `${DESIGN_BOX} sc-comments flex w-300 flex-col`;
 const SECTION_BOX =
@@ -50,12 +51,12 @@ export const SECTION = `${SECTION_BOX} grid`;
 /** Gestures on touch screens, keyboard shortcuts elsewhere. */
 export const SECTION_TOUCH = `${SECTION_BOX} sc-design__touch sc-design__shortcuts--touch hidden pointer-coarse:grid`;
 export const SECTION_KEYS = `${SECTION_BOX} sc-design__shortcuts grid pointer-coarse:hidden`;
-export const TITLE = 'sc-design__title flex flex-wrap items-baseline gap-6 text-[12px] font-[600]';
+export const TITLE = 'sc-design__title [&_.sc-muted]:font-[400] flex flex-wrap items-baseline gap-6 text-[12px] font-[600]';
 /** The Comments panel's head: its title and the resolved toggle, apart. */
-export const COMMENTS_HEAD = 'sc-design__title sc-comments__head flex flex-wrap items-center justify-between gap-6 text-[12px] font-[600]';
+export const COMMENTS_HEAD = 'sc-design__title [&_.sc-muted]:font-[400] sc-comments__head flex flex-wrap items-center justify-between gap-6 text-[12px] font-[600]';
 /** A folding section's title, with a chevron that turns when open. */
 export const SUMMARY =
-  "sc-design__title flex cursor-pointer [list-style:none] flex-wrap items-center justify-between gap-6 text-[12px] font-[600] [&::-webkit-details-marker]:hidden after:size-6 after:content-[''] after:[border-right:1.5px_solid_var(--muted)] after:[border-bottom:1.5px_solid_var(--muted)] after:[transform:rotate(45deg)] after:[transition:transform_var(--t-fast)] [details[open]>&]:after:[transform:rotate(225deg)]";
+  "sc-design__title [&_.sc-muted]:font-[400] flex cursor-pointer [list-style:none] flex-wrap items-center justify-between gap-6 text-[12px] font-[600] [&::-webkit-details-marker]:hidden after:size-6 after:content-[''] after:[border-right:1.5px_solid_var(--muted)] after:[border-bottom:1.5px_solid_var(--muted)] after:[transform:rotate(45deg)] after:[transition:transform_var(--t-fast)] [details[open]>&]:after:[transform:rotate(225deg)]";
 /** One gesture per line. */
 export const GESTURES_LIST =
   'sc-gestures m-0 grid gap-2 [&>div]:grid [&>div]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] [&>div]:items-baseline [&>div]:gap-12 [&>div]:px-0 [&>div]:py-8 [&>div]:[border-top:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [&>div:first-child]:[border-top:0] [&_dt]:text-[12.5px] [&_dt]:font-[650] [&_dt]:text-fg [&_dd]:m-0 [&_dd]:text-[12.5px] [&_dd]:text-muted';
@@ -106,7 +107,7 @@ export const threadClass = (on: boolean, resolved: boolean) =>
   `sc-comments__thread grid gap-6 px-16 py-10 [border-bottom:1px_solid_var(--fig-line)] ${on ? 'sc-comments__thread--on [background:var(--accent-soft)]' : ''} ${resolved ? 'sc-comments__thread--resolved opacity-70' : ''}`;
 export const REPLY = 'sc-comments__reply ml-14 pl-10 [border-left:2px_solid_var(--fig-line)]';
 export const COMMENT = 'sc-comment grid gap-4 text-[12px]';
-export const COMMENT_META = 'sc-comment__meta flex flex-wrap items-center gap-6';
+export const COMMENT_META = 'sc-comment__meta [&_.sc-muted]:text-[11px] flex flex-wrap items-center gap-6';
 /** The comment's text: a button that opens its pin, or plain text for a reply. */
 const COMMENT_TEXT =
   'sc-comment__text m-0 p-0 text-left whitespace-pre-wrap [overflow-wrap:anywhere] [color:inherit] [font:inherit] [background:none] [border:0]';

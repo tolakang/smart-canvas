@@ -19,6 +19,7 @@ import { NodeHead } from './NodeHead';
 import { Slot } from './Slot';
 import { NO_CANVAS } from './pinch';
 import { btn, iconBtn } from '../ui/button';
+import { ERROR_TEXT } from '../ui/tw';
 
 type Lang = 'km' | 'en';
 
@@ -153,7 +154,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
         )}
       </div>
       {error && (
-        <p className="sc-error" role="alert">
+        <p className={ERROR_TEXT} role="alert">
           {error}
         </p>
       )}

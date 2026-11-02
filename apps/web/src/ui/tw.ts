@@ -26,6 +26,21 @@ export const DIALOG_STICKY_FOOT =
  * zero-weight `:where()` rules, as the old CSS did from its lower layer: an element's own classes still win.
  */
 
+/*
+ * The last shared bits (clean-up 2, K4 / T8): muted and error text, and the dropdown chevron. The text atoms are
+ * zero-weight, as their old rules were the lowest: a parent's or the element's own classes still win.
+ */
+/** Muted text (hints, counts, a second line). */
+export const MUTED_TEXT = 'sc-muted [:where(&)]:text-muted';
+/** An error message: red, no margin. */
+export const ERROR_TEXT = 'sc-error [:where(&)]:m-0 [:where(&)]:text-danger';
+/**
+ * A select's own chevron in the theme's colour, in place of the native one, for every select in a card, a dialog,
+ * the inspector or the Design panel (`.sc-native` keeps the native look). Its room on the right is `!important`, as
+ * it was, so a select's own padding can't cover the chevron.
+ */
+export const CHEVRON = String.raw`[&_select:not(.sc-native):not([multiple])]:appearance-none [&_select:not(.sc-native):not([multiple])]:pr-[28px]! [&_select:not(.sc-native):not([multiple])]:[background-image:linear-gradient(45deg,transparent_50%,var(--muted)_50%),linear-gradient(135deg,var(--muted)_50%,transparent_50%)] [&_select:not(.sc-native):not([multiple])]:[background-position:calc(100%_-_14px)_52%,calc(100%_-_10px)_52%] [&_select:not(.sc-native):not([multiple])]:[background-size:4px_4px,4px_4px] [&_select:not(.sc-native):not([multiple])]:bg-no-repeat`;
+
 /** What every card does to what it holds. */
 const CARD_INSIDE = [
   // Labels: a column (a check box's label stays a row).
@@ -44,6 +59,7 @@ const CARD_INSIDE = [
   String.raw`[:where(&)_button[type=submit]:not([class]):hover:not(:disabled)]:border-accent-hover [:where(&)_button[type=submit]:not([class]):hover:not(:disabled)]:bg-accent-hover`,
   '[:where(&)_button:focus-visible]:[outline:2px_solid_var(--accent)] [:where(&)_button:focus-visible]:outline-offset-1',
   String.raw`max-md:[:where(&_button:not([class]))]:h-40`,
+  CHEVRON,
 ].join(' ');
 
 /** A card on a page (sign in, the invite page): centred, 360 px wide; a big title, section titles. */

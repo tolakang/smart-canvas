@@ -10,6 +10,7 @@ import { confirmDelete } from '../board/LayerRow';
 import { CanvasEditor } from './CanvasEditor';
 import { LayersPanel } from './LayersPanel';
 import { TextPanel } from './TextPanel';
+import { MUTED_TEXT } from '../ui/tw';
 
 export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: string; onClose: () => void }) {
   const { doc, run } = useBoard();
@@ -52,7 +53,7 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
       title={
         <>
           <strong>Main Comps</strong>
-          <span className="sc-muted">
+          <span className={MUTED_TEXT}>
             {main.size.width} × {main.size.height} {main.size.unit}
           </span>
         </>

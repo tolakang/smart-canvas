@@ -11,6 +11,7 @@ import { useBoard } from '../board/context';
 import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 import { EDITED, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
 import { GRIP } from '../ui/controls';
+import { MUTED_TEXT } from '../ui/tw';
 
 
 export function LayersPanel(props: { selected: string | null; onSelect: (id: string) => void; outputId?: string; compositionId?: string }) {
@@ -58,7 +59,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
               </span>
             )}
           </span>
-          <span className="sc-muted">
+          <span className={MUTED_TEXT}>
             {KIND_LABEL[s.kind]} · {s.behavesLike}
             {isEmptyLayer(s) && ' · empty'}
             {!isWired && ' · not wired'}
@@ -114,7 +115,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
   return (
     <aside className={LAYERS} aria-label="Layers">
       <div className={LAYERS_TITLE}>
-        Layers <span className="sc-muted">top = front</span>
+        Layers <span className={MUTED_TEXT}>top = front</span>
       </div>
       <ol className={LAYERS_LIST}>{shown.map(row)}</ol>
     </aside>

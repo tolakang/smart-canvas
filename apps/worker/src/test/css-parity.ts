@@ -163,19 +163,14 @@ const releaseTimers = (page: Page) =>
  */
 /**
  * Elements an earlier step converted that a rule this branch removes also styled: their classes from main must stay
- * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (K3 / T9c: fields, check
- * boxes, segmented controls, pictures, swatches, upload labels, links and grips; some already had utilities at main).
+ * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (K4 / T8: the muted and
+ * error text, icons, the fields' focus rings and the chevron; these elements keep their classes, and what this branch
+ * adds to them is either missing from main's sheet or sets main's own values).
  * - KEEP: unchanged since main: they keep every class.
  * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const KEEP: string[] = [];
-const MAIN_CLASSES: Record<string, string> = {
-  '.sc-check': 'font-[500]',
-  '.sc-seg': 'items-stretch [&_label]:relative [&_label]:inline-flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:rounded-sm [&_label]:px-(--sp-2) [&_label]:text-xs [&_label]:text-muted [&_label:has(:checked)]:bg-surface [&_label:has(:checked)]:text-fg [&_label:has(:checked)]:[box-shadow:var(--shadow-1)] [&_label:has(:focus-visible)]:[outline:2px_solid_var(--accent)] [&_input]:sr-only',
-  '.sc-field': 'grid gap-2 text-[13px]',
-  '.sc-design__num':
-    'sc-design__num flex h-28 items-center gap-0 rounded-[5px] pl-8 [color:var(--fig-muted)] [background:var(--fig-hover)] [border:1px_solid_var(--field-line)] [&:hover:not(:focus-within)]:[border-color:var(--muted)] focus-within:[border-color:var(--fig-blue)] focus-within:[background:var(--surface)] [&_input]:h-26 [&_input]:min-w-0 [&_input]:text-[11px] [&_input]:[color:var(--fig-fg)] [&_input]:[background:none] [&_input]:[border:0] [&_input]:[outline:none] [&_input]:[-moz-appearance:textfield] [&_input::-webkit-inner-spin-button]:hidden',
-};
+const KEEP: string[] = ['.sc-muted', '.sc-error', '.sc-icon', '.sc-fig__muted', '.sc-node button', '.sc-inspector-panel input', '.sc-inspector-panel select', '.sc-inspector-panel textarea', 'select'];
+const MAIN_CLASSES: Record<string, string> = {};
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>
   page.evaluate(({ css, subjects, keepAll, mainClasses }) => {

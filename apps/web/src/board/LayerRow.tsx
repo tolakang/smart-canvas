@@ -178,7 +178,7 @@ export type IconName = keyof typeof ICONS;
 export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
   const icon: { f?: string; s?: string } = ICONS[name];
   return (
-    <svg className={`sc-icon sc-icon--${name}`} viewBox="0 0 16 16" width={size} height={size} aria-hidden="true">
+    <svg className={`sc-icon sc-icon--${name} [:where(&)]:block [:where(&)]:m-auto`} viewBox="0 0 16 16" width={size} height={size} aria-hidden="true">
       {icon.f && <path d={icon.f} fill="currentColor" fillRule="evenodd" />}
       {icon.s && <path d={icon.s} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" />}
     </svg>

@@ -9,6 +9,7 @@ import { api, ApiError } from '../api';
 import { useBoard } from '../board/context';
 import { mayOnComment, threadsOf, type ReviewComment, type Thread } from '../board/review';
 import { COMMENT, COMMENT_ACTIONS, COMMENT_META, COMMENT_RESOLVED, COMMENT_TEXT_BUTTON, COMMENT_TEXT_PLAIN, COMMENTS, COMMENTS_HEAD, COMMENTS_HINT, COMMENTS_LIST, COMMENTS_TOGGLE, COMPOSE, COMPOSE_ACTIONS, PIN_INLINE, PIN_NEW, pinClass, REPLY, REPLY_BUTTON, SECTION, threadClass } from './panels';
+import { MUTED_TEXT, ERROR_TEXT } from '../ui/tw';
 
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -100,15 +101,15 @@ export function CommentsPanel(props: {
             }}
           />
         ) : (
-          <p className={`sc-muted ${COMMENTS_HINT}`}>Click or tap the Preview to pin a comment there.</p>
+          <p className={`${MUTED_TEXT} ${COMMENTS_HINT}`}>Click or tap the Preview to pin a comment there.</p>
         )}
         {error && (
-          <p className="sc-error" role="alert">
+          <p className={ERROR_TEXT} role="alert">
             {error}
           </p>
         )}
       </section>
-      {threads.length === 0 && <p className={`sc-muted ${COMMENTS_HINT} ${SECTION}`}>No comments yet.</p>}
+      {threads.length === 0 && <p className={`${MUTED_TEXT} ${COMMENTS_HINT} ${SECTION}`}>No comments yet.</p>}
       <ol className={COMMENTS_LIST}>
         {threads.map((t) => (
           <li key={t.comment.id} className={threadClass(t.comment.id === props.active, !!t.comment.resolvedAt)}>
@@ -152,7 +153,7 @@ function CommentView(props: {
       <div className={COMMENT_META}>
         {props.n !== undefined && <span className={PIN_INLINE}>{props.n}</span>}
         <strong>{c.author ?? 'Someone'}</strong>
-        <span className="sc-muted">{when(c.createdAt)}</span>
+        <span className={MUTED_TEXT}>{when(c.createdAt)}</span>
       </div>
       {editing ? (
         <Compose
@@ -171,7 +172,7 @@ function CommentView(props: {
       ) : (
         <p className={COMMENT_TEXT_PLAIN}>{c.text}</p>
       )}
-      {c.resolvedAt && <p className={`sc-muted ${COMMENT_RESOLVED}`}>Resolved{c.resolvedBy ? ` by ${c.resolvedBy}` : ''}</p>}
+      {c.resolvedAt && <p className={`${MUTED_TEXT} ${COMMENT_RESOLVED}`}>Resolved{c.resolvedBy ? ` by ${c.resolvedBy}` : ''}</p>}
       {!editing && (may.edit || may.resolve || may.remove) && (
         <div className={COMMENT_ACTIONS}>
           {may.resolve && (

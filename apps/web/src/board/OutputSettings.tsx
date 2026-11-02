@@ -10,6 +10,7 @@ import { presetSettings, unitSettings, withAutoLabel } from './OutputNode';
 import { NO_CANVAS } from './pinch';
 import { btn } from '../ui/button';
 import { FIELD_COL, SEG_PANEL } from '../ui/controls';
+import { ERROR_TEXT } from '../ui/tw';
 
 const SCALES = [1, 2, 3, 4] as const;
 
@@ -122,7 +123,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
           {connected ? 'Disconnect' : 'Reconnect'}
         </button>
       )}
-      <div className={`${META}${overCap ? ' sc-error' : ''}`} role={overCap ? 'alert' : undefined}>
+      <div className={`${META}${overCap ? ` ${ERROR_TEXT}` : ''}`} role={overCap ? 'alert' : undefined}>
         Export {px.w} × {px.h} px{bleed > 0 && ' incl. bleed'}
         {overCap && ` — over the ${LIMITS.maxExportEdgePx} px limit; lower the size, ${mm ? 'DPI' : 'scale'} or bleed`}
       </div>

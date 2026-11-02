@@ -5,6 +5,7 @@
 import { overrideDiff, resetOverride, type OverrideField } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { INSPECTOR, INSPECTOR_ACTIONS, INSPECTOR_NOTE, INSPECTOR_TABLE, PANEL_TITLE } from './panels';
+import { MUTED_TEXT } from '../ui/tw';
 
 const LABEL: Record<string, string> = {
   x: 'X',
@@ -36,7 +37,7 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
     <section className={INSPECTOR} aria-label="Overrides">
       <div className={PANEL_TITLE}>{override ? 'Edited by hand on this Preview' : 'Automatic layout'}</div>
       {fields.length === 0 ? (
-        <p className={`sc-muted ${INSPECTOR_NOTE}`}>{override ? 'Same as auto.' : 'No overrides: this layer follows Main Comps.'}</p>
+        <p className={`${MUTED_TEXT} ${INSPECTOR_NOTE}`}>{override ? 'Same as auto.' : 'No overrides: this layer follows Main Comps.'}</p>
       ) : (
         <table className={INSPECTOR_TABLE}>
           <thead>
@@ -50,7 +51,7 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
             {fields.map((f) => (
               <tr key={f.field} data-field={f.field}>
                 <td>{LABEL[f.field] ?? f.field}</td>
-                <td className="sc-muted">{show(f.auto)}</td>
+                <td className={MUTED_TEXT}>{show(f.auto)}</td>
                 <td>{show(f.value)}</td>
               </tr>
             ))}
@@ -58,7 +59,7 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
         </table>
       )}
       {override && (
-        <p className={`sc-muted ${INSPECTOR_NOTE}`}>
+        <p className={`${MUTED_TEXT} ${INSPECTOR_NOTE}`}>
           Last changed {new Date(override.updatedAt).toLocaleString()}
         </p>
       )}

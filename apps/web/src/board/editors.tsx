@@ -9,6 +9,7 @@ import { BOARD_TEXT } from '../editor/panels';
 import { NO_CANVAS } from './pinch';
 import { FILE_PICK } from '../ui/file-pick';
 import { FIELD_ROW, FILL, LINK_PANEL, SEG_FILL, SWATCH, THUMB_PANEL, THUMB_PANEL_EMPTY, upload as uploadLabel } from '../ui/controls';
+import { ERROR_TEXT } from '../ui/tw';
 
 
 const ACCEPT: Record<'image' | 'vector', string> = {
@@ -132,7 +133,7 @@ export function AssetEditor({ source, upload }: { source: InputSource & { conten
         </button>
       )}
       {error && (
-        <p className="sc-error" role="alert">
+        <p className={ERROR_TEXT} role="alert">
           {error}
         </p>
       )}
@@ -229,7 +230,7 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
         </label>
       )}
       {upload.error && (
-        <p className="sc-error" role="alert">
+        <p className={ERROR_TEXT} role="alert">
           {upload.error}
         </p>
       )}
@@ -280,7 +281,7 @@ export function BackgroundSlots({ source, selected = true }: { source: InputSour
   }
 
   return (
-    <div className="sc-bg-slots grid grid-cols-[repeat(2,minmax(0,1fr))] [align-items:start] gap-12 [grid-template-areas:'h_h'_'s_v'] [&>.sc-error]:col-[1/-1]" aria-label="Background for square, vertical and horizontal Previews">
+    <div className={`sc-bg-slots grid grid-cols-[repeat(2,minmax(0,1fr))] [align-items:start] gap-12 [grid-template-areas:'h_h'_'s_v'] [&>.sc-error]:col-[1/-1]`} aria-label="Background for square, vertical and horizontal Previews">
       {BG_SLOTS.map((family) => {
         const id = picture(family);
         const label = BG_LABEL[family];
@@ -306,7 +307,7 @@ export function BackgroundSlots({ source, selected = true }: { source: InputSour
         );
       })}
       {error && (
-        <p className="sc-error" role="alert">
+        <p className={ERROR_TEXT} role="alert">
           {error}
         </p>
       )}

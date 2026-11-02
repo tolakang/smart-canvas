@@ -10,18 +10,19 @@
  *   it, as they did over the old CSS. Hover and disabled keep the old selectors' weight: hover beats a pressed tool.
  * - `_` in a class is a space, so a selector naming `sc-editor__side` is written with `\_` (String.raw).
  */
+import { MUTED_TEXT } from '../ui/tw';
 
 /** The screen: fixed over the board, safe areas kept. */
 const SCREEN =
   'sc-editor-screen fixed inset-0 z-50 box-border flex h-dvh flex-col pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-0 pl-[env(safe-area-inset-left)]';
 /** While fonts load. */
-export const LOADING = `${SCREEN} sc-muted [background:var(--bg)]`;
+export const LOADING = `${SCREEN} ${MUTED_TEXT} [background:var(--bg)]`;
 /** The editor: its variables, compact 11 px type, the ambient backdrop. */
 export const FIG = `${SCREEN} sc-fig font-sans text-[11px] [color:var(--fig-fg)] [background:var(--ambient)] [--fig-panel:var(--surface)] [--fig-line:var(--line)] [--fig-hover:var(--surface-2)] [--fig-select:var(--accent-soft)] [--fig-blue:var(--accent)] [--fig-canvas:var(--canvas)] [--fig-fg:var(--fg)] [--fig-muted:var(--muted)] [--input:var(--fig-select)] [--fig-bar:var(--glass)] [--fig-bar-hover:color-mix(in_srgb,var(--fg)_7%,transparent)] [--fig-bar-fg:var(--fg)] [--fig-bar-muted:var(--muted)] dark:[--fig-bar-hover:color-mix(in_srgb,var(--fg)_9%,transparent)]`;
 
 /** The bar: one line that never wraps; the title takes what is left. Its buttons share one face. */
 export const BAR =
-  'sc-fig__bar flex h-52 flex-none items-center gap-12 overflow-hidden mx-12 mt-10 mb-0 px-8 py-0 rounded-[14px] text-[12px] whitespace-nowrap [color:var(--fig-bar-fg)] [background:var(--fig-bar)] [border:1px_solid_color-mix(in_srgb,var(--line)_80%,transparent)] [backdrop-filter:blur(16px)_saturate(1.4)] [box-shadow:var(--shadow-2)] max-md:mx-6 max-md:mt-6 max-md:gap-(--sp-1) [:where(&)>*]:flex-none ' +
+  'sc-fig__bar [&_.sc-muted]:[color:var(--fig-bar-muted)] flex h-52 flex-none items-center gap-12 overflow-hidden mx-12 mt-10 mb-0 px-8 py-0 rounded-[14px] text-[12px] whitespace-nowrap [color:var(--fig-bar-fg)] [background:var(--fig-bar)] [border:1px_solid_color-mix(in_srgb,var(--line)_80%,transparent)] [backdrop-filter:blur(16px)_saturate(1.4)] [box-shadow:var(--shadow-2)] max-md:mx-6 max-md:mt-6 max-md:gap-(--sp-1) [:where(&)>*]:flex-none ' +
   '[:where(&)_button]:h-34 [:where(&)_button]:rounded-[9px] [:where(&)_button]:px-10 [:where(&)_button]:py-0 [:where(&)_button]:text-[12px] [:where(&)_button]:font-[500] [:where(&)_button]:[color:var(--fig-bar-fg)] [:where(&)_button]:[background:none] [:where(&)_button]:[border:0] max-md:[:where(&)_button]:px-8 [:where(&)_button:hover:not(:disabled)]:[background:var(--fig-bar-hover)] [:where(&)_button:disabled]:text-faint';
 /** Move, Hand and the other tools: square, the accent when on. */
 export const TOOLS = 'sc-fig__tools inline-flex gap-2';
@@ -34,8 +35,8 @@ export const COUNT =
 /** The name, its size and notes; only the name on a phone. */
 export const TITLE =
   'sc-fig__title inline-flex min-w-0 flex-[1_1_auto] items-center gap-10 overflow-hidden text-[12px] [&_strong]:overflow-hidden [&_strong]:text-[13px] [&_strong]:font-[650] [&_strong]:text-ellipsis max-md:[&>:not(strong)]:hidden!';
-export const SELECTION = 'sc-fig__muted sc-fig__selection max-w-[22ch] overflow-hidden text-ellipsis max-md:hidden!';
-export const MUTED = 'sc-fig__muted';
+export const SELECTION = 'sc-fig__muted [color:var(--fig-bar-muted)] sc-fig__selection max-w-[22ch] overflow-hidden text-ellipsis max-md:hidden!';
+export const MUTED = 'sc-fig__muted [color:var(--fig-bar-muted)]';
 export const ZOOM = 'sc-zoom ml-0 inline-flex items-center gap-2 [&_button]:min-w-28';
 export const ZOOM_VALUE = 'sc-zoom__value min-w-48 text-center text-[11px] tabular-nums';
 export const ZOOM_ACTUAL = 'sc-zoom__actual max-md:hidden!';

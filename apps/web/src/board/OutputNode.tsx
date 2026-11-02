@@ -32,6 +32,7 @@ import { NodeHead } from './NodeHead';
 import { approvalOf, threadsOf } from './review';
 import { NO_CANVAS } from './pinch';
 import { btn, CHIP } from '../ui/button';
+import { MUTED_TEXT } from '../ui/tw';
 
 
 /** The approval pill (also in the Review panel). */
@@ -148,7 +149,7 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
             // D63: open comments; opens the editor on them.
             <button
               type="button"
-              className={`sc-preview__comments inline-flex h-20 cursor-pointer items-center gap-3 rounded-[10px] bg-accent-soft px-6 py-0 text-[11px] font-[600] [line-height:inherit] text-accent [border:0] ${NO_CANVAS}`}
+              className={`sc-preview__comments [&_.sc-icon]:m-0 inline-flex h-20 cursor-pointer items-center gap-3 rounded-[10px] bg-accent-soft px-6 py-0 text-[11px] font-[600] [line-height:inherit] text-accent [border:0] ${NO_CANVAS}`}
               onClick={() => openOutputEditor(output.id, { comments: true })}
               aria-label={`${openThreads} open ${openThreads === 1 ? 'comment' : 'comments'} on ${output.label}`}
               title="Open comments"
@@ -186,10 +187,10 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
         {scene ? (
           <RenderThumbnail scene={scene} sources={shownLayers} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={236} maxHeight={180} />
         ) : (
-          <span className="sc-muted">Loading fonts…</span>
+          <span className={MUTED_TEXT}>Loading fonts…</span>
         )}
       </div>
-      <button type="button" className={`sc-preview__export ${EXPORT} ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export Preview ${output.label}`}>
+      <button type="button" className={`sc-preview__export ${EXPORT} [&_.sc-icon]:m-0 ${NO_CANVAS}`} onClick={() => exportOutputs([output.id])} aria-label={`Export Preview ${output.label}`}>
         <Icon name="export" size={14} />
         Export
       </button>

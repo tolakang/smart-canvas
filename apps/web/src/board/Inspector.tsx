@@ -57,6 +57,7 @@ import { OUTPUT_ROW, OutputSettings } from './OutputSettings';
 import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
 import { btn, iconBtn } from '../ui/button';
 import { CHECK, FIELD_COL, SEG_PANEL } from '../ui/controls';
+import { MUTED_TEXT } from '../ui/tw';
 
 /** UX A7 (F17): Delete node is a quiet row at the section's end, not a full-width red button under the pictures. */
 const DELETE_NODE = `${btn('ghost-danger')} justify-self-start`;
@@ -160,7 +161,7 @@ function OutputInspector({ output }: { output: OutputNode }) {
       </Section>
       {output.overrides.length > 0 && (
         <Section title="Edited by hand">
-          <p className={`sc-muted ${HINT}`}>
+          <p className={`${MUTED_TEXT} ${HINT}`}>
             {output.overrides.length} {output.overrides.length === 1 ? 'layer differs' : 'layers differ'} from the automatic layout on this Preview.
           </p>
           {!readOnly && (
@@ -197,7 +198,7 @@ function InputInspector({ source, headline }: { source: InputSource; headline?: 
       </Section>
       {source.behavesLike === 'background' && source.content.kind !== 'text' && (
         <Section title="Square, vertical and horizontal">
-          <p className={`sc-muted ${HINT}`}>Each Preview uses the picture of its group (Square, Vertical or Horizontal). An empty slot uses the square picture.</p>
+          <p className={`${MUTED_TEXT} ${HINT}`}>Each Preview uses the picture of its group (Square, Vertical or Horizontal). An empty slot uses the square picture.</p>
           <BackgroundSlots source={source} />
         </Section>
       )}
@@ -234,7 +235,7 @@ function InputActions({ source }: { source: InputSource }) {
           <Icon name="trash" /> Delete layer
         </button>
       </div>
-      <p className={`sc-muted ${HINT}`}>Or select nodes and press Delete.</p>
+      <p className={`${MUTED_TEXT} ${HINT}`}>Or select nodes and press Delete.</p>
     </Section>
   );
 }
@@ -354,7 +355,7 @@ function PresetInspector({ setId }: { setId: string }) {
       }
     >
       <NameField label="Preset node name" value={set.label} onCommit={(label) => run((d) => renameSet(d, set.id, label))} />
-      <p className={`sc-muted ${HINT}`}>
+      <p className={`${MUTED_TEXT} ${HINT}`}>
         {outputs.length ? `${outputs.length} ${outputs.length === 1 ? 'size' : 'sizes'}, each its own Preview.` : 'No sizes yet.'} Add sizes with “Add a size” on the node.
       </p>
       {outputs.length > 0 && (
@@ -375,7 +376,7 @@ function PresetInspector({ setId }: { setId: string }) {
         </button>
       )}
       {saving.note && (
-        <p className={`sc-muted ${HINT}`} role="status">
+        <p className={`${MUTED_TEXT} ${HINT}`} role="status">
           {saving.note}
         </p>
       )}
@@ -410,14 +411,14 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
             </button>
           ))}
         </div>
-        <p className={`sc-muted ${HINT}`}>Each size uses the layout closest to its shape; change that in the Export Group.</p>
+        <p className={`${MUTED_TEXT} ${HINT}`}>Each size uses the layout closest to its shape; change that in the Export Group.</p>
       </Section>
       <HealthSection health={health} />
       <Section title="Square layout size">
         <div className={OUTPUT_ROW}>
           <NumberField label="Width" value={comp.size.width} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ width: n })} />
           <NumberField label="Height" value={comp.size.height} min={1} max={100000} step={1} disabled={readOnly} onCommit={(n) => n && setSize({ height: n })} />
-          <span className="sc-muted">{comp.size.unit}</span>
+          <span className={MUTED_TEXT}>{comp.size.unit}</span>
         </div>
       </Section>
     </>
@@ -452,7 +453,7 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
             </button>
           )}
         </div>
-        <p className={`sc-muted ${HINT}`}>Nothing selected. Click a panel on the board to see its settings here.</p>
+        <p className={`${MUTED_TEXT} ${HINT}`}>Nothing selected. Click a panel on the board to see its settings here.</p>
         {!readOnly && previews === 0 && (
           // UX B2 (F3): a new project's three steps, the next one marked.
           <ol className="sc-overview__steps m-0 grid list-none gap-6 p-0 text-[12.5px]" aria-label="Getting started">

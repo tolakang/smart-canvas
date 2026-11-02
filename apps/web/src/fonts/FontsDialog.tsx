@@ -2,7 +2,7 @@ import { BUNDLED_FONTS, fontStack, LIMITS } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { ApiError, uploadAsset } from '../api';
 import type { TeamFont } from './loader';
-import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD } from '../ui/tw';
+import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, ERROR_TEXT, MUTED_TEXT } from '../ui/tw';
 import { FILE_PICK } from '../ui/file-pick';
 import { upload } from '../ui/controls';
 
@@ -58,7 +58,7 @@ export function FontsDialog(props: {
   const row = (family: string, note: string) => (
     <li key={`${note}:${family}`} className="rounded-[12px] border border-line bg-surface-2 px-14 py-12">
       <div className="sc-font__name text-[12px] font-[600]">
-        {family} <span className="sc-muted">{note}</span>
+        {family} <span className={MUTED_TEXT}>{note}</span>
       </div>
       <div className="sc-font__sample text-[22px] leading-[1.3]" style={{ fontFamily: fontStack(family) }}>
         {SAMPLE}
@@ -82,7 +82,7 @@ export function FontsDialog(props: {
         )}
         {added && <p role="status">Added “{added}”.</p>}
         {error && (
-          <p className="sc-error" role="alert">
+          <p className={ERROR_TEXT} role="alert">
             {error}
           </p>
         )}

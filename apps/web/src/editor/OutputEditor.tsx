@@ -16,6 +16,7 @@ import { OverrideInspector } from './OverrideInspector';
 import { TextPanel } from './TextPanel';
 import { COMMENT_TOOL, COUNT, LOADING } from './shell';
 import { SIDE } from './panels';
+import { MUTED_TEXT } from '../ui/tw';
 
 export function OutputEditor({ outputId, comments = false, onClose }: { outputId: string; comments?: boolean; onClose: () => void }) {
   const { doc, run, layoutDeps, author, readOnly, review, reviewApprove } = useBoard();
@@ -72,12 +73,12 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       title={
         <>
           <strong>{output.label}</strong>
-          <span className="sc-muted">
+          <span className={MUTED_TEXT}>
             {output.size.width} × {output.size.height} {output.size.unit}
             {(output.bleedMm ?? 0) > 0 && ` · bleed ${output.bleedMm} mm`}
             {!connected && ' · disconnected (frozen)'}
           </span>
-          <span className="sc-muted">Changes here apply to this Preview only</span>
+          <span className={MUTED_TEXT}>Changes here apply to this Preview only</span>
           <Approval outputId={output.id} fingerprint={fingerprint} empty={allLayersEmpty(doc, scene.items.map((i) => i.sourceId))} onApprove={reviewApprove} />
           {!readOnly && (
             <button

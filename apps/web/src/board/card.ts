@@ -88,6 +88,8 @@ export function cardClass(kind: CardKind, state: { frozen?: boolean; hidden?: bo
     state.hidden && 'sc-node--hidden opacity-50',
     state.drop && 'sc-node--drop [outline:2px_dashed_var(--accent)] outline-offset-2',
     'relative grid grid-cols-[minmax(0,1fr)] gap-14 rounded-[20px] border bg-surface p-16 [&>*]:min-w-0',
+    // A focused button in a card: the accent ring, close (zero weight below a button's own focus look).
+    '[:where(&)_button:focus-visible]:[outline:2px_solid_var(--accent)] [:where(&)_button:focus-visible]:outline-offset-1',
     '[box-shadow:0_1px_2px_rgb(16_24_40/0.06),0_6px_16px_-6px_rgb(16_24_40/0.12)] [transition:box-shadow_var(--t-fast),border-color_var(--t-fast)]',
     state.frozen ? 'border-line-strong [border-style:dashed] before:bg-line-strong' : `border-[color-mix(in_srgb,var(--line)_90%,transparent)] ${STRIPE[kind]}`,
     "before:absolute before:top-[-1px] before:right-[-1px] before:left-[-1px] before:hidden before:h-3 before:rounded-t-lg before:content-['']",
@@ -113,7 +115,7 @@ export const HEAD_MORE =
   'sc-head__more grid size-32 flex-none cursor-pointer place-items-center rounded-[10px] bg-transparent p-0 text-muted [border:0] [transition:background_var(--t-fast),color_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] hover:text-fg aria-expanded:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] aria-expanded:text-fg pointer-coarse:size-44';
 /** A header action (Edit, Export): tinted in the card's colour. */
 export const HEAD_ACTION =
-  'sc-head__action inline-flex h-32 flex-none cursor-pointer items-center gap-6 rounded-[10px] bg-[color-mix(in_srgb,var(--head)_14%,var(--surface))] px-12 py-0 text-[12.5px] font-[650] text-[color-mix(in_srgb,var(--head)_65%,var(--fg))] [border:0] [transition:background_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--head)_24%,var(--surface))] pointer-coarse:h-40 pointer-coarse:px-14';
+  'sc-head__action [&_.sc-icon]:m-0 inline-flex h-32 flex-none cursor-pointer items-center gap-6 rounded-[10px] bg-[color-mix(in_srgb,var(--head)_14%,var(--surface))] px-12 py-0 text-[12.5px] font-[650] text-[color-mix(in_srgb,var(--head)_65%,var(--fg))] [border:0] [transition:background_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--head)_24%,var(--surface))] pointer-coarse:h-40 pointer-coarse:px-14';
 /** A mark in the header (hidden, from the library). */
 export const HEAD_MARK = 'sc-node__mark grid flex-none place-items-center text-muted';
 

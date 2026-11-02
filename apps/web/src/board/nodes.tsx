@@ -16,6 +16,7 @@ import { PresetNodeView } from './PresetNode';
 import { NO_CANVAS } from './pinch';
 import { FILE_PICK } from '../ui/file-pick';
 import { SWATCH, THUMB_NODE, THUMB_NODE_EMPTY, THUMB_NODE_UPLOAD } from '../ui/controls';
+import { MUTED_TEXT, ERROR_TEXT } from '../ui/tw';
 
 /**
  * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
@@ -46,7 +47,7 @@ function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpl
   if (content.kind === 'text')
     return (
       <div className="sc-node__text overflow-hidden text-md leading-[1.35] [overflow-wrap:anywhere] [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical]" lang={content.style.language === 'km' ? 'km' : undefined} style={{ fontFamily: fontStack(content.style.fontFamily), fontWeight: content.style.fontWeight }}>
-        {content.text || <span className="sc-muted">No text yet</span>}
+        {content.text || <span className={MUTED_TEXT}>No text yet</span>}
       </div>
     );
   const picture = content.kind === 'fill' ? null : content.assetId;
@@ -66,7 +67,7 @@ function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpl
       )}
       {upload.busy && picture && <div className="sc-node__busy text-xs text-muted">Uploading…</div>}
       {upload.error && (
-        <p className="sc-error" role="alert">
+        <p className={ERROR_TEXT} role="alert">
           {upload.error}
         </p>
       )}

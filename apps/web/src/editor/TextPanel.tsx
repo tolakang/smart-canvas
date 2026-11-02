@@ -19,6 +19,7 @@ import { setText } from '../board/content';
 import { NumberField } from '../ui/NumberField';
 import { NOTE, PANEL_TITLE, PROPS, PROPS_BODY, PROPS_ROW, TEXT } from './panels';
 import { FIELD_COL, SEG } from '../ui/controls';
+import { MUTED_TEXT } from '../ui/tw';
 
 const WEIGHT_NAME: Record<number, string> = { 100: 'Thin', 200: 'Extra light', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold', 700: 'Bold', 800: 'Extra bold', 900: 'Black' };
 
@@ -41,7 +42,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
       <div className={PANEL_TITLE}>Text · {source.label}</div>
       <fieldset className={PROPS_BODY} disabled={readOnly}>
         {outputId ? (
-          <p className={`sc-muted ${NOTE}`}>Text is shared by every Preview; edit it in Main Comps. Style changes here apply to this Preview only.</p>
+          <p className={`${MUTED_TEXT} ${NOTE}`}>Text is shared by every Preview; edit it in Main Comps. Style changes here apply to this Preview only.</p>
         ) : (
         <label className={FIELD_COL}>
           Text

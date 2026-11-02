@@ -43,6 +43,7 @@ import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 import { BOARD, CANVAS, SKIP, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON } from './frame';
 import { btn, iconBtn } from '../ui/button';
+import { MUTED_TEXT, ERROR_TEXT } from '../ui/tw';
 
 interface Loaded {
   rev: number;
@@ -122,8 +123,8 @@ export function Board(props: { teamId: string; projectId: string; userId: string
   };
 
   // Only data fetched for the current reload counts: never remount the canvas on a stale rev.
-  if (!result || result.key !== reloadKey) return <p className="sc-muted">Loading…</p>;
-  if ('error' in result) return <p className="sc-error">{result.error}</p>;
+  if (!result || result.key !== reloadKey) return <p className={MUTED_TEXT}>Loading…</p>;
+  if ('error' in result) return <p className={ERROR_TEXT}>{result.error}</p>;
   return (
     <BoardCanvas
       key={previewing ? `v:${previewing.version.id}` : reloadKey}
