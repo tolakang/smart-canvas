@@ -8,6 +8,7 @@ import { FIELDS } from '../editor/shell';
 import { BOARD_TEXT } from '../editor/panels';
 import { NO_CANVAS } from './pinch';
 import { FILE_PICK } from '../ui/file-pick';
+import { FIELD_ROW, FILL, LINK_PANEL, SEG_FILL, SWATCH, THUMB_PANEL, THUMB_PANEL_EMPTY, upload as uploadLabel } from '../ui/controls';
 
 
 const ACCEPT: Record<'image' | 'vector', string> = {
@@ -115,18 +116,18 @@ export function AssetEditor({ source, upload }: { source: InputSource & { conten
   return (
     <div className={FIELDS}>
       {assetId ? (
-        <img className="sc-thumb" src={assetUrl(teamId, assetId)} alt={`${source.label} preview`} draggable={false} />
+        <img className={THUMB_PANEL} src={assetUrl(teamId, assetId)} alt={`${source.label} preview`} draggable={false} />
       ) : (
-        <div className="sc-thumb sc-thumb--empty">No {kind === 'image' ? 'image' : 'SVG'} yet</div>
+        <div className={THUMB_PANEL_EMPTY}>No {kind === 'image' ? 'image' : 'SVG'} yet</div>
       )}
       {!readOnly && (
-        <label className={`sc-upload ${NO_CANVAS}`} {...FILE_PICK}>
+        <label className={`${uploadLabel()} ${NO_CANVAS}`} {...FILE_PICK}>
           {busy ? 'Uploading…' : assetId ? 'Replace… or drop' : 'Upload… or drop'}
           <input type="file" accept={ACCEPT[kind]} onChange={onFile} disabled={busy} hidden />
         </label>
       )}
       {!readOnly && kind === 'image' && source.behavesLike === 'background' && (
-        <button type="button" className={`sc-link ${NO_CANVAS}`} onClick={() => editSource(source.id, colourBackground)}>
+        <button type="button" className={`${LINK_PANEL} ${NO_CANVAS}`} onClick={() => editSource(source.id, colourBackground)}>
           Use a colour instead
         </button>
       )}
@@ -162,9 +163,9 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
 
   return (
     <div className={FIELDS}>
-      <div className="sc-swatch" style={{ background: fillToCss(fill) }} />
-      <fieldset className={`sc-fill ${NO_CANVAS}`} disabled={readOnly}>
-        <div className="sc-seg" role="radiogroup" aria-label="Fill type">
+      <div className={SWATCH} style={{ background: fillToCss(fill) }} />
+      <fieldset className={`${FILL} ${NO_CANVAS}`} disabled={readOnly}>
+        <div className={SEG_FILL} role="radiogroup" aria-label="Fill type">
           {(['solid', 'linear'] as const).map((t) => (
             <label key={t}>
               <input type="radio" name={`fill-${source.id}`} checked={fill.type === t} onChange={() => change(switchFillType(fill, t))} />
@@ -173,13 +174,13 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
           ))}
         </div>
         {fill.type === 'solid' ? (
-          <label className="sc-field">
+          <label className={FIELD_ROW}>
             Colour
             <input type="color" value={fill.color} onChange={(e) => change({ type: 'solid', color: e.target.value })} />
           </label>
         ) : (
           <>
-            <label className="sc-field">
+            <label className={FIELD_ROW}>
               Angle
               <input
                 type="number"
@@ -192,7 +193,7 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
               °
             </label>
             {fill.stops.map((stop, i) => (
-              <div className="sc-field" key={i}>
+              <div className={FIELD_ROW} key={i}>
                 <input
                   type="color"
                   aria-label={`Stop ${i + 1} colour`}
@@ -222,7 +223,7 @@ export function FillEditor({ source, upload }: { source: InputSource & { content
         )}
       </fieldset>
       {!readOnly && upload.kind && (
-        <label className={`sc-upload ${NO_CANVAS}`} title="A background can be a photo (D9)" {...FILE_PICK}>
+        <label className={`${uploadLabel()} ${NO_CANVAS}`} title="A background can be a photo (D9)" {...FILE_PICK}>
           {upload.busy ? 'Uploading…' : 'Use a photo… or drop'}
           <input type="file" accept={upload.accept} onChange={upload.onFile} disabled={upload.busy} hidden />
         </label>

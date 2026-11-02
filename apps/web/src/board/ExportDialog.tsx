@@ -34,6 +34,7 @@ import { browserExportSupported } from '../render/exportFile';
 import { zipStore } from '../ui/zip';
 import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, DIALOG_SELECT } from '../ui/tw';
 import { btn } from '../ui/button';
+import { CHECK } from '../ui/controls';
 
 /** “2 of 3 chosen Previews aren’t approved”, with its Only approved button on the right. */
 const APPROVAL = 'sc-export__approval m-0 flex flex-wrap items-center gap-8 rounded-sm border-l-3 border-l-warn bg-surface-2 px-10 py-8 text-sm [&>button]:ml-auto';
@@ -289,7 +290,7 @@ export function ExportDialog(props: {
               </p>
             )}
             {set && hidden.size > 0 && (
-              <label className="sc-check font-[500]">
+              <label className={`${CHECK} font-[500]`}>
                 <input type="checkbox" checked={[...hidden].every((id) => selected.includes(id))} onChange={(e) => setSelected((s) => (e.target.checked ? [...s.filter((id) => !hidden.has(id)), ...hidden] : s.filter((id) => !hidden.has(id))))} /> Include hidden
                 previews ({hidden.size})
               </label>
@@ -311,17 +312,17 @@ export function ExportDialog(props: {
               </label>
             )}
             {hasBleed && (
-              <label className="sc-check font-[500]">
+              <label className={`${CHECK} font-[500]`}>
                 <input type="checkbox" checked={withBleed} onChange={(e) => setWithBleed(e.target.checked)} /> Include bleed (print sizes)
               </label>
             )}
             {format === 'svg' && (
-              <label className="sc-check font-[500]" title="Text becomes shapes: the SVG needs no fonts, but the text can't be edited">
+              <label className={`${CHECK} font-[500]`} title="Text becomes shapes: the SVG needs no fonts, but the text can't be edited">
                 <input type="checkbox" checked={outlineText} onChange={(e) => setOutlineText(e.target.checked)} /> Outline text
               </label>
             )}
             {format === 'pdf' && hasBleed && (
-              <label className="sc-check font-[500]">
+              <label className={`${CHECK} font-[500]`}>
                 <input type="checkbox" checked={cropMarks} onChange={(e) => setCropMarks(e.target.checked)} /> Crop marks
               </label>
             )}

@@ -7,6 +7,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError, type Me } from '../api';
 import { SignIn } from './SignIn';
 import { CARD } from '../ui/tw';
+import { LINK } from '../ui/controls';
 
 interface Preview {
   teamName: string;
@@ -83,7 +84,7 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
         <section className={CARD}>
           <h1>Join {preview.teamName}</h1>
           {what}
-          <button type="button" className="sc-link" onClick={() => setMode('join')}>
+          <button type="button" className={LINK} onClick={() => setMode('join')}>
             New here? Create an account instead
           </button>
         </section>
@@ -121,7 +122,7 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
           <button type="submit" disabled={busy}>
             Create account and join
           </button>
-          <button type="button" className="sc-link" onClick={() => setMode('signin')}>
+          <button type="button" className={LINK} onClick={() => setMode('signin')}>
             Already have an account? Sign in
           </button>
         </form>

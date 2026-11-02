@@ -10,6 +10,7 @@ import { connectSource, isEmptyLayer, languagePairs, layerOrder, MAIN, outputCom
 import { useBoard } from '../board/context';
 import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 import { EDITED, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
+import { GRIP } from '../ui/controls';
 
 
 export function LayersPanel(props: { selected: string | null; onSelect: (id: string) => void; outputId?: string; compositionId?: string }) {
@@ -43,7 +44,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
         {...(reorder ? rowProps({ id: s.id, port }) : {})}
       >
         {reorder && (
-          <span className="sc-port__grip" title="Drag to re-order">
+          <span className={GRIP} title="Drag to re-order">
             <Icon name="grip" />
           </span>
         )}

@@ -14,6 +14,7 @@ import { PresetsDialog } from './PresetsDialog';
 import { TeamDialog } from './TeamDialog';
 import { DIALOG, DIALOG_CARD, FORM_ACTIONS, ROW_META } from '../ui/tw';
 import { btn, iconBtn, TOAST } from '../ui/button';
+import { CHECK, FIELD_COL } from '../ui/controls';
 
 interface ProjectRow {
   id: string;
@@ -426,18 +427,18 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
     <dialog ref={ref} className={DIALOG} aria-labelledby="new-project-title" onCancel={props.onClose}>
       <form className={`${DIALOG_CARD} sc-ask sc-newproj grid`} onSubmit={submit}>
         <h1 id="new-project-title">New project</h1>
-        <label className="sc-field sc-field--col">
+        <label className={FIELD_COL}>
           Name
           <input placeholder="New project name" value={name} autoFocus maxLength={200} required onChange={(e) => setName(e.target.value)} />
         </label>
         {props.templates.length > 0 && (
           <fieldset className="sc-newproj__from m-0 grid gap-6 p-0 [border:0]">
             <legend className="mb-4 text-sm text-muted">Start from</legend>
-            <label className="sc-check">
+            <label className={CHECK}>
               <input type="radio" name="from" checked={from === null} onChange={() => setFrom(null)} /> Blank board
             </label>
             {props.templates.map((t) => (
-              <label key={t.id} className="sc-check">
+              <label key={t.id} className={CHECK}>
                 <input type="radio" name="from" checked={from === t.id} onChange={() => setFrom(t.id)} /> {t.name}
               </label>
             ))}

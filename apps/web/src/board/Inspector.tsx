@@ -56,6 +56,7 @@ import { nameWithoutSize } from './OutputNode';
 import { OUTPUT_ROW, OutputSettings } from './OutputSettings';
 import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
 import { btn, iconBtn } from '../ui/button';
+import { CHECK, FIELD_COL, SEG_PANEL } from '../ui/controls';
 
 /** UX A7 (F17): Delete node is a quiet row at the section's end, not a full-width red button under the pictures. */
 const DELETE_NODE = `${btn('ghost-danger')} justify-self-start`;
@@ -127,7 +128,7 @@ function NameField({ label, value, onCommit }: { label: string; value: string; o
   }
   const commit = () => (draft.trim() && draft.trim() !== value ? onCommit(draft.trim()) : setDraft(value));
   return (
-    <label className="sc-field sc-field--col">
+    <label className={FIELD_COL}>
       Name
       <input aria-label={label} value={draft} maxLength={200} disabled={readOnly} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()} />
     </label>
@@ -181,11 +182,11 @@ function InputInspector({ source, headline }: { source: InputSource; headline?: 
     <>
       <Section title={headline ? 'Headline picture' : KIND_LABEL[source.kind]}>
         <NameField label="Input name" value={source.label} onCommit={(label) => run((d) => renameSource(d, source.id, label))} />
-        <label className="sc-field sc-field--col">
+        <label className={FIELD_COL}>
           Behaves like
           <BehaviorPicker source={source} />
         </label>
-        <label className="sc-check">
+        <label className={CHECK}>
           <input type="checkbox" checked={source.visible} disabled={readOnly} onChange={(e) => run((d) => setSourceVisible(d, source.id, e.target.checked))} /> Visible
         </label>
       </Section>
@@ -250,7 +251,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
       <Section title="Headline node">
         <NameField label="Headline name" value={pair.label} onCommit={(label) => run((d) => renamePair(d, pair.id, label))} />
         {/* UX A7 (F17): a segmented switch, not native radios (the radios stay, hidden, for the keyboard and screen readers). */}
-        <div className={`sc-seg ${SWITCH}`} role="radiogroup" aria-label="Language every Preview uses">
+        <div className={`${SEG_PANEL} ${SWITCH}`} role="radiogroup" aria-label="Language every Preview uses">
           {(['km', 'en'] as const).map((lang) => (
             <label key={lang}>
               <input type="radio" name={`inspector-use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang, layoutDeps?.assets))} />

@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { DIALOG, DIALOG_CARD, FORM_ACTIONS } from './tw';
 import { btn } from './button';
+import { FIELD_COL } from './controls';
 
 export interface AskSpec {
   title: string;
@@ -34,7 +35,7 @@ export function AskDialog({ ask, onDone, fieldClass = '' }: { ask: AskSpec; onDo
         <h1 id="ask-title">{ask.title}</h1>
         {ask.message && <p className="sc-muted m-0">{ask.message}</p>}
         {ask.input && (
-          <label className={`sc-field sc-field--col ${fieldClass}`}>
+          <label className={`${FIELD_COL} ${fieldClass}`}>
             {ask.input.label}
             <input value={value} autoFocus maxLength={200} onChange={(e) => setValue(e.target.value)} onFocus={(e) => e.currentTarget.select()} />
           </label>

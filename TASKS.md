@@ -268,10 +268,10 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (3) K2 — `legacySlots` stays the e2e test fixture (D68); no work
 - [x] (3) K5 — a name tag that would overlap is shortened to its card's width, not left out (amends D69) (this PR)
 - [x] (3) K6 — a note beside Approve when every layer of the Preview is empty (D63) — [#231](https://github.com/tolakang/smart-canvas/pull/231)
-- [ ] (3) K3 — "T9": the shared component rules in `styles.css` to Tailwind, in three PRs with the parity test
+- [x] (3) K3 — "T9": the shared component rules in `styles.css` to Tailwind, in three PRs with the parity test
   - [x] T9a — buttons, icon buttons, badges, chips, the spinner and the toast (`ui/button.ts`) — [#233](https://github.com/tolakang/smart-canvas/pull/233)
-  - [x] T9b — cards, dialogs, forms, fields and rows, the home page's tiles (`ui/tw.ts`, `shell/Projects.tsx`) (this PR)
-  - [ ] T9c — thumbnails, segmented controls, fills, the renderer placeholder, the home cards, the inspector's context rules
+  - [x] T9b — cards, dialogs, forms, fields and rows, the home page's tiles (`ui/tw.ts`, `shell/Projects.tsx`) — [#234](https://github.com/tolakang/smart-canvas/pull/234)
+  - [x] T9c — fields, check boxes, segmented controls, pictures, swatches, fills, upload labels, links, grips, the renderer placeholder (`ui/controls.ts`) (this PR); the one-property atoms (`sc-muted`, `sc-error`, `sc-icon`), the inspector's field rules and the dropdown chevron stay with the base styles for K4 (T8)
 - [ ] (3) K4 — T8 (Preflight, unused `sc-` hooks, retire the parity test), after K3
 
 ## Next (see BACKLOG; proposals, the owner picks)

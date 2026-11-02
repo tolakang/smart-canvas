@@ -9,6 +9,7 @@ import { useBoard } from './context';
 import { presetSettings, unitSettings, withAutoLabel } from './OutputNode';
 import { NO_CANVAS } from './pinch';
 import { btn } from '../ui/button';
+import { FIELD_COL, SEG_PANEL } from '../ui/controls';
 
 const SCALES = [1, 2, 3, 4] as const;
 
@@ -27,7 +28,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
     <>
       <fieldset className={`sc-output__settings m-0 grid gap-(--sp-2) p-0 text-xs text-muted [border:0] ${NO_CANVAS}`} disabled={readOnly}>
         {presets.length > 0 && (
-          <label className="sc-field sc-field--col">
+          <label className={FIELD_COL}>
             Preset
             <select
               value={output.presetId ?? ''}
@@ -70,7 +71,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
             disabled={readOnly}
             onCommit={(n) => n && set({ size: { ...output.size, height: n }, presetId: undefined })}
           />
-          <div className="sc-seg" role="group" aria-label="Unit">
+          <div className={SEG_PANEL} role="group" aria-label="Unit">
             {(['px', 'mm'] as const).map((u) => (
               <button key={u} type="button" aria-pressed={output.size.unit === u} onClick={() => set(unitSettings(output, u))}>
                 {u}
@@ -90,7 +91,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
               onCommit={(n) => n && set({ dpi: Math.min(Math.max(Math.round(n), DPI_RANGE.min), DPI_RANGE.max) })}
             />
           ) : (
-            <label className="sc-field sc-field--col">
+            <label className={FIELD_COL}>
               Scale
               <select value={output.exportScale ?? 1} onChange={(e) => set({ exportScale: Number(e.target.value) })}>
                 {SCALES.map((s) => (

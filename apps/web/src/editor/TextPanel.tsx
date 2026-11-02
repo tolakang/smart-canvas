@@ -18,6 +18,7 @@ import { useBoard } from '../board/context';
 import { setText } from '../board/content';
 import { NumberField } from '../ui/NumberField';
 import { NOTE, PANEL_TITLE, PROPS, PROPS_BODY, PROPS_ROW, TEXT } from './panels';
+import { FIELD_COL, SEG } from '../ui/controls';
 
 const WEIGHT_NAME: Record<number, string> = { 100: 'Thin', 200: 'Extra light', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold', 700: 'Bold', 800: 'Extra bold', 900: 'Black' };
 
@@ -42,7 +43,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
         {outputId ? (
           <p className={`sc-muted ${NOTE}`}>Text is shared by every Preview; edit it in Main Comps. Style changes here apply to this Preview only.</p>
         ) : (
-        <label className="sc-field sc-field--col">
+        <label className={FIELD_COL}>
           Text
           <textarea
             className={TEXT}
@@ -55,7 +56,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
           />
         </label>
         )}
-        <label className="sc-field sc-field--col">
+        <label className={FIELD_COL}>
           Font
           <select value={style.fontFamily} onChange={(e) => patch({ fontFamily: e.target.value })} style={{ fontFamily: fontStack(style.fontFamily) }}>
             {families.map((f) => (
@@ -76,7 +77,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
             disabled={readOnly}
             onCommit={(n) => n !== null && patch({ fontSizePx: n })}
           />
-          <label className="sc-field sc-field--col">
+          <label className={FIELD_COL}>
             Weight
             <select value={style.fontWeight} onChange={(e) => patch({ fontWeight: Number(e.target.value) })}>
               {TEXT_LIMITS.weights.map((w) => (
@@ -88,13 +89,13 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
           </label>
         </div>
         <div className={PROPS_ROW}>
-          <label className="sc-field sc-field--col">
+          <label className={FIELD_COL}>
             Colour
             <input type="color" value={style.color} onChange={(e) => patch({ color: e.target.value })} />
           </label>
-          <div className="sc-field sc-field--col">
+          <div className={FIELD_COL}>
             Align
-            <div className="sc-seg" role="radiogroup" aria-label="Align">
+            <div className={SEG} role="radiogroup" aria-label="Align">
               {(['left', 'center', 'right'] as const).map((a) => (
                 <label key={a}>
                   <input type="radio" name={`align-${source.id}`} checked={style.align === a} onChange={() => patch({ align: a })} />
@@ -125,7 +126,7 @@ export function TextPanel({ source, outputId }: { source: InputSource & { conten
             onCommit={(n) => patch({ lineHeight: n })}
           />
         </div>
-        <label className="sc-field sc-field--col">
+        <label className={FIELD_COL}>
           Language
           <select value={style.language ?? 'auto'} onChange={(e) => patch({ language: e.target.value as TextStyle['language'] })}>
             <option value="auto">Auto (detect Khmer)</option>
