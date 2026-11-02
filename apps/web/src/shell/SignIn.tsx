@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { BRAND_MOBILE, BRAND_ON_DARK, BrandMark, PRODUCT_NAME } from '../ui/Brand';
-import { CARD as PAGE_CARD, HINT } from '../ui/tw';
+import { CARD as PAGE_CARD, ERROR_TEXT, HINT, MUTED_TEXT } from '../ui/tw';
 import { LINK } from '../ui/controls';
 
 /** A frame of the brand panel's picture: frosted glass with a coloured block in it. */
@@ -72,7 +72,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
         </span>
         <div className="sc-auth__head">
           <h1 className="text-[26px]">{mode === 'login' ? 'Sign in' : 'Set up your workspace'}</h1>
-          <p className="sc-muted mx-0 mt-4 mb-0">{mode === 'login' ? 'Welcome back. Sign in to your team’s projects.' : 'Create the first admin account and your team.'}</p>
+          <p className={`${MUTED_TEXT} mx-0 mt-4 mb-0`}>{mode === 'login' ? 'Welcome back. Sign in to your team’s projects.' : 'Create the first admin account and your team.'}</p>
         </div>
         {mode === 'setup' && (
           <>
@@ -105,7 +105,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
         </label>
         {mode === 'setup' && <p className={HINT}>At least 8 characters.</p>}
         {error && (
-          <p className="sc-error" role="alert">
+          <p className={ERROR_TEXT} role="alert">
             {error}
           </p>
         )}

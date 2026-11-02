@@ -7,7 +7,7 @@ import type { PresetGroup, SizePreset, Unit } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
-import { DIALOG, DIALOG_CARD, DIALOG_LIST, DIALOG_LONG_CARD, DIALOG_ROW, DIALOG_ROW_BOX, DIALOG_SELECT, DIALOG_STICKY_FOOT, FIELD_WIDE, FIELDS, FORM, FORM_ACTIONS, PRESET_FIELD, ROW_ACTIONS, ROW_MAIN, ROW_META, ROW_NAME } from '../ui/tw';
+import { DIALOG, DIALOG_CARD, DIALOG_LIST, DIALOG_LONG_CARD, DIALOG_ROW, DIALOG_ROW_BOX, DIALOG_SELECT, DIALOG_STICKY_FOOT, ERROR_TEXT, FIELD_WIDE, FIELDS, FORM, FORM_ACTIONS, MUTED_TEXT, PRESET_FIELD, ROW_ACTIONS, ROW_MAIN, ROW_META, ROW_NAME } from '../ui/tw';
 import { BADGE, btn } from '../ui/button';
 
 interface Draft {
@@ -154,7 +154,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="presets-title">
       <div className={`${DIALOG_CARD} sc-presets ${DIALOG_LONG_CARD}`}>
         <h1 id="presets-title">Size presets</h1>
-        <p className="sc-muted sc-lede mx-0 -mt-4 mb-0">Sizes for new Previews. Built-in sizes are fixed; the team’s own are marked Team{props.isAdmin ? '; add and edit them below.' : '. Admins add and edit them.'}</p>
+        <p className={`${MUTED_TEXT} sc-lede mx-0 -mt-4 mb-0`}>Sizes for new Previews. Built-in sizes are fixed; the team’s own are marked Team{props.isAdmin ? '; add and edit them below.' : '. Admins add and edit them.'}</p>
         {list !== null && familiesOf(list).length > 0 && (
           <section aria-label="Preset node families">
             <h2>Preset node families</h2>
@@ -171,7 +171,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
                     <ul className="sc-family__sizes mt-4 mr-0 mb-2 ml-16 grid list-none gap-2 p-0 text-[13px]" aria-label={`${f.name} sizes`}>
                       {f.sizes.map((p) => (
                         <li key={p.id} className="flex items-center justify-between gap-8">
-                          {p.name} <span className="sc-muted">{`${p.size.width} × ${p.size.height} ${p.size.unit}`}</span>
+                          {p.name} <span className={MUTED_TEXT}>{`${p.size.width} × ${p.size.height} ${p.size.unit}`}</span>
                         </li>
                       ))}
                     </ul>
@@ -196,7 +196,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           </section>
         )}
         {list === null ? (
-          <p className="sc-muted">Loading…</p>
+          <p className={MUTED_TEXT}>Loading…</p>
         ) : (
           (['social', 'print'] as const).map((group) => (
             <section key={group} aria-label={group === 'print' ? 'Print presets' : 'Social presets'}>
@@ -284,7 +284,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           </form>
         )}
         {error && (
-          <p className="sc-error" role="alert">
+          <p className={ERROR_TEXT} role="alert">
             {error}
           </p>
         )}

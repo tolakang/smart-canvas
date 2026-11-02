@@ -95,8 +95,6 @@
 button { font: inherit; cursor: pointer; }
 input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
-.sc-muted { color: var(--muted); }
-.sc-error { color: var(--danger); margin: 0; }
 
 /* The board page never scrolls; the board itself takes the visible height (dvh, see chrome.css). */
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -105,14 +103,12 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 
 
 /* T8.1 layer rows (main node list and editor Layers panel) */
-.sc-icon { display: block; margin: auto; }
 
 
 /* Renderer */
 html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }
 
 
-.sc-layer__name > span.sc-muted { font-size: 11px; }
 
 
 
@@ -125,20 +121,15 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 
 
-.sc-fig__bar .sc-muted, .sc-fig__muted { color: var(--fig-bar-muted); }
-
-.sc-fig .sc-layer__name > span.sc-muted { font-size: 10px; }
-
-.sc-design__title .sc-muted { font-weight: 400; }
-
-
-
-.sc-node button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 
 
 
- .sc-topbar .sc-icon { margin: 0; }
+
+
+
+
+
 
 
 
@@ -187,8 +178,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   --ambient: radial-gradient(1100px 620px at 12% -12%, #172447 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #2a1a47 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #0f2f26 0, transparent 60%), #0b0d11;
   --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
-.sc-theme-toggle .sc-icon { margin: 0; }
-.sc-layers__title .sc-muted { font-weight: 400; }
 /* Tablets (and phones turned sideways): slimmer side panels so the canvas keeps most of the width. */
 
 /* Phone top bar: Export is a 36 px rounded icon button clear of the screen edge (it filled the bar's corner on
@@ -197,8 +186,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 /* Idle (wire not selected): small and quiet until hovered; the selected wire's badge is the full-size one. */
 
 
-.sc-search .sc-icon { margin: 0; }
-.sc-more .sc-icon { margin: 0; }
 
 
 
@@ -218,9 +205,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 
 
-.sc-history__open .sc-muted { font-size: var(--fs-xs); }
 
-.sc-comment__meta .sc-muted { font-size: 11px; }
 
 
 /* ===== U1 (2026-10-24): one component layer over the rules above — focus, buttons, fields, dialogs, menus,
@@ -230,22 +215,8 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color: var(--accent); }
 h1, h2, h3 { letter-spacing: -0.011em; }
 
-/* Fields: a quiet border, an accent ring on focus (not a heavy outline). */
-.sc-inspector-panel :is(input:not([type='radio'], [type='checkbox'], [type='color'], [type='file']), select, textarea) {
-  border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast);
-}
-.sc-inspector-panel :is(input, select, textarea):focus-visible {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring);
-}
-.sc-inspector-panel input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
-/* Dropdowns: no native chrome; a chevron drawn in the theme's colour. */
-/* :not(.sc-native) lifts this above the older field rules, whose `background` shorthand would clear the chevron. */
-:is(.sc-card, .sc-dialog, .sc-inspector-panel, .sc-design) select:not(.sc-native):not([multiple]) {
-  appearance: none; -webkit-appearance: none; padding-right: 28px !important;
-  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 52%, calc(100% - 10px) 52%; background-size: 4px 4px, 4px 4px; background-repeat: no-repeat;
-}
-
+/* A textarea's placeholder, wherever it is. */
+textarea::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
 /* A dialog card's entrance (ui/tw.ts DIALOG_CARD). */
 @keyframes sc-pop { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
 
@@ -295,8 +266,6 @@ body { margin: 0; background: var(--ambient); background-attachment: fixed; min-
 
 
 
-/* The global `.sc-icon { margin: auto }` centres a lone icon; beside a label it must sit next to it. */
-:is(.sc-preview__export, .sc-head__action, .sc-preview__comments, .sc-slot__state) .sc-icon { margin: 0; }
 
 /* Touch: no browser tap flash — the app's own pressed and selected states show the tap. */
 button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent; }

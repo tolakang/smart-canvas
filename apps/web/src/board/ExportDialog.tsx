@@ -32,7 +32,7 @@ import { api, ApiError, assetUrl } from '../api';
 import { exportInBrowser, type BrowserFormat } from '../render/browserExport';
 import { browserExportSupported } from '../render/exportFile';
 import { zipStore } from '../ui/zip';
-import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, DIALOG_SELECT } from '../ui/tw';
+import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, DIALOG_SELECT, ERROR_TEXT, MUTED_TEXT } from '../ui/tw';
 import { btn } from '../ui/button';
 import { CHECK } from '../ui/controls';
 
@@ -260,7 +260,7 @@ export function ExportDialog(props: {
           <form className="grid gap-10" onSubmit={start}>
             <fieldset className="sc-export__outputs grid max-h-[280px] gap-2 overflow-auto rounded-[12px] border border-line bg-surface-2 p-6">
               <legend className="px-6 text-[12px] font-[650] tracking-[0.04em] text-muted uppercase">Previews</legend>
-              {listed.length === 0 && <p className="sc-muted">Add a Preview first.</p>}
+              {listed.length === 0 && <p className={MUTED_TEXT}>Add a Preview first.</p>}
               {groups.map((g) => (
                 <div key={g.key} className="sc-export__group grid gap-2 [&+&]:mt-8" role="group" aria-label={g.label}>
                   {groups.length > 1 && <p className="m-0 px-4 pt-2 text-[12px] font-[650] text-muted">{g.label}</p>}
@@ -273,7 +273,7 @@ export function ExportDialog(props: {
                         onChange={(e) => setSelected((s) => (e.target.checked ? [...s, o.id] : s.filter((x) => x !== o.id)))}
                       />
                       {o.label}{' '}
-                      <span className="sc-muted">
+                      <span className={MUTED_TEXT}>
                         {o.size.width} × {o.size.height} {o.size.unit}
                         {hidden.has(o.id) ? ' · hidden on the board' : ''}
                         {APPROVAL_NOTE[approvalOf(approvals, o.id).state]}
@@ -327,7 +327,7 @@ export function ExportDialog(props: {
               </label>
             )}
             {tooLarge.length > 0 && (
-              <div className="sc-error" role="alert">
+              <div className={ERROR_TEXT} role="alert">
                 <p>
                   Too large to export as {format.toUpperCase()} (max {LIMITS.maxExportEdgePx} px per side). Lower the output size, scale or DPI, or
                   export as PDF/SVG:
@@ -340,7 +340,7 @@ export function ExportDialog(props: {
               </div>
             )}
             {selected.length > 0 && tooLarge.length === 0 && (
-              <p className="sc-muted sc-export__where">
+              <p className={`${MUTED_TEXT} sc-export__where`}>
                 {serverZip
                   ? `Large export (${Math.round(exportPixelTotal(chosen, format, options()) / 1e6)} million pixels): made and zipped on the server.`
                   : plan === selected.length
@@ -361,7 +361,7 @@ export function ExportDialog(props: {
               </p>
             )}
             {error && (
-              <p className="sc-error" role="alert">
+              <p className={ERROR_TEXT} role="alert">
                 {error}
               </p>
             )}
@@ -380,7 +380,7 @@ export function ExportDialog(props: {
               {rows.map((r) => (
                 <li key={r.outputId} className="grid grid-cols-[1fr_120px_1fr] items-center gap-8 rounded-[10px] bg-surface-2 px-10 py-8" data-status={r.status} data-where={r.where}>
                   <span>
-                    {label(r.outputId)} <span className="sc-muted">· {format.toUpperCase()} · {r.where === 'browser' ? 'in your browser' : r.fellBack ? 'on the server (browser failed)' : 'on the server'}</span>
+                    {label(r.outputId)} <span className={MUTED_TEXT}>· {format.toUpperCase()} · {r.where === 'browser' ? 'in your browser' : r.fellBack ? 'on the server (browser failed)' : 'on the server'}</span>
                   </span>
                   <progress max={1} value={r.progress} aria-label={`${label(r.outputId)} progress`} />
                   {r.status === 'done' ? (
@@ -388,7 +388,7 @@ export function ExportDialog(props: {
                       Download
                     </a>
                   ) : (
-                    <span className={r.status === 'failed' ? 'sc-error' : 'sc-muted'}>{r.status === 'failed' ? (r.error ?? 'Failed') : r.status}</span>
+                    <span className={r.status === 'failed' ? ERROR_TEXT : MUTED_TEXT}>{r.status === 'failed' ? (r.error ?? 'Failed') : r.status}</span>
                   )}
                 </li>
               ))}
@@ -404,7 +404,7 @@ export function ExportDialog(props: {
               </p>
             )}
             {error && (
-              <p className="sc-error" role="alert">
+              <p className={ERROR_TEXT} role="alert">
                 {error}
               </p>
             )}

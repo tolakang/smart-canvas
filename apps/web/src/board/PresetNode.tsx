@@ -19,6 +19,7 @@ import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
 import { useSaveAsFamily } from './preset-save';
 import { btn, iconBtn } from '../ui/button';
 import { GRIP } from '../ui/controls';
+import { MUTED_TEXT } from '../ui/tw';
 
 
 /** A row's name without its trailing size, or '' when what is left is just the preset's name. */
@@ -195,7 +196,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         </form>
       )}
       {saving.note && (
-        <p className="sc-muted sc-preset__note mx-0 mt-6 mb-0 text-[11px]" role="status">
+        <p className={`${MUTED_TEXT} sc-preset__note mx-0 mt-6 mb-0 text-[11px]`} role="status">
           {saving.note}
         </p>
       )}

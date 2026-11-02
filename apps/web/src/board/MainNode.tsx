@@ -33,6 +33,7 @@ import { NodeHead } from './NodeHead';
 import { NO_DRAG } from './pinch';
 import { btn, iconBtn } from '../ui/button';
 import { GRIP } from '../ui/controls';
+import { MUTED_TEXT } from '../ui/tw';
 
 /** Controls that don't scroll: the wheel still zooms and pans the board over them. */
 const GROUP_DRAG = 'application/x-sc-layer-group';
@@ -131,7 +132,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
                 </span>
               )}
               <span className="sc-comp__group-name flex-1">{LAYER_GROUP_LABEL[g.group]}</span>
-              <span className={`sc-muted sc-comp__count ${COUNT}`} title={g.layers.map((l) => l.label).join(', ')}>
+              <span className={`${MUTED_TEXT} sc-comp__count ${COUNT}`} title={g.layers.map((l) => l.label).join(', ')}>
                 {g.layers.length}
               </span>
               {!readOnly && (

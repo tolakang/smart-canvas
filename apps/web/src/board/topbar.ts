@@ -4,10 +4,11 @@
  * State rules use arbitrary variants (`[&:hover:not(:disabled)]:`) where the old selectors' weight decided which of
  * two states won (hover beats pressed), so the same one still does.
  */
+import { MUTED_TEXT } from '../ui/tw';
 
 /** The bar: three columns, so the + Add group stays centred. */
 export const TOPBAR =
-  'sc-board__bar sc-topbar grid h-60 min-h-60 grid-cols-[1fr_auto_1fr] items-center gap-(--sp-3) bg-transparent px-12 pt-10 pb-0 text-sm [border-bottom:0] max-md:h-54 max-md:min-h-54 max-md:gap-(--sp-1) max-md:px-6 max-md:pt-6';
+  'sc-board__bar sc-topbar [&_.sc-icon]:m-0 grid h-60 min-h-60 grid-cols-[1fr_auto_1fr] items-center gap-(--sp-3) bg-transparent px-12 pt-10 pb-0 text-sm [border-bottom:0] max-md:h-54 max-md:min-h-54 max-md:gap-(--sp-1) max-md:px-6 max-md:pt-6';
 
 const GROUP =
   'sc-topbar__group flex h-44 min-w-0 items-center rounded-[14px] border border-[color-mix(in_srgb,var(--line)_80%,transparent)] bg-glass [backdrop-filter:blur(16px)_saturate(1.4)] [box-shadow:var(--shadow-2)] empty:hidden';
@@ -40,7 +41,7 @@ export const NAME =
 /** A thin divider between buttons. */
 export const SEP = 'sc-topbar__sep mx-(--sp-1) h-20 w-1 flex-none bg-line';
 /** "3 inputs · 2 outputs" for viewers. */
-export const COUNTS = 'sc-muted sc-topbar__counts text-xs';
+export const COUNTS = `${MUTED_TEXT} sc-topbar__counts text-xs`;
 /** Open comments on the Review button. */
 export const COUNT =
   'sc-topbar__count absolute top-2 right-2 h-15 min-w-15 rounded-[8px] bg-accent px-4 text-center text-[9px] leading-[15px] font-[700] text-on-accent';

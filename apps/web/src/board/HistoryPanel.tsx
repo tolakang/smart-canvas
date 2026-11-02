@@ -8,6 +8,7 @@ import { api, ApiError } from '../api';
 import { Icon } from './LayerRow';
 import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass, SECTION } from './panel';
 import { btn, iconBtn } from '../ui/button';
+import { MUTED_TEXT, ERROR_TEXT } from '../ui/tw';
 
 export type VersionKind = 'auto' | 'before-delete' | 'before-restore' | 'named';
 export interface Version {
@@ -117,12 +118,12 @@ export function HistoryPanel(props: {
         </form>
       )}
       {error && (
-        <p className={`sc-error ${LIST_NOTE}`} role="alert">
+        <p className={`${ERROR_TEXT} ${LIST_NOTE}`} role="alert">
           {error}
         </p>
       )}
-      {list === null && !error && <p className={`sc-muted ${LIST_NOTE}`}>Loading…</p>}
-      {list?.length === 0 && <p className={`sc-muted ${LIST_NOTE}`}>No earlier versions yet. One is kept every 10 minutes while you edit, and before panels are deleted.</p>}
+      {list === null && !error && <p className={`${MUTED_TEXT} ${LIST_NOTE}`}>Loading…</p>}
+      {list?.length === 0 && <p className={`${MUTED_TEXT} ${LIST_NOTE}`}>No earlier versions yet. One is kept every 10 minutes while you edit, and before panels are deleted.</p>}
       {days.map(({ day, versions }) => (
         <section key={day} className={LIST_DAY} aria-label={day}>
           <h3 className={LIST_DAY_TITLE}>{day}</h3>
@@ -131,7 +132,7 @@ export function HistoryPanel(props: {
               <li key={v.id} className={listItem(v.id === props.previewing)}>
                 <button type="button" className={LIST_OPEN} aria-current={v.id === props.previewing || undefined} onClick={() => props.onView(v)}>
                   <span className={LIST_TITLE}>{versionTitle(v)}</span>
-                  <span className="sc-muted">
+                  <span className={MUTED_TEXT}>
                     {time(v.createdAt)}
                     {v.by ? ` · ${v.by}` : ''}
                   </span>

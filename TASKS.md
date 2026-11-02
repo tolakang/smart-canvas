@@ -271,8 +271,8 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (3) K3 — "T9": the shared component rules in `styles.css` to Tailwind, in three PRs with the parity test
   - [x] T9a — buttons, icon buttons, badges, chips, the spinner and the toast (`ui/button.ts`) — [#233](https://github.com/tolakang/smart-canvas/pull/233)
   - [x] T9b — cards, dialogs, forms, fields and rows, the home page's tiles (`ui/tw.ts`, `shell/Projects.tsx`) — [#234](https://github.com/tolakang/smart-canvas/pull/234)
-  - [x] T9c — fields, check boxes, segmented controls, pictures, swatches, fills, upload labels, links, grips, the renderer placeholder (`ui/controls.ts`) (this PR); the one-property atoms (`sc-muted`, `sc-error`, `sc-icon`), the inspector's field rules and the dropdown chevron stay with the base styles for K4 (T8)
-- [ ] (3) K4 — T8 (Preflight, unused `sc-` hooks, retire the parity test), after K3
+  - [x] T9c — fields, check boxes, segmented controls, pictures, swatches, fills, upload labels, links, grips, the renderer placeholder (`ui/controls.ts`) — [#235](https://github.com/tolakang/smart-canvas/pull/235); the one-property atoms (`sc-muted`, `sc-error`, `sc-icon`), the inspector's field rules and the dropdown chevron stay with the base styles for K4 (T8)
+- [x] (3) K4 — T8, owner's option A (2026-11-02): Preflight left out (8 of 24 parity screens changed, mostly every element's border style); the last shared bits (`sc-muted`, `sc-error`, `sc-icon`, the inspector's field rings, the dropdown chevron, the node buttons' focus ring) to utilities; the `sc-` hooks and the parity test stay (this PR)
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [x] Q9 — Editor colour variables: the `--line` / `--muted` loop in `.sc-fig` — [#201](https://github.com/tolakang/smart-canvas/pull/201)

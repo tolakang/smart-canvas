@@ -1,4 +1,4 @@
-/* The app's CSS at a08ae42dfdbb2254373a541244995baa416e6c5d (origin/main), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 02e76350ab5baa9a001f2ad3e60374d138fa0edd (origin/main), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -676,6 +676,10 @@
     height: 44px;
   }
 
+  .h-48 {
+    height: 48px;
+  }
+
   .h-50 {
     height: 50px;
   }
@@ -690,6 +694,10 @@
 
   .h-60 {
     height: 60px;
+  }
+
+  .h-72 {
+    height: 72px;
   }
 
   .h-104 {
@@ -722,6 +730,10 @@
 
   .h-dvh {
     height: 100dvh;
+  }
+
+  .max-h-140 {
+    max-height: 140px;
   }
 
   .max-h-\[50vh\] {
@@ -1504,6 +1516,10 @@
     border-style: dashed;
   }
 
+  .\[border-style\:none\] {
+    border-style: none;
+  }
+
   .\[border-style\:solid_none_none\] {
     border-style: solid none none;
   }
@@ -1518,6 +1534,10 @@
 
   .\[border-color\:var\(--line\)_currentcolor_currentcolor_var\(--line\)\] {
     border-color: var(--line) currentcolor currentcolor var(--line);
+  }
+
+  .\[border-color\:var\(--placeholder-line\)\] {
+    border-color: var(--placeholder-line);
   }
 
   .border-\[color-mix\(in_srgb\,var\(--accent\)_45\%\,var\(--line\)\)\] {
@@ -1810,6 +1830,10 @@
     .bg-\[color-mix\(in_srgb\,var\(--tile\)_16\%\,var\(--surface\)\)\] {
       background-color: color-mix(in srgb,var(--tile) 16%,var(--surface));
     }
+  }
+
+  .bg-\[rgb\(255_255_255\/0\.4\)\] {
+    background-color: #fff6;
   }
 
   .bg-accent {
@@ -2589,6 +2613,10 @@
     color: var(--on-accent);
   }
 
+  .\[color\:var\(--placeholder-fg\)\] {
+    color: var(--placeholder-fg);
+  }
+
   .\[color\:white\] {
     color: #fff;
   }
@@ -2759,6 +2787,10 @@
 
   .\[box-shadow\:0_0_0_1px_rgb\(16_24_40\/0\.06\)\,0_12px_32px_-8px_rgb\(16_24_40\/0\.28\)\] {
     box-shadow: 0 0 0 1px #1018280f, 0 12px 32px -8px #10182847;
+  }
+
+  .\[box-shadow\:0_0_0_1px_var\(--line\)\] {
+    box-shadow: 0 0 0 1px var(--line);
   }
 
   .\[box-shadow\:0_0_0_3px_var\(--ring\)\] {
@@ -3191,6 +3223,10 @@
     background: repeating-conic-gradient(var(--checker-a) 0 25%,var(--checker-b) 0 50%) 0 0/12px 12px;
   }
 
+  .\[background\:repeating-conic-gradient\(var\(--checker-a\)_0_25\%\,var\(--checker-b\)_0_50\%\)_0_0\/16px_16px\] {
+    background: repeating-conic-gradient(var(--checker-a) 0 25%,var(--checker-b) 0 50%) 0 0/16px 16px;
+  }
+
   .\[background\:repeating-conic-gradient\(var\(--checker-a\)_0_25\%\,var\(--checker-b\)_0_50\%\)_0_0_\/_16px_16px\] {
     background: repeating-conic-gradient(var(--checker-a) 0 25%,var(--checker-b) 0 50%) 0 0 / 16px 16px;
   }
@@ -3403,6 +3439,10 @@
     font: 600 11px/1 var(--font, inherit);
   }
 
+  .\[font\:600_48px\/1\.2_\'Noto_Sans\'\,sans-serif\] {
+    font: 600 48px / 1.2 Noto Sans, sans-serif;
+  }
+
   .\[font\:inherit\] {
     font: inherit;
   }
@@ -3434,6 +3474,10 @@
 
   .\[transition\:background_var\(--t-fast\)\,border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\,transform_var\(--t-fast\)\] {
     transition: background var(--t-fast),border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast);
+  }
+
+  .\[transition\:background_var\(--t-fast\)\,border-color_var\(--t-fast\)\] {
+    transition: background var(--t-fast),border-color var(--t-fast);
   }
 
   .\[transition\:background_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\] {
@@ -4657,6 +4701,10 @@
     opacity: .5;
   }
 
+  .\[\&_\.sc-field\]\:text-fg .sc-field {
+    color: var(--fg);
+  }
+
   .\[\&_\.sc-field_input\[type\=number\]\]\:w-full .sc-field input[type="number"] {
     width: 100%;
   }
@@ -5771,6 +5819,10 @@
     animation: sc-pop var(--t-med) both;
   }
 
+  .sc-node .\[\.sc-node_\&\]\:max-w-full {
+    max-width: 100%;
+  }
+
   @media not all and (min-width: 768px) {
     :where(.max-md\:\[\:where\(\&_\:is\(input\,select\)\)\]\:text-\[16px\] :is(input, select)) {
       font-size: 16px;
@@ -5831,6 +5883,109 @@
 
   :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\,textarea\)\)\]\:\[transition\:border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\] :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select, textarea)) {
     transition: border-color var(--t-fast),box-shadow var(--t-fast);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:inline-flex button) {
+    display: inline-flex;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:h-\(--field-h\) button) {
+    height: var(--field-h);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:cursor-pointer button) {
+    cursor: pointer;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:items-center button) {
+    align-items: center;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:justify-center button) {
+    justify-content: center;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:gap-\(--sp-1\) button) {
+    gap: var(--sp-1);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:\[justify-self\:start\] button) {
+    justify-self: start;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:rounded-md button) {
+    border-radius: var(--r-md);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:rounded-sm button) {
+    border-radius: var(--r-sm);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:border button) {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:border-solid button) {
+    --tw-border-style: solid;
+    border-style: solid;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:border-line-strong button) {
+    border-color: var(--line-strong);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:bg-surface button) {
+    background-color: var(--surface);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:px-\(--sp-2\) button) {
+    padding-inline: var(--sp-2);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:px-\(--sp-3\) button) {
+    padding-inline: var(--sp-3);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:py-0 button) {
+    padding-block: 0;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:text-sm button) {
+    font-size: var(--fs-sm);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:text-xs button) {
+    font-size: var(--fs-xs);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:leading-none button) {
+    --tw-leading: 1;
+    line-height: 1;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:text-fg button) {
+    color: var(--fg);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:text-muted button) {
+    color: var(--muted);
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:no-underline button) {
+    text-decoration-line: none;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:\[background\:none\] button) {
+    background: none;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:\[border\:0\] button) {
+    border: 0;
+  }
+
+  :where(.\[\:where\(\&_button\)\]\:\[transition\:background_var\(--t-fast\)\,border-color_var\(--t-fast\)\] button) {
+    transition: background var(--t-fast),border-color var(--t-fast);
   }
 
   :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:inline-flex button:not([class])) {
@@ -5999,6 +6154,48 @@
     }
   }
 
+  :where(.\[\:where\(\&_input\[type\=color\]\)\]\:h-24 input[type="color"]) {
+    height: 24px;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=color\]\)\]\:w-32 input[type="color"]) {
+    width: 32px;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=color\]\)\]\:rounded-\[4px\] input[type="color"]) {
+    border-radius: 4px;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=color\]\)\]\:border input[type="color"]) {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=color\]\)\]\:border-solid input[type="color"]) {
+    --tw-border-style: solid;
+    border-style: solid;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=color\]\)\]\:border-line input[type="color"]) {
+    border-color: var(--line);
+  }
+
+  :where(.\[\:where\(\&_input\[type\=color\]\)\]\:p-0 input[type="color"]) {
+    padding: 0;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=number\]\)\]\:w-56 input[type="number"]) {
+    width: 56px;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=number\]\)\]\:px-4 input[type="number"]) {
+    padding-inline: 4px;
+  }
+
+  :where(.\[\:where\(\&_input\[type\=number\]\)\]\:py-2 input[type="number"]) {
+    padding-block: 2px;
+  }
+
   :where(.\[\:where\(\&_label\)\]\:grid label) {
     display: grid;
   }
@@ -6039,8 +6236,20 @@
     margin-block: 10vh;
   }
 
+  :where(.\[\:where\(\&\)\]\:flex) {
+    display: flex;
+  }
+
   :where(.\[\:where\(\&\)\]\:grid) {
     display: grid;
+  }
+
+  :where(.\[\:where\(\&\)\]\:inline-flex) {
+    display: inline-flex;
+  }
+
+  :where(.\[\:where\(\&\)\]\:h-\(--field-h\)) {
+    height: var(--field-h);
   }
 
   :where(.\[\:where\(\&\)\]\:max-h-\[calc\(100dvh-48px\)\]) {
@@ -6063,8 +6272,32 @@
     min-width: min(320px, 100%);
   }
 
+  :where(.\[\:where\(\&\)\]\:\[align-items\:start\]) {
+    align-items: start;
+  }
+
+  :where(.\[\:where\(\&\)\]\:items-center) {
+    align-items: center;
+  }
+
   :where(.\[\:where\(\&\)\]\:gap-\(--sp-4\)) {
     gap: var(--sp-4);
+  }
+
+  :where(.\[\:where\(\&\)\]\:gap-2) {
+    gap: 2px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:gap-4) {
+    gap: 4px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:gap-6) {
+    gap: 6px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:gap-10) {
+    gap: 10px;
   }
 
   :where(.\[\:where\(\&\)\]\:gap-12) {
@@ -6073,6 +6306,18 @@
 
   :where(.\[\:where\(\&\)\]\:overflow-auto) {
     overflow: auto;
+  }
+
+  :where(.\[\:where\(\&\)\]\:overflow-hidden) {
+    overflow: hidden;
+  }
+
+  :where(.\[\:where\(\&\)\]\:rounded-\[6px\]) {
+    border-radius: 6px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:rounded-md) {
+    border-radius: var(--r-md);
   }
 
   :where(.\[\:where\(\&\)\]\:rounded-xl) {
@@ -6097,8 +6342,16 @@
     background-color: var(--surface);
   }
 
+  :where(.\[\:where\(\&\)\]\:bg-surface-2) {
+    background-color: var(--surface-2);
+  }
+
   :where(.\[\:where\(\&\)\]\:p-\(--sp-5\)) {
     padding: var(--sp-5);
+  }
+
+  :where(.\[\:where\(\&\)\]\:p-1) {
+    padding: 1px;
   }
 
   :where(.\[\:where\(\&\)\]\:p-24) {
@@ -6212,6 +6465,10 @@
     outline-offset: 1px;
   }
 
+  :where(.\[\:where\(\&\)_button\:hover\:not\(\:disabled\)\]\:bg-surface-2) button:hover:not(:disabled) {
+    background-color: var(--surface-2);
+  }
+
   :where(.\[\:where\(\&\)_button\:hover\:not\(\:disabled\)\]\:\[background\:var\(--fig-bar-hover\)\]) button:hover:not(:disabled) {
     background: var(--fig-bar-hover);
   }
@@ -6230,6 +6487,18 @@
 
   :where(.\[\:where\(\&\)_button\:not\(\[class\]\)\:hover\:not\(\:disabled\)\]\:bg-surface-2) button:not([class]):hover:not(:disabled) {
     background-color: var(--surface-2);
+  }
+
+  :where(.\[\:where\(\&\)_button\[aria-pressed\=true\]\]\:bg-surface) button[aria-pressed="true"] {
+    background-color: var(--surface);
+  }
+
+  :where(.\[\:where\(\&\)_button\[aria-pressed\=true\]\]\:text-fg) button[aria-pressed="true"] {
+    color: var(--fg);
+  }
+
+  :where(.\[\:where\(\&\)_button\[aria-pressed\=true\]\]\:\[box-shadow\:var\(--shadow-1\)\]) button[aria-pressed="true"] {
+    box-shadow: var(--shadow-1);
   }
 
   :where(.\[\:where\(\&\)_button\[type\=submit\]\:not\(\[class\]\)\:hover\:not\(\:disabled\)\]\:border-accent-hover) button[type="submit"]:not([class]):hover:not(:disabled) {
@@ -7322,7 +7591,6 @@ svg.react-flow__connectionline {
 button { font: inherit; cursor: pointer; }
 input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
-.sc-link { background: none; border: 0; padding: 0; color: var(--accent); text-align: left; }
 .sc-muted { color: var(--muted); }
 .sc-error { color: var(--danger); margin: 0; }
 
@@ -7330,38 +7598,22 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 
-.sc-thumb--empty { display: grid; place-items: center; color: var(--muted); font-size: 12px; }
-.sc-upload { justify-self: start; }
-.sc-field { display: flex; align-items: center; gap: 6px; }
-.sc-field input[type='number'] { width: 56px; padding: 2px 4px; }
-.sc-field input[type='color'] { width: 32px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 4px; }
-.sc-fill button { justify-self: start; }
 
 
 /* T8.1 layer rows (main node list and editor Layers panel) */
-.sc-port__grip { display: inline-flex; color: var(--muted); cursor: grab; flex: none; }
-.sc-thumb-fill { width: 100%; height: 100%; }
-.sc-thumb-text { font-size: 14px; font-weight: 700; color: var(--fg); background: var(--surface); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .sc-icon { display: block; margin: auto; }
 
 
 /* Renderer */
-.sc-render__placeholder { display: grid; place-items: center; border: 2px dashed var(--placeholder-line); color: var(--placeholder-fg); font: 600 48px/1.2 'Noto Sans', sans-serif; background: rgb(255 255 255 / 0.4); }
-.sc-render--thumb { box-shadow: 0 0 0 1px var(--line); }
 html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }
 
 
 .sc-layer__name > span.sc-muted { font-size: 11px; }
 
-.sc-field--col { display: grid; gap: 4px; align-items: start; }
-
-.sc-seg { gap: 10px; display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-.sc-seg button { border: 0; border-radius: 0; padding: 3px 8px; background: var(--surface); font: inherit; }
-.sc-seg button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
 
 
 
-label.sc-check { display: flex; gap: 6px; align-items: center; }
+
 
 
 
@@ -7376,24 +7628,9 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-design__title .sc-muted { font-weight: 400; }
 
 
-.sc-thumb { width: 100%; height: 110px; object-fit: contain; background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; border: 1px solid var(--line); border-radius: var(--r-md); border-color: var(--line); }
 
-/* Upload labels, colour-fill buttons and links in nodes look like buttons (ui/button.ts builds the real ones). */
-.sc-upload, .sc-fill button, .sc-node .sc-link {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1); height: var(--field-h); padding: 0 var(--sp-3);
-  border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); line-height: 1; text-decoration: none; cursor: pointer; transition: background var(--t-fast), border-color var(--t-fast);
-}
-.sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
-.sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
-.sc-node .sc-link { justify-self: start; }
+.sc-node button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-.sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; }
-.sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
-.sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
-.sc-fill { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; font-size: var(--fs-xs); color: var(--muted); }
-.sc-fill .sc-seg { display: inline-flex; gap: var(--sp-3); height: auto; background: none; padding: 0; border: 0; }
-.sc-fill .sc-field { color: var(--fg); }
-.sc-swatch { border: 1px solid var(--line); height: 48px; border-radius: var(--r-md); border-color: var(--line); }
 
 
 
@@ -7405,11 +7642,6 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 /* Hand (or Space held): the board pans from anywhere, panels included; the cursor says so. */
 .sc-board__flow--hand .react-flow__pane, .sc-board__flow--hand .react-flow__node { cursor: grab; }
 .sc-board__flow--hand .react-flow__pane.dragging, .sc-board__flow--hand:active .react-flow__node { cursor: grabbing; }
-.sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; display: inline-flex; }
-.sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
-.sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
-.sc-inspector-panel .sc-upload, .sc-inspector-panel .sc-fill button, .sc-inspector-panel .sc-link { display: inline-flex; align-items: center; height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); justify-self: start; }
-.sc-inspector-panel .sc-thumb { height: 160px; }
 
 /* T13.3 dark theme (D34): the same rules, other token values. The artwork itself (OutputRenderer, inline
    styles) never changes with the theme, so previews and exports look the same in both. */
@@ -7467,12 +7699,6 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 
 
 
-.sc-node__preview .sc-thumb:not(.sc-thumb--empty) { display: block; width: auto; height: auto; max-width: 100%; max-height: 140px; }
-.sc-node__preview .sc-thumb--empty, .sc-node__preview .sc-swatch { width: 100%; }
-.sc-node__preview .sc-thumb--empty { height: 72px; text-align: center; padding: 0 var(--sp-2); }
-.sc-thumb--upload { cursor: pointer; border-style: dashed; border-color: var(--muted); }
-.sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
-.sc-node .sc-render--thumb { max-width: 100%; }
 
 
 

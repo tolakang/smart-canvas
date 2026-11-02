@@ -8,10 +8,10 @@ its history: [`docs/archive/TAILWIND-PLAN-T1-T7.md`](docs/archive/TAILWIND-PLAN-
 |---|---|---|---|---|
 | T9a | Clean-up 2, K3 (owner, 2026-11-02): buttons, icon buttons, badges, chips, spinner, toast → `ui/button.ts` | part of `styles.css` | medium | #233 |
 | T9b | Cards, dialogs, forms, fields, rows, the home tiles → `ui/tw.ts` (`CARD`, `DIALOG_CARD`, rows, forms), `shell/Projects.tsx` (tiles) | part of `styles.css` | high | #234 |
-| T9c | Fields, check boxes, segmented controls, pictures, swatches, fills, upload labels, links, grips, renderer placeholder → `ui/controls.ts` | part of `styles.css` | medium | this PR |
-| T8 | After T9 (K4): Preflight in place of our base styles if parity stays identical (with them the last shared bits: `sc-muted`, `sc-error`, `sc-icon`, the inspector's field rules, the dropdown chevron); drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
+| T9c | Fields, check boxes, segmented controls, pictures, swatches, fills, upload labels, links, grips, renderer placeholder → `ui/controls.ts` | part of `styles.css` | medium | #235 |
+| T8 | K4, owner's option A (2026-11-02): the last shared bits (`sc-muted`, `sc-error`, `sc-icon` → `ui/tw.ts` `MUTED_TEXT` / `ERROR_TEXT`; the inspector's field rings → `board/panel.ts`; the dropdown chevron → `CHEVRON`; the node buttons' focus ring → `board/card.ts`). **Preflight left out:** with it, 8 of 24 parity screens changed (it gives every element a solid border style, and changes tab size, text-size-adjust and the tap highlight). The `sc-` hooks and the parity test stay | the rest of `styles.css` but tokens and base styles | medium | this PR |
 
-Until T8 retires it, the parity test below guards any styling PR that should look the same.
+The parity test below stays (owner, K4 option A): it guards any styling PR that should look the same.
 
 ## What stays CSS for good
 

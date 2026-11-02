@@ -4,7 +4,7 @@
  * Escape cancels), and the answer comes back through `onDone` (null = cancelled).
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { DIALOG, DIALOG_CARD, FORM_ACTIONS } from './tw';
+import { DIALOG, DIALOG_CARD, FORM_ACTIONS, MUTED_TEXT } from './tw';
 import { btn } from './button';
 import { FIELD_COL } from './controls';
 
@@ -33,7 +33,7 @@ export function AskDialog({ ask, onDone, fieldClass = '' }: { ask: AskSpec; onDo
     <dialog ref={ref} className={DIALOG} aria-labelledby="ask-title" onCancel={() => onDone(null)}>
       <form className={`${DIALOG_CARD} sc-ask grid`} onSubmit={submit}>
         <h1 id="ask-title">{ask.title}</h1>
-        {ask.message && <p className="sc-muted m-0">{ask.message}</p>}
+        {ask.message && <p className={`${MUTED_TEXT} m-0`}>{ask.message}</p>}
         {ask.input && (
           <label className={`${FIELD_COL} ${fieldClass}`}>
             {ask.input.label}

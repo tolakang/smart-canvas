@@ -6,7 +6,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError, type Me } from '../api';
 import { SignIn } from './SignIn';
-import { CARD } from '../ui/tw';
+import { CARD, ERROR_TEXT, MUTED_TEXT } from '../ui/tw';
 import { LINK } from '../ui/controls';
 
 interface Preview {
@@ -62,12 +62,12 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
     void accept({ name: get('name'), email: preview?.email ?? get('email'), password: get('password') });
   }
 
-  if (preview === undefined) return <p className="sc-muted">Loading…</p>;
+  if (preview === undefined) return <p className={MUTED_TEXT}>Loading…</p>;
   if (preview === null)
     return (
       <section className={CARD}>
         <h1>Invite</h1>
-        <p className="sc-error">{MESSAGES.invite_invalid}</p>
+        <p className={ERROR_TEXT}>{MESSAGES.invite_invalid}</p>
         <a href="/">Go to the app</a>
       </section>
     );
@@ -98,7 +98,7 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
       {what}
       {me ? (
         <>
-          <p className="sc-muted">Signed in as {me.user.email}.</p>
+          <p className={MUTED_TEXT}>Signed in as {me.user.email}.</p>
           <button type="button" disabled={busy} onClick={() => void accept({})}>
             Join {preview.teamName}
           </button>
@@ -128,7 +128,7 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
         </form>
       )}
       {error && (
-        <p className="sc-error" role="alert">
+        <p className={ERROR_TEXT} role="alert">
           {error}
         </p>
       )}

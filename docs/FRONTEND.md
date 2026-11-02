@@ -15,9 +15,9 @@ and the look are in `DESIGN-SYSTEM.md`.
 
 CSS that stays CSS, and why:
 - **Tokens, base styles, fonts, keyframes** (`styles.css`): Tailwind reads the tokens; keyframes have no utility.
-  The shared components from before Tailwind moved to utilities in clean-up 2, K3 ("T9": `ui/button.ts`, `ui/tw.ts`,
-  `ui/controls.ts`). `styles.css` keeps only the one-property atoms (`sc-muted`, `sc-error`, `sc-icon`), the
-  inspector's field rules and the dropdown chevron, which go with the base styles in K4 (T8). Don't add to them.
+  Every shared component from before Tailwind is utilities now (clean-up 2, K3 and K4: `ui/button.ts`, `ui/tw.ts`,
+  `ui/controls.ts`; muted and error text are `MUTED_TEXT` / `ERROR_TEXT`, the dropdown chevron `CHEVRON`).
+  `styles.css` holds tokens, base styles (no Preflight: it would change every screen) and keyframes only.
 - **React Flow's own DOM** — pane, wires, minimap, handles (`board/chrome.css`), and React Flow's sheet in the lowest
   layer (`board/reactflow.css`): React Flow draws those elements, not our markup.
 - **The editors' transform box** (`editor/editor.css`, `.tb-*`, D36): placed by math, its handles keep their size at

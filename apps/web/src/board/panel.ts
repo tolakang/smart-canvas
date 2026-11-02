@@ -3,6 +3,7 @@
  * beside the canvas on the glass backdrop; on a tablet they float over it (overlay), on a phone they are a bottom
  * sheet. Also the inspector's sections and the project overview it shows with nothing selected.
  */
+import { CHEVRON } from '../ui/tw';
 
 /**
  * The fields inside a panel get the node field look (the inspector reuses the node controls): filled, small type, a
@@ -12,6 +13,10 @@
 const FIELDS =
   'text-sm [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:max-w-full [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:min-w-0 [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:[font-family:inherit] [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:[font-feature-settings:inherit] [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:[line-height:inherit] [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:text-sm [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:text-fg [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:bg-surface-2 [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea)]:border-field-line [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select)]:h-(--field-h) [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select)]:w-full [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select)]:px-(--sp-2) [&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select)]:py-0 [&_:where(input,select,textarea):focus]:border-accent [&_:where(input,select,textarea):focus]:bg-surface [&_:where(input,select,textarea):focus]:[outline:none]';
 
+/** The fields' rounding and focus ring (K4 / T8: were styles.css; zero weight, below the fields' own classes). */
+const FIELD_RING =
+  '[:where(&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea))]:rounded-md [:where(&_:is(input:not([type=radio],[type=checkbox],[type=color],[type=file]),select,textarea))]:[transition:border-color_var(--t-fast),box-shadow_var(--t-fast)] [:where(&)_:is(input,select,textarea):focus-visible]:[outline:none] [:where(&)_:is(input,select,textarea):focus-visible]:border-accent [:where(&)_:is(input,select,textarea):focus-visible]:[box-shadow:0_0_0_3px_var(--ring)] [:where(&_input)]:placeholder:[color:color-mix(in_srgb,var(--muted)_80%,transparent)]';
+
 /** A side panel: `floating` is how it shows on a tablet ('overlay') or a phone ('sheet'); docked otherwise. */
 export function panelClass(floating: 'overlay' | 'sheet' | undefined, extra = '') {
   const where =
@@ -20,7 +25,7 @@ export function panelClass(floating: 'overlay' | 'sheet' | undefined, extra = ''
       : floating === 'sheet'
         ? "sc-floating sc-floating--sheet sc-floating--end fixed right-0 bottom-0 left-0 z-30 max-h-[62dvh] rounded-t-lg [border-color:var(--line)_currentcolor_currentcolor_var(--line)] [border-style:solid_none_none_solid] [border-width:1px_0_0_1px] bg-surface pb-[env(safe-area-inset-bottom)] [box-shadow:var(--shadow-3)] before:mx-auto before:mt-6 before:mb-0 before:block before:h-4 before:w-36 before:rounded-[2px] before:bg-line-strong before:content-['']"
         : 'w-320 rounded-(--panel-r) border border-[color-mix(in_srgb,var(--line)_80%,transparent)] bg-glass [backdrop-filter:blur(16px)] [box-shadow:var(--shadow-2)]';
-  return `sc-inspector-panel${extra ? ` ${extra}` : ''} flex-none overflow-auto ${where} ${FIELDS}`;
+  return `sc-inspector-panel${extra ? ` ${extra}` : ''} flex-none overflow-auto ${where} ${FIELDS} ${FIELD_RING} ${CHEVRON}`;
 }
 
 /** The floating panel's title row (Inspector, History, Review) with its Close button. */
@@ -59,5 +64,5 @@ export const LIST_ROWS = 'm-0 grid list-none gap-2 px-(--sp-2) pt-0 pb-(--sp-2)'
 export const listItem = (on = false) =>
   `sc-history__item${on ? ' sc-history__item--on bg-accent-soft' : ''} flex items-center gap-(--sp-1) rounded-sm hover:bg-surface-2`;
 export const LIST_OPEN =
-  'sc-history__open grid min-w-0 flex-1 cursor-pointer gap-2 px-(--sp-2) py-6 text-left [font:inherit] [color:inherit] [background:none] [border:0] pointer-coarse:min-h-44';
+  'sc-history__open [&_.sc-muted]:text-xs grid min-w-0 flex-1 cursor-pointer gap-2 px-(--sp-2) py-6 text-left [font:inherit] [color:inherit] [background:none] [border:0] pointer-coarse:min-h-44';
 export const LIST_TITLE = 'sc-history__title overflow-hidden font-[500] text-ellipsis whitespace-nowrap';

@@ -9,6 +9,7 @@ import type { ReactNode } from 'react';
 import { NumberField } from '../ui/NumberField';
 import { DESIGN, GESTURES_LIST, GRID, KEYS, LOCK, NUM, SECTION, SECTION_KEYS, SECTION_TOUCH, SUMMARY, TITLE } from './panels';
 import { KIND_LABEL } from '../board/LayerRow';
+import { MUTED_TEXT } from '../ui/tw';
 
 /** Shown values: whole design px (as the selection badge), rotation to 0.1°. Typed values are kept as typed. */
 const round = (n: number) => Math.round(n);
@@ -61,7 +62,7 @@ export function DesignPanel(props: {
         <section className={SECTION}>
           <div className={TITLE}>Canvas</div>
           <div className="sc-design__value">
-            {round(props.scene.width)} × {round(props.scene.height)} <span className="sc-muted">design px</span>
+            {round(props.scene.width)} × {round(props.scene.height)} <span className={MUTED_TEXT}>design px</span>
           </div>
         </section>
         {/* Touch screens get gestures instead of keyboard shortcuts. */}
@@ -118,7 +119,7 @@ export function DesignPanel(props: {
     <aside className={DESIGN} aria-label="Design">
       <section className={SECTION}>
         <div className={TITLE}>
-          {source.label} <span className="sc-muted">{KIND_LABEL[source.kind]} · {source.behavesLike}</span>
+          {source.label} <span className={MUTED_TEXT}>{KIND_LABEL[source.kind]} · {source.behavesLike}</span>
         </div>
         <div className={GRID}>
           {field('X', 'X', frame.x, (n) => n !== null && set({ x: n }))}

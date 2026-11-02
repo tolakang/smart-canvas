@@ -20,6 +20,7 @@ import { carriesFiles, filesOf, PICTURE_ACCEPT, usePictureDrop } from './stack-u
 import { NO_CANVAS } from './pinch';
 import { FILE_PICK } from '../ui/file-pick';
 import { SPINNER } from '../ui/button';
+import { ERROR_TEXT } from '../ui/tw';
 
 const ITEM_DRAG = 'application/x-sc-stack-item';
 
@@ -158,7 +159,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         </label>
       )}
       {drop.errors.length > 0 && (
-        <p className="sc-error" role="alert">
+        <p className={ERROR_TEXT} role="alert">
           {drop.errors.join(' ')}
         </p>
       )}

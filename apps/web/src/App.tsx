@@ -5,6 +5,7 @@ import { parseRenderPath, RenderPage } from './render/RenderPage';
 import { InvitePage, parseInvitePath } from './shell/InvitePage';
 import { Projects } from './shell/Projects';
 import { SignIn } from './shell/SignIn';
+import { MUTED_TEXT } from './ui/tw';
 
 /** Routes: #/ (projects of the first team), #/t/<teamId>/p/<projectId> (board), /invite/<token> (join a team). */
 function parseHash(hash: string): { teamId: string; projectId: string } | null {
@@ -39,7 +40,7 @@ function Shell() {
   }, []);
   useEffect(loadMe, [loadMe]);
 
-  if (me === undefined) return <p className="sc-muted">Loading…</p>;
+  if (me === undefined) return <p className={MUTED_TEXT}>Loading…</p>;
   const invite = parseInvitePath(window.location.pathname);
   // After joining, leave the invite path for the app (a fresh load picks up the new team).
   if (invite) return <InvitePage token={invite} me={me} onSignedIn={loadMe} onJoined={() => window.location.assign('/')} />;
@@ -47,7 +48,7 @@ function Shell() {
 
   const route = parseHash(hash);
   const team = me.teams.find((t) => t.id === route?.teamId) ?? me.teams[0];
-  if (!team) return <p className="sc-muted">You are not in a team yet. Ask an admin for an invite link.</p>;
+  if (!team) return <p className={MUTED_TEXT}>You are not in a team yet. Ask an admin for an invite link.</p>;
 
   if (route && route.teamId === team.id) {
     return (

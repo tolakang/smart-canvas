@@ -10,6 +10,7 @@ import { Icon } from './LayerRow';
 import { ADD, COUNT, COUNTS, GHOST, GROUP_ADD, GROUP_END, GROUP_START, ICON, NAME, PRIMARY, SAVE_BUTTON, SAVE_LONG, SAVE_SHORT, saveClass, saveDotClass, SEP, TOPBAR } from './topbar';
 import { VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
 import { BADGE } from '../ui/button';
+import { ERROR_TEXT } from '../ui/tw';
 
 /** U2: what the save status says where the bar is narrow (tablets, phones). */
 const SHORT_LABEL: Record<SaveState, string> = { saved: 'Saved', pending: 'Unsaved', saving: 'Saving…', error: 'Retrying…', conflict: 'Newer version' };
@@ -91,7 +92,7 @@ export function TopBar(props: {
       )}
       <div className={GROUP_END}>
         {props.notice && (
-          <span className="sc-error" role="alert">
+          <span className={ERROR_TEXT} role="alert">
             {props.notice}
           </span>
         )}
@@ -180,7 +181,7 @@ export function VersionBar(props: { version: Version; error: string | null; canE
         {` · ${versionTitle(version)}`}
         {version.by ? ` · ${version.by}` : ''}
       </span>
-      {props.error && <span className="sc-error">{props.error}</span>}
+      {props.error && <span className={ERROR_TEXT}>{props.error}</span>}
       <span className={VERSION_ACTIONS}>
         {props.canEdit && (
           <button type="button" className={VERSION_RESTORE} onClick={props.onRestore}>

@@ -11,6 +11,7 @@ import { APPROVAL, APPROVAL_PILL } from './OutputNode';
 import { LIST_DAY, LIST_DAY_TITLE, LIST_NOTE, LIST_OPEN, LIST_ROWS, LIST_TITLE, listItem, PANEL_HEAD, panelClass } from './panel';
 import { approvalOf, openCounts } from './review';
 import { iconBtn } from '../ui/button';
+import { MUTED_TEXT } from '../ui/tw';
 
 const STATE_LABEL = { approved: '✓ Approved', changed: 'Changed since approved', none: 'Not approved' } as const;
 
@@ -34,12 +35,12 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
           <Icon name="close" />
         </button>
       </div>
-      <p className={`sc-muted ${LIST_NOTE}`} role="status">
+      <p className={`${MUTED_TEXT} ${LIST_NOTE}`} role="status">
         {doc.outputs.length === 0
           ? 'No Previews yet.'
           : `${approved} of ${doc.outputs.length} approved · ${open} open ${open === 1 ? 'comment' : 'comments'}`}
       </p>
-      {review === null && <p className={`sc-muted ${LIST_NOTE}`}>Loading…</p>}
+      {review === null && <p className={`${MUTED_TEXT} ${LIST_NOTE}`}>Loading…</p>}
       {groups.map((g) => (
         <section key={g.id} className={LIST_DAY} aria-label={g.label}>
           <h3 className={LIST_DAY_TITLE}>{g.label}</h3>
@@ -53,7 +54,7 @@ export function ReviewPanel(props: { floating?: 'overlay' | 'sheet'; onClose: ()
                     <span className={LIST_TITLE}>{o.label}</span>
                     <span className="sc-review__row flex flex-wrap items-center gap-8">
                       <span className={`sc-preview__approval sc-preview__approval--${a.state} ${APPROVAL_PILL} ${APPROVAL[a.state]}`}>{STATE_LABEL[a.state]}</span>
-                      {n > 0 && <span className="sc-muted">{`${n} open ${n === 1 ? 'comment' : 'comments'}`}</span>}
+                      {n > 0 && <span className={MUTED_TEXT}>{`${n} open ${n === 1 ? 'comment' : 'comments'}`}</span>}
                     </span>
                   </button>
                   <button type="button" className={`${iconBtn()} flex-none self-center`} onClick={() => zoomTo(outputNodeId(o.id))} aria-label={`Show ${o.label} on the board`} title="Show on the board">

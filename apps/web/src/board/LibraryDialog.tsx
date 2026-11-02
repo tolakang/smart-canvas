@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api, assetUrl } from '../api';
 import { newId } from './ids';
 import { Icon, KIND_LABEL } from './LayerRow';
-import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, ROW_END } from '../ui/tw';
+import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, MUTED_TEXT, ROW_END } from '../ui/tw';
 
 /** An item's 40 px picture or colour. */
 const THUMB = 'inline-block size-40 rounded-[6px] border border-line bg-swatch-bg object-contain';
@@ -64,9 +64,9 @@ export function LibraryDialog(props: {
         <h1 id="library-title">Team library</h1>
         <input type="search" placeholder="Search name or tag" aria-label="Search library" value={query} onChange={(e) => setQuery(e.target.value)} />
         {items === null ? (
-          <p className="sc-muted">Loading…</p>
+          <p className={MUTED_TEXT}>Loading…</p>
         ) : shown.length === 0 ? (
-          <p className="sc-muted">{items.length ? 'Nothing matches.' : 'Nothing saved yet. Select an input and choose Save to library in its panel.'}</p>
+          <p className={MUTED_TEXT}>{items.length ? 'Nothing matches.' : 'Nothing saved yet. Select an input and choose Save to library in its panel.'}</p>
         ) : (
           <ul className="sc-list m-0 grid list-none gap-6 p-0">
             {shown.map((item) => (
@@ -74,7 +74,7 @@ export function LibraryDialog(props: {
                 <Preview item={item} teamId={props.teamId} />
                 <span className="sc-lib__name grid">
                   {item.name}
-                  <span className="sc-muted">
+                  <span className={MUTED_TEXT}>
                     {' '}
                     {KIND_LABEL[item.kind]} · {item.behavesLike}
                     {item.tags.length > 0 && ` · ${item.tags.map((t) => `#${t}`).join(' ')}`}
@@ -103,7 +103,7 @@ export function LibraryDialog(props: {
           </ul>
         )}
         {added && (
-          <p className="sc-muted" role="status">
+          <p className={MUTED_TEXT} role="status">
             Added “{added}” to this project.
           </p>
         )}
