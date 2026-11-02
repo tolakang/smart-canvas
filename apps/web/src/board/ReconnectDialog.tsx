@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { DIALOG } from '../ui/tw';
+import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD } from '../ui/tw';
 
 /** D21: reconnecting an output that has overrides asks first. */
 export function ReconnectDialog(props: { label: string; overrides: number; onChoose: (choice: 'keep' | 'reset') => void; onClose: () => void }) {
@@ -9,12 +9,12 @@ export function ReconnectDialog(props: { label: string; overrides: number; onCho
   }, []);
   return (
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="reconnect-title">
-      <div className="sc-card">
+      <div className={DIALOG_CARD}>
         <h1 id="reconnect-title">Reconnect “{props.label}”</h1>
         <p>
           This Preview has {props.overrides} manual {props.overrides === 1 ? 'change' : 'changes'}. Reconnecting re-flows it from Main Comps.
         </p>
-        <div className="sc-row">
+        <div className={DIALOG_ACTIONS}>
           <button type="button" onClick={() => props.onChoose('keep')}>
             Keep overrides
           </button>

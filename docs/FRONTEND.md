@@ -11,13 +11,13 @@ and the look are in `DESIGN-SYSTEM.md`.
 | Tokens: colours, type, radius, shadow, motion; light and dark | `src/styles.css`, `:root` and `:root[data-theme='dark']` | One source; dark mode is a token swap (D34) |
 | Tailwind's theme: which tokens are classes, breakpoints, `dark:`, `hover:` | `src/tailwind.css`, imported first in `main.tsx` | Only our tokens exist as classes |
 | Cascade layers | `@layer reactflow, theme, base, app, utilities` (`tailwind.css`) | React Flow's sheet is lowest; our CSS is `app`; utilities win over both |
-| Shared class lists | `ui/button.ts` (`btn(kind, place, slots)`, `iconBtn`, badge, chip, spinner, toast), `ui/tw.ts` (dialogs), `ui/Brand.tsx`, `board/topbar.ts` (top bar, menus), `board/panel.ts` (side panels, inspector, History, Review), `board/frame.ts` (board frame, notices), `board/card.ts` (the card every node shares), `board/Slot.tsx` (asset slots), `editor/shell.ts` (editor screen, bar, stage, phone tabs), `editor/panels.ts` (Layers, Design, inspector, comments), `shell/Projects.tsx` (tiles) | One file per area, so a look is changed in one place |
+| Shared class lists | `ui/button.ts` (`btn(kind, place, slots)`, `iconBtn`, badge, chip, spinner, toast), `ui/tw.ts` (cards and dialogs' cards — what they do to the plain fields, labels, headings and buttons inside — rows, forms, fields, hints), `ui/Brand.tsx`, `board/topbar.ts` (top bar, menus), `board/panel.ts` (side panels, inspector, History, Review), `board/frame.ts` (board frame, notices), `board/card.ts` (the card every node shares), `board/Slot.tsx` (asset slots), `editor/shell.ts` (editor screen, bar, stage, phone tabs), `editor/panels.ts` (Layers, Design, inspector, comments), `shell/Projects.tsx` (tiles) | One file per area, so a look is changed in one place |
 
 CSS that stays CSS, and why:
 - **Tokens, base styles, fonts, keyframes** (`styles.css`): Tailwind reads the tokens; keyframes have no utility.
-  `styles.css` also still holds the shared components from before Tailwind (`sc-card`, `sc-dialog`, `sc-rows`,
-  `sc-seg`, `sc-field`…); they move to utilities in clean-up 2, K3 ("T9", three PRs; the buttons went first, T9a, to
-  `ui/button.ts`). Don't add to them.
+  `styles.css` also still holds a few shared components from before Tailwind (`sc-seg`, `sc-field`, `sc-thumb`…);
+  they move to utilities in clean-up 2, K3 ("T9": buttons in T9a, `ui/button.ts`; cards, dialogs, rows and forms in
+  T9b, `ui/tw.ts`; the rest in T9c). Don't add to them.
 - **React Flow's own DOM** — pane, wires, minimap, handles (`board/chrome.css`), and React Flow's sheet in the lowest
   layer (`board/reactflow.css`): React Flow draws those elements, not our markup.
 - **The editors' transform box** (`editor/editor.css`, `.tb-*`, D36): placed by math, its handles keep their size at

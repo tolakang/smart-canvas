@@ -2,7 +2,7 @@ import { BUNDLED_FONTS, fontStack, LIMITS } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { ApiError, uploadAsset } from '../api';
 import type { TeamFont } from './loader';
-import { DIALOG } from '../ui/tw';
+import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD } from '../ui/tw';
 import { FILE_PICK } from '../ui/file-pick';
 
 const SAMPLE = 'Aa Bb 123 · សួស្តី កម្ពុជា';
@@ -67,7 +67,7 @@ export function FontsDialog(props: {
 
   return (
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="fonts-title">
-      <div className="sc-card sc-card--wide">
+      <div className={`${DIALOG_CARD} sc-card--wide`}>
         <h1 id="fonts-title">Fonts</h1>
         <ul className="sc-fonts m-0 grid max-h-[50vh] list-none gap-8 overflow-auto p-0" aria-label="Available fonts">
           {BUNDLED_FONTS.map((f) => row(f.family, 'bundled'))}
@@ -85,7 +85,7 @@ export function FontsDialog(props: {
             {error}
           </p>
         )}
-        <div className="sc-row">
+        <div className={DIALOG_ACTIONS}>
           <button type="button" onClick={() => ref.current?.close()}>
             Close
           </button>

@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api, assetUrl } from '../api';
 import { newId } from './ids';
 import { Icon, KIND_LABEL } from './LayerRow';
-import { DIALOG } from '../ui/tw';
+import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, ROW_END } from '../ui/tw';
 
 /** An item's 40 px picture or colour. */
 const THUMB = 'inline-block size-40 rounded-[6px] border border-line bg-swatch-bg object-contain';
@@ -60,7 +60,7 @@ export function LibraryDialog(props: {
 
   return (
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="library-title">
-      <div className="sc-card sc-lib grid">
+      <div className={`${DIALOG_CARD} sc-lib grid`}>
         <h1 id="library-title">Team library</h1>
         <input type="search" placeholder="Search name or tag" aria-label="Search library" value={query} onChange={(e) => setQuery(e.target.value)} />
         {items === null ? (
@@ -68,9 +68,9 @@ export function LibraryDialog(props: {
         ) : shown.length === 0 ? (
           <p className="sc-muted">{items.length ? 'Nothing matches.' : 'Nothing saved yet. Select an input and choose Save to library in its panel.'}</p>
         ) : (
-          <ul className="sc-list">
+          <ul className="sc-list m-0 grid list-none gap-6 p-0">
             {shown.map((item) => (
-              <li key={item.id} data-library-item={item.name}>
+              <li key={item.id} className="grid grid-cols-[40px_1fr_auto] items-center justify-between gap-10" data-library-item={item.name}>
                 <Preview item={item} teamId={props.teamId} />
                 <span className="sc-lib__name grid">
                   {item.name}
@@ -81,7 +81,7 @@ export function LibraryDialog(props: {
                   </span>
                 </span>
                 {!props.readOnly && (
-                  <span className="sc-row">
+                  <span className={ROW_END}>
                     <button
                       type="button"
                       disabled={full}
@@ -107,7 +107,7 @@ export function LibraryDialog(props: {
             Added “{added}” to this project.
           </p>
         )}
-        <div className="sc-row">
+        <div className={DIALOG_ACTIONS}>
           <button type="button" onClick={() => ref.current?.close()}>
             Close
           </button>

@@ -12,7 +12,7 @@ import { Icon } from '../board/LayerRow';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
 import { PresetsDialog } from './PresetsDialog';
 import { TeamDialog } from './TeamDialog';
-import { DIALOG } from '../ui/tw';
+import { DIALOG, DIALOG_CARD, FORM_ACTIONS, ROW_META } from '../ui/tw';
 import { btn, iconBtn, TOAST } from '../ui/button';
 
 interface ProjectRow {
@@ -90,6 +90,14 @@ const MORE: Record<'card' | 'row', string> = {
   card: `${iconBtn({ size: 'size-32 pointer-coarse:size-44' })} sc-more absolute top-(--sp-2) right-(--sp-2) flex-none`,
   row: `${iconBtn({ size: 'size-32 pointer-coarse:size-44', round: 'rounded-[10px]', bg: 'bg-glass', hoverBg: '', transition: '[transition:opacity_var(--t-fast)]' })} sc-more absolute top-10 right-10 flex-none opacity-0 [backdrop-filter:blur(8px)] [box-shadow:var(--shadow-1)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100`,
 };
+/** The projects as tiles: a big cover over the name and when it was edited (K3 / T9b: was `.sc-home__section .sc-rows`). */
+const TILES =
+  'sc-list sc-rows m-0 grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-18 rounded-none p-0 [list-style:none] [border:0] overflow-visible max-md:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] max-md:gap-12';
+const TILE =
+  'relative block min-h-0 items-center justify-between gap-8 overflow-hidden rounded-[18px] border border-solid border-[color-mix(in_srgb,var(--line)_85%,transparent)] bg-surface p-0 [box-shadow:var(--shadow-1)] [transition:transform_var(--t-med),box-shadow_var(--t-med),border-color_var(--t-med)] hover:border-[color-mix(in_srgb,var(--accent)_30%,var(--line))] hover:[transform:translateY(-2px)] hover:[box-shadow:var(--shadow-3)] focus-within:border-[color-mix(in_srgb,var(--accent)_30%,var(--line))] focus-within:[transform:translateY(-2px)] focus-within:[box-shadow:var(--shadow-3)] max-md:flex-wrap';
+const TILE_MAIN = String.raw`sc-rows__main sc-rows__main--tile grid w-full min-w-0 flex-1 cursor-pointer items-center gap-0 p-0 text-left [border:0] [background:none] [color:inherit] [font:inherit] focus-visible:rounded-sm focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2 [&:hover_.sc-rows\_\_name]:text-accent`;
+const TILE_TEXT = 'sc-rows__text grid min-w-0 gap-3 px-14 pt-12 pb-14';
+const TILE_NAME = 'sc-rows__name overflow-hidden text-[14px] font-[650] text-ellipsis whitespace-nowrap';
 /** A section's heading: small capitals. */
 const SECTION_TITLE = 'm-0 text-[13px] font-[650] tracking-[0.04em] text-muted uppercase';
 /** “No projects yet” / “Nothing matches”. */
@@ -278,7 +286,7 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
                     <button type="button" className="sc-tcard__main grid w-full grid-cols-[auto_1fr] items-center justify-items-start gap-x-12 gap-y-(--sp-1) rounded-[inherit] py-14 pr-44 pl-14 text-left text-inherit [background:none] [border:0]" onClick={() => (canEdit ? setCreating({ templateId: t.id }) : props.onOpen(t.id))} aria-label={canEdit ? `New project from ${t.name}` : `View template ${t.name}`}>
                       <Cover teamId={team.id} row={t} spot="card" />
                       <span className="sc-tcard__name max-w-full font-[600] [overflow-wrap:anywhere]">{t.name}</span>
-                      <span className="sc-rows__meta">{canEdit ? 'Use template' : 'Template'}</span>
+                      <span className={ROW_META}>{canEdit ? 'Use template' : 'Template'}</span>
                     </button>
                     {more(t, 'card')}
                   </li>
@@ -322,14 +330,14 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
                 </button>
               </div>
             ) : (
-              <ul className="sc-list sc-rows" aria-label="Projects">
+              <ul className={TILES} aria-label="Projects">
                 {projects.map((p) => (
-                  <li key={p.id} className="group/row" data-project={p.name}>
-                    <button type="button" className="sc-rows__main sc-rows__main--tile" onClick={() => props.onOpen(p.id)} aria-label={p.name} aria-describedby={`edited-${p.id}`}>
+                  <li key={p.id} className={`${TILE} group/row`} data-project={p.name}>
+                    <button type="button" className={TILE_MAIN} onClick={() => props.onOpen(p.id)} aria-label={p.name} aria-describedby={`edited-${p.id}`}>
                       <Cover teamId={team.id} row={p} spot="row" />
-                      <span className="sc-rows__text">
-                        <span className="sc-rows__name">{p.name}</span>
-                        <time id={`edited-${p.id}`} className="sc-rows__meta" dateTime={p.updatedAt} title={new Date(p.updatedAt).toLocaleString()}>
+                      <span className={TILE_TEXT}>
+                        <span className={TILE_NAME}>{p.name}</span>
+                        <time id={`edited-${p.id}`} className={ROW_META} dateTime={p.updatedAt} title={new Date(p.updatedAt).toLocaleString()}>
                           Edited {timeAgo(p.updatedAt)}
                         </time>
                       </span>
@@ -416,7 +424,7 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
   }
   return (
     <dialog ref={ref} className={DIALOG} aria-labelledby="new-project-title" onCancel={props.onClose}>
-      <form className="sc-card sc-ask sc-newproj grid" onSubmit={submit}>
+      <form className={`${DIALOG_CARD} sc-ask sc-newproj grid`} onSubmit={submit}>
         <h1 id="new-project-title">New project</h1>
         <label className="sc-field sc-field--col">
           Name
@@ -440,7 +448,7 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
             {error}
           </p>
         )}
-        <div className="sc-form__actions">
+        <div className={FORM_ACTIONS}>
           <button type="button" className={btn('default', 'card')} onClick={props.onClose}>
             Cancel
           </button>

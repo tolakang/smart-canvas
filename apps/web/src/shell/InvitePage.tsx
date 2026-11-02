@@ -6,6 +6,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError, type Me } from '../api';
 import { SignIn } from './SignIn';
+import { CARD } from '../ui/tw';
 
 interface Preview {
   teamName: string;
@@ -63,7 +64,7 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
   if (preview === undefined) return <p className="sc-muted">Loading…</p>;
   if (preview === null)
     return (
-      <section className="sc-card">
+      <section className={CARD}>
         <h1>Invite</h1>
         <p className="sc-error">{MESSAGES.invite_invalid}</p>
         <a href="/">Go to the app</a>
@@ -79,7 +80,7 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
   if (!me && mode === 'signin')
     return (
       <>
-        <section className="sc-card">
+        <section className={CARD}>
           <h1>Join {preview.teamName}</h1>
           {what}
           <button type="button" className="sc-link" onClick={() => setMode('join')}>
@@ -91,7 +92,7 @@ export function InvitePage(props: { token: string; me: Me | null; onSignedIn: ()
     );
 
   return (
-    <section className="sc-card">
+    <section className={CARD}>
       <h1>Join {preview.teamName}</h1>
       {what}
       {me ? (

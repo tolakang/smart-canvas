@@ -269,8 +269,8 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (3) K5 — a name tag that would overlap is shortened to its card's width, not left out (amends D69) (this PR)
 - [x] (3) K6 — a note beside Approve when every layer of the Preview is empty (D63) — [#231](https://github.com/tolakang/smart-canvas/pull/231)
 - [ ] (3) K3 — "T9": the shared component rules in `styles.css` to Tailwind, in three PRs with the parity test
-  - [x] T9a — buttons, icon buttons, badges, chips, the spinner and the toast (`ui/button.ts`) (this PR)
-  - [ ] T9b — cards, dialogs, forms, fields and rows
+  - [x] T9a — buttons, icon buttons, badges, chips, the spinner and the toast (`ui/button.ts`) — [#233](https://github.com/tolakang/smart-canvas/pull/233)
+  - [x] T9b — cards, dialogs, forms, fields and rows, the home page's tiles (`ui/tw.ts`, `shell/Projects.tsx`) (this PR)
   - [ ] T9c — thumbnails, segmented controls, fills, the renderer placeholder, the home cards, the inspector's context rules
 - [ ] (3) K4 — T8 (Preflight, unused `sc-` hooks, retire the parity test), after K3
 
