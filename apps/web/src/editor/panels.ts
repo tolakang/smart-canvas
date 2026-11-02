@@ -6,7 +6,7 @@
  *
  * - Where one old rule set a shorthand and then a longhand (`border-bottom: …; border-bottom-color: …`), the shorthand
  *   is written with `[:where(&)]:` so the longhand wins, as it did.
- * - `.sc-field` (styles.css) still sizes the number inputs in the Design panel's grid; the old rules let it.
+ * - `FIELD_COL` (ui/controls.ts, zero weight) still sizes the number inputs in the Design panel's grid; the old rules let it.
  * - The dropdown chevron (styles.css) outranks the fields' face, so only their background colour is set; focus
  *   clears it, as before.
  * - State rules keep the old selectors' weight: hover beats pressed (the lock), focus beats hover (number fields).

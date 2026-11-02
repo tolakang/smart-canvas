@@ -15,6 +15,7 @@ import { TextNodeView } from './TextNode';
 import { PresetNodeView } from './PresetNode';
 import { NO_CANVAS } from './pinch';
 import { FILE_PICK } from '../ui/file-pick';
+import { SWATCH, THUMB_NODE, THUMB_NODE_EMPTY, THUMB_NODE_UPLOAD } from '../ui/controls';
 
 /**
  * An input on the board: its name and a preview of its content, sized to the card. Everything you can set
@@ -52,13 +53,13 @@ function NodePreview({ source, upload }: { source: InputSource; upload: AssetUpl
   return (
     <div className="sc-node__preview grid justify-items-center gap-(--sp-1)">
       {content.kind === 'fill' && !picture ? (
-        <div className="sc-swatch" style={{ background: fillToCss(content.fill) }} />
+        <div className={`${SWATCH} w-full`} style={{ background: fillToCss(content.fill) }} />
       ) : picture ? (
-        <img className="sc-thumb" src={assetUrl(teamId, picture)} alt={`${source.label} preview`} draggable={false} />
+        <img className={THUMB_NODE} src={assetUrl(teamId, picture)} alt={`${source.label} preview`} draggable={false} />
       ) : readOnly ? (
-        <div className="sc-thumb sc-thumb--empty">No {content.kind === 'vector' ? 'SVG' : 'image'} yet</div>
+        <div className={THUMB_NODE_EMPTY}>No {content.kind === 'vector' ? 'SVG' : 'image'} yet</div>
       ) : (
-        <label className={`sc-thumb sc-thumb--empty sc-thumb--upload ${NO_CANVAS}`} {...FILE_PICK}>
+        <label className={`${THUMB_NODE_UPLOAD} ${NO_CANVAS}`} {...FILE_PICK}>
           {upload.busy ? 'Uploading…' : `Upload ${content.kind === 'vector' ? 'an SVG' : 'an image'}… or drop`}
           <input type="file" accept={upload.accept} onChange={upload.onFile} disabled={upload.busy} hidden />
         </label>

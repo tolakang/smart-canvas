@@ -7,9 +7,9 @@ its history: [`docs/archive/TAILWIND-PLAN-T1-T7.md`](docs/archive/TAILWIND-PLAN-
 | PR | Area | CSS it empties | Risk | Done |
 |---|---|---|---|---|
 | T9a | Clean-up 2, K3 (owner, 2026-11-02): buttons, icon buttons, badges, chips, spinner, toast → `ui/button.ts` | part of `styles.css` | medium | #233 |
-| T9b | Cards, dialogs, forms, fields, rows, the home tiles → `ui/tw.ts` (`CARD`, `DIALOG_CARD`, rows, forms), `shell/Projects.tsx` (tiles) | part of `styles.css` | high | this PR |
-| T9c | Thumbnails, segmented controls, fills, renderer placeholder, home cards, inspector context rules | part of `styles.css` | medium | |
-| T8 | After T9 (K4): Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
+| T9b | Cards, dialogs, forms, fields, rows, the home tiles → `ui/tw.ts` (`CARD`, `DIALOG_CARD`, rows, forms), `shell/Projects.tsx` (tiles) | part of `styles.css` | high | #234 |
+| T9c | Fields, check boxes, segmented controls, pictures, swatches, fills, upload labels, links, grips, renderer placeholder → `ui/controls.ts` | part of `styles.css` | medium | this PR |
+| T8 | After T9 (K4): Preflight in place of our base styles if parity stays identical (with them the last shared bits: `sc-muted`, `sc-error`, `sc-icon`, the inspector's field rules, the dropdown chevron); drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
 
 Until T8 retires it, the parity test below guards any styling PR that should look the same.
 

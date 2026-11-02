@@ -163,19 +163,18 @@ const releaseTimers = (page: Page) =>
  */
 /**
  * Elements an earlier step converted that a rule this branch removes also styled: their classes from main must stay
- * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (K3 / T9b: cards, dialogs,
- * rows, forms and fields; the card's rules reach the fields, labels, headings and buttons inside it, which this branch
- * leaves as they were).
+ * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (K3 / T9c: fields, check
+ * boxes, segmented controls, pictures, swatches, upload labels, links and grips; some already had utilities at main).
  * - KEEP: unchanged since main: they keep every class.
  * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const KEEP: string[] = ['.sc-card button', '.sc-card input', '.sc-card select', '.sc-card textarea', '.sc-card label', '.sc-card h1', '.sc-card h2'];
+const KEEP: string[] = [];
 const MAIN_CLASSES: Record<string, string> = {
-  '.sc-card': 'grid grid-rows-[auto_auto_minmax(0,1fr)_auto] [--card-pad:24px] max-md:[--card-pad:var(--sp-4)]',
-  '.sc-auth__card':
-    'm-0 w-[min(400px,calc(100%-32px))] gap-16 self-center justify-self-center rounded-[22px] px-32 py-36 [box-shadow:var(--shadow-3)] max-lg:mx-auto max-lg:my-32 [&_input:not([type=checkbox])]:h-42 [&_input:not([type=checkbox])]:text-[14px] [&_button[type=submit]]:h-44 [&_button[type=submit]]:rounded-[12px] [&_button[type=submit]]:text-[14px]',
-  '.sc-families > li': 'items-start',
-  'li[data-project]': 'group/row',
+  '.sc-check': 'font-[500]',
+  '.sc-seg': 'items-stretch [&_label]:relative [&_label]:inline-flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:rounded-sm [&_label]:px-(--sp-2) [&_label]:text-xs [&_label]:text-muted [&_label:has(:checked)]:bg-surface [&_label:has(:checked)]:text-fg [&_label:has(:checked)]:[box-shadow:var(--shadow-1)] [&_label:has(:focus-visible)]:[outline:2px_solid_var(--accent)] [&_input]:sr-only',
+  '.sc-field': 'grid gap-2 text-[13px]',
+  '.sc-design__num':
+    'sc-design__num flex h-28 items-center gap-0 rounded-[5px] pl-8 [color:var(--fig-muted)] [background:var(--fig-hover)] [border:1px_solid_var(--field-line)] [&:hover:not(:focus-within)]:[border-color:var(--muted)] focus-within:[border-color:var(--fig-blue)] focus-within:[background:var(--surface)] [&_input]:h-26 [&_input]:min-w-0 [&_input]:text-[11px] [&_input]:[color:var(--fig-fg)] [&_input]:[background:none] [&_input]:[border:0] [&_input]:[outline:none] [&_input]:[-moz-appearance:textfield] [&_input::-webkit-inner-spin-button]:hidden',
 };
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>

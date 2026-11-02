@@ -32,6 +32,7 @@ import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { NO_DRAG } from './pinch';
 import { btn, iconBtn } from '../ui/button';
+import { GRIP } from '../ui/controls';
 
 /** Controls that don't scroll: the wheel still zooms and pans the board over them. */
 const GROUP_DRAG = 'application/x-sc-layer-group';
@@ -125,7 +126,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
               }}
             >
               {!readOnly && (
-                <span className="sc-port__grip" aria-hidden="true">
+                <span className={GRIP} aria-hidden="true">
                   <Icon name="grip" />
                 </span>
               )}

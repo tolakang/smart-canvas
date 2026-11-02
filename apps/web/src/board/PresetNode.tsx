@@ -18,6 +18,7 @@ import { nameWithoutSize, presetSettings } from './OutputNode';
 import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
 import { useSaveAsFamily } from './preset-save';
 import { btn, iconBtn } from '../ui/button';
+import { GRIP } from '../ui/controls';
 
 
 /** A row's name without its trailing size, or '' when what is left is just the preset's name. */
@@ -134,7 +135,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           >
             {/* Only the grip drags the row (the row's handle starts a wire). */}
             {!readOnly && (
-              <span className={`sc-port__grip ${TOUCH_NO_PAN}`} aria-hidden="true" draggable onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)} title="Drag to re-order">
+              <span className={`${GRIP} ${TOUCH_NO_PAN}`} aria-hidden="true" draggable onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)} title="Drag to re-order">
                 <Icon name="grip" />
               </span>
             )}

@@ -20,8 +20,8 @@ export function LayerThumb({ source }: { source: InputSource }) {
   const { teamId } = useBoard();
   const { content } = source;
   let inner: ReactNode = null;
-  if (content.kind === 'fill') inner = <span className="sc-thumb-fill" style={{ background: fillToCss(content.fill) }} />;
-  else if (content.kind === 'text') inner = <span className="sc-thumb-text">{firstGrapheme(content.text) || 'T'}</span>;
+  if (content.kind === 'fill') inner = <span className="sc-thumb-fill size-full" style={{ background: fillToCss(content.fill) }} />;
+  else if (content.kind === 'text') inner = <span className="sc-thumb-text flex size-full items-center justify-center overflow-hidden bg-surface text-[14px] font-[700] text-fg">{firstGrapheme(content.text) || 'T'}</span>;
   else if (content.assetId) inner = <img src={assetUrl(teamId, content.assetId)} alt="" draggable={false} />;
   return (
     <span className={THUMB} aria-hidden="true">

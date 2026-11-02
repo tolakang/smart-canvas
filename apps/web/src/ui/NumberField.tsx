@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { FIELD_COL } from './controls';
 
 /** How long after a pause in typing a valid number is committed (live preview), ms. */
 const LIVE_COMMIT_MS = 300;
@@ -82,7 +83,7 @@ export function NumberField(props: {
     write();
   };
   return (
-    <label className={`sc-field sc-field--col${props.className ? ` ${props.className}` : ''}`}>
+    <label className={`${FIELD_COL}${props.className ? ` ${props.className}` : ''}`}>
       {props.label}
       <input
         type="number"

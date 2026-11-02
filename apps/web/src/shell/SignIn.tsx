@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { BRAND_MOBILE, BRAND_ON_DARK, BrandMark, PRODUCT_NAME } from '../ui/Brand';
 import { CARD as PAGE_CARD, HINT } from '../ui/tw';
+import { LINK } from '../ui/controls';
 
 /** A frame of the brand panel's picture: frosted glass with a coloured block in it. */
 const FRAME = `absolute rounded-[12px] border border-[rgb(255_255_255/0.35)] [background:var(--auth-frame)] [backdrop-filter:blur(6px)] [box-shadow:0_18px_40px_-12px_rgb(0_0_0/0.45)] after:absolute after:inset-x-[14%] after:top-[18%] after:h-[34%] after:rounded-[8px] after:[background:var(--auth-art)] after:opacity-85 after:content-['']`;
@@ -113,7 +114,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
         </button>
         <p className="sc-auth__switch m-0 text-center text-muted">
           {mode === 'login' ? 'New here? ' : 'Already set up? '}
-          <button type="button" className="sc-link" onClick={() => setMode(mode === 'login' ? 'setup' : 'login')}>
+          <button type="button" className={LINK} onClick={() => setMode(mode === 'login' ? 'setup' : 'login')}>
             {mode === 'login' ? 'First run? Set up the workspace' : 'Back to sign in'}
           </button>
         </p>

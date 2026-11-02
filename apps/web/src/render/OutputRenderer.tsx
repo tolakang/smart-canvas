@@ -21,6 +21,10 @@ import {
 } from '@smart-canvas/core';
 import { memo, type CSSProperties } from 'react';
 
+/** An input with nothing to draw yet, in preview mode only: a dashed box with its name (export draws nothing). */
+const PLACEHOLDER =
+  "sc-render__placeholder grid place-items-center border-2 border-dashed bg-[rgb(255_255_255/0.4)] [border-color:var(--placeholder-line)] [color:var(--placeholder-fg)] [font:600_48px/1.2_'Noto_Sans',sans-serif]";
+
 export interface OutputRendererProps {
   scene: RenderScene;
   /** Layers by id: the inputs (core `layerSources`). */
@@ -98,7 +102,7 @@ function Layer({
     case 'vector': {
       if (!content.assetId) {
         return mode === 'preview' ? (
-          <div {...data} className="sc-render__placeholder" style={box}>
+          <div {...data} className={PLACEHOLDER} style={box}>
             {source.label}
           </div>
         ) : null;
@@ -126,7 +130,7 @@ function Layer({
       // and placed there; export draws nothing for it.
       if (!text.trim()) {
         return mode === 'preview' ? (
-          <div {...data} className="sc-render__placeholder" style={box}>
+          <div {...data} className={PLACEHOLDER} style={box}>
             {source.label}
           </div>
         ) : null;
@@ -169,5 +173,5 @@ function Layer({
 export function RenderThumbnail(props: Omit<OutputRendererProps, 'scale' | 'mode'> & { maxWidth: number; maxHeight: number }) {
   const { maxWidth, maxHeight, ...rest } = props;
   const scale = Math.min(maxWidth / props.scene.width, maxHeight / props.scene.height);
-  return <OutputRenderer {...rest} scale={scale} mode="export" className="sc-render--thumb" />;
+  return <OutputRenderer {...rest} scale={scale} mode="export" className="sc-render--thumb [box-shadow:0_0_0_1px_var(--line)] [.sc-node_&]:max-w-full" />;
 }

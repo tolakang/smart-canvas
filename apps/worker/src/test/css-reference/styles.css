@@ -1,4 +1,4 @@
-/* The app's CSS at df70217056433a12290d9ac8f99e4232ad43e23f (origin/main), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at a08ae42dfdbb2254373a541244995baa416e6c5d (origin/main), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -283,6 +283,10 @@
 
   .z-1000 {
     z-index: 1000;
+  }
+
+  .\[grid-column\:1\/-1\] {
+    grid-column: 1 / -1;
   }
 
   .\[grid-column\:3\] {
@@ -764,6 +768,10 @@
     min-height: 44px;
   }
 
+  .min-h-52 {
+    min-height: 52px;
+  }
+
   .min-h-60 {
     min-height: 60px;
   }
@@ -1076,6 +1084,10 @@
     grid-template-columns: 1fr auto 1fr;
   }
 
+  .grid-cols-\[40px_1fr_auto\] {
+    grid-template-columns: 40px 1fr auto;
+  }
+
   .grid-cols-\[52px_minmax\(0\,1fr\)\] {
     grid-template-columns: 52px minmax(0, 1fr);
   }
@@ -1104,8 +1116,16 @@
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   }
 
+  .grid-cols-\[repeat\(auto-fill\,minmax\(120px\,1fr\)\)\] {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
   .grid-cols-\[repeat\(auto-fill\,minmax\(200px\,1fr\)\)\] {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .grid-cols-\[repeat\(auto-fill\,minmax\(230px\,1fr\)\)\] {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   }
 
   .grid-rows-\[auto_auto_minmax\(0\,1fr\)_auto\] {
@@ -1114,6 +1134,10 @@
 
   .flex-col {
     flex-direction: column;
+  }
+
+  .flex-row-reverse {
+    flex-direction: row-reverse;
   }
 
   .flex-wrap {
@@ -1162,6 +1186,10 @@
 
   .justify-end {
     justify-content: flex-end;
+  }
+
+  .justify-start {
+    justify-content: flex-start;
   }
 
   .justify-items-center {
@@ -1230,6 +1258,10 @@
 
   .gap-16 {
     gap: 16px;
+  }
+
+  .gap-18 {
+    gap: 18px;
   }
 
   .gap-20 {
@@ -1505,6 +1537,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .border-\[color-mix\(in_srgb\,var\(--line\)_80\%\,transparent\)\] {
       border-color: color-mix(in srgb,var(--line) 80%,transparent);
+    }
+  }
+
+  .border-\[color-mix\(in_srgb\,var\(--line\)_85\%\,transparent\)\] {
+    border-color: var(--line);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-\[color-mix\(in_srgb\,var\(--line\)_85\%\,transparent\)\] {
+      border-color: color-mix(in srgb,var(--line) 85%,transparent);
     }
   }
 
@@ -3291,6 +3333,10 @@
     }
   }
 
+  .\[border-top\:1px_solid_var\(--line\)\] {
+    border-top: 1px solid var(--line);
+  }
+
   .\[border\:0\] {
     border: 0;
   }
@@ -3440,6 +3486,10 @@
 
   .\[transition\:transform_var\(--t-fast\)\,opacity_var\(--t-fast\)\] {
     transition: transform var(--t-fast),opacity var(--t-fast);
+  }
+
+  .\[transition\:transform_var\(--t-med\)\,box-shadow_var\(--t-med\)\,border-color_var\(--t-med\)\] {
+    transition: transform var(--t-med),box-shadow var(--t-med),border-color var(--t-med);
   }
 
   .\[transition\:transform_var\(--t-med\)\,box-shadow_var\(--t-med\)\] {
@@ -3736,8 +3786,22 @@
     display: none;
   }
 
+  .focus-within\:\[transform\:translateY\(-2px\)\]:focus-within {
+    transform: translateY(-2px);
+  }
+
   .focus-within\:\[border-color\:var\(--fig-blue\)\]:focus-within {
     border-color: var(--fig-blue);
+  }
+
+  .focus-within\:border-\[color-mix\(in_srgb\,var\(--accent\)_30\%\,var\(--line\)\)\]:focus-within {
+    border-color: var(--accent);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .focus-within\:border-\[color-mix\(in_srgb\,var\(--accent\)_30\%\,var\(--line\)\)\]:focus-within {
+      border-color: color-mix(in srgb,var(--accent) 30%,var(--line));
+    }
   }
 
   .focus-within\:border-accent:focus-within {
@@ -3752,6 +3816,10 @@
     box-shadow: 0 0 0 3px var(--ring);
   }
 
+  .focus-within\:\[box-shadow\:var\(--shadow-3\)\]:focus-within {
+    box-shadow: var(--shadow-3);
+  }
+
   .focus-within\:\[background\:var\(--surface\)\]:focus-within {
     background: var(--surface);
   }
@@ -3762,6 +3830,16 @@
 
   .hover\:\[transform\:translateY\(-2px\)\]:hover {
     transform: translateY(-2px);
+  }
+
+  .hover\:border-\[color-mix\(in_srgb\,var\(--accent\)_30\%\,var\(--line\)\)\]:hover {
+    border-color: var(--accent);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .hover\:border-\[color-mix\(in_srgb\,var\(--accent\)_30\%\,var\(--line\)\)\]:hover {
+      border-color: color-mix(in srgb,var(--accent) 30%,var(--line));
+    }
   }
 
   .hover\:border-accent:hover {
@@ -3911,6 +3989,10 @@
 
   .focus\:\[box-shadow\:0_0_0_3px_var\(--ring\)\]:focus {
     box-shadow: 0 0 0 3px var(--ring);
+  }
+
+  .focus-visible\:rounded-sm:focus-visible {
+    border-radius: var(--r-sm);
   }
 
   .focus-visible\:border-accent:focus-visible {
@@ -4156,6 +4238,10 @@
       margin-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom));
     }
 
+    .max-md\:ml-auto {
+      margin-left: auto;
+    }
+
     .max-md\:flex {
       display: flex;
     }
@@ -4216,8 +4302,16 @@
       flex: 1;
     }
 
+    .max-md\:grid-cols-\[repeat\(auto-fill\,minmax\(150px\,1fr\)\)\] {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
     .max-md\:flex-col {
       flex-direction: column;
+    }
+
+    .max-md\:flex-wrap {
+      flex-wrap: wrap;
     }
 
     .max-md\:\[align-content\:start\] {
@@ -4238,6 +4332,10 @@
 
     .max-md\:gap-4 {
       gap: 4px;
+    }
+
+    .max-md\:gap-12 {
+      gap: 12px;
     }
 
     .max-md\:rounded-\[10px\] {
@@ -5209,6 +5307,10 @@
     transform: translateY(.5px);
   }
 
+  .\[\&\:hover_\.sc-rows\\_\\_name\]\:text-accent:hover .sc-rows__name {
+    color: var(--accent);
+  }
+
   .\[\&\:hover\:not\(\:disabled\)\]\:border-accent-hover:hover:not(:disabled) {
     border-color: var(--accent-hover);
   }
@@ -5665,6 +5767,352 @@
     transform: translate(0, 4px);
   }
 
+  .sc-dialog[open] .\[\.sc-dialog\[open\]_\&\]\:\[animation\:sc-pop_var\(--t-med\)_both\] {
+    animation: sc-pop var(--t-med) both;
+  }
+
+  @media not all and (min-width: 768px) {
+    :where(.max-md\:\[\:where\(\&_\:is\(input\,select\)\)\]\:text-\[16px\] :is(input, select)) {
+      font-size: 16px;
+    }
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:h-32 :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    height: 32px;
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:min-w-0 :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    min-width: 0;
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:border :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:border-solid :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    --tw-border-style: solid;
+    border-style: solid;
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:border-line-strong :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    border-color: var(--line-strong);
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:bg-surface :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    background-color: var(--surface);
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:px-\(--sp-2\) :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    padding-inline: var(--sp-2);
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:py-0 :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    padding-block: 0;
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:text-fg :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    color: var(--fg);
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:\[font\:inherit\] :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+    font: inherit;
+  }
+
+  @media not all and (min-width: 768px) {
+    :where(.max-md\:\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\)\)\]\:h-40 :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select)) {
+      height: 40px;
+    }
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\,textarea\)\)\]\:rounded-md :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select, textarea)) {
+    border-radius: var(--r-md);
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\,textarea\)\)\]\:\[transition\:border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\] :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select, textarea)) {
+    transition: border-color var(--t-fast),box-shadow var(--t-fast);
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:inline-flex button:not([class])) {
+    display: inline-flex;
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:h-32 button:not([class])) {
+    height: 32px;
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:items-center button:not([class])) {
+    align-items: center;
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:justify-center button:not([class])) {
+    justify-content: center;
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:rounded-md button:not([class])) {
+    border-radius: var(--r-md);
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:border button:not([class])) {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:border-solid button:not([class])) {
+    --tw-border-style: solid;
+    border-style: solid;
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:border-line-strong button:not([class])) {
+    border-color: var(--line-strong);
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:bg-surface button:not([class])) {
+    background-color: var(--surface);
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:px-\(--sp-3\) button:not([class])) {
+    padding-inline: var(--sp-3);
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:py-0 button:not([class])) {
+    padding-block: 0;
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:text-fg button:not([class])) {
+    color: var(--fg);
+  }
+
+  :where(.\[\:where\(\&_button\:not\(\[class\]\)\)\]\:\[transition\:background_var\(--t-fast\)\,border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\,transform_var\(--t-fast\)\] button:not([class])) {
+    transition: background var(--t-fast),border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast);
+  }
+
+  @media not all and (min-width: 768px) {
+    :where(.max-md\:\[\:where\(\&_button\:not\(\[class\]\)\)\]\:h-40 button:not([class])) {
+      height: 40px;
+    }
+  }
+
+  :where(.\[\:where\(\&_button\[type\=submit\]\:not\(\[class\]\)\)\]\:border-accent button[type="submit"]:not([class])) {
+    border-color: var(--accent);
+  }
+
+  :where(.\[\:where\(\&_button\[type\=submit\]\:not\(\[class\]\)\)\]\:bg-accent button[type="submit"]:not([class])) {
+    background-color: var(--accent);
+  }
+
+  :where(.\[\:where\(\&_button\[type\=submit\]\:not\(\[class\]\)\)\]\:font-\[600\] button[type="submit"]:not([class])) {
+    --tw-font-weight: 600;
+    font-weight: 600;
+  }
+
+  :where(.\[\:where\(\&_button\[type\=submit\]\:not\(\[class\]\)\)\]\:text-on-accent button[type="submit"]:not([class])) {
+    color: var(--on-accent);
+  }
+
+  :where(.\[\:where\(\&_button\[type\=submit\]\:not\(\[class\]\)\)\]\:\[box-shadow\:0_1px_2px_rgb\(16_24_40\/0\.12\)\,inset_0_1px_0_rgb\(255_255_255\/0\.12\)\] button[type="submit"]:not([class])) {
+    box-shadow: 0 1px 2px #1018281f, inset 0 1px #ffffff1f;
+  }
+
+  :where(.\[\:where\(\&_h1\)\]\:m-0 h1) {
+    margin: 0;
+  }
+
+  :where(.\[\:where\(\&_h1\)\]\:mx-0 h1) {
+    margin-inline: 0;
+  }
+
+  :where(.\[\:where\(\&_h1\)\]\:mt-0 h1) {
+    margin-top: 0;
+  }
+
+  :where(.\[\:where\(\&_h1\)\]\:mb-4 h1) {
+    margin-bottom: 4px;
+  }
+
+  :where(.\[\:where\(\&_h1\)\]\:text-\[20px\] h1) {
+    font-size: 20px;
+  }
+
+  :where(.\[\:where\(\&_h1\)\]\:text-xl h1) {
+    font-size: var(--fs-xl);
+  }
+
+  :where(.\[\:where\(\&_h1\)\]\:font-\[650\] h1) {
+    --tw-font-weight: 650;
+    font-weight: 650;
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:mx-0 h2) {
+    margin-inline: 0;
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:mt-\(--sp-2\) h2) {
+    margin-top: var(--sp-2);
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:mt-6 h2) {
+    margin-top: 6px;
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:mb-0 h2) {
+    margin-bottom: 0;
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:text-\[12px\] h2) {
+    font-size: 12px;
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:text-lg h2) {
+    font-size: var(--fs-lg);
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:font-\[650\] h2) {
+    --tw-font-weight: 650;
+    font-weight: 650;
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:tracking-\[0\.04em\] h2) {
+    --tw-tracking: .04em;
+    letter-spacing: .04em;
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:text-muted h2) {
+    color: var(--muted);
+  }
+
+  :where(.\[\:where\(\&_h2\)\]\:uppercase h2) {
+    text-transform: uppercase;
+  }
+
+  :where(.\[\:where\(\&_input\)\]\:flex-1 input) {
+    flex: 1;
+  }
+
+  :where(.\[\:where\(\&_input\)\]\:placeholder\:\[color\:color-mix\(in_srgb\,var\(--muted\)_80\%\,transparent\)\] input)::placeholder {
+    color: var(--muted);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    :where(.\[\:where\(\&_input\)\]\:placeholder\:\[color\:color-mix\(in_srgb\,var\(--muted\)_80\%\,transparent\)\] input)::placeholder {
+      color: color-mix(in srgb,var(--muted) 80%,transparent);
+    }
+  }
+
+  :where(.\[\:where\(\&_label\)\]\:grid label) {
+    display: grid;
+  }
+
+  :where(.\[\:where\(\&_label\)\]\:min-w-0 label) {
+    min-width: 0;
+  }
+
+  :where(.\[\:where\(\&_label\)\]\:gap-\(--sp-1\) label) {
+    gap: var(--sp-1);
+  }
+
+  :where(.\[\:where\(\&_label\)\]\:text-sm label) {
+    font-size: var(--fs-sm);
+  }
+
+  :where(.\[\:where\(\&_label\)\]\:text-muted label) {
+    color: var(--muted);
+  }
+
+  :where(.\[\:where\(\&_label\:not\(\.sc-check\)\)\]\:grid label:not(.sc-check)) {
+    display: grid;
+  }
+
+  :where(.\[\:where\(\&_label\:not\(\.sc-check\)\)\]\:gap-4 label:not(.sc-check)) {
+    gap: 4px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:m-0) {
+    margin: 0;
+  }
+
+  :where(.\[\:where\(\&\)\]\:mx-auto) {
+    margin-inline: auto;
+  }
+
+  :where(.\[\:where\(\&\)\]\:my-\[10vh\]) {
+    margin-block: 10vh;
+  }
+
+  :where(.\[\:where\(\&\)\]\:grid) {
+    display: grid;
+  }
+
+  :where(.\[\:where\(\&\)\]\:max-h-\[calc\(100dvh-48px\)\]) {
+    max-height: calc(100dvh - 48px);
+  }
+
+  :where(.\[\:where\(\&\)\]\:w-\[min\(560px\,calc\(100vw-32px\)\)\]) {
+    width: min(560px, 100vw - 32px);
+  }
+
+  :where(.\[\:where\(\&\)\]\:max-w-\[360px\]) {
+    max-width: 360px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:max-w-none) {
+    max-width: none;
+  }
+
+  :where(.\[\:where\(\&\)\]\:min-w-\[min\(320px\,100\%\)\]) {
+    min-width: min(320px, 100%);
+  }
+
+  :where(.\[\:where\(\&\)\]\:gap-\(--sp-4\)) {
+    gap: var(--sp-4);
+  }
+
+  :where(.\[\:where\(\&\)\]\:gap-12) {
+    gap: 12px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:overflow-auto) {
+    overflow: auto;
+  }
+
+  :where(.\[\:where\(\&\)\]\:rounded-xl) {
+    border-radius: var(--r-xl);
+  }
+
+  :where(.\[\:where\(\&\)\]\:border) {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:border-solid) {
+    --tw-border-style: solid;
+    border-style: solid;
+  }
+
+  :where(.\[\:where\(\&\)\]\:border-line) {
+    border-color: var(--line);
+  }
+
+  :where(.\[\:where\(\&\)\]\:bg-surface) {
+    background-color: var(--surface);
+  }
+
+  :where(.\[\:where\(\&\)\]\:p-\(--sp-5\)) {
+    padding: var(--sp-5);
+  }
+
+  :where(.\[\:where\(\&\)\]\:p-24) {
+    padding: 24px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:\[box-shadow\:var\(--shadow-1\)\]) {
+    box-shadow: var(--shadow-1);
+  }
+
+  :where(.\[\:where\(\&\)\]\:\[box-shadow\:var\(--shadow-3\)\]) {
+    box-shadow: var(--shadow-3);
+  }
+
   :where(.\[\:where\(\&\)\]\:\[border-bottom\:1px_solid_var\(--fig-line\)\]) {
     border-bottom: 1px solid var(--fig-line);
   }
@@ -5679,6 +6127,22 @@
 
   :where(.\[\:where\(\&\)\]\:\[font\:inherit\]) {
     font: inherit;
+  }
+
+  :where(.\[\:where\(\&\)_\:is\(input\,select\)\:focus-visible\]\:-outline-offset-1) :is(input, select):focus-visible {
+    outline-offset: calc(1px * -1);
+  }
+
+  :where(.\[\:where\(\&\)_\:is\(input\,select\,textarea\)\:focus-visible\]\:border-accent) :is(input, select, textarea):focus-visible {
+    border-color: var(--accent);
+  }
+
+  :where(.\[\:where\(\&\)_\:is\(input\,select\,textarea\)\:focus-visible\]\:\[box-shadow\:0_0_0_3px_var\(--ring\)\]) :is(input, select, textarea):focus-visible {
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+
+  :where(.\[\:where\(\&\)_\:is\(input\,select\,textarea\)\:focus-visible\]\:\[outline\:none\]) :is(input, select, textarea):focus-visible {
+    outline: none;
   }
 
   :where(.\[\:where\(\&\)_\:is\(select\,input\[type\=number\]\)\]\:\[border\:1px_solid_var\(--line\)\]) :is(select, input[type="number"]) {
@@ -5740,8 +6204,40 @@
     color: var(--faint);
   }
 
+  :where(.\[\:where\(\&\)_button\:focus-visible\]\:\[outline\:2px_solid_var\(--accent\)\]) button:focus-visible {
+    outline: 2px solid var(--accent);
+  }
+
+  :where(.\[\:where\(\&\)_button\:focus-visible\]\:outline-offset-1) button:focus-visible {
+    outline-offset: 1px;
+  }
+
   :where(.\[\:where\(\&\)_button\:hover\:not\(\:disabled\)\]\:\[background\:var\(--fig-bar-hover\)\]) button:hover:not(:disabled) {
     background: var(--fig-bar-hover);
+  }
+
+  :where(.\[\:where\(\&\)_button\:not\(\[class\]\)\:active\:not\(\:disabled\)\]\:\[transform\:translateY\(0\.5px\)\]) button:not([class]):active:not(:disabled) {
+    transform: translateY(.5px);
+  }
+
+  :where(.\[\:where\(\&\)_button\:not\(\[class\]\)\:disabled\]\:cursor-not-allowed) button:not([class]):disabled {
+    cursor: not-allowed;
+  }
+
+  :where(.\[\:where\(\&\)_button\:not\(\[class\]\)\:disabled\]\:opacity-50) button:not([class]):disabled {
+    opacity: .5;
+  }
+
+  :where(.\[\:where\(\&\)_button\:not\(\[class\]\)\:hover\:not\(\:disabled\)\]\:bg-surface-2) button:not([class]):hover:not(:disabled) {
+    background-color: var(--surface-2);
+  }
+
+  :where(.\[\:where\(\&\)_button\[type\=submit\]\:not\(\[class\]\)\:hover\:not\(\:disabled\)\]\:border-accent-hover) button[type="submit"]:not([class]):hover:not(:disabled) {
+    border-color: var(--accent-hover);
+  }
+
+  :where(.\[\:where\(\&\)_button\[type\=submit\]\:not\(\[class\]\)\:hover\:not\(\:disabled\)\]\:bg-accent-hover) button[type="submit"]:not([class]):hover:not(:disabled) {
+    background-color: var(--accent-hover);
   }
 
   :where(.\[\:where\(\&\)_textarea\]\:\[font\:inherit\]) textarea {
@@ -6826,12 +7322,6 @@ svg.react-flow__connectionline {
 button { font: inherit; cursor: pointer; }
 input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
-.sc-card--wide { max-width: 640px; }
-.sc-card label { display: grid; gap: 4px; }
-.sc-row { display: flex; gap: 8px; }
-.sc-row input { flex: 1; }
-.sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.sc-list li { display: flex; justify-content: space-between; gap: 8px; }
 .sc-link { background: none; border: 0; padding: 0; color: var(--accent); text-align: left; }
 .sc-muted { color: var(--muted); }
 .sc-error { color: var(--danger); margin: 0; }
@@ -6869,12 +7359,10 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 .sc-seg button { border: 0; border-radius: 0; padding: 3px 8px; background: var(--surface); font: inherit; }
 .sc-seg button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
 
-.sc-presets .sc-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
 
 label.sc-check { display: flex; gap: 6px; align-items: center; }
 
-.sc-lib .sc-list li { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; }
 
 
 
@@ -6972,58 +7460,11 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 
 /* Idle (wire not selected): small and quiet until hovered; the selected wire's badge is the full-size one. */
 
-/* Home, Size presets, Team (the screens around the board): the same buttons, fields and rows as the editor.
-   One primary action per form, ghost buttons for row actions, red only for destructive ones. Nothing wider
-   than a phone: fields wrap into a grid, rows stack their actions under the name. */
-/* Plain card buttons (sign in, invite page, older dialogs) look like the app's buttons (ui/button.ts); a card's submit is its primary. */
-.sc-card button:not([class]) {
-  display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 var(--sp-3);
-  border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); transition: background var(--t-fast);
-}
-.sc-card button:not([class]):hover:not(:disabled) { background: var(--surface-2); }
-.sc-card button[type='submit']:not([class]) { border-color: var(--accent); background: var(--accent); color: var(--on-accent); font-weight: 600; }
-.sc-card button:not([class]):disabled { opacity: 0.5; cursor: not-allowed; }
-.sc-card button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) {
-  min-width: 0; height: 32px; padding: 0 var(--sp-2); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font: inherit;
-}
-.sc-card :is(input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
-.sc-card h2 { margin: var(--sp-2) 0 0; font-size: var(--fs-lg); }
-.sc-hint { margin: 0; color: var(--muted); font-size: var(--fs-sm); }
 
 .sc-search .sc-icon { margin: 0; }
-.sc-rows__main.sc-rows__main--tile { display: flex; align-items: center; gap: var(--sp-3); }
-.sc-rows__text { display: grid; gap: 2px; min-width: 0; }
 .sc-more .sc-icon { margin: 0; }
 
-/* Rows: name over a muted line, actions on the right (under it on phones). */
-.sc-rows { gap: 0; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
-.sc-rows > li { display: flex; align-items: center; gap: var(--sp-2); min-height: 52px; padding: var(--sp-2) var(--sp-3); border-top: 1px solid var(--line); }
-.sc-rows > li:first-child { border-top: 0; }
-.sc-rows__main { display: grid; gap: 2px; flex: 1; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
-button.sc-rows__main { cursor: pointer; }
-button.sc-rows__main:hover .sc-rows__name { color: var(--accent); }
-button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm); }
-.sc-rows__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-rows__meta { color: var(--muted); font-size: var(--fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sc-rows__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sp-1); flex: none; }
 
-/* Forms in dialogs: a grid that wraps instead of overflowing. */
-.sc-form { display: grid; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
-.sc-form h2 { margin: 0; }
-.sc-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--sp-3); }
-.sc-fields label { display: grid; gap: var(--sp-1); min-width: 0; font-size: var(--fs-sm); color: var(--muted); }
-.sc-fields__wide { grid-column: 1 / -1; }
-.sc-form__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sp-2); }
-
-@media (max-width: 767px) {
-      .sc-rows > li { flex-wrap: wrap; }
-  .sc-rows__actions { margin-left: auto; }
-    .sc-dialog .sc-card { --card-pad: var(--sp-4); }
-  /* Visually hidden, still read: the heading stays "Studio · Projects". */
-    .sc-card button:not([class]), .sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select) { height: 40px; }
-  .sc-card :is(input, select) { font-size: 16px; } /* iOS zooms into smaller fields */
-}
 
 
 .sc-node__preview .sc-thumb:not(.sc-thumb--empty) { display: block; width: auto; height: auto; max-width: 100%; max-height: 140px; }
@@ -7059,25 +7500,14 @@ button.sc-rows__main:focus-visible { outline: 2px solid var(--accent); outline-o
 input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color: var(--accent); }
 h1, h2, h3 { letter-spacing: -0.011em; }
 
-/* Buttons: one height, one radius, a soft press. */
-.sc-card button:not([class]) {
-  border-radius: var(--r-md); transition: background var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
-}
-.sc-card button:not([class]):active:not(:disabled) { transform: translateY(0.5px); }
-.sc-card button[type='submit']:not([class]) {
-  border-color: var(--accent); background: var(--accent); color: var(--on-accent); box-shadow: 0 1px 2px rgb(16 24 40 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.12);
-}
-.sc-card button[type='submit']:not([class]):hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
-
 /* Fields: a quiet border, an accent ring on focus (not a heavy outline). */
-.sc-card :is(input:not([type='checkbox'], [type='radio'], [type='color'], [type='range'], [type='file']), select, textarea),
 .sc-inspector-panel :is(input:not([type='radio'], [type='checkbox'], [type='color'], [type='file']), select, textarea) {
   border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
-.sc-card :is(input, select, textarea):focus-visible, .sc-dialog select:focus-visible, .sc-inspector-panel :is(input, select, textarea):focus-visible {
+.sc-inspector-panel :is(input, select, textarea):focus-visible {
   outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring);
 }
-.sc-card input::placeholder, .sc-inspector-panel input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
+.sc-inspector-panel input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
 /* Dropdowns: no native chrome; a chevron drawn in the theme's colour. */
 /* :not(.sc-native) lifts this above the older field rules, whose `background` shorthand would clear the chevron. */
 :is(.sc-card, .sc-dialog, .sc-inspector-panel, .sc-design) select:not(.sc-native):not([multiple]) {
@@ -7086,12 +7516,8 @@ h1, h2, h3 { letter-spacing: -0.011em; }
   background-position: calc(100% - 14px) 52%, calc(100% - 10px) 52%; background-size: 4px 4px, 4px 4px; background-repeat: no-repeat;
 }
 
-/* Cards and dialogs: rounder, layered shadow, a backdrop that blurs the board, and a gentle entrance. */
-.sc-card { max-width: 360px; margin: 10vh auto; padding: 24px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 12px; border-radius: var(--r-xl); border-color: var(--line); box-shadow: var(--shadow-1); }
-.sc-card h1 { margin: 0 0 4px; font-size: var(--fs-xl); font-weight: 650; }
-.sc-dialog[open] .sc-card { animation: sc-pop var(--t-med) both; }
+/* A dialog card's entrance (ui/tw.ts DIALOG_CARD). */
 @keyframes sc-pop { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
-.sc-dialog .sc-form__actions, .sc-dialog .sc-row:last-child { justify-content: flex-end; }
 
 
 /* Scrollbars: thin and quiet. */
@@ -7119,27 +7545,6 @@ h1, h2, h3 { letter-spacing: -0.011em; }
 body { margin: 0; background: var(--ambient); background-attachment: fixed; min-height: 100vh; }
 
 
-/* Project and template cards: a big cover (the project's colour and initial) over the name and when it was edited. */
-.sc-home__section > .sc-rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; border: 0; border-radius: 0; overflow: visible; }
-.sc-home__section > .sc-rows > li, .sc-home__section > .sc-rows > li:first-child { position: relative; display: block; min-height: 0; padding: 0; border: 1px solid color-mix(in srgb, var(--line) 85%, transparent); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-1); overflow: hidden; transition: transform var(--t-med), box-shadow var(--t-med), border-color var(--t-med); }
-.sc-home__section > .sc-rows > li:is(:hover, :focus-within) { transform: translateY(-2px); box-shadow: var(--shadow-3); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
-.sc-home__section .sc-rows__main.sc-rows__main--tile { display: grid; gap: 0; width: 100%; padding: 0; border: 0; background: none; text-align: left; }
-.sc-home__section .sc-rows__text { padding: 12px 14px 14px; gap: 3px; }
-.sc-home__section .sc-rows__name { font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 767px) {
-          .sc-home__section > .sc-rows { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-  }
-
-
-/* ===== U6 (2026-10-24) dialogs: a clear title, grouped content on soft panels, actions on the right. ===== */
-.sc-dialog .sc-card { margin: 0; min-width: min(320px, 100%); padding: var(--sp-5); gap: var(--sp-4); box-shadow: var(--shadow-3); border: 1px solid var(--line); width: min(560px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 48px); overflow: auto; }
-.sc-dialog .sc-card h1 { margin: 0; font-size: 20px; }
-.sc-dialog .sc-card h2 { margin: 6px 0 0; font-size: 12px; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
-/* The last row of buttons sits on the right, the main action last (Cancel, then Export). */
-.sc-dialog form > .sc-row:last-child, .sc-dialog .sc-card > .sc-row:last-child { flex-direction: row-reverse; justify-content: flex-start; margin-top: 4px; }
-/* Lists inside dialogs (members, presets): rows as soft cards. */
-.sc-dialog .sc-rows { border: 0; display: grid; gap: 8px; overflow: visible; }
-.sc-dialog .sc-rows > li, .sc-dialog .sc-rows > li:first-child { padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 
 /* Tablets and desktops: the panels and stage float with a margin; phones keep the full-width canvas and sheet. */
 

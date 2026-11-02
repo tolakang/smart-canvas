@@ -95,7 +95,6 @@
 button { font: inherit; cursor: pointer; }
 input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
-.sc-link { background: none; border: 0; padding: 0; color: var(--accent); text-align: left; }
 .sc-muted { color: var(--muted); }
 .sc-error { color: var(--danger); margin: 0; }
 
@@ -103,38 +102,22 @@ input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-r
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 
-.sc-thumb--empty { display: grid; place-items: center; color: var(--muted); font-size: 12px; }
-.sc-upload { justify-self: start; }
-.sc-field { display: flex; align-items: center; gap: 6px; }
-.sc-field input[type='number'] { width: 56px; padding: 2px 4px; }
-.sc-field input[type='color'] { width: 32px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 4px; }
-.sc-fill button { justify-self: start; }
 
 
 /* T8.1 layer rows (main node list and editor Layers panel) */
-.sc-port__grip { display: inline-flex; color: var(--muted); cursor: grab; flex: none; }
-.sc-thumb-fill { width: 100%; height: 100%; }
-.sc-thumb-text { font-size: 14px; font-weight: 700; color: var(--fg); background: var(--surface); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .sc-icon { display: block; margin: auto; }
 
 
 /* Renderer */
-.sc-render__placeholder { display: grid; place-items: center; border: 2px dashed var(--placeholder-line); color: var(--placeholder-fg); font: 600 48px/1.2 'Noto Sans', sans-serif; background: rgb(255 255 255 / 0.4); }
-.sc-render--thumb { box-shadow: 0 0 0 1px var(--line); }
 html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }
 
 
 .sc-layer__name > span.sc-muted { font-size: 11px; }
 
-.sc-field--col { display: grid; gap: 4px; align-items: start; }
-
-.sc-seg { gap: 10px; display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-.sc-seg button { border: 0; border-radius: 0; padding: 3px 8px; background: var(--surface); font: inherit; }
-.sc-seg button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
 
 
 
-label.sc-check { display: flex; gap: 6px; align-items: center; }
+
 
 
 
@@ -149,24 +132,9 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 .sc-design__title .sc-muted { font-weight: 400; }
 
 
-.sc-thumb { width: 100%; height: 110px; object-fit: contain; background: repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px; border: 1px solid var(--line); border-radius: var(--r-md); border-color: var(--line); }
 
-/* Upload labels, colour-fill buttons and links in nodes look like buttons (ui/button.ts builds the real ones). */
-.sc-upload, .sc-fill button, .sc-node .sc-link {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1); height: var(--field-h); padding: 0 var(--sp-3);
-  border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); line-height: 1; text-decoration: none; cursor: pointer; transition: background var(--t-fast), border-color var(--t-fast);
-}
-.sc-upload:hover, .sc-fill button:hover:not(:disabled), .sc-node .sc-link:hover { background: var(--surface-2); }
-.sc-node button:focus-visible, .sc-node .sc-upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
-.sc-node .sc-link { justify-self: start; }
+.sc-node button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-.sc-node .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; }
-.sc-node .sc-seg button { border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
-.sc-node .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
-.sc-fill { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; font-size: var(--fs-xs); color: var(--muted); }
-.sc-fill .sc-seg { display: inline-flex; gap: var(--sp-3); height: auto; background: none; padding: 0; border: 0; }
-.sc-fill .sc-field { color: var(--fg); }
-.sc-swatch { border: 1px solid var(--line); height: 48px; border-radius: var(--r-md); border-color: var(--line); }
 
 
 
@@ -178,11 +146,6 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 /* Hand (or Space held): the board pans from anywhere, panels included; the cursor says so. */
 .sc-board__flow--hand .react-flow__pane, .sc-board__flow--hand .react-flow__node { cursor: grab; }
 .sc-board__flow--hand .react-flow__pane.dragging, .sc-board__flow--hand:active .react-flow__node { cursor: grabbing; }
-.sc-inspector-panel .sc-seg { height: var(--field-h); border-radius: var(--r-md); border-color: var(--line); background: var(--surface-2); padding: 1px; gap: 2px; display: inline-flex; }
-.sc-inspector-panel .sc-seg button { border: 0; border-radius: var(--r-sm); background: none; padding: 0 var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
-.sc-inspector-panel .sc-seg button[aria-pressed='true'] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-1); }
-.sc-inspector-panel .sc-upload, .sc-inspector-panel .sc-fill button, .sc-inspector-panel .sc-link { display: inline-flex; align-items: center; height: var(--field-h); padding: 0 var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--fg); font-size: var(--fs-sm); justify-self: start; }
-.sc-inspector-panel .sc-thumb { height: 160px; }
 
 /* T13.3 dark theme (D34): the same rules, other token values. The artwork itself (OutputRenderer, inline
    styles) never changes with the theme, so previews and exports look the same in both. */
@@ -240,12 +203,6 @@ label.sc-check { display: flex; gap: 6px; align-items: center; }
 
 
 
-.sc-node__preview .sc-thumb:not(.sc-thumb--empty) { display: block; width: auto; height: auto; max-width: 100%; max-height: 140px; }
-.sc-node__preview .sc-thumb--empty, .sc-node__preview .sc-swatch { width: 100%; }
-.sc-node__preview .sc-thumb--empty { height: 72px; text-align: center; padding: 0 var(--sp-2); }
-.sc-thumb--upload { cursor: pointer; border-style: dashed; border-color: var(--muted); }
-.sc-thumb--upload:hover { color: var(--accent); border-color: var(--accent); }
-.sc-node .sc-render--thumb { max-width: 100%; }
 
 
 
