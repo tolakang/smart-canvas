@@ -163,29 +163,19 @@ const releaseTimers = (page: Page) =>
  */
 /**
  * Elements an earlier step converted that a rule this branch removes also styled: their classes from main must stay
- * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (K3 / T9a: the buttons, badges,
- * chips, spinner and toast; these buttons already had some utilities at main).
+ * while main's CSS is drawn (only this branch's additions come off). Set per conversion PR (K3 / T9b: cards, dialogs,
+ * rows, forms and fields; the card's rules reach the fields, labels, headings and buttons inside it, which this branch
+ * leaves as they were).
  * - KEEP: unchanged since main: they keep every class.
  * - MAIN_CLASSES: changed by this branch: they keep only the classes listed (what main gave them).
  */
-const KEEP: string[] = [];
-const ROW_ACTION = 'opacity-0 [transition:opacity_var(--t-fast)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100';
+const KEEP: string[] = ['.sc-card button', '.sc-card input', '.sc-card select', '.sc-card textarea', '.sc-card label', '.sc-card h1', '.sc-card h2'];
 const MAIN_CLASSES: Record<string, string> = {
-  '.sc-btn': 'justify-self-start',
-  '.sc-btn[aria-label$=" layout"]': 'h-36 justify-center rounded-[11px] font-[600]',
-  '.sc-btn.sc-hl-add': 'flex w-auto gap-6',
-  '.sc-btn.sc-text-slots__add': 'w-full justify-center',
-  '.sc-btn.sc-home__new-btn':
-    'h-44 gap-8 rounded-[12px] px-22 py-0 text-[14px] [box-shadow:0_8px_20px_-8px_color-mix(in_srgb,var(--accent)_70%,transparent),inset_0_1px_0_rgb(255_255_255/0.15)]',
-  '.sc-icon-btn[aria-label^="Move "]': 'size-26 rounded-[8px] text-[11px]',
-  '.sc-icon-btn.sc-hl-row__delete': 'opacity-0 [transition:opacity_var(--t-fast)] group-hover/hl:opacity-100 group-focus-within/hl:opacity-100 [@media(hover:none)]:opacity-100',
-  '.sc-icon-btn.sc-preset__eye': `ml-auto ${ROW_ACTION} aria-pressed:text-muted aria-pressed:opacity-100`,
-  '.sc-icon-btn.sc-preset__remove': ROW_ACTION,
-  '.sc-icon-btn[aria-label^="Show "]': 'flex-none self-center',
-  '.sc-icon-btn.sc-more':
-    'absolute top-(--sp-2) right-(--sp-2) size-32 flex-none pointer-coarse:size-44 top-10 right-10 rounded-[10px] bg-glass opacity-0 [backdrop-filter:blur(8px)] [box-shadow:var(--shadow-1)] [transition:opacity_var(--t-fast)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100',
-  '.sc-chip.sc-rule__chip':
-    'inline-flex max-w-full cursor-grab items-center gap-4 rounded-[99px] border bg-surface px-10 py-5 text-[12px] font-[550] [box-shadow:0_1px_1px_rgb(16_24_40/0.04)] border-[color-mix(in_srgb,var(--accent)_45%,var(--line))] text-accent [outline:1px_solid_var(--accent)] border-[color-mix(in_srgb,var(--line)_90%,transparent)]',
+  '.sc-card': 'grid grid-rows-[auto_auto_minmax(0,1fr)_auto] [--card-pad:24px] max-md:[--card-pad:var(--sp-4)]',
+  '.sc-auth__card':
+    'm-0 w-[min(400px,calc(100%-32px))] gap-16 self-center justify-self-center rounded-[22px] px-32 py-36 [box-shadow:var(--shadow-3)] max-lg:mx-auto max-lg:my-32 [&_input:not([type=checkbox])]:h-42 [&_input:not([type=checkbox])]:text-[14px] [&_button[type=submit]]:h-44 [&_button[type=submit]]:rounded-[12px] [&_button[type=submit]]:text-[14px]',
+  '.sc-families > li': 'items-start',
+  'li[data-project]': 'group/row',
 };
 
 const swapIn = (page: Page, css: string, subjects: string[]) =>

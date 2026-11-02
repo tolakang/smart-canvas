@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { openPdf, PdfError, type OpenPdf } from '../pdf';
-import { DIALOG } from './tw';
+import { DIALOG, DIALOG_CARD, FORM_ACTIONS } from './tw';
 import { btn } from './button';
 
 /** Pages drawn as thumbnails; a longer PDF lists the rest by number. */
@@ -37,7 +37,7 @@ function PdfPageDialog({ name, pdf, onDone }: { name: string; pdf: OpenPdf; onDo
   }, [pdf]);
   return (
     <dialog ref={ref} className={DIALOG} aria-labelledby="pdf-page-title" onCancel={() => onDone(null)}>
-      <div className="sc-card sc-pdfpages grid grid-rows-[auto_auto_minmax(0,1fr)_auto]">
+      <div className={`${DIALOG_CARD} sc-pdfpages grid grid-rows-[auto_auto_minmax(0,1fr)_auto]`}>
         <h1 id="pdf-page-title">Which page?</h1>
         <p className="sc-muted">
           {name} has {pdf.pages} pages. Pick the one to use.
@@ -52,7 +52,7 @@ function PdfPageDialog({ name, pdf, onDone }: { name: string; pdf: OpenPdf; onDo
             </li>
           ))}
         </ul>
-        <div className="sc-form__actions">
+        <div className={FORM_ACTIONS}>
           <button type="button" className={btn('default', 'card')} onClick={() => onDone(null)}>
             Cancel
           </button>

@@ -32,7 +32,7 @@ import { api, ApiError, assetUrl } from '../api';
 import { exportInBrowser, type BrowserFormat } from '../render/browserExport';
 import { browserExportSupported } from '../render/exportFile';
 import { zipStore } from '../ui/zip';
-import { DIALOG, DIALOG_SELECT } from '../ui/tw';
+import { DIALOG, DIALOG_ACTIONS, DIALOG_CARD, DIALOG_SELECT } from '../ui/tw';
 import { btn } from '../ui/button';
 
 /** “2 of 3 chosen Previews aren’t approved”, with its Only approved button on the right. */
@@ -253,7 +253,7 @@ export function ExportDialog(props: {
   const APPROVAL_NOTE = { approved: ' · approved', changed: ' · changed since approved', none: approvals.size > 0 ? ' · not approved' : '' } as const;
   return (
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="export-title">
-      <div className="sc-card sc-export">
+      <div className={`${DIALOG_CARD} sc-export`}>
         <h1 id="export-title">Export</h1>
         {rows === null ? (
           <form className="grid gap-10" onSubmit={start}>
@@ -364,7 +364,7 @@ export function ExportDialog(props: {
                 {error}
               </p>
             )}
-            <div className="sc-row">
+            <div className={DIALOG_ACTIONS}>
               <button type="submit" disabled={busy || selected.length === 0 || tooLarge.length > 0}>
                 Export {selected.length} {selected.length === 1 ? 'Preview' : 'Previews'}
               </button>
@@ -407,7 +407,7 @@ export function ExportDialog(props: {
                 {error}
               </p>
             )}
-            <div className="sc-row">
+            <div className={DIALOG_ACTIONS}>
               {(done.length > 1 || (set && done.length > 0)) && (
                 <button type="button" className={btn('default', 'card')} disabled={zipping} onClick={() => void downloadAll(done)}>
                   {zipping ? 'Making ZIP…' : set ? `Download ${set.label} (ZIP, ${done.length})` : `Download all (ZIP, ${done.length})`}

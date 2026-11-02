@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { BRAND_MOBILE, BRAND_ON_DARK, BrandMark, PRODUCT_NAME } from '../ui/Brand';
+import { CARD as PAGE_CARD, HINT } from '../ui/tw';
 
 /** A frame of the brand panel's picture: frosted glass with a coloured block in it. */
 const FRAME = `absolute rounded-[12px] border border-[rgb(255_255_255/0.35)] [background:var(--auth-frame)] [backdrop-filter:blur(6px)] [box-shadow:0_18px_40px_-12px_rgb(0_0_0/0.45)] after:absolute after:inset-x-[14%] after:top-[18%] after:h-[34%] after:rounded-[8px] after:[background:var(--auth-art)] after:opacity-85 after:content-['']`;
 /** The sign-in card; its fields and Sign in button are larger than the app's. */
 const CARD =
-  'sc-card sc-auth__card m-0 w-[min(400px,calc(100%-32px))] gap-16 self-center justify-self-center rounded-[22px] px-32 py-36 [box-shadow:var(--shadow-3)] max-lg:mx-auto max-lg:my-32 [&_input:not([type=checkbox])]:h-42 [&_input:not([type=checkbox])]:text-[14px] [&_button[type=submit]]:h-44 [&_button[type=submit]]:rounded-[12px] [&_button[type=submit]]:text-[14px]';
+  `${PAGE_CARD} sc-auth__card m-0 w-[min(400px,calc(100%-32px))] gap-16 self-center justify-self-center rounded-[22px] px-32 py-36 [box-shadow:var(--shadow-3)] max-lg:mx-auto max-lg:my-32 [&_input:not([type=checkbox])]:h-42 [&_input:not([type=checkbox])]:text-[14px] [&_button[type=submit]]:h-44 [&_button[type=submit]]:rounded-[12px] [&_button[type=submit]]:text-[14px]`;
 
 /** Sign in, or (first run only) create the first admin and team. */
 export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
@@ -101,7 +102,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
             </button>
           </span>
         </label>
-        {mode === 'setup' && <p className="sc-hint">At least 8 characters.</p>}
+        {mode === 'setup' && <p className={HINT}>At least 8 characters.</p>}
         {error && (
           <p className="sc-error" role="alert">
             {error}

@@ -40,10 +40,27 @@ try {
   const changed = execFileSync('git', ['diff', '--name-only', sha, '--', 'apps/web/src'], { cwd: root, encoding: 'utf8' })
     .split('\n')
     .filter((f) => f.endsWith('.css') && !f.includes('/fonts/') && !f.endsWith('/tailwind.css'));
+  // A selector list's top-level commas only: `:is(a, b)` and `:not([x], [y])` stay whole, however deep they nest.
+  const splitList = (list) => {
+    const out = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < list.length; i++) {
+      const c = list[i];
+      if (c === '(' || c === '[') depth++;
+      else if (c === ')' || c === ']') depth--;
+      else if (c === ',' && depth === 0) {
+        out.push(list.slice(start, i));
+        start = i + 1;
+      }
+    }
+    out.push(list.slice(start));
+    return out;
+  };
   const selectorsOf = (text) => {
     const out = new Set();
     for (const m of text.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(?:^|[{}])([^{}@]+)\{/g))
-      for (const one of (m[1] ?? '').split(/,(?![^()[\]]*[)\]])/)) {
+      for (const one of splitList(m[1] ?? '')) {
         const s = one.trim().replace(/\s+/g, ' ');
         if (s && !/^(from|to|[\d.]+%)$/.test(s)) out.add(s);
       }

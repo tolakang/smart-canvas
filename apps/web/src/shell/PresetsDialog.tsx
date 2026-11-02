@@ -7,7 +7,7 @@ import type { PresetGroup, SizePreset, Unit } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { AskDialog, type AskSpec } from '../ui/AskDialog';
-import { DIALOG, DIALOG_LONG_CARD, DIALOG_SELECT, DIALOG_STICKY_FOOT, PRESET_FIELD } from '../ui/tw';
+import { DIALOG, DIALOG_CARD, DIALOG_LIST, DIALOG_LONG_CARD, DIALOG_ROW, DIALOG_ROW_BOX, DIALOG_SELECT, DIALOG_STICKY_FOOT, FIELD_WIDE, FIELDS, FORM, FORM_ACTIONS, PRESET_FIELD, ROW_ACTIONS, ROW_MAIN, ROW_META, ROW_NAME } from '../ui/tw';
 import { BADGE, btn } from '../ui/button';
 
 interface Draft {
@@ -152,25 +152,25 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
 
   return (
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="presets-title">
-      <div className={`sc-card sc-presets ${DIALOG_LONG_CARD}`}>
+      <div className={`${DIALOG_CARD} sc-presets ${DIALOG_LONG_CARD}`}>
         <h1 id="presets-title">Size presets</h1>
         <p className="sc-muted sc-lede mx-0 -mt-4 mb-0">Sizes for new Previews. Built-in sizes are fixed; the team’s own are marked Team{props.isAdmin ? '; add and edit them below.' : '. Admins add and edit them.'}</p>
         {list !== null && familiesOf(list).length > 0 && (
           <section aria-label="Preset node families">
             <h2>Preset node families</h2>
-            <ul className="sc-list sc-rows sc-families">
+            <ul className={`${DIALOG_LIST} sc-families`}>
               {familiesOf(list).map((f) => (
-                <li key={f.name} className="items-start" data-family={f.name}>
+                <li key={f.name} className={`${DIALOG_ROW_BOX} items-start`} data-family={f.name}>
                   <details className="sc-family min-w-0 flex-1">
                     <summary className="flex cursor-pointer items-baseline gap-8 px-0 py-2" aria-label={`${f.name}: ${f.sizes.length} ${f.sizes.length === 1 ? 'size' : 'sizes'}`}>
-                      <span className="sc-rows__name">{f.name}</span>
-                      <span className="sc-rows__meta">
+                      <span className={ROW_NAME}>{f.name}</span>
+                      <span className={ROW_META}>
                         {f.sizes.length} {f.sizes.length === 1 ? 'size' : 'sizes'}
                       </span>
                     </summary>
                     <ul className="sc-family__sizes mt-4 mr-0 mb-2 ml-16 grid list-none gap-2 p-0 text-[13px]" aria-label={`${f.name} sizes`}>
                       {f.sizes.map((p) => (
-                        <li key={p.id}>
+                        <li key={p.id} className="flex items-center justify-between gap-8">
                           {p.name} <span className="sc-muted">{`${p.size.width} × ${p.size.height} ${p.size.unit}`}</span>
                         </li>
                       ))}
@@ -180,7 +180,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
                     <span className={BADGE}>Built-in</span>
                   ) : (
                     props.isAdmin && (
-                      <span className="sc-rows__actions">
+                      <span className={ROW_ACTIONS}>
                         <button type="button" className={btn('ghost', 'card-row')} onClick={() => renameFamily(f.name)} aria-label={`Rename family ${f.name}`}>
                           Rename
                         </button>
@@ -201,19 +201,19 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           (['social', 'print'] as const).map((group) => (
             <section key={group} aria-label={group === 'print' ? 'Print presets' : 'Social presets'}>
               <h2>{group === 'print' ? 'Print' : 'Social'}</h2>
-              <ul className="sc-list sc-rows">
+              <ul className={DIALOG_LIST}>
                 {list
                   // F22: a built-in family's sizes are listed under their family above, not again here.
                   .filter((p) => p.group === group && !(p.teamId === null && p.family))
                   .map((p) => (
-                    <li key={p.id} data-preset={p.name}>
-                      <span className="sc-rows__main">
-                        <span className="sc-rows__name">{p.name}</span>
-                        <span className="sc-rows__meta">{sizeText(p)}</span>
+                    <li key={p.id} className={DIALOG_ROW} data-preset={p.name}>
+                      <span className={ROW_MAIN}>
+                        <span className={ROW_NAME}>{p.name}</span>
+                        <span className={ROW_META}>{sizeText(p)}</span>
                       </span>
                       {p.teamId !== null && <span className={BADGE}>Team</span>}
                       {p.teamId !== null && props.isAdmin && (
-                        <span className="sc-rows__actions">
+                        <span className={ROW_ACTIONS}>
                           <button type="button" className={btn('ghost', 'card-row')} onClick={() => edit(p)} aria-label={`Edit ${p.name}`}>
                             Edit
                           </button>
@@ -229,14 +229,14 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
           ))
         )}
         {props.isAdmin && (
-          <form className="sc-form" onSubmit={save} aria-label={draft.id ? 'Edit preset' : 'New preset'}>
+          <form className={FORM} onSubmit={save} aria-label={draft.id ? 'Edit preset' : 'New preset'}>
             <h2>{draft.id ? `Edit “${draft.name}”` : 'New team preset'}</h2>
-            <div className="sc-fields">
-              <label className={`sc-fields__wide ${PRESET_FIELD}`}>
+            <div className={FIELDS}>
+              <label className={`${FIELD_WIDE} ${PRESET_FIELD}`}>
                 Name
                 <input value={draft.name} onChange={(e) => set({ name: e.target.value })} required maxLength={120} placeholder="e.g. Shop banner" />
               </label>
-              <label className={`sc-fields__wide ${PRESET_FIELD}`}>
+              <label className={`${FIELD_WIDE} ${PRESET_FIELD}`}>
                 Preset node family
                 <input value={draft.family} onChange={(e) => set({ family: e.target.value })} maxLength={60} placeholder="e.g. GDN — sizes of one family are added together" />
               </label>
@@ -271,7 +271,7 @@ export function PresetsDialog(props: { teamId: string; isAdmin: boolean; onClose
                 <input type="number" inputMode="decimal" min={0} max={50} step="any" placeholder="0" value={draft.bleedMm} onChange={(e) => set({ bleedMm: e.target.value })} />
               </label>
             </div>
-            <div className="sc-form__actions">
+            <div className={FORM_ACTIONS}>
               {draft.id && (
                 <button type="button" className={btn('default', 'card')} onClick={() => setDraft(EMPTY)}>
                   Cancel edit

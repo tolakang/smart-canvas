@@ -6,7 +6,7 @@
 import type { TeamRole } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
-import { DIALOG, DIALOG_LONG_CARD, DIALOG_SELECT, DIALOG_STICKY_FOOT, PRESET_FIELD } from '../ui/tw';
+import { DIALOG, DIALOG_CARD, DIALOG_LIST, DIALOG_LONG_CARD, DIALOG_ROW, DIALOG_SELECT, DIALOG_STICKY_FOOT, FIELD_WIDE, FIELDS, FORM, FORM_ACTIONS, HINT, PRESET_FIELD, ROW_ACTIONS, ROW_MAIN, ROW_META, ROW_NAME } from '../ui/tw';
 import { BADGE, btn } from '../ui/button';
 
 interface Member {
@@ -115,25 +115,25 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
 
   return (
     <dialog ref={ref} className={DIALOG} onClose={props.onClose} aria-labelledby="team-title">
-      <div className={`sc-card sc-presets sc-team ${DIALOG_LONG_CARD}`}>
+      <div className={`${DIALOG_CARD} sc-presets sc-team ${DIALOG_LONG_CARD}`}>
         <h1 id="team-title">{props.teamName} · Team</h1>
         <section aria-label="Members">
           <h2>Members</h2>
           {members === null ? (
             <p className="sc-muted">Loading…</p>
           ) : (
-            <ul className="sc-list sc-rows">
+            <ul className={DIALOG_LIST}>
               {members.map((m) => (
-                <li key={m.userId} data-member={m.email}>
-                  <span className="sc-rows__main">
-                    <span className="sc-rows__name">
+                <li key={m.userId} className={DIALOG_ROW} data-member={m.email}>
+                  <span className={ROW_MAIN}>
+                    <span className={ROW_NAME}>
                       {m.name || m.email}
                       {m.userId === props.userId && <span className="sc-muted"> (you)</span>}
                     </span>
-                    {m.name && <span className="sc-rows__meta">{m.email}</span>}
+                    {m.name && <span className={ROW_META}>{m.email}</span>}
                   </span>
                   {props.isAdmin ? (
-                    <span className="sc-rows__actions">
+                    <span className={ROW_ACTIONS}>
                       <select className={DIALOG_SELECT} aria-label={`Role of ${m.email}`} value={m.role} onChange={(e) => void changeRole(m, e.target.value as TeamRole)}>
                         {ROLES.map((r) => (
                           <option key={r} value={r}>
@@ -156,9 +156,9 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
 
         {props.isAdmin && (
           <>
-            <form className="sc-form" onSubmit={invite} aria-label="Invite">
+            <form className={FORM} onSubmit={invite} aria-label="Invite">
               <h2>Invite someone</h2>
-              <div className="sc-fields">
+              <div className={FIELDS}>
                 <label className={PRESET_FIELD}>
                   Role
                   <select className={DIALOG_SELECT} value={role} onChange={(e) => setRole(e.target.value as TeamRole)}>
@@ -169,15 +169,15 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                     ))}
                   </select>
                 </label>
-                <label className={`sc-fields__wide ${PRESET_FIELD}`}>
+                <label className={`${FIELD_WIDE} ${PRESET_FIELD}`}>
                   Email
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={320} placeholder="Optional" aria-describedby="invite-email-hint" />
                 </label>
               </div>
-              <p id="invite-email-hint" className="sc-hint">
+              <p id="invite-email-hint" className={HINT}>
                 Leave it empty for a link anyone can use once, or add an email so only that person can join.
               </p>
-              <div className="sc-form__actions">
+              <div className={FORM_ACTIONS}>
                 <button type="submit" className={btn('primary', 'card')}>
                   Create invite link
                 </button>
@@ -191,16 +191,16 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                 </button>
               </div>
             )}
-            {link && <p className="sc-hint">Send this link to the person. It works once, expires in 7 days and won’t be shown again.</p>}
+            {link && <p className={HINT}>Send this link to the person. It works once, expires in 7 days and won’t be shown again.</p>}
             {invites.length > 0 && (
               <section aria-label="Pending invites">
                 <h2>Pending invites</h2>
-                <ul className="sc-list sc-rows">
+                <ul className={DIALOG_LIST}>
                   {invites.map((i) => (
-                    <li key={i.id}>
-                      <span className="sc-rows__main">
-                        <span className="sc-rows__name">{i.email ?? 'Anyone with the link'}</span>
-                        <span className="sc-rows__meta">
+                    <li key={i.id} className={DIALOG_ROW}>
+                      <span className={ROW_MAIN}>
+                        <span className={ROW_NAME}>{i.email ?? 'Anyone with the link'}</span>
+                        <span className={ROW_META}>
                           {ROLE_LABEL[i.role]} · expires {new Date(i.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                         </span>
                       </span>
