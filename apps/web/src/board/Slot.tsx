@@ -11,6 +11,7 @@ import { useId, useState, type DragEvent, type ReactNode } from 'react';
 import { Icon } from './LayerRow';
 import { NO_CANVAS } from './pinch';
 import { FILE_PICK } from '../ui/file-pick';
+import { SPINNER } from '../ui/button';
 
 
 /** A soft checkerboard under the picture (transparent pixels show as such). */
@@ -138,7 +139,7 @@ export function Slot(p: SlotProps) {
   const img = `block size-full object-contain ${off ? 'opacity-55 [filter:saturate(0.6)] [transition:opacity_var(--t-fast),filter_var(--t-fast)] group-hover/slot:opacity-85 group-hover/slot:[filter:none]' : '[filter:drop-shadow(0_1px_2px_rgb(0_0_0/0.08))]'}`;
   const picture = p.busy ? (
     <span className={state}>
-      <span className="sc-spinner" aria-hidden="true" />
+      <span className={SPINNER} aria-hidden="true" />
       Uploading…
     </span>
   ) : p.src ? (

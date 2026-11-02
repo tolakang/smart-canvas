@@ -42,6 +42,7 @@ import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 import { BOARD, CANVAS, SKIP, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON } from './frame';
+import { btn, iconBtn } from '../ui/button';
 
 interface Loaded {
   rev: number;
@@ -1103,17 +1104,17 @@ function BoardCanvas(props: {
             {!readOnly && activeTool === 'select' && (selectedCount >= 2 || several) && (
               <Panel position="top-center" className={`${SELBAR} ${NO_CANVAS}`} aria-label="Selection" role="toolbar">
                 <span className={SELBAR_COUNT}>{selectedCount} selected</span>
-                <button type="button" className="sc-btn" onClick={groupSelection} disabled={selectedCount < 2} title="Group the selected panels (Ctrl/⌘ + G)">
+                <button type="button" className={btn()} onClick={groupSelection} disabled={selectedCount < 2} title="Group the selected panels (Ctrl/⌘ + G)">
                   Group
                 </button>
-                <button type="button" className="sc-btn sc-btn--danger" onClick={deleteSelection} disabled={selectedCount === 0} title="Delete the selected panels (Delete)">
+                <button type="button" className={btn('danger')} onClick={deleteSelection} disabled={selectedCount === 0} title="Delete the selected panels (Delete)">
                   <Icon name="trash" /> Delete
                 </button>
-                <button type="button" className="sc-icon-btn" aria-label="Clear selection" title="Clear selection (Esc)" onClick={clearSelection}>
+                <button type="button" className={iconBtn()} aria-label="Clear selection" title="Clear selection (Esc)" onClick={clearSelection}>
                   <Icon name="close" />
                 </button>
                 {several && (
-                  <button type="button" className="sc-btn sc-btn--primary" onClick={() => setSeveral(false)}>
+                  <button type="button" className={btn('primary')} onClick={() => setSeveral(false)}>
                     Done
                   </button>
                 )}

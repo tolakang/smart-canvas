@@ -55,9 +55,10 @@ import { FAMILY_LABEL, useOpenLayout } from './MainNode';
 import { nameWithoutSize } from './OutputNode';
 import { OUTPUT_ROW, OutputSettings } from './OutputSettings';
 import { ACTIONS, FORM, HINT, ISSUES, LEVEL, OVERVIEW_NAME, PANEL_HEAD, panelClass, SECTION, SECTION_TITLE, STAT, STAT_LABEL, STAT_VALUE, STATS, TIP_KEY, TIPS } from './panel';
+import { btn, iconBtn } from '../ui/button';
 
 /** UX A7 (F17): Delete node is a quiet row at the section's end, not a full-width red button under the pictures. */
-const DELETE_NODE = 'sc-btn sc-btn--ghost sc-btn--danger justify-self-start';
+const DELETE_NODE = `${btn('ghost-danger')} justify-self-start`;
 /** UX A7: the language switch — two segments; the chosen one raised. */
 const SWITCH =
   'items-stretch [&_label]:relative [&_label]:inline-flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:rounded-sm [&_label]:px-(--sp-2) [&_label]:text-xs [&_label]:text-muted [&_label:has(:checked)]:bg-surface [&_label:has(:checked)]:text-fg [&_label:has(:checked)]:[box-shadow:var(--shadow-1)] [&_label:has(:focus-visible)]:[outline:2px_solid_var(--accent)] [&_input]:sr-only';
@@ -79,7 +80,7 @@ export function Inspector({ selected, floating, onClose, onHide }: { selected: s
       {floating && (
         <div className={PANEL_HEAD}>
           <span>Inspector</span>
-          <button type="button" className="sc-icon-btn" onClick={onClose} aria-label="Close inspector" title="Close">
+          <button type="button" className={iconBtn()} onClick={onClose} aria-label="Close inspector" title="Close">
             <Icon name="close" />
           </button>
         </div>
@@ -147,7 +148,7 @@ function OutputInspector({ output }: { output: OutputNode }) {
   const health = useMemo(() => (layoutDeps ? outputHealth(doc, output.id, computeLayout(doc, output.id, layoutDeps), missingFonts) : null), [doc, output.id, layoutDeps, missingFonts]);
   return (
     <>
-      <Section title="Preview" aside={<button type="button" className="sc-btn" onClick={() => openOutputEditor(output.id)}>{readOnly ? 'View' : 'Edit'}</button>}>
+      <Section title="Preview" aside={<button type="button" className={btn()} onClick={() => openOutputEditor(output.id)}>{readOnly ? 'View' : 'Edit'}</button>}>
         <NameField label="Preview name" value={output.label} onCommit={(label) => run((d) => updateOutput(d, output.id, { label }))} />
       </Section>
       {health && <HealthSection health={health} />}
@@ -162,7 +163,7 @@ function OutputInspector({ output }: { output: OutputNode }) {
             {output.overrides.length} {output.overrides.length === 1 ? 'layer differs' : 'layers differ'} from the automatic layout on this Preview.
           </p>
           {!readOnly && (
-            <button type="button" className="sc-btn" onClick={() => window.confirm(`Reset all overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}>
+            <button type="button" className={btn()} onClick={() => window.confirm(`Reset all overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}>
               Reset this Preview
             </button>
           )}
@@ -222,13 +223,13 @@ function InputActions({ source }: { source: InputSource }) {
   return (
     <Section title="Actions">
       <div className={ACTIONS}>
-        <button type="button" className="sc-btn" disabled={full} title={full ? `${LIMITS.maxSources} inputs max` : undefined} aria-label={`Duplicate ${source.label}`} onClick={() => run((d) => duplicateSource(d, source.id, newId()))}>
+        <button type="button" className={btn()} disabled={full} title={full ? `${LIMITS.maxSources} inputs max` : undefined} aria-label={`Duplicate ${source.label}`} onClick={() => run((d) => duplicateSource(d, source.id, newId()))}>
           <Icon name="plus" /> Duplicate
         </button>
-        <button type="button" className="sc-btn" aria-label={`Save ${source.label} to library`} onClick={() => void saveToLibrary()}>
+        <button type="button" className={btn()} aria-label={`Save ${source.label} to library`} onClick={() => void saveToLibrary()}>
           <Icon name={saved === 'saved' ? 'check' : 'library'} /> {saved === 'saved' ? 'Saved to library' : saved === 'failed' ? 'Try again' : 'Save to library'}
         </button>
-        <button type="button" className="sc-btn sc-btn--danger" aria-label={`Delete ${source.label}`} onClick={() => confirmDelete(source.label) && run((d) => deleteSource(d, source.id))}>
+        <button type="button" className={btn('danger')} aria-label={`Delete ${source.label}`} onClick={() => confirmDelete(source.label) && run((d) => deleteSource(d, source.id))}>
           <Icon name="trash" /> Delete layer
         </button>
       </div>
@@ -315,7 +316,7 @@ function AssetsInspector({ stackId }: { stackId: string }) {
               const at = items.findIndex((x) => x.id === focused.id);
               const to = dir === 'left' ? at - 1 : at + 1;
               return (
-                <button key={dir} type="button" className="sc-btn" disabled={to < 0 || to >= items.length} aria-label={`Move ${focused.label} ${dir}`} onClick={() => run((d) => moveStackItem(d, stack.id, focused.id, to))}>
+                <button key={dir} type="button" className={btn()} disabled={to < 0 || to >= items.length} aria-label={`Move ${focused.label} ${dir}`} onClick={() => run((d) => moveStackItem(d, stack.id, focused.id, to))}>
                   <Icon name={dir === 'left' ? 'back' : 'forward'} /> Move {dir}
                 </button>
               );
@@ -345,7 +346,7 @@ function PresetInspector({ setId }: { setId: string }) {
       title="Preset node"
       aside={
         outputs.length > 0 && (
-          <button type="button" className="sc-btn" onClick={() => exportOutputs(outputs.map((o) => o.id), set.id)}>
+          <button type="button" className={btn()} onClick={() => exportOutputs(outputs.map((o) => o.id), set.id)}>
             <Icon name="export" /> Export {outputs.length}
           </button>
         )
@@ -368,7 +369,7 @@ function PresetInspector({ setId }: { setId: string }) {
         </ul>
       )}
       {!readOnly && outputs.length > 0 && (
-        <button type="button" className="sc-btn justify-self-start" onClick={() => void saving.save()}>
+        <button type="button" className={`${btn()} justify-self-start`} onClick={() => void saving.save()}>
           <Icon name="library" /> Save as team preset
         </button>
       )}
@@ -403,7 +404,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
         </p>
         <div className={ACTIONS} role="group" aria-label="Layouts">
           {GUIDE_FAMILIES.map((f) => (
-            <button key={f} type="button" className="sc-btn" onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
+            <button key={f} type="button" className={btn()} onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
               {FAMILY_LABEL[f]}
             </button>
           ))}
@@ -445,7 +446,7 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
             {doc.name}
           </span>
           {onHide && (
-            <button type="button" className="sc-icon-btn" onClick={onHide} aria-label="Hide panel" title="Hide the side panel">
+            <button type="button" className={iconBtn()} onClick={onHide} aria-label="Hide panel" title="Hide the side panel">
               <Icon name="panel" />
             </button>
           )}
@@ -481,7 +482,7 @@ function ProjectOverview({ onHide }: { onHide?: () => void }) {
           ))}
         </dl>
         {!readOnly && previews > 0 && (
-          <button type="button" className="sc-btn sc-btn--primary" onClick={() => exportOutputs(doc.outputs.map((o) => o.id))}>
+          <button type="button" className={btn('primary', 'overview')} onClick={() => exportOutputs(doc.outputs.map((o) => o.id))}>
             <Icon name="export" /> Export all {previews}
           </button>
         )}

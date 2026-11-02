@@ -19,6 +19,7 @@ import { Slot } from './Slot';
 import { carriesFiles, filesOf, PICTURE_ACCEPT, usePictureDrop } from './stack-upload';
 import { NO_CANVAS } from './pinch';
 import { FILE_PICK } from '../ui/file-pick';
+import { SPINNER } from '../ui/button';
 
 const ITEM_DRAG = 'application/x-sc-stack-item';
 
@@ -135,7 +136,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
           {...FILE_PICK}
         >
           <span className={DROPZONE_ICON} aria-hidden="true">
-            {drop.busy ? <span className="sc-spinner" /> : <Icon name="plus" />}
+            {drop.busy ? <span className={SPINNER} /> : <Icon name="plus" />}
           </span>
           <span className={DROPZONE_TEXT}>
             <strong>{drop.busy ? 'Uploading…' : isLogo ? 'Add or drop logos' : 'Add or drop pictures'}</strong>

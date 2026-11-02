@@ -31,6 +31,7 @@ import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { approvalOf, threadsOf } from './review';
 import { NO_CANVAS } from './pinch';
+import { btn, CHIP } from '../ui/button';
 
 
 /** The approval pill (also in the Review panel). */
@@ -166,13 +167,13 @@ export function OutputNodeView({ data }: NodeProps<OutputFlowNode>) {
       )}
       {output.overrides.length > 0 && (
         <div className="sc-node__overrides flex items-center justify-between gap-(--sp-2)">
-          <span className="sc-chip" title="Layers changed by hand on this Preview" aria-label={`${output.overrides.length} overridden layers`}>
+          <span className={CHIP} title="Layers changed by hand on this Preview" aria-label={`${output.overrides.length} overridden layers`}>
             {output.overrides.length} edited by hand
           </span>
           {!readOnly && (
             <button
               type="button"
-              className={`sc-btn sc-btn--ghost ${NO_CANVAS}`}
+              className={`${btn('ghost', 'node')} ${NO_CANVAS}`}
               onClick={() => window.confirm(`Reset all overridden layers of “${output.label}” to auto?`) && run((d) => resetOutputOverrides(d, output.id))}
             >
               Reset this Preview

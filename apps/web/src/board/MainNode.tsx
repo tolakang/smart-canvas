@@ -31,6 +31,7 @@ import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { NO_DRAG } from './pinch';
+import { btn, iconBtn } from '../ui/button';
 
 /** Controls that don't scroll: the wheel still zooms and pans the board over them. */
 const GROUP_DRAG = 'application/x-sc-layer-group';
@@ -45,7 +46,7 @@ const LABEL = 'sc-comp__label mt-2 text-[11.5px] font-[650] tracking-[0.02em] te
 /** A layer-order row: drag it, or use its ↑ ↓ buttons (shown on hover or focus; always on touch). */
 const ROW =
   'group/row flex min-h-40 cursor-grab items-center gap-10 rounded-[12px] bg-surface-2 py-6 pr-8 pl-10 text-[13px] font-[550] [border:0] [transition:background_var(--t-fast),box-shadow_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--surface-3)_80%,var(--surface-2))]';
-const MOVE = 'size-26 rounded-[8px] text-[11px]';
+const MOVE = `${iconBtn({ size: 'size-26', round: 'rounded-[8px]' })} text-[11px]`;
 /** How many layers a row holds, or Previews a section has. */
 const COUNT = 'min-w-22 rounded-[99px] bg-surface px-7 py-1 text-center text-[11px] font-[650] text-muted';
 /** A layout's section in the Export Group: drop a Preview chip here to choose it by hand. */
@@ -134,10 +135,10 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
               </span>
               {!readOnly && (
                 <span className="sc-comp__moves hidden gap-2 group-focus-within/row:inline-flex group-hover/row:inline-flex pointer-coarse:inline-flex">
-                  <button type="button" className={`sc-icon-btn ${MOVE}`} aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} up`} disabled={i === 0} onClick={() => dropGroup(g.group, i - 1)}>
+                  <button type="button" className={MOVE} aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} up`} disabled={i === 0} onClick={() => dropGroup(g.group, i - 1)}>
                     <Icon name="up" size={14} />
                   </button>
-                  <button type="button" className={`sc-icon-btn ${MOVE}`} aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} down`} disabled={i === groups.length - 1} onClick={() => dropGroup(g.group, i + 1)}>
+                  <button type="button" className={MOVE} aria-label={`Move ${LAYER_GROUP_LABEL[g.group]} down`} disabled={i === groups.length - 1} onClick={() => dropGroup(g.group, i + 1)}>
                     <Icon name="down" size={14} />
                   </button>
                 </span>
@@ -148,7 +149,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
         <div className={LABEL}>Layouts</div>
         <div className={`sc-comp__layouts grid grid-cols-[repeat(3,1fr)] gap-8 ${NO_DRAG}`} role="group" aria-label="Layouts">
           {GUIDE_FAMILIES.map((f) => (
-            <button key={f} type="button" className="sc-btn h-36 justify-center rounded-[11px] font-[600]" onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
+            <button key={f} type="button" className={btn('default', 'node', { h: 'h-36', round: 'rounded-[11px]', weight: 'font-[600]' })} onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
               {FAMILY_LABEL[f]}
             </button>
           ))}
@@ -208,7 +209,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
               </h4>
               <ul className="sc-rule__chips m-0 flex list-none flex-wrap gap-6 p-0 text-[11px]">
                 {g.outputs.map((o) => (
-                  <li key={o.id} className={`sc-chip sc-rule__chip ${CHIP} ${o.chosen ? 'sc-rule__chip--chosen border-[color-mix(in_srgb,var(--accent)_45%,var(--line))] text-accent [outline:1px_solid_var(--accent)]' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)]'}`} draggable={!readOnly} onDragStart={(e) => e.dataTransfer.setData(OUTPUT_DRAG, o.id)} data-output={o.id} title={o.chosen ? 'Chosen by hand' : 'Closest to its shape'}>
+                  <li key={o.id} className={`sc-chip sc-rule__chip h-20 ${CHIP} ${o.chosen ? 'sc-rule__chip--chosen border-[color-mix(in_srgb,var(--accent)_45%,var(--line))] text-accent [outline:1px_solid_var(--accent)]' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)] text-warn'}`} draggable={!readOnly} onDragStart={(e) => e.dataTransfer.setData(OUTPUT_DRAG, o.id)} data-output={o.id} title={o.chosen ? 'Chosen by hand' : 'Closest to its shape'}>
                     {readOnly ? (
                       o.label
                     ) : (

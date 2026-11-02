@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { openPdf, PdfError, type OpenPdf } from '../pdf';
 import { DIALOG } from './tw';
+import { btn } from './button';
 
 /** Pages drawn as thumbnails; a longer PDF lists the rest by number. */
 const THUMBS = 48;
@@ -52,7 +53,7 @@ function PdfPageDialog({ name, pdf, onDone }: { name: string; pdf: OpenPdf; onDo
           ))}
         </ul>
         <div className="sc-form__actions">
-          <button type="button" className="sc-btn" onClick={() => onDone(null)}>
+          <button type="button" className={btn('default', 'card')} onClick={() => onDone(null)}>
             Cancel
           </button>
         </div>

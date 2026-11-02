@@ -6,7 +6,10 @@ its history: [`docs/archive/TAILWIND-PLAN-T1-T7.md`](docs/archive/TAILWIND-PLAN-
 
 | PR | Area | CSS it empties | Risk | Done |
 |---|---|---|---|---|
-| T8 | Optional: Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
+| T9a | Clean-up 2, K3 (owner, 2026-11-02): buttons, icon buttons, badges, chips, spinner, toast → `ui/button.ts` | part of `styles.css` | medium | this PR |
+| T9b | Cards, dialogs, forms, fields, rows | part of `styles.css` | high | |
+| T9c | Thumbnails, segmented controls, fills, renderer placeholder, home cards, inspector context rules | part of `styles.css` | medium | |
+| T8 | After T9 (K4): Preflight in place of our base styles if parity stays identical; drop `sc-` modifiers no test uses; retire the parity test | part of `styles.css` | medium | |
 
 Until T8 retires it, the parity test below guards any styling PR that should look the same.
 

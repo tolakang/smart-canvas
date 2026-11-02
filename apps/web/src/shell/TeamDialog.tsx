@@ -7,6 +7,7 @@ import type { TeamRole } from '@smart-canvas/core';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import { DIALOG, DIALOG_LONG_CARD, DIALOG_SELECT, DIALOG_STICKY_FOOT, PRESET_FIELD } from '../ui/tw';
+import { BADGE, btn } from '../ui/button';
 
 interface Member {
   userId: string;
@@ -140,12 +141,12 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                           </option>
                         ))}
                       </select>
-                      <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void remove(m)} aria-label={`Remove ${m.email}`}>
+                      <button type="button" className={btn('ghost-danger', 'card-row')} onClick={() => void remove(m)} aria-label={`Remove ${m.email}`}>
                         Remove
                       </button>
                     </span>
                   ) : (
-                    <span className="sc-badge">{ROLE_LABEL[m.role]}</span>
+                    <span className={BADGE}>{ROLE_LABEL[m.role]}</span>
                   )}
                 </li>
               ))}
@@ -177,7 +178,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                 Leave it empty for a link anyone can use once, or add an email so only that person can join.
               </p>
               <div className="sc-form__actions">
-                <button type="submit" className="sc-btn sc-btn--primary">
+                <button type="submit" className={btn('primary', 'card')}>
                   Create invite link
                 </button>
               </div>
@@ -185,7 +186,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
             {link && (
               <div className="sc-invite-link flex gap-(--sp-2)" role="group" aria-label="New invite link">
                 <input className="flex-1" readOnly value={link} aria-label="Invite link" onFocus={(e) => e.currentTarget.select()} />
-                <button type="button" className="sc-btn sc-btn--primary" onClick={() => void copy()}>
+                <button type="button" className={btn('primary', 'card')} onClick={() => void copy()}>
                   {copied ? 'Copied ✓' : 'Copy'}
                 </button>
               </div>
@@ -203,7 +204,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
                           {ROLE_LABEL[i.role]} · expires {new Date(i.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                         </span>
                       </span>
-                      <button type="button" className="sc-btn sc-btn--ghost sc-btn--danger" onClick={() => void revoke(i)} aria-label={`Revoke ${ROLE_LABEL[i.role]} invite for ${i.email ?? 'anyone'}`}>
+                      <button type="button" className={btn('ghost-danger', 'card-row')} onClick={() => void revoke(i)} aria-label={`Revoke ${ROLE_LABEL[i.role]} invite for ${i.email ?? 'anyone'}`}>
                         Revoke
                       </button>
                     </li>
@@ -219,7 +220,7 @@ export function TeamDialog(props: { teamId: string; teamName: string; userId: st
           </p>
         )}
         <div className={DIALOG_STICKY_FOOT}>
-          <button type="button" className="sc-btn" onClick={() => ref.current?.close()}>
+          <button type="button" className={btn('default', 'card')} onClick={() => ref.current?.close()}>
             Close
           </button>
         </div>

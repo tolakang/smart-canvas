@@ -18,6 +18,7 @@ import { confirmDelete, Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { Slot } from './Slot';
 import { NO_CANVAS } from './pinch';
+import { btn, iconBtn } from '../ui/button';
 
 type Lang = 'km' | 'en';
 
@@ -121,7 +122,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
               {!readOnly && (
                 <button
                   type="button"
-                  className={`sc-icon-btn sc-hl-row__delete opacity-0 [transition:opacity_var(--t-fast)] group-hover/hl:opacity-100 group-focus-within/hl:opacity-100 [@media(hover:none)]:opacity-100 ${NO_CANVAS}`}
+                  className={`${iconBtn({ transition: '[transition:opacity_var(--t-fast)]' })} sc-hl-row__delete opacity-0 group-hover/hl:opacity-100 group-focus-within/hl:opacity-100 [@media(hover:none)]:opacity-100 ${NO_CANVAS}`}
                   aria-label={`Delete headline ${i + 1}`}
                   title="Delete this Khmer / English pair"
                   onClick={() => window.confirm(`Delete headline ${i + 1} (both languages)?`) && run((d) => deletePairRow(d, pair.id, i))}
@@ -146,7 +147,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
           ))}
         </div>
         {!readOnly && (
-          <button type="button" className="sc-btn sc-btn--soft sc-hl-add flex w-auto gap-6" onClick={() => run((d) => addPairRow(d, pair.id, { km: newId(), en: newId() }))}>
+          <button type="button" className={`${btn('soft', 'node', { display: 'flex', gap: 'gap-6' })} sc-hl-add w-auto`} onClick={() => run((d) => addPairRow(d, pair.id, { km: newId(), en: newId() }))}>
             <Icon name="plus" size={14} /> Add headline
           </button>
         )}

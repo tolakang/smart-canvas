@@ -9,6 +9,7 @@ import { versionTitle, versionWhen, type Version } from './HistoryPanel';
 import { Icon } from './LayerRow';
 import { ADD, COUNT, COUNTS, GHOST, GROUP_ADD, GROUP_END, GROUP_START, ICON, NAME, PRIMARY, SAVE_BUTTON, SAVE_LONG, SAVE_SHORT, saveClass, saveDotClass, SEP, TOPBAR } from './topbar';
 import { VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
+import { BADGE } from '../ui/button';
 
 /** U2: what the save status says where the bar is narrow (tablets, phones). */
 const SHORT_LABEL: Record<SaveState, string> = { saved: 'Saved', pending: 'Unsaved', saving: 'Saving…', error: 'Retrying…', conflict: 'Newer version' };
@@ -62,7 +63,7 @@ export function TopBar(props: {
         <strong className={NAME} title={props.name}>
           {props.name}
         </strong>
-        {readOnly && !props.previewing && <span className="sc-badge">View only</span>}
+        {readOnly && !props.previewing && <span className={BADGE}>View only</span>}
         {!readOnly && screen !== 'phone' && (
           <>
             <span className={SEP} aria-hidden="true" />

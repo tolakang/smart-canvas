@@ -10,6 +10,7 @@ import { useBoard } from './context';
 import type { GroupFlowNode } from './flow';
 import { Icon } from './LayerRow';
 import { NO_CANVAS } from './pinch';
+import { iconBtn } from '../ui/button';
 
 
 /** A group (T13.7): a frame tinted in its colour behind its nodes, with a header to drag, rename, collapse or export. */
@@ -61,13 +62,13 @@ export function GroupNodeView({ data }: NodeProps<GroupFlowNode>) {
         <span className="sc-group__count rounded-[99px] bg-surface px-6 py-0 text-xs font-[500] text-muted">{group.nodes.length}</span>
         <span className="sc-group__actions ml-auto flex gap-2">
           {!readOnly && (
-            <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Group colour: ${group.color}`} title={`Colour (next: ${nextColor})`} onClick={() => run((d) => updateGroup(d, group.id, { color: nextColor }))}>
+            <button type="button" className={`${iconBtn()} ${NO_CANVAS}`} aria-label={`Group colour: ${group.color}`} title={`Colour (next: ${nextColor})`} onClick={() => run((d) => updateGroup(d, group.id, { color: nextColor }))}>
               <span className="sc-group__swatch block size-12 rounded-[50%] bg-(--group)" aria-hidden="true" />
             </button>
           )}
           <button
             type="button"
-            className={`sc-icon-btn ${NO_CANVAS}`}
+            className={`${iconBtn()} ${NO_CANVAS}`}
             aria-label={`${group.collapsed ? 'Expand' : 'Collapse'} group ${group.label}`}
             aria-expanded={!group.collapsed}
             title={group.collapsed ? 'Expand' : 'Collapse'}
@@ -77,12 +78,12 @@ export function GroupNodeView({ data }: NodeProps<GroupFlowNode>) {
             <Icon name={group.collapsed ? 'plus' : 'minus'} />
           </button>
           {outputs.length > 0 && (
-            <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Export group ${group.label}`} title={`Export its ${outputs.length} Preview${outputs.length === 1 ? '' : 's'}`} onClick={() => exportOutputs(outputs)}>
+            <button type="button" className={`${iconBtn()} ${NO_CANVAS}`} aria-label={`Export group ${group.label}`} title={`Export its ${outputs.length} Preview${outputs.length === 1 ? '' : 's'}`} onClick={() => exportOutputs(outputs)}>
               <Icon name="export" />
             </button>
           )}
           {!readOnly && (
-            <button type="button" className={`sc-icon-btn ${NO_CANVAS}`} aria-label={`Ungroup ${group.label}`} title="Ungroup (the nodes stay)" onClick={() => run((d) => ungroup(d, group.id))}>
+            <button type="button" className={`${iconBtn()} ${NO_CANVAS}`} aria-label={`Ungroup ${group.label}`} title="Ungroup (the nodes stay)" onClick={() => run((d) => ungroup(d, group.id))}>
               <Icon name="close" />
             </button>
           )}

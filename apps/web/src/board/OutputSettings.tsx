@@ -8,6 +8,7 @@ import { META } from './card';
 import { useBoard } from './context';
 import { presetSettings, unitSettings, withAutoLabel } from './OutputNode';
 import { NO_CANVAS } from './pinch';
+import { btn } from '../ui/button';
 
 const SCALES = [1, 2, 3, 4] as const;
 
@@ -114,7 +115,7 @@ export function OutputSettings({ output, connected }: { output: OutputNode; conn
       {!readOnly && (
         <button
           type="button"
-          className={`sc-btn ${NO_CANVAS}`}
+          className={`${btn()} ${NO_CANVAS}`}
           onClick={() => (connected ? disconnectOutput(output.id) : reconnectOutput(output.id))}
         >
           {connected ? 'Disconnect' : 'Reconnect'}
