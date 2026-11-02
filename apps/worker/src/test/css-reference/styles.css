@@ -1,4 +1,4 @@
-/* The app's CSS at 02e76350ab5baa9a001f2ad3e60374d138fa0edd (origin/main), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at c726fa458ebbf1cae66929116f7b304224a96ae7 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -403,6 +403,10 @@
 
   .mr-\[-4px\] {
     margin-right: -4px;
+  }
+
+  .mr-auto {
+    margin-right: auto;
   }
 
   .-mb-\(--sp-5\) {
@@ -2196,6 +2200,10 @@
     padding-right: var(--sp-2);
   }
 
+  .pr-2 {
+    padding-right: 2px;
+  }
+
   .pr-6 {
     padding-right: 6px;
   }
@@ -2302,6 +2310,10 @@
 
   .pl-16 {
     padding-left: 16px;
+  }
+
+  .pl-18 {
+    padding-left: 18px;
   }
 
   .pl-\[env\(safe-area-inset-left\)\] {
@@ -2597,6 +2609,10 @@
     color: var(--fig-bar-fg);
   }
 
+  .\[color\:var\(--fig-bar-muted\)\] {
+    color: var(--fig-bar-muted);
+  }
+
   .\[color\:var\(--fig-blue\,var\(--accent\)\)\] {
     color: var(--fig-blue, var(--accent));
   }
@@ -2760,6 +2776,10 @@
 
   .opacity-70 {
     opacity: .7;
+  }
+
+  .opacity-75 {
+    opacity: .75;
   }
 
   .opacity-100 {
@@ -4129,6 +4149,14 @@
     color: var(--fg);
   }
 
+  .aria-pressed\:border-accent[aria-pressed="true"] {
+    border-color: var(--accent);
+  }
+
+  .aria-pressed\:bg-accent[aria-pressed="true"] {
+    background-color: var(--accent);
+  }
+
   .aria-pressed\:bg-accent-soft[aria-pressed="true"] {
     background-color: var(--accent-soft);
   }
@@ -4181,6 +4209,14 @@
 
   .aria-pressed\:\[background\:var\(--fig-select\)\][aria-pressed="true"] {
     background: var(--fig-select);
+  }
+
+  .data-\[over\]\:border-accent[data-over] {
+    border-color: var(--accent);
+  }
+
+  .data-\[over\]\:bg-accent-soft[data-over] {
+    background-color: var(--accent-soft);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -4711,6 +4747,23 @@
 
   .\[\&_\.sc-icon\]\:m-0 .sc-icon {
     margin: 0;
+  }
+
+  .\[\&_\.sc-muted\]\:text-\[11px\] .sc-muted {
+    font-size: 11px;
+  }
+
+  .\[\&_\.sc-muted\]\:text-xs .sc-muted {
+    font-size: var(--fs-xs);
+  }
+
+  .\[\&_\.sc-muted\]\:font-\[400\] .sc-muted {
+    --tw-font-weight: 400;
+    font-weight: 400;
+  }
+
+  .\[\&_\.sc-muted\]\:\[color\:var\(--fig-bar-muted\)\] .sc-muted {
+    color: var(--fig-bar-muted);
   }
 
   .\[\&_\:is\(input\,select\,textarea\)\:focus\]\:\[outline\:none\] :is(input, select, textarea):focus {
@@ -5244,6 +5297,30 @@
     width: 100%;
   }
 
+  .\[\&_select\:not\(\.sc-native\)\:not\(\[multiple\]\)\]\:appearance-none select:not(.sc-native):not([multiple]) {
+    appearance: none;
+  }
+
+  .\[\&_select\:not\(\.sc-native\)\:not\(\[multiple\]\)\]\:\[background-image\:linear-gradient\(45deg\,transparent_50\%\,var\(--muted\)_50\%\)\,linear-gradient\(135deg\,var\(--muted\)_50\%\,transparent_50\%\)\] select:not(.sc-native):not([multiple]) {
+    background-image: linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  }
+
+  .\[\&_select\:not\(\.sc-native\)\:not\(\[multiple\]\)\]\:\[background-size\:4px_4px\,4px_4px\] select:not(.sc-native):not([multiple]) {
+    background-size: 4px 4px, 4px 4px;
+  }
+
+  .\[\&_select\:not\(\.sc-native\)\:not\(\[multiple\]\)\]\:\[background-position\:calc\(100\%_-_14px\)_52\%\,calc\(100\%_-_10px\)_52\%\] select:not(.sc-native):not([multiple]) {
+    background-position: calc(100% - 14px) 52%, calc(100% - 10px) 52%;
+  }
+
+  .\[\&_select\:not\(\.sc-native\)\:not\(\[multiple\]\)\]\:bg-no-repeat select:not(.sc-native):not([multiple]) {
+    background-repeat: no-repeat;
+  }
+
+  .\[\&_select\:not\(\.sc-native\)\:not\(\[multiple\]\)\]\:pr-\[28px\]\! select:not(.sc-native):not([multiple]) {
+    padding-right: 28px !important;
+  }
+
   .\[\&_span\]\:text-\[11\.5px\] span {
     font-size: 11.5px;
   }
@@ -5759,6 +5836,10 @@
     color: var(--muted);
   }
 
+  .\[\&\>span\.sc-muted\]\:text-\[11px\] > span.sc-muted {
+    font-size: 11px;
+  }
+
   .\[\&\>span\:first-child\]\:line-through > span:first-child {
     text-decoration-line: line-through;
   }
@@ -5817,6 +5898,10 @@
 
   .sc-dialog[open] .\[\.sc-dialog\[open\]_\&\]\:\[animation\:sc-pop_var\(--t-med\)_both\] {
     animation: sc-pop var(--t-med) both;
+  }
+
+  .sc-fig .\[\.sc-fig_\&\>span\.sc-muted\]\:text-\[10px\] > span.sc-muted {
+    font-size: 10px;
   }
 
   .sc-node .\[\.sc-node_\&\]\:max-w-full {
@@ -5882,6 +5967,14 @@
   }
 
   :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=checkbox\]\,\[type\=radio\]\,\[type\=color\]\,\[type\=range\]\,\[type\=file\]\)\,select\,textarea\)\)\]\:\[transition\:border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\] :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="file"]), select, textarea)) {
+    transition: border-color var(--t-fast),box-shadow var(--t-fast);
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\)\]\:rounded-md :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea)) {
+    border-radius: var(--r-md);
+  }
+
+  :where(.\[\:where\(\&_\:is\(input\:not\(\[type\=radio\]\,\[type\=checkbox\]\,\[type\=color\]\,\[type\=file\]\)\,select\,textarea\)\)\]\:\[transition\:border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\] :is(input:not([type="radio"], [type="checkbox"], [type="color"], [type="file"]), select, textarea)) {
     transition: border-color var(--t-fast),box-shadow var(--t-fast);
   }
 
@@ -6228,12 +6321,20 @@
     margin: 0;
   }
 
+  :where(.\[\:where\(\&\)\]\:m-auto) {
+    margin: auto;
+  }
+
   :where(.\[\:where\(\&\)\]\:mx-auto) {
     margin-inline: auto;
   }
 
   :where(.\[\:where\(\&\)\]\:my-\[10vh\]) {
     margin-block: 10vh;
+  }
+
+  :where(.\[\:where\(\&\)\]\:block) {
+    display: block;
   }
 
   :where(.\[\:where\(\&\)\]\:flex) {
@@ -6356,6 +6457,14 @@
 
   :where(.\[\:where\(\&\)\]\:p-24) {
     padding: 24px;
+  }
+
+  :where(.\[\:where\(\&\)\]\:text-danger) {
+    color: var(--danger);
+  }
+
+  :where(.\[\:where\(\&\)\]\:text-muted) {
+    color: var(--muted);
   }
 
   :where(.\[\:where\(\&\)\]\:\[box-shadow\:var\(--shadow-1\)\]) {
@@ -7591,8 +7700,6 @@ svg.react-flow__connectionline {
 button { font: inherit; cursor: pointer; }
 input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
 
-.sc-muted { color: var(--muted); }
-.sc-error { color: var(--danger); margin: 0; }
 
 /* The board page never scrolls; the board itself takes the visible height (dvh, see chrome.css). */
 html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -7601,14 +7708,12 @@ html:has(.sc-board), body:has(.sc-board) { height: 100%; overflow: hidden; overs
 
 
 /* T8.1 layer rows (main node list and editor Layers panel) */
-.sc-icon { display: block; margin: auto; }
 
 
 /* Renderer */
 html.sc-render-page, html.sc-render-page body { background: transparent; margin: 0; }
 
 
-.sc-layer__name > span.sc-muted { font-size: 11px; }
 
 
 
@@ -7621,20 +7726,15 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 
 
-.sc-fig__bar .sc-muted, .sc-fig__muted { color: var(--fig-bar-muted); }
-
-.sc-fig .sc-layer__name > span.sc-muted { font-size: 10px; }
-
-.sc-design__title .sc-muted { font-weight: 400; }
-
-
-
-.sc-node button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 
 
 
- .sc-topbar .sc-icon { margin: 0; }
+
+
+
+
+
 
 
 
@@ -7683,8 +7783,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
   --ambient: radial-gradient(1100px 620px at 12% -12%, #172447 0, transparent 62%), radial-gradient(900px 560px at 108% 6%, #2a1a47 0, transparent 58%), radial-gradient(800px 500px at 50% 120%, #0f2f26 0, transparent 60%), #0b0d11;
   --glass: color-mix(in srgb, var(--surface) 72%, transparent);
 }
-.sc-theme-toggle .sc-icon { margin: 0; }
-.sc-layers__title .sc-muted { font-weight: 400; }
 /* Tablets (and phones turned sideways): slimmer side panels so the canvas keeps most of the width. */
 
 /* Phone top bar: Export is a 36 px rounded icon button clear of the screen edge (it filled the bar's corner on
@@ -7693,8 +7791,6 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 /* Idle (wire not selected): small and quiet until hovered; the selected wire's badge is the full-size one. */
 
 
-.sc-search .sc-icon { margin: 0; }
-.sc-more .sc-icon { margin: 0; }
 
 
 
@@ -7714,9 +7810,7 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 
 
 
-.sc-history__open .sc-muted { font-size: var(--fs-xs); }
 
-.sc-comment__meta .sc-muted { font-size: 11px; }
 
 
 /* ===== U1 (2026-10-24): one component layer over the rules above — focus, buttons, fields, dialogs, menus,
@@ -7726,22 +7820,8 @@ html.sc-render-page, html.sc-render-page body { background: transparent; margin:
 input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color: var(--accent); }
 h1, h2, h3 { letter-spacing: -0.011em; }
 
-/* Fields: a quiet border, an accent ring on focus (not a heavy outline). */
-.sc-inspector-panel :is(input:not([type='radio'], [type='checkbox'], [type='color'], [type='file']), select, textarea) {
-  border-radius: var(--r-md); transition: border-color var(--t-fast), box-shadow var(--t-fast);
-}
-.sc-inspector-panel :is(input, select, textarea):focus-visible {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring);
-}
-.sc-inspector-panel input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
-/* Dropdowns: no native chrome; a chevron drawn in the theme's colour. */
-/* :not(.sc-native) lifts this above the older field rules, whose `background` shorthand would clear the chevron. */
-:is(.sc-card, .sc-dialog, .sc-inspector-panel, .sc-design) select:not(.sc-native):not([multiple]) {
-  appearance: none; -webkit-appearance: none; padding-right: 28px !important;
-  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 52%, calc(100% - 10px) 52%; background-size: 4px 4px, 4px 4px; background-repeat: no-repeat;
-}
-
+/* A textarea's placeholder, wherever it is. */
+textarea::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
 /* A dialog card's entrance (ui/tw.ts DIALOG_CARD). */
 @keyframes sc-pop { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
 
@@ -7791,8 +7871,6 @@ body { margin: 0; background: var(--ambient); background-attachment: fixed; min-
 
 
 
-/* The global `.sc-icon { margin: auto }` centres a lone icon; beside a label it must sit next to it. */
-:is(.sc-preview__export, .sc-head__action, .sc-preview__comments, .sc-slot__state) .sc-icon { margin: 0; }
 
 /* Touch: no browser tap flash — the app's own pressed and selected states show the tap. */
 button, summary, label, [role='tab'] { -webkit-tap-highlight-color: transparent; }

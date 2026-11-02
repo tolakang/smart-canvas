@@ -248,7 +248,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] B10 (D68) — new projects start without empty layers — [#214](https://github.com/tolakang/smart-canvas/pull/214)
 - [x] B3 (D69) — Preview grid, Fit floor, Fit all, zoom to a panel, tags that don't overlap — [#215](https://github.com/tolakang/smart-canvas/pull/215)
 - [x] B7 (D70) — the phone board, thumb first — [#216](https://github.com/tolakang/smart-canvas/pull/216)
-- C1–C3 (bigger rethinks) — on hold; the owner reviews them later.
+- C1–C3 (bigger rethinks) — the owner took C1 and C3 (2026-11-02, "C1 and C3, go ahead"); C2 stays out for now. See P31.
 
 ## P30 Clean-up review 2 (`docs/archive/CLEANUP-AUDIT-2.md`; owner, 2026-10-28: "start (1)", "go group (2)"; 2026-11-02, group (3): "go with your picks")
 - [x] (1) R1–R4 — dead code only its tests used — [#217](https://github.com/tolakang/smart-canvas/pull/217)
@@ -277,3 +277,9 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 ## Next (see BACKLOG; proposals, the owner picks)
 - [x] Q9 — Editor colour variables: the `--line` / `--muted` loop in `.sc-fig` — [#201](https://github.com/tolakang/smart-canvas/pull/201)
 - [ ] Q6 — Print colour: CMYK / PDF-X export (v2, D2) — planned, on hold: `docs/plans/Q6-print-colour.md`
+
+## P31 — UX review (c): guided start and one place for sizes (owner, 2026-11-02: "C1 and C3, go ahead"; D71)
+- [ ] C1a (D71) — sizes and artwork in New project
+- [ ] C1b — a progress strip until the first export
+- [ ] C3 — the layout choice on each size row; the Export Group card goes
+- C2 (pipeline lanes) — not now: D69 already makes the board readable at Fit

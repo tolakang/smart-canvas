@@ -5,8 +5,8 @@ inspector, History and Review, both editors and the dialogs, from a new user to 
 desktop, tablet and phone. The page with screenshots and before/after mockups:
 https://claude.ai/artifact/9EerLLPtprERQhDNZdV2TK (private; ask the owner).
 
-**Status (2026-10-28):** A1–A7 and B1–B10 are done (#202–#216; decisions D66–D70; `TASKS.md` P29). C1–C3 are on
-hold until the owner reviews them. Of the minor findings, F22 (Size presets lists families twice) is still open: the
+**Status (2026-10-28):** A1–A7 and B1–B10 are done (#202–#216; decisions D66–D70; `TASKS.md` P29). Of C1–C3 the
+owner took C1 and C3 (2026-11-02; D71; `TASKS.md` P31); C2 is left out for now. Of the minor findings, F22 (Size presets lists families twice) is still open: the
 second clean-up audit (`archive/CLEANUP-AUDIT-2.md`, U15) picks it up.
 
 **How it was checked:** the real app with seeded data (6 Previews in two Preset nodes, an approval, a comment, a Khmer

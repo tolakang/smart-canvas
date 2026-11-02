@@ -1,6 +1,6 @@
 # Handover — 2026-10-28 (UX review fixes done; clean-up review 2 under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D70**), `docs/BACKLOG.md` (P15–P30 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D71**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -151,4 +151,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next
-P1–P29 are done. **Clean-up review 2 (P30, `docs/archive/CLEANUP-AUDIT-2.md`):** group (1) is done; group (2) runs one piece per PR in the audit's order; group (3) (K1–K6) waits for the owner's decisions. The UX review's C1–C3 are on hold until the owner reviews them. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.
+P1–P30 are done (clean-up review 2: `docs/archive/CLEANUP-AUDIT-2.md`). **P31:** the owner took the UX review's C1 (guided start, D71) and C3 (the layout choice on each size row); C2 is left out for now. They run one PR each in `TASKS.md` P31's order. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.

@@ -1,29 +1,5 @@
 {
-  "ref": "02e76350ab5baa9a001f2ad3e60374d138fa0edd",
-  "sheets": [
-    "apps/web/src/styles.css"
-  ],
-  "subjects": [
-    ".sc-comment__meta .sc-muted",
-    ".sc-design__title .sc-muted",
-    ".sc-error",
-    ".sc-fig .sc-layer__name > span.sc-muted",
-    ".sc-fig__bar .sc-muted",
-    ".sc-fig__muted",
-    ".sc-history__open .sc-muted",
-    ".sc-icon",
-    ".sc-inspector-panel :is(input, select, textarea)",
-    ".sc-inspector-panel :is(input:not([type='radio'], [type='checkbox'], [type='color'], [type='file']), select, textarea)",
-    ".sc-inspector-panel input",
-    ".sc-layer__name > span.sc-muted",
-    ".sc-layers__title .sc-muted",
-    ".sc-more .sc-icon",
-    ".sc-muted",
-    ".sc-node button",
-    ".sc-search .sc-icon",
-    ".sc-theme-toggle .sc-icon",
-    ".sc-topbar .sc-icon",
-    ":is(.sc-card, .sc-dialog, .sc-inspector-panel, .sc-design) select:not(.sc-native):not([multiple])",
-    ":is(.sc-preview__export, .sc-head__action, .sc-preview__comments, .sc-slot__state) .sc-icon"
-  ]
+  "ref": "c726fa458ebbf1cae66929116f7b304224a96ae7",
+  "sheets": [],
+  "subjects": []
 }
