@@ -1,4 +1,4 @@
-/** Board keyboard shortcuts and remembered toggles (T13.5). */
+/** Board keyboard shortcuts, held modifier keys and remembered toggles (T13.5). */
 import { useReactFlow } from '@xyflow/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fitOptions, type CanvasTool } from './CanvasToolbar';
@@ -27,6 +27,51 @@ export function useStoredFlag(key: string, initial: boolean): [boolean, (v: bool
 const typing = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
 /** Space on a focused button or link presses it; it only means "pan" elsewhere. */
 const pressable = (t: EventTarget | null) => t instanceof HTMLElement && !!t.closest('button, a, [role="button"], [role="menuitem"], summary');
+
+/**
+ * Ctrl / ⌘ shortcuts on the window (undo, redo, group, duplicate), off while typing in a field: it has its own undo,
+ * and the browser's find and bookmark keys stay its own there. `handle` gets the lower-case key and returns true when
+ * it took the key (the browser's default is then prevented).
+ */
+export function useModKey(handle: (key: string, shift: boolean) => boolean) {
+  const ref = useRef(handle);
+  useLayoutEffect(() => {
+    ref.current = handle;
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (typing(e.target) || !(e.ctrlKey || e.metaKey)) return;
+      if (ref.current(e.key.toLowerCase(), e.shiftKey)) e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+}
+
+/** Alt / Option held (D57: a drag then skips grid snap and the alignment guides): the state to render, the ref for handlers. */
+export function useAltHeld(): [boolean, React.MutableRefObject<boolean>] {
+  const ref = useRef(false);
+  const [held, setHeld] = useState(false);
+  useEffect(() => {
+    const set = (on: boolean) => {
+      if (ref.current === on) return;
+      ref.current = on;
+      setHeld(on);
+    };
+    const down = (e: KeyboardEvent) => e.key === 'Alt' && set(true);
+    const up = (e: KeyboardEvent) => e.key === 'Alt' && set(false);
+    const off = () => set(false);
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', off);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', off);
+    };
+  }, []);
+  return [held, ref];
+}
 
 const ARROWS: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 

@@ -16,10 +16,10 @@ This skill is the board's rules; how to style anything (Tailwind on our tokens, 
 
 | Piece | Where | What it does |
 |---|---|---|
-| `<ReactFlow>` and every handler | `board/Board.tsx` (~line 1490) | One instance. Controlled `nodes` / `edges`, `colorMode={theme}`, `fitView`, `panOnScroll`, `zoomOnScroll={false}`, `deleteKeyCode={null}` (Delete is ours, `board-keys.tsx`). |
+| `<ReactFlow>` and every handler | `board/Board.tsx` (~line 993); wire handlers in `use-wires.ts`, top bar in `BoardTopBar.tsx`, + Add items in `use-add-menus.ts` | One instance. Controlled `nodes` / `edges`, `colorMode={theme}`, `fitView`, `panOnScroll`, `zoomOnScroll={false}`, `deleteKeyCode={null}` (Delete is ours, `board-keys.tsx`). |
 | Doc ↔ flow | `board/flow.ts` | `docToNodes(doc)`, `docToEdges(doc)`, `syncNodes(current, fresh)`, the id helpers. |
 | Node types | `board/nodes.tsx:111` (`nodeTypes`) | `inputNode`, `assetsNode`, `textNode`, `headlineNode`, `presetNode`, `mainNode`, `outputNode`, `groupNode`. Module-level constant. |
-| Edge types | `board/Board.tsx:247` (`edgeTypes = { routed: RoutedEdge }`) | One edge type: `board/RoutedEdge.tsx` (bezier or reroute points, ✂ badge on hover/selection). |
+| Edge types | `board/Board.tsx:165` (`edgeTypes = { routed: RoutedEdge }`) | One edge type: `board/RoutedEdge.tsx` (bezier or reroute points, ✂ badge on hover/selection). |
 | Board actions for nodes | `board/context.ts` (`useBoard()`) | Nodes call `run(doc => …)`, `readOnly`, etc. They never edit React Flow state for doc changes. |
 | Zoomed-out name tags | `board/ZoomLabels.tsx` | `ViewportPortal`, fixed screen size via `--zoom`; never takes a click; a tag that would cover another is left out (`visibleTags`, D69). |
 | Toolbar, minimap | `board/CanvasToolbar.tsx`, `<MiniMap>` in Board | Zoom, Fit to screen and Fit all (D69), Select/Hand, grid, Tidy; on a phone Add first (`onAdd`, D70). Minimap only on desktop. |
@@ -54,7 +54,7 @@ Preset rows. Always use the helpers (`stackNodeId`, `outputIdOfNode`, `docIdOfNo
 
 - **One edge type, `routed`.** Variations are data (`RoutedEdgeData`: `points`, `noCut`) or classes (`sc-edge--dim`, `sc-edge--pulse`), not new edge types.
 - **Deleting a wire** goes through the board's edge deletion (`onEdgesDelete` / `deleteElements`), so the doc rule runs (an output's wire freezes it; an empty card's wire sets `AssetStack.unwired`, D49.1).
-- **Reconnecting:** `edgesReconnectable`, `reconnectRadius={16}`, `connectionRadius={36}`; the handlers live in Board.tsx.
+- **Reconnecting:** `edgesReconnectable`, `reconnectRadius={16}`, `connectionRadius={36}`; the handlers live in `use-wires.ts` (`useWires`, called by Board.tsx).
 - **Labels and buttons on a wire** use `EdgeLabelRenderer` with `NO_CANVAS` (RoutedEdge's ✂ / Disconnect badge).
 
 ## 4. Viewport, zoom, touch
@@ -115,7 +115,7 @@ what is named instead.
 | | `delete-middle-node`, `intersections`, `node-position-animation`, `shapes`, `stress` | Delete rules in `delete-nodes.ts`; Tidy glides panels (D57); one card shape |
 | Edges | `edge-types`, `custom-edges`, `editable-edge` | `RoutedEdge` (bezier, or through reroute points you drag, T13.8) |
 | | `edge-label-renderer`, `edge-toolbar` | ✂ / Disconnect badge via `EdgeLabelRenderer` |
-| | `reconnect-edge`, `delete-edge-on-drop` | `onReconnect*` in Board.tsx |
+| | `reconnect-edge`, `delete-edge-on-drop` | `onReconnect*` in `use-wires.ts` |
 | | `animating-edges` | `.sc-edge--pulse` |
 | | `markers`, `floating-edges`, `simple-floating-edges`, `custom-connectionline`, `multi-connection-line`, `temporary-edges`, `edge-intersection`, `edge-routing` | Not used: fixed typed ports, no arrows |
 | Interaction | `validation`, `prevent-cycles` | `connectionRefusal` (core) |
@@ -126,7 +126,7 @@ what is named instead.
 | | `helper-lines` | `align()` guides in `onNodesChange` (T13.5) |
 | | `touch-device` | D58 (`usePinch`, `noPanClassName`, `nodeDragThreshold`, larger touch targets) |
 | | `contextual-zoom` | Zoomed out, panels show name tags (`ZoomLabels`, `LABEL_ZOOM`) |
-| | `connection-events`, `computing-flows`, `collaborative` | Connections are handled in Board.tsx; data flow is core's layout engine; no live collaboration |
+| | `connection-events`, `computing-flows`, `collaborative` | Connections are handled in `use-wires.ts`; data flow is core's layout engine; no live collaboration |
 | Layout | `auto-layout`, `dagre`, `elkjs`, `elkjs-multiple-handles`, `dynamic-layouting`, `horizontal`, `force-layout`, `node-collisions`, `expand-collapse` | **Tidy** (`tidy.ts`, D57) and N4 placement. No layout libraries |
 | Grouping | `sub-flows`, `parent-child-relation`, `selection-grouping` | Group frames (T13.7), derived; `parentId` is not used |
 | Styling | `dark-mode`, `base-style`, `tailwind`, `turbo-flow` | `colorMode={theme}` plus our tokens: `docs/FRONTEND.md` |
@@ -150,7 +150,7 @@ what is named instead.
 2. flow.ts: id helpers, a `Node<…>` type, add it to `BoardNode`, build it in `docToNodes` (and edges in `docToEdges`).
 3. Component `XNode.tsx`: `NodeHead`, `Handle`s with typed ids, `NO_CANVAS` on controls, `readOnly` respected.
 4. Register it in `nodeTypes` (nodes.tsx). Add it to the + Add menu and the right-click menu if users create it.
-5. Connections: extend `connectionRefusal` (`flow.ts`), and `onConnect` in Board.tsx if it wires specially.
+5. Connections: extend `connectionRefusal` (`flow.ts`), and `onConnect` in `use-wires.ts` if it wires specially.
 6. Delete: `delete-nodes.ts`. Zoomed-out tag: `panelTitle` in ZoomLabels. Inspector section if it has settings.
 7. Tests: a unit test for the doc ↔ flow mapping, and one e2e test that adds, wires and deletes it.
 8. Run `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the tests (with Postgres).

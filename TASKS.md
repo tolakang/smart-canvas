@@ -262,8 +262,8 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (2) U13 — a skip link and one main landmark on the board and the projects page — [#225](https://github.com/tolakang/smart-canvas/pull/225)
 - [x] (2) U14 — an empty text layer shows a placeholder in the editors and previews, nothing in export — [#226](https://github.com/tolakang/smart-canvas/pull/226)
 - [x] (2) U15, U17 — the Presets dialog lists each size once, team sizes marked Team; one button class — [#227](https://github.com/tolakang/smart-canvas/pull/227)
-- [x] (2) U16, U18, U19 — History and Review named in the top bar; the group tag names both cards; the phone board opens at the top (this PR)
-- [ ] (2) U8 — splitting `Board.tsx`: optional, not started
+- [x] (2) U16, U18, U19 — History and Review named in the top bar; the group tag names both cards; the phone board opens at the top — [#228](https://github.com/tolakang/smart-canvas/pull/228)
+- [x] (2) U8 — `Board.tsx` split (1,713 → about 1,200 lines): wire handlers, + Add items, top bar and three small hooks moved out as they were (this PR)
 - [ ] (3) K1–K6 — wait for the owner's decisions
 
 ## Next (see BACKLOG; proposals, the owner picks)
