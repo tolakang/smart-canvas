@@ -46,6 +46,18 @@ export function isEmptyLayer(s: InputSource): boolean {
   return c.kind === 'image' || c.kind === 'vector' ? !c.assetId : c.kind === 'text' ? !c.text.trim() : false;
 }
 
+/**
+ * D63, K6: a scene with nothing to draw — every layer in it is empty (or it has none). Such a Preview can still be
+ * approved; the editor says so beside Approve.
+ */
+export function allLayersEmpty(doc: ProjectDoc, sourceIds: readonly string[]): boolean {
+  const byId = new Map(doc.sources.map((s) => [s.id, s]));
+  return sourceIds.every((id) => {
+    const s = byId.get(id);
+    return !s || isEmptyLayer(s);
+  });
+}
+
 /** Wired, visible layers of a composition that have nothing to draw yet. */
 function emptyIssues(doc: ProjectDoc, compositionId: string): HealthIssue[] {
   const comp = compositionById(doc, compositionId);
