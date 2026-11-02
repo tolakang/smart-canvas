@@ -99,7 +99,7 @@ export const projectRoutes: FastifyPluginAsync<{ store: ObjectStore }> = async (
         .from(projects)
         .where(inTeam(req.params));
       if (!row) return reply.code(404).send({ error: 'not_found' });
-      // Stored v1 / v2 documents are upgraded on read (D32, D56); the next save stores v3.
+      // Stored v1–v3 documents are upgraded on read (D32, D56, D61); the next save stores v4.
       return { ...row, doc: migrateProjectDoc(row.doc) };
     },
   );
