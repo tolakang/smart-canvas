@@ -80,7 +80,7 @@ CSS that stays CSS, and why:
 
 ## 3. The board with React Flow
 
-The board (D49: asset nodes → Main Comps + Export Group → Preset nodes → Previews; names D66) is `@xyflow/react` v12.
+The board (D49: asset nodes → Main Comps → Preset nodes → Previews; names D66, D72) is `@xyflow/react` v12.
 
 - **The doc is the source of truth; React Flow state is a view.** `ProjectDoc` (packages/core) owns positions, wires
   (typed `edges`, D32) and groups. `docToNodes` / `docToEdges` (`board/flow.ts`) build the view; `syncNodes` (`Board.tsx`) keeps

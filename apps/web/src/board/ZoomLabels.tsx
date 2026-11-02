@@ -46,7 +46,7 @@ export function panelTitle(doc: ProjectDoc, nodeId: string): string | null {
   }
   const comp = compositionIdOfNode(nodeId);
   // D66: the group holds both cards, so its tag names both (clean-up 2, U18).
-  return comp && compositionById(doc, comp) ? 'Main Comps · Export Group' : null;
+  return comp && compositionById(doc, comp) ? 'Main Comps' : null;
 }
 
 /** A tag's size on screen: about 7 px a character plus its padding, 26 px tall, at most 320 px wide (TAG). */

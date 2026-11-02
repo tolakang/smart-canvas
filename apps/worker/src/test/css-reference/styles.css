@@ -1,4 +1,4 @@
-/* The app's CSS at dcc963542de8e39f65e74b70a58c1235e9119abc (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 6bf2966f31ea774e5383a026eeec83225bdc6f70 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -151,10 +151,6 @@
 
   .top-\[50\%\] {
     top: 50%;
-  }
-
-  .top-\[calc\(100\%\+4px\)\] {
-    top: calc(100% + 4px);
   }
 
   .-right-4 {
@@ -401,10 +397,6 @@
     margin-right: 0;
   }
 
-  .mr-\[-4px\] {
-    margin-right: -4px;
-  }
-
   .mr-auto {
     margin-right: auto;
   }
@@ -563,11 +555,6 @@
   .size-16 {
     width: 16px;
     height: 16px;
-  }
-
-  .size-18 {
-    width: 18px;
-    height: 18px;
   }
 
   .size-20 {
@@ -932,6 +919,10 @@
     min-width: 18px;
   }
 
+  .min-w-20 {
+    min-width: 20px;
+  }
+
   .min-w-22 {
     min-width: 22px;
   }
@@ -950,10 +941,6 @@
 
   .min-w-92 {
     min-width: 92px;
-  }
-
-  .min-w-140 {
-    min-width: 140px;
   }
 
   .min-w-200 {
@@ -1548,16 +1535,6 @@
     border-color: var(--placeholder-line);
   }
 
-  .border-\[color-mix\(in_srgb\,var\(--accent\)_45\%\,var\(--line\)\)\] {
-    border-color: var(--accent);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .border-\[color-mix\(in_srgb\,var\(--accent\)_45\%\,var\(--line\)\)\] {
-      border-color: color-mix(in srgb,var(--accent) 45%,var(--line));
-    }
-  }
-
   .border-\[color-mix\(in_srgb\,var\(--line\)_80\%\,transparent\)\] {
     border-color: var(--line);
   }
@@ -1688,16 +1665,6 @@
 
   .bg-\(--group\) {
     background-color: var(--group);
-  }
-
-  .bg-\[color-mix\(in_srgb\,var\(--accent-soft\)_70\%\,transparent\)\] {
-    background-color: var(--accent-soft);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-\[color-mix\(in_srgb\,var\(--accent-soft\)_70\%\,transparent\)\] {
-      background-color: color-mix(in srgb,var(--accent-soft) 70%,transparent);
-    }
   }
 
   .bg-\[color-mix\(in_srgb\,var\(--accent-soft\)_75\%\,transparent\)\] {
@@ -1990,10 +1957,6 @@
     padding: 10px;
   }
 
-  .p-12 {
-    padding: 12px;
-  }
-
   .p-14 {
     padding: 14px;
   }
@@ -2124,10 +2087,6 @@
 
   .py-4 {
     padding-block: 4px;
-  }
-
-  .py-5 {
-    padding-block: 5px;
   }
 
   .py-6 {
@@ -2356,6 +2315,10 @@
 
   .text-\[9px\] {
     font-size: 9px;
+  }
+
+  .text-\[10\.5px\] {
+    font-size: 10.5px;
   }
 
   .text-\[10px\] {
@@ -2831,10 +2794,6 @@
     box-shadow: 0 0 0 4px var(--ring);
   }
 
-  .\[box-shadow\:0_1px_1px_rgb\(16_24_40\/0\.04\)\] {
-    box-shadow: 0 1px 1px #1018280a;
-  }
-
   .\[box-shadow\:0_1px_2px_rgb\(16_24_40\/0\.06\)\,0_6px_16px_-6px_rgb\(16_24_40\/0\.12\)\] {
     box-shadow: 0 1px 2px #1018280f, 0 6px 16px -6px #1018281f;
   }
@@ -2923,10 +2882,6 @@
 
   .\[outline\:1px_dashed_var\(--fig-blue\,var\(--accent\)\)\] {
     outline: 1px dashed var(--fig-blue, var(--accent));
-  }
-
-  .\[outline\:1px_solid_var\(--accent\)\] {
-    outline: 1px solid var(--accent);
   }
 
   .\[outline\:2px_dashed_var\(--accent\)\] {
@@ -3119,10 +3074,6 @@
 
   .\[--head\:var\(--head-preview\)\] {
     --head: var(--head-preview);
-  }
-
-  .\[--head\:var\(--head-rule\)\] {
-    --head: var(--head-rule);
   }
 
   .\[--input\:var\(--fig-select\)\] {
@@ -3994,10 +3945,6 @@
     }
   }
 
-  .hover\:bg-accent-soft:hover {
-    background-color: var(--accent-soft);
-  }
-
   .hover\:bg-danger-soft:hover {
     background-color: var(--danger-soft);
   }
@@ -4075,10 +4022,6 @@
 
   .focus-visible\:bg-input:focus-visible {
     background-color: var(--input);
-  }
-
-  .focus-visible\:bg-surface-2:focus-visible {
-    background-color: var(--surface-2);
   }
 
   .focus-visible\:\[outline\:2px_solid_var\(--accent\)\]:focus-visible {
@@ -4171,6 +4114,10 @@
     background-color: var(--accent-soft);
   }
 
+  .aria-pressed\:bg-surface[aria-pressed="true"] {
+    background-color: var(--surface);
+  }
+
   .aria-pressed\:\[color\:var\(--fig-blue\)\][aria-pressed="true"] {
     color: var(--fig-blue);
   }
@@ -4181,6 +4128,10 @@
 
   .aria-pressed\:text-accent[aria-pressed="true"] {
     color: var(--accent);
+  }
+
+  .aria-pressed\:text-fg[aria-pressed="true"] {
+    color: var(--fg);
   }
 
   .aria-pressed\:text-muted[aria-pressed="true"] {
@@ -4219,6 +4170,10 @@
 
   .aria-pressed\:\[background\:var\(--fig-select\)\][aria-pressed="true"] {
     background: var(--fig-select);
+  }
+
+  .data-\[chosen\]\:aria-pressed\:text-accent[data-chosen][aria-pressed="true"] {
+    color: var(--accent);
   }
 
   .data-\[over\]\:border-accent[data-over] {

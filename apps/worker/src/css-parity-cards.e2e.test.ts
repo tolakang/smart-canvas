@@ -45,7 +45,6 @@ describe.skipIf(!adminUrl)('CSS parity: the node cards: Main Comps, Presets, Pre
     for (const [target, screen] of [
       [page.locator('.sc-comp__group').first(), 'comp-row-hover'],
       [page.locator('[aria-label="Preset GDN"] .sc-port').last(), 'preset-row-hover'],
-      [page.locator('.sc-rule__chip-reset').first(), 'chip-reset-hover'],
       [page.getByRole('button', { name: 'Export Preview Banner' }), 'preview-export-hover'],
     ] as const) {
       await target.hover();

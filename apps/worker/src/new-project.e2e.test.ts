@@ -37,7 +37,7 @@ describe.skipIf(!adminUrl)('a new project starts without empty layers (D68)', ()
   }, 60_000);
 
   it('a Preview card draws no placeholder boxes', async () => {
-    await page.locator('[aria-label="Export Group"]').first().getByRole('button', { name: /^Add GDN sizes/ }).click();
+    await page.locator('[aria-label="Main Comps"]').first().getByRole('button', { name: /^Add GDN sizes/ }).click();
     await page.locator('.react-flow__node-outputNode .sc-render--thumb').first().waitFor();
     expect(await page.locator('.react-flow__node-outputNode .sc-render__placeholder').count()).toBe(0);
   }, 60_000);

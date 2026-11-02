@@ -1,6 +1,6 @@
 # Handover — 2026-10-28 (UX review fixes done; clean-up review 2 under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D71**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D72**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -47,10 +47,10 @@ Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D7
 ```
 Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset nodes (purple), one ✂ wire each
                      ↓ into the top of the dashed group
-        [ Main Comps | Export Group ]                           ← the master (blue / mint); names D66
-                     ↓ a family in the empty Export Group, or drag out of the group's bottom port → preset popup
+        [ Main Comps ]                                          ← the master (blue); names D66, D72
+                     ↓ a family in Main Comps while it has no sizes, or drag out of the group's bottom port → preset popup
         Preset node (FB, IG, Story, GDN, App banner, Website, Gift, PR, team, Custom)   ← green
-           each size row  ── eye · trash ──→ Preview (Edit = its overrides, Export); Previews in rows of three (D69)
+           each size row  ── S·V·H · eye · trash ──→ Preview (Edit = its overrides, Export); Previews in rows of three (D69)
 ```
 
 **Asset nodes.** Each card holds items; you add, replace or delete each item. Pictures take PNG, JPG, WebP or SVG. A PDF's page is kept as vector — a PDF of several pages asks which one first (D59, `ui/PdfPageDialog.tsx`): the API draws it as a sanitized SVG with Poppler (D55, `apps/api/src/assets/pdf.ts`, `?page=N`); slots that take only pixels, or a server without the converter, get the browser's PNG of the same page (D52, `apps/web/src/pdf.ts`). All go through `uploadAsset` (cancel = `UploadCancelled`, no error shown).
@@ -64,8 +64,8 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 - **Square, Vertical, Horizontal** each open that layout's editor. A missing layout is added the first time it's opened (D42 guides).
 - All three editors share the master's layers: order, wiring, show/hide, **lock** and delete apply everywhere. Position and size are per layout (D50: `masterScene` of a guide, `InputSource.locked`).
 
-**Export Group** (D66; Core preset in V2, Core Rule before).
-- Always shows three sections listing Previews by the closest shape. Dragging a chip into another section sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`); × puts it back.
+**Which layout a size uses** (D72; the Export Group card before, Core preset in V2, Core Rule before that).
+- Each Preset node row shows S · V · H: the closest layout by shape, or one picked there, which sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`); picking the closest one again clears it (`PresetNode.tsx`, `LayoutChoice`).
 - The layout engine places each layer by its behaviour and its frame on the master (D38); since V2 the board doesn't show those rules (the Core Auto Layout Guide is gone).
 
 **Preset node (D46, D51).**
@@ -118,12 +118,12 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` (`addLanguagePair`, `addPairRow`, `deletePairRow`, `pairRows`, `pairInputs`) |
 | Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
 | Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`, `layerSpots`), `render.ts` (`masterScene`); layers a row can show: `layers.ts` (`layerSources`) |
-| Export Group data | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`; all derived) |
+| Layout per size, layer order | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`; all derived) |
 | Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies` by `SizePreset.family`, D54); built-in families in `packages/presets`; a Preset node's **Save as team preset** in `PresetNode.tsx`; families renamed / deleted in `shell/PresetsDialog.tsx` (M4) |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |
 | Board mapping | `apps/web/src/board/flow.ts` (`docToNodes`, `docToEdges`, `withPositions`, `LAYERS_HANDLE`, `cardEdgeId`); the Delete key: `delete-nodes.ts` |
 | Board placement | `apps/web/src/board/tidy.ts`: `clearSpot` (a new Preset node and its Previews land clear of other nodes), `tidyPositions` (**Tidy board** in the canvas toolbar and the canvas menu, one undo step), `tidySelectionPositions` (**Tidy selection**, two or more selected), `onGrid` |
-| Board UI | `Inspector.tsx` (Main Comps: its three layouts via `useOpenLayout` from `MainNode.tsx`; Preview; asset nodes by kind), `Board.tsx` (the canvas, menus, preset popup, conversion on open; clean-up 2, U8, moved the wire handlers to `use-wires.ts`, the + Add items to `use-add-menus.ts` and the top bar to `BoardTopBar.tsx`), `MainNode.tsx` (Main Comps + Export Group), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
+| Board UI | `Inspector.tsx` (Main Comps: its three layouts via `useOpenLayout` from `MainNode.tsx`; Preview; asset nodes by kind), `Board.tsx` (the canvas, menus, preset popup, conversion on open; clean-up 2, U8, moved the wire handlers to `use-wires.ts`, the + Add items to `use-add-menus.ts` and the top bar to `BoardTopBar.tsx`), `MainNode.tsx` (Main Comps), `AssetsNode.tsx`, `TextNode.tsx`, `HeadlineNode.tsx`, `nodes.tsx` (Background), `PresetNode.tsx`, `OutputNode.tsx` (Preview), `RoutedEdge.tsx` (✂ badges, `noCut`) |
 | Resets (owner, 2026-10-23: keep as is) | A reset never moves the element. Handle double-click: `resetForHandle` (that handle's drags removed from the history). The selection's **Reset rotation** / **Reset transform** buttons clear the rotation / skew **in place** (`resetRotation`, `resetTransform` in `geometry.ts`: centre and size kept). Replaying the history for the buttons was tried (#115) and reverted: it can move the element. |
 | Editors | `apps/web/src/editor/` (`MainEditor` lists the master's layers in every layout; `CanvasEditor` skips locked layers; `LayersPanel`, `board/LayerRow.tsx` `LayerActions` incl. lock). Transform box: `editor/transform/` (`math.ts` history and resets, `frame.ts` `snapMove` / `snapResize`, `transform-box.ts`) |
 | PDF uploads | API: `apps/api/src/assets/pdf.ts` (`pdftocairo -svg`, then the SVG sanitizer; 501 / 422 make the browser fall back). Browser: `apps/web/src/pdf.ts` (`pdfToPng`; pdf.js 5.4, lazy), from `uploadAsset` in `api.ts` (`{ pdf: 'image' }` for pixel-only slots) |

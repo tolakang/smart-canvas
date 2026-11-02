@@ -291,9 +291,14 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     );
     const row = boxes.filter((b) => b.id.startsWith('stk:') || b.id.startsWith('hl:')).sort((a, b) => a.x - b.x).slice(0, 2);
     if (row.length < 2) throw new Error('no asset row');
-    const from = { x: Math.max(...row.map((b) => b.x + b.width)) + 4, y: Math.max(...row.map((b) => b.y + b.height)) + 40 };
+    // The nearest spot of empty canvas below-right of them (not on a wire or a panel).
+    const corner = { x: Math.max(...row.map((b) => b.x + b.width)), y: Math.max(...row.map((b) => b.y + b.height)) };
+    const from = await phone.evaluate(({ x, y }) => {
+      for (let dy = 40; dy < 240; dy += 8) for (const dx of [4, 16, 32, 48]) if (document.elementFromPoint(x + dx, y + dy)?.classList.contains('react-flow__pane')) return { x: x + dx, y: y + dy };
+      return null;
+    }, corner);
+    if (!from) throw new Error('no empty canvas below the asset row');
     const to = { x: Math.min(...row.map((b) => b.x)) - 2, y: Math.min(...row.map((b) => b.y)) - 2 };
-    expect(await phone.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.classList.contains('react-flow__pane'), from)).toBe(true);
     const v0 = await viewport();
     await touchDrag([{ from, to }]);
     expect(await selbar.getByText(/^\d+ selected$/).innerText()).toMatch(/^[2-9] selected$/);

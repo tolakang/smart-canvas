@@ -411,7 +411,7 @@ function CompositionInspector({ compositionId }: { compositionId: string }) {
             </button>
           ))}
         </div>
-        <p className={`${MUTED_TEXT} ${HINT}`}>Each size uses the layout closest to its shape; change that in the Export Group.</p>
+        <p className={`${MUTED_TEXT} ${HINT}`}>Each size uses the layout closest to its shape; pick another on its row in the Preset node (S · V · H).</p>
       </Section>
       <HealthSection health={health} />
       <Section title="Square layout size">

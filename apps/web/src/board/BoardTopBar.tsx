@@ -161,7 +161,7 @@ export function TopBar(props: {
             aria-label="Export"
             onClick={props.onExport}
             disabled={props.outputCount === 0}
-            title={props.outputCount === 0 ? 'Add sizes first: pick them in the Export Group' : 'Export Previews'}
+            title={props.outputCount === 0 ? 'Add sizes first: pick them in Main Comps' : 'Export Previews'}
           >
             <Icon name="export" /> Export
           </button>

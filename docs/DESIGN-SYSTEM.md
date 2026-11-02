@@ -152,8 +152,8 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 ## Board look (U3 visual redesign)
 - **Ambient canvas:** the board sits on a soft multi-colour gradient (`--ambient`, light and dark). The top bar's groups, the canvas and the side panel float on it as rounded glass panels (`--glass`, 14–18 px corners, blur, `--shadow-2`).
 - **Top bar:** three pills — project (back, name, undo / redo), **Add** (a solid dark pill, centred), and actions (status, Assets, History, Review, theme, side panel, **Export**).
-- **Cards:** 16 px corners, 14 px padding, a soft two-layer shadow that lifts on hover, and a 2 px accent ring with a halo when selected. The header is a gentle tint of the card's colour with a coloured icon chip: assets violet `--head-asset`, Main Comps blue `--head-master`, Export Group cyan `--head-rule`, Previews teal `--head-preview`, Presets green `--head-preset`; frozen Previews grey.
-- **Main Comps group** (Main Comps + Export Group): a soft tinted frame (no dashed line).
+- **Cards:** 16 px corners, 14 px padding, a soft two-layer shadow that lifts on hover, and a 2 px accent ring with a halo when selected. The header is a gentle tint of the card's colour with a coloured icon chip: assets violet `--head-asset`, Main Comps blue `--head-master`, Previews teal `--head-preview`, Presets green `--head-preset`; frozen Previews grey.
+- **Main Comps group**: a soft tinted frame around Main Comps (no dashed line).
 - **Wires and ports:** 2 px wires tinted blue, accent with a glow when selected or hovered; 12 px ports with a white ring.
 - **Zoomed out (below 60 %):** each panel gets a dark name tag above it (Preview tags add ✓ approved / changed and the open-comment count). Tags keep their screen size at any zoom (`--zoom-inv`) and never take a click (`board/ZoomLabels.tsx`); a tag wider than its panel is cut to the panel's width (at least 48 px, the name ending in …), and one that still covers a tag already placed is left out (D69 as amended by K5, `visibleTags`).
 
@@ -172,7 +172,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - With nothing selected, the Design panel shows the canvas size and **Keyboard shortcuts** folded (open it to see them); touch screens show the gestures instead.
 
 ## Words, health and access (U7, D64)
-- **One name for each thing**, everywhere in the UI: **Main Comps** (the master artwork and its layouts; its editor is the "Main Comps editor"), the **Export Group** beside it (D66; Layer Comp and Core preset before) and **Preview** (each size; "Preview editor", "Export 3 Previews", "Previews" in the export dialog). Code keeps its model names (`output`, `main`).
+- **One name for each thing**, everywhere in the UI: **Main Comps** (the master artwork and its layouts; its editor is the "Main Comps editor"), and **Preview** (each size; "Preview editor", "Export 3 Previews", "Previews" in the export dialog). Code keeps its model names (`output`, `main`).
 - **Empty layers are a to-do, not a warning:** Main Comps or a Preview whose only issue is wired layers with no file or text yet shows a grey badge with an outlined dot, "N empty layers" (amends D35). Amber stays for real compromises (text that doesn't fit, a clamped layer), red for errors.
 - **No emoji as icons:** the library's delete, the Assets card's grid / list switch and the library's empty text use the icon set or words.
 - **Contrast:** checked against WCAG AA for every text colour on every surface in both themes (see Tokens). **Focus:** every control shows the accent ring on keyboard focus; project cards lift on focus like on hover. **Names:** every button and field on the board, the editors, the export dialog and the home has an accessible name (checked with a scan of the rendered pages). **Motion:** "reduce motion" turns off every transition and animation.
@@ -184,11 +184,10 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Cards:** 280 px wide, 16 px padding, 14 px between sections, 20 px corners. One dashed drop area per card ("Add or drop pictures"). Headline: Khmer / English tiles; the language in use has an accent outline and an accent caption with a dot, the other one's picture steps back (faded); a two-option switch, the one in use solid accent (V4: no "In use" word). Text: soft fields whose bin shows on hover or while typing.
 - **Wires:** no resting ✂ badge; it appears on hover (24 px) or on the selected wire.
 
-## Main Comps, Export Group, Preset, Preview (V2, D64; names D66)
+## Main Comps, Preset, Preview (V2, D64; names D66; D72)
 - Same cards as V1: 280 px (Preset 300 px), 16 px padding, 20 px corners, the two-line `NodeHead`; a text action in a header (Edit, Export) is a soft pill tinted with the node's colour.
-- **Main Comps:** the layer order as soft 40 px rows with a count pill; ↑ ↓ on hover. Layouts as three 36 px buttons.
-- **Export Group:** Square / Vertical / Horizontal as soft panels with a count, the Previews as chips (accent when chosen by hand, × to put back); an empty one says "Drop a Preview here"; with no sizes yet it shows the families to add (B2).
-- **Preset:** 44 px rows — the size in bold, the name only when it adds something, eye and bin on hover (always on touch).
+- **Main Comps:** the layer order as soft 40 px rows with a count pill; ↑ ↓ on hover. Layouts as three 36 px buttons. With no sizes yet, the families to add as chips (B2, D72).
+- **Preset:** 44 px rows — the size in bold, the name only when it adds something, the S · V · H layout choice (a small soft track; the layout in use raised, in the accent when picked by hand; D72), eye and bin on hover (always on touch).
 - **Preview:** its name, then "W × H unit"; health and Edit at the right; the picture on a soft checkerboard; Export a full-width soft button with its icon.
 
 ## Phone editors (V3, D64)
