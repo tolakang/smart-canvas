@@ -2,7 +2,7 @@
  * The team's Projects screen (T16.2, owner-approved): templates as cards on top ("Start from a template"), then the
  * projects with search and sort, each row opening its project and carrying a ⋯ menu grouped the way real tools
  * do it — Open · Rename, Duplicate · Save as template, Copy link · Delete. "+ New project" asks for a name and
- * what to start from (a blank board or a template). Viewers see only what's safe for them (open, copy link).
+ * what to start from (a blank board or a template), and for a blank board the sizes and artwork (UX C1). Viewers see only what's safe for them (open, copy link).
  */
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { api, type Me } from '../api';
@@ -15,6 +15,11 @@ import { TeamDialog } from './TeamDialog';
 import { DIALOG, DIALOG_CARD, ERROR_TEXT, FORM_ACTIONS, MUTED_TEXT, ROW_META } from '../ui/tw';
 import { btn, iconBtn, TOAST } from '../ui/button';
 import { CHECK, FIELD_COL } from '../ui/controls';
+import { presetFamilies, type ProjectDoc, type SizePreset, type StackPicture } from '@smart-canvas/core';
+import { carriesFiles, filesOf, PICTURE_ACCEPT, uploadPictures } from '../board/stack-upload';
+import { newId } from '../board/ids';
+import { FILE_PICK } from '../ui/file-pick';
+import { seedNewProject } from './new-project';
 
 interface ProjectRow {
   id: string;
@@ -368,11 +373,17 @@ export function Projects(props: { team: Me['teams'][number]; userId: string; onO
       )}
       {creating && rows && (
         <NewProjectDialog
+          teamId={team.id}
           templates={templates}
           templateId={creating.templateId}
           onClose={() => setCreating(null)}
-          onCreate={async (name, templateId) => {
-            const p = await api<{ id: string }>('POST', url, { name, ...(templateId ? { templateId } : {}) });
+          onCreate={async (name, templateId, setup) => {
+            const p = await api<{ id: string; rev: number; doc: ProjectDoc }>('POST', url, { name, ...(templateId ? { templateId } : {}) });
+            // UX C1: the sizes and artwork picked go in before the board opens. If that save fails the project
+            // still opens, blank, and the board's own Add sizes and drop areas do the same.
+            if (setup.families.length || setup.pictures.length) {
+              await api('PUT', `${url}/${p.id}`, { rev: p.rev, doc: seedNewProject(p.doc, setup, newId) }).catch(() => undefined);
+            }
             props.onOpen(p.id);
           }}
         />
@@ -401,26 +412,98 @@ function Cover(props: { teamId: string; row: ProjectRow; spot: 'card' | 'row' })
   );
 }
 
-/** "+ New project": a name, and what to start from — a blank board or one of the team's templates. */
-function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId: string | null; onClose: () => void; onCreate: (name: string, templateId: string | null) => Promise<void> }) {
+/** What the New project dialog asks for besides a name (UX C1): size families and artwork, both optional. */
+export interface NewProjectSetup {
+  families: string[];
+  pictures: StackPicture[];
+}
+
+/** The family chips: toggles; the chosen ones in the accent colour. */
+const FAMILY_CHIP =
+  'inline-flex h-30 cursor-pointer items-center gap-6 rounded-[99px] border border-solid border-line-strong bg-surface px-11 text-[12px] font-[600] text-fg hover:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent';
+const DROP =
+  'flex cursor-pointer items-center gap-12 rounded-[14px] border-[1.5px] border-dashed border-muted px-14 py-12 text-fg [transition:border-color_var(--t-fast),background_var(--t-fast)] hover:border-accent hover:bg-[color-mix(in_srgb,var(--accent-soft)_75%,transparent)] data-[over]:border-accent data-[over]:bg-accent-soft';
+const FILE_ROW = 'flex items-center gap-6 rounded-md bg-surface-2 py-2 pr-2 pl-8 text-xs font-[600]';
+
+/**
+ * "+ New project": a name, and what to start from — a blank board or one of the team's templates. UX C1 (amends
+ * D49): a blank board can also start with the size families picked here (each a Preset node) and the artwork
+ * dropped here (logos into the Logo node, pictures into the Image node), so it opens with its Previews.
+ */
+function NewProjectDialog(props: {
+  teamId: string;
+  templates: readonly ProjectRow[];
+  templateId: string | null;
+  onClose: () => void;
+  onCreate: (name: string, templateId: string | null, setup: NewProjectSetup & { presets: readonly SizePreset[] }) => Promise<void>;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
   const [from, setFrom] = useState<string | null>(props.templateId);
   const start = props.templates.find((t) => t.id === props.templateId);
   const [name, setName] = useState(start ? start.name.replace(/ template$/i, '') : '');
-  const [busy, setBusy] = useState(false);
+  const [presets, setPresets] = useState<SizePreset[]>([]);
+  const [families, setFamilies] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+  const [over, setOver] = useState(false);
+  /** Files already uploaded (a retry after a refused file doesn't send them again). */
+  const uploaded = useRef(new Map<File, StackPicture>());
+  const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [problems, setProblems] = useState<string[]>([]);
   useEffect(() => {
     ref.current?.showModal();
   }, []);
+  useEffect(() => {
+    let live = true;
+    api<SizePreset[]>('GET', `/teams/${props.teamId}/presets`).then(
+      (list) => live && setPresets(list),
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, [props.teamId]);
+  const blank = from === null;
+  const offered = presetFamilies(presets);
+  const sizes = offered.filter((f) => families.includes(f.label)).reduce((n, f) => n + f.presets.length, 0);
+  const toggle = (label: string) => setFamilies((fs) => (fs.includes(label) ? fs.filter((f) => f !== label) : [...fs, label]));
+  const addFiles = (list: readonly File[]) => setFiles((fs) => [...fs, ...list.filter((f) => !fs.includes(f))]);
+
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!name.trim() || busy) return;
-    setBusy(true);
+    setError(null);
+    setProblems([]);
+    const pictures: StackPicture[] = [];
+    if (blank && files.length) {
+      const todo = files.filter((f) => !uploaded.current.has(f));
+      let done = files.length - todo.length;
+      setBusy(`Uploading ${done} of ${files.length}…`);
+      const sent = await Promise.all(todo.map(async (f) => ({ f, r: await uploadPictures(props.teamId, [f], () => undefined, () => setBusy(`Uploading ${++done} of ${files.length}…`)) })));
+      const refused: string[] = [];
+      for (const { f, r } of sent) {
+        const picture = r.pictures[0];
+        if (picture) uploaded.current.set(f, picture);
+        refused.push(...r.problems);
+      }
+      if (refused.length) {
+        // The refused files leave the list; Create again goes on with the rest.
+        setFiles((fs) => fs.filter((f) => uploaded.current.has(f)));
+        setProblems(refused);
+        setBusy(null);
+        return;
+      }
+      for (const f of files) {
+        const picture = uploaded.current.get(f);
+        if (picture) pictures.push(picture);
+      }
+    }
+    setBusy('Creating…');
     try {
-      await props.onCreate(name.trim(), from);
+      await props.onCreate(name.trim(), from, { presets, families: blank ? families : [], pictures });
     } catch {
       setError('Could not create the project. Try again.');
-      setBusy(false);
+      setBusy(null);
     }
   }
   return (
@@ -444,17 +527,95 @@ function NewProjectDialog(props: { templates: readonly ProjectRow[]; templateId:
             ))}
           </fieldset>
         )}
+        {blank && offered.length > 0 && (
+          <fieldset className="m-0 grid gap-6 p-0 [border:0]">
+            <legend className="mb-4 p-0 text-sm text-muted">Sizes you need (optional)</legend>
+            <div className="flex flex-wrap gap-6" role="group" aria-label="Size families">
+              {offered.map((f) => (
+                <button key={f.label} type="button" className={FAMILY_CHIP} aria-pressed={families.includes(f.label)} onClick={() => toggle(f.label)} aria-label={`${f.label} sizes (${f.presets.length})`}>
+                  {f.label} <span className="font-[500] opacity-75">{f.presets.length}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+        {blank && (
+          <div className="grid gap-6">
+            <span className="text-sm text-muted" id="new-project-art">
+              Artwork (optional)
+            </span>
+            <label
+              className={DROP}
+              data-over={over || undefined}
+              aria-labelledby="new-project-art new-project-art-hint"
+              {...FILE_PICK}
+              onDragOver={(e) => {
+                if (!carriesFiles(e)) return;
+                e.preventDefault();
+                setOver(true);
+              }}
+              onDragLeave={() => setOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setOver(false);
+                addFiles(filesOf(e));
+              }}
+            >
+              <span className="grid size-34 flex-none place-items-center rounded-[11px] bg-accent-soft text-accent" aria-hidden="true">
+                <Icon name="plus" />
+              </span>
+              <span className="grid min-w-0 gap-1" id="new-project-art-hint">
+                <strong className="text-[13px] font-[650]">Add or drop logos and pictures</strong>
+                <span className="text-[11.5px] text-muted">SVG and PDF go to the Logo node, other pictures to the Image node</span>
+              </span>
+              <input
+                type="file"
+                multiple
+                accept={PICTURE_ACCEPT}
+                hidden
+                onChange={(e) => {
+                  addFiles(Array.from(e.target.files ?? []));
+                  e.target.value = '';
+                }}
+              />
+            </label>
+            {files.length > 0 && (
+              <ul className="m-0 flex list-none flex-wrap gap-6 p-0" aria-label="Files to add">
+                {files.map((f, i) => (
+                  <li key={`${f.name}-${i}`} className={FILE_ROW}>
+                    {f.name}
+                    <button type="button" className={iconBtn({ size: 'size-20' })} aria-label={`Remove ${f.name}`} onClick={() => setFiles((fs) => fs.filter((x) => x !== f))}>
+                      <Icon name="close" size={12} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+        {problems.length > 0 && (
+          <ul className={`${ERROR_TEXT} m-0 grid gap-2 pl-18`} role="alert">
+            {problems.map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ul>
+        )}
         {error && (
           <p className={`${ERROR_TEXT} m-0`} role="alert">
             {error}
           </p>
         )}
-        <div className={FORM_ACTIONS}>
+        <div className={`${FORM_ACTIONS} items-center`}>
+          {blank && (sizes > 0 || files.length > 0) && (
+            <span className="mr-auto text-sm text-muted" aria-live="polite">
+              {[sizes > 0 && `${sizes} ${sizes === 1 ? 'size' : 'sizes'}`, files.length > 0 && `${files.length} ${files.length === 1 ? 'file' : 'files'}`].filter(Boolean).join(' · ')}
+            </span>
+          )}
           <button type="button" className={btn('default', 'card')} onClick={props.onClose}>
             Cancel
           </button>
-          <button type="submit" className={btn('primary', 'card')} disabled={!name.trim() || busy}>
-            {busy ? 'Creating…' : 'Create'}
+          <button type="submit" className={btn('primary', 'card')} disabled={!name.trim() || !!busy}>
+            {busy ?? 'Create'}
           </button>
         </div>
       </form>

@@ -7,7 +7,7 @@ import type { Edge, ReactFlowInstance } from '@xyflow/react';
 import type { MenuItem } from './ContextMenu';
 import { MAIN_ID, type BoardNode, type FlowNode } from './flow';
 import { newId } from './ids';
-import { presetSettings } from './OutputNode';
+import { familySetSpec, familySize } from './preset-family';
 import { boxOf, clearSpot, presetBlock } from './tidy';
 
 type At = { x: number; y: number };
@@ -27,8 +27,7 @@ export function useAddMenus({ docRef, nodesRef, flow, presets, run }: AddMenuDep
 
   /** D46 / D49: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to Main Comps. */
   const addSet = (family: string, at: At) => {
-    const sizes = presetFamilies(presets).find((f) => f.label === family)?.presets ?? [];
-    run((d) => addPresetSet(d, { id: newId(), label: family, board: clearAt(at, sizes.length), sizes: sizes.map((p) => ({ id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } })) }));
+    run((d) => addPresetSet(d, familySetSpec(presets, family, clearAt(at, familySize(presets, family)), newId)));
   };
 
   /** D49: the Preset nodes on offer — every preset family, then a custom one (the user's own sizes). */
