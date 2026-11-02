@@ -1,8 +1,11 @@
 import type { ProjectDoc } from '@smart-canvas/core';
 import { createBoardProject, createProjectDoc, LIMITS } from '@smart-canvas/core';
+import { eq } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
+import type { Db } from '../db/client';
+import { projects } from '../db/schema';
 import { MemoryStore } from '../storage/object-store';
 import { adminUrl, freshDb } from '../test/db';
 import { caller, setupTeam } from '../test/team';
@@ -11,6 +14,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
   let app: FastifyInstance;
   let drop: () => Promise<void>;
   let call: ReturnType<typeof caller>;
+  let db: Db;
   let teamId = '';
   let editor = '';
   let viewer = '';
@@ -19,6 +23,7 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
   beforeAll(async () => {
     const fresh = await freshDb();
     drop = fresh.drop;
+    db = fresh.db;
     app = await buildApp({ db: fresh.db, store: new MemoryStore(), secureCookie: false, logger: false });
     call = caller(app);
     const team = await setupTeam(app);
@@ -109,7 +114,10 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
     );
   });
 
-  it('upgrades a v1 document (D32): accepted on save, stored and served as the current schema', async () => {
+  /** A document stored before a schema change, written straight to the table (as old saves left it). */
+  const store = (id: string, doc: unknown) => db.update(projects).set({ doc: doc as ProjectDoc }).where(eq(projects.id, id));
+
+  it('upgrades a stored v1 document (D32) on read; a v1 save is refused (K1)', async () => {
     const p = await create();
     const v1 = {
       schema: 1,
@@ -120,14 +128,15 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
       outputs: [],
       wires: [{ id: 'in:subject', from: 'subject', to: 'main', port: 2 }],
     };
-    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v1 })).statusCode).toBe(200);
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v1 })).statusCode).toBe(400);
+    await store(p.id, v1);
     const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
     expect(got.schema).toBe(4);
     expect(got.compositions[0]).toMatchObject({ id: 'main', size: { width: 2000, height: 1000, unit: 'px' }, layers: ['logo', 'headline', 'subject', 'background'] });
     expect(got.edges).toEqual([{ id: 'in:subject', from: 'subject', to: 'main', kind: 'layer' }]);
   });
 
-  it('D56: a v2 document with a process node and a Core Rule node is accepted on save and stored as v4 without them', async () => {
+  it('D56: a stored v2 document with a process node and a Core Rule node is served as v4 without them; a v2 save is refused (K1)', async () => {
     const p = await create();
     const v2 = {
       ...p.doc,
@@ -136,14 +145,15 @@ describe.skipIf(!adminUrl)('projects API (Postgres)', () => {
       coreRules: [{ id: 'cr', composition: 'main', board: { x: 0, y: 0 } }],
       edges: [...p.doc.edges, { id: 'in:subject>p1', from: 'subject', to: 'p1', kind: 'layer' }, { id: 'in:p1', from: 'p1', to: 'main', kind: 'layer' }],
     };
-    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v2 })).statusCode).toBe(200);
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: v2 })).statusCode).toBe(400);
+    await store(p.id, v2);
     const got = (await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc;
     expect(got.schema).toBe(4);
     expect(got).not.toHaveProperty('processes');
     expect(got).not.toHaveProperty('coreRules');
     expect(got.edges.some((e) => e.from === 'p1' || e.to === 'p1')).toBe(false);
-    // A v3 save that still carries `processes`: the unknown field is dropped, not stored.
-    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 1, doc: { ...got, processes: [] } })).statusCode).toBe(200);
+    // A save that still carries `processes`: the unknown field is dropped, not stored.
+    expect((await call('PUT', `${base()}/${p.id}`, editor, { rev: 0, doc: { ...got, processes: [] } })).statusCode).toBe(200);
     expect((await call('GET', `${base()}/${p.id}`, editor)).json<{ doc: ProjectDoc }>().doc).not.toHaveProperty('processes');
   });
 

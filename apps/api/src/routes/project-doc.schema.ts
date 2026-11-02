@@ -1,6 +1,7 @@
 /**
- * JSON schema for ProjectDoc (docs/DATA-MODEL.ts) as accepted on save: schema 4 (D61), or schema 3 / 2 / 1 from a
- * client that has not reloaded yet (the route migrates it with migrateProjectDoc before storing).
+ * JSON schema for ProjectDoc (docs/DATA-MODEL.ts) as accepted on save: schema 4 (D61), or schema 3 from a client that
+ * has not reloaded yet (the route migrates it with migrateProjectDoc before storing). Schema 1 and 2 saves are refused
+ * (clean-up 2, K1): no open board sends them any more; stored v1 / v2 documents still upgrade on read.
  * Checks the shape and the caps (LIMITS); deeper rules (rows, wiring) belong to the core helpers.
  */
 import { LIMITS } from '@smart-canvas/core';
@@ -53,12 +54,6 @@ const sourceProps = {
     board: point,
 } as const;
 const source = { type: 'object', required: ['id', 'label', 'kind', 'behavesLike', 'visible', 'content', 'board'], properties: sourceProps } as const;
-const sourceV1 = {
-  type: 'object',
-  required: ['id', 'label', 'kind', 'behavesLike', 'port', 'visible', 'content', 'board'],
-  properties: { ...sourceProps, port: { type: 'integer', minimum: 0, maximum: LIMITS.maxSources - 1 } },
-} as const;
-
 const output = {
   type: 'object',
   required: ['id', 'label', 'size', 'overrides', 'board'],
@@ -79,13 +74,8 @@ const output = {
   },
 } as const;
 
-/** v2 limits and shapes retired in D56, for documents saved by a client that hasn't reloaded yet. */
-const V2 = { maxProcesses: 20, maxCompositions: 5 } as const;
-/** v1–v3 outputs carried a layout family (retired by D61). */
+/** v3 outputs carried a layout family (retired by D61). */
 const outputV3 = { ...output, required: [...output.required, 'family'], properties: { ...output.properties, family: { enum: ['auto', 'stack', 'side'] } } } as const;
-const outputV2 = { ...outputV3, properties: { ...outputV3.properties, layers: { type: 'array', maxItems: LIMITS.maxSources, items: id } } } as const;
-
-const wire = { type: 'object', required: ['id', 'from', 'to'], properties: { id, from: id, to: id, port: { type: 'integer', minimum: 0 } } } as const;
 
 const composition = {
   type: 'object',
@@ -103,22 +93,14 @@ const composition = {
   },
 } as const;
 
-const compositionV2 = { ...composition, properties: { ...composition.properties, layers: { type: 'array', maxItems: LIMITS.maxSources + V2.maxProcesses, items: id } } } as const;
-
-const processNode = {
-  type: 'object',
-  required: ['id', 'label', 'op', 'board'],
-  properties: {
-    id,
-    label: { type: 'string', maxLength: 200 },
-    op: { type: 'object', required: ['type'], properties: { type: { enum: ['crop', 'adjust', 'flip', 'textVariant', 'recolor'] } } },
-    board: point,
-  },
-} as const;
-
 const edge = { type: 'object', required: ['id', 'from', 'to', 'kind'], properties: { id: { type: 'string', minLength: 1, maxLength: 210 }, from: id, to: id, kind: { enum: ['layer', 'composition'] }, points: { type: 'array', maxItems: 10, items: point } } } as const;
 
-const maxNodes = LIMITS.maxSources + V2.maxProcesses + V2.maxCompositions + LIMITS.maxOutputs;
+/**
+ * Board nodes besides inputs and outputs (compositions, cards, Preset nodes): the room v2's 20 process nodes and 5
+ * compositions left, kept when they were retired (D56, K1) so the caps on a saved board don't shrink.
+ */
+const OTHER_NODES = 25;
+const maxNodes = LIMITS.maxSources + OTHER_NODES + LIMITS.maxOutputs;
 
 /** T13.7: a board group (members by id; its box is computed on the board). */
 const group = {
@@ -174,14 +156,6 @@ const presetSet = {
   properties: { id, label: { type: 'string', maxLength: 200 }, board: point, outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: id }, hidden: { type: 'array', maxItems: LIMITS.maxOutputs, items: id } },
 } as const;
 
-/** D47: a Core Rule node — which master preview, and where. */
-const coreRule = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['id', 'composition', 'board'],
-  properties: { id, composition: id, board: point },
-} as const;
-
 /** The current document (D61): the master and its layouts, inputs, outputs, and the board's nodes. */
 export const projectDocV4Schema = {
   type: 'object',
@@ -202,7 +176,6 @@ export const projectDocV4Schema = {
     layerOrder: { type: 'array', minItems: 4, maxItems: 4, uniqueItems: true, items: { enum: ['logo', 'headline', 'elements', 'background'] } },
   },
 } as const;
-
 
 /** D56–D60: as v4, with `output.family`, for documents saved by a client that hasn't reloaded yet. */
 export const projectDocV3Schema = {
@@ -225,49 +198,6 @@ export const projectDocV3Schema = {
   },
 } as const;
 
-/** D32–D55. */
-export const projectDocV2Schema = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['schema', 'rev', 'name', 'compositions', 'sources', 'processes', 'outputs', 'edges'],
-  properties: {
-    schema: { const: 2 },
-    rev: { type: 'integer', minimum: 0 }, // ignored on save: the server owns rev
-    name: { type: 'string', minLength: 1, maxLength: 200 },
-    compositions: { type: 'array', minItems: 1, maxItems: V2.maxCompositions, items: compositionV2 },
-    sources: { type: 'array', maxItems: LIMITS.maxSources, items: source },
-    processes: { type: 'array', maxItems: V2.maxProcesses, items: processNode },
-    outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: outputV2 },
-    edges: { type: 'array', maxItems: maxNodes * 4, items: edge },
-    groups: { type: 'array', maxItems: LIMITS.maxGroups, items: group },
-    stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
-    headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
-    presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
-    coreRules: { type: 'array', maxItems: V2.maxCompositions, items: coreRule },
-    layerOrder: { type: 'array', minItems: 4, maxItems: 4, uniqueItems: true, items: { enum: ['logo', 'headline', 'elements', 'background'] } },
-  },
-} as const;
-
-/** Before D32. */
-export const projectDocV1Schema = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['schema', 'rev', 'name', 'master', 'sources', 'outputs', 'wires'],
-  properties: {
-    schema: { const: 1 },
-    rev: { type: 'integer', minimum: 0 },
-    name: { type: 'string', minLength: 1, maxLength: 200 },
-    master: {
-      type: 'object',
-      required: ['size', 'placements', 'board'],
-      properties: { size, placements: { type: 'object', additionalProperties: frame }, board: point },
-    },
-    sources: { type: 'array', maxItems: LIMITS.maxSources, items: sourceV1 },
-    outputs: { type: 'array', maxItems: LIMITS.maxOutputs, items: outputV3 },
-    wires: { type: 'array', maxItems: LIMITS.maxSources + LIMITS.maxOutputs, items: wire },
-  },
-} as const;
-
 /**
  * Picked by `schema` (not anyOf: with additional properties removed, a failed branch would strip fields the next
  * branch needs).
@@ -275,12 +205,8 @@ export const projectDocV1Schema = {
 export const projectDocSchema = {
   type: 'object',
   required: ['schema'],
-  properties: { schema: { enum: [1, 2, 3, 4] } },
+  properties: { schema: { enum: [3, 4] } },
   if: { properties: { schema: { const: 4 } } },
   then: projectDocV4Schema,
-  else: {
-    if: { properties: { schema: { const: 3 } } },
-    then: projectDocV3Schema,
-    else: { if: { properties: { schema: { const: 2 } } }, then: projectDocV2Schema, else: projectDocV1Schema },
-  },
+  else: projectDocV3Schema,
 } as const;

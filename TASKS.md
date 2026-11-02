@@ -250,7 +250,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] B7 (D70) — the phone board, thumb first — [#216](https://github.com/tolakang/smart-canvas/pull/216)
 - C1–C3 (bigger rethinks) — on hold; the owner reviews them later.
 
-## P30 Clean-up review 2 (`docs/archive/CLEANUP-AUDIT-2.md`; owner, 2026-10-28: "start (1)", "go group (2)")
+## P30 Clean-up review 2 (`docs/archive/CLEANUP-AUDIT-2.md`; owner, 2026-10-28: "start (1)", "go group (2)"; 2026-11-02, group (3): "go with your picks")
 - [x] (1) R1–R4 — dead code only its tests used — [#217](https://github.com/tolakang/smart-canvas/pull/217)
 - [x] (2) U1, U2 — one copy of the empty-layer test and of the saved-history rule — [#218](https://github.com/tolakang/smart-canvas/pull/218)
 - [x] (2) U3–U5 — the board follows the react-flow rules (`flow.ts` id helpers, `NO_CANVAS` / `NO_DRAG`, a React Flow rule into `chrome.css`) — [#219](https://github.com/tolakang/smart-canvas/pull/219)
@@ -264,7 +264,12 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] (2) U15, U17 — the Presets dialog lists each size once, team sizes marked Team; one button class — [#227](https://github.com/tolakang/smart-canvas/pull/227)
 - [x] (2) U16, U18, U19 — History and Review named in the top bar; the group tag names both cards; the phone board opens at the top — [#228](https://github.com/tolakang/smart-canvas/pull/228)
 - [x] (2) U8 — `Board.tsx` split (1,713 → about 1,200 lines): wire handlers, + Add items, top bar and three small hooks moved out as they were (this PR)
-- [ ] (3) K1–K6 — wait for the owner's decisions
+- [x] (3) K1 — the API refuses v1 / v2 saves; stored ones still migrate on read (this PR)
+- [x] (3) K2 — `legacySlots` stays the e2e test fixture (D68); no work
+- [ ] (3) K5 — a name tag that would overlap is shortened to its card's width, not left out (amends D69)
+- [ ] (3) K6 — a note beside Approve when every layer of the Preview is empty (D63)
+- [ ] (3) K3 — "T9": the shared component rules in `styles.css` to Tailwind, in three PRs with the parity test
+- [ ] (3) K4 — T8 (Preflight, unused `sc-` hooks, retire the parity test), after K3
 
 ## Next (see BACKLOG; proposals, the owner picks)
 - [x] Q9 — Editor colour variables: the `--line` / `--muted` loop in `.sc-fig` — [#201](https://github.com/tolakang/smart-canvas/pull/201)
