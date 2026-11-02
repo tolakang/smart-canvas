@@ -1,51 +1,5 @@
-import { setEmptyCardWired,
-  assetStacks,
-  addTextToStack,
-  boardStructure,
-  addPresetSet,
-  connectSet,
-  presetFamilies,
-  presetSets,
-  setComposition,
-  addLanguagePair,
-  addStack,
-  languagePairs,
-  pairInputs,
-  connectStack,
-  fitFrames,
-  orderLayers,
-  addSource,
-  boardGroups,
-  setEdgePoints,
-  createGroup,
-  connectSource,
-  deleteSource,
-  disconnectOutput,
-  disconnectSource,
-  duplicateSource,
-  LIMITS,
-  reconnectNeedsChoice,
-  reconnectOutput,
-  setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult, type TeamRole } from '@smart-canvas/core';
-import {
-  applyEdgeChanges,
-  applyNodeChanges,
-  Background,
-  MiniMap,
-  Panel,
-  ReactFlow,
-  useStore,
-  ViewportPortal,
-  type Connection,
-  type Edge,
-  type EdgeChange,
-  type FinalConnectionState,
-  type HandleType,
-  type IsValidConnection,
-  type Node,
-  type NodeChange,
-  type ReactFlowInstance,
-} from '@xyflow/react';
+import { boardStructure, fitFrames, orderLayers, boardGroups, createGroup, deleteSource, disconnectOutput, duplicateSource, LIMITS, reconnectNeedsChoice, reconnectOutput, setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult, type TeamRole } from '@smart-canvas/core';
+import { applyNodeChanges, Background, MiniMap, Panel, ReactFlow, useStore, ViewportPortal, type Edge, type Node, type NodeChange, type ReactFlowInstance } from '@xyflow/react';
 import './reactflow.css';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../api';
@@ -64,55 +18,30 @@ import { usedAssetsKey, useAssetSizes, useLayoutDeps } from './layout-deps';
 import { BoardContext, type BoardActions } from './context';
 import { newId } from './ids';
 import { withSource } from './content';
-import {
-  docToEdges,
-  docToNodes,
-  compositionIdOfNode,
-  compositionToOutput,
-  inputToComposition,
-  connectionRefusal,
-  MAIN_ID,
-  outputIdOfNode,
-  portFromHandle,
-  sourceIdOfNode,
-  layerOfConnection,
-  OUTPUT_HANDLE,
-  syncNodes,
-  withPositions,
-  type BoardNode,
-  type FlowNode,
-  docIdOfNode,
-  groupIdOfNode,
-  isGroupNode,
-  withGroupFrames,
-  stackIdOfNode,
-  pairIdOfNode,
-  setIdOfNode,
-  outputOfSetRow,
-  isCardNode,
-} from './flow';
+import { docToEdges, docToNodes, MAIN_ID, sourceIdOfNode, OUTPUT_HANDLE, syncNodes, withPositions, type BoardNode, type FlowNode, docIdOfNode, groupIdOfNode, isGroupNode, withGroupFrames } from './flow';
 import { useTheme } from '../ui/theme';
 import { align } from './guides';
-import { BoardKeys, useStoredFlag } from './board-keys';
-import { boxOf, clearSpot, onGrid, presetBlock, tidyPositions, tidySelectionPositions } from './tidy';
+import { BoardKeys, useAltHeld, useModKey, useStoredFlag } from './board-keys';
+import { onGrid, tidyPositions, tidySelectionPositions } from './tidy';
 import { CanvasToolbar, MultiSelect, fitOptions, type CanvasTool } from './CanvasToolbar';
 import { Inspector } from './Inspector';
 import { RoutedEdge } from './RoutedEdge';
-import { changedNodes, downstreamEdges, insertIndex, relatedEdges } from './wires';
+import { changedNodes, downstreamEdges, relatedEdges } from './wires';
 import { useCoarsePointer, useScreen } from '../ui/responsive';
 import { useLongPress } from '../ui/long-press';
-import { NO_CANVAS, NO_DRAG, TOUCH_NO_PAN, usePinch } from './pinch';
+import { NO_CANVAS, NO_DRAG, TOUCH_NO_PAN, useFarTap, usePinch } from './pinch';
+import { useWires } from './use-wires';
+import { useAddMenus } from './use-add-menus';
+import { TopBar, VersionBar } from './BoardTopBar';
 import { deletableNodes, deleteNodes, deleteQuestion } from './delete-nodes';
 import { nodeTypes } from './nodes';
-import { presetSettings } from './OutputNode';
 import { addPictures, uploadPictures } from './stack-upload';
-import { HistoryPanel, versionTitle, versionWhen, type Version } from './HistoryPanel';
+import { HistoryPanel, type Version } from './HistoryPanel';
 import { openCounts, useApprovalStates, useReview } from './review';
 import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
-import { ADD, COUNT, COUNTS, GHOST, GROUP_ADD, GROUP_END, GROUP_START, ICON, NAME, PRIMARY, SAVE_BUTTON, SAVE_LONG, SAVE_SHORT, saveClass, saveDotClass, SEP, TOPBAR } from './topbar';
-import { BOARD, CANVAS, SKIP, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON, VERSION, VERSION_ACTIONS, VERSION_CLOSE, VERSION_RESTORE } from './frame';
+import { BOARD, CANVAS, SKIP, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON } from './frame';
 
 interface Loaded {
   rev: number;
@@ -124,18 +53,6 @@ const ERROR_NOTICE: Partial<Record<SourceError, string>> = {
   limit: `A project can have at most ${LIMITS.maxSources} inputs.`,
   output_limit: `A project can have at most ${LIMITS.maxOutputs} Previews.`,
   invalid: 'That value is out of range.',
-};
-
-
-/** U2: what the save status says where the bar is narrow (tablets, phones). */
-const SHORT_LABEL: Record<SaveState, string> = { saved: 'Saved', pending: 'Unsaved', saving: 'Saving…', error: 'Retrying…', conflict: 'Newer version' };
-
-const STATE_LABEL: Record<SaveState, string> = {
-  saved: 'All changes saved',
-  pending: 'Unsaved changes…',
-  saving: 'Saving…',
-  error: 'Save failed, retrying…',
-  conflict: 'Someone else saved a newer version.',
 };
 
 /** D62: a history version shown read-only on the board. */
@@ -249,7 +166,6 @@ const edgeTypes = { routed: RoutedEdge };
 /** D70: on a phone the board opens with its first asset nodes this far under the canvas's top edge (screen px). */
 const PHONE_TOP = 16;
 
-/** A layer wire into a composition row (D56: the only kind); the node id from React Flow. */
 /** UX A7 (F19): React Flow's credit link stays on screen but out of the Tab order (it sat between the board and its panels). */
 function QuietCredit() {
   const dom = useStore((s) => s.domNode);
@@ -257,16 +173,6 @@ function QuietCredit() {
     dom?.querySelectorAll('.react-flow__attribution a').forEach((a) => a.setAttribute('tabindex', '-1'));
   }, [dom]);
   return null;
-}
-
-function connectLayer(doc: ProjectDoc, sourceId: string, target: string | null, port: number | undefined): SourceResult {
-  const composition = compositionIdOfNode(target);
-  return composition ? connectSource(doc, sourceId, port, composition) : { ok: false, error: 'not_found' };
-}
-
-function disconnectLayer(doc: ProjectDoc, sourceId: string, target: string): SourceResult {
-  const composition = compositionIdOfNode(target);
-  return composition ? disconnectSource(doc, sourceId, composition) : { ok: false, error: 'not_found' };
 }
 
 function BoardCanvas(props: {
@@ -427,7 +333,7 @@ function BoardCanvas(props: {
   const [guides, setGuides] = useState<{ vertical?: number; horizontal?: number }>({});
   /** Grid snap on / Alt held, for handlers (synced below, after their state). */
   const gridRef = useRef(false);
-  const altRef = useRef(false);
+  const [altHeld, altRef] = useAltHeld();
   const onNodesChange = useCallback((all: NodeChange<FlowNode>[]) => {
     // T13.7: group frames are derived; selecting one is tracked here, dragging one moves its members.
     const changes: NodeChange<BoardNode>[] = [];
@@ -462,7 +368,7 @@ function BoardCanvas(props: {
       } else if (!moving.dragging) setGuides({});
     }
     setNodes((ns) => applyNodeChanges(changes, ns));
-  }, []);
+  }, [altRef]);
   // Every screen starts with Select (owner, 2026-10-23): the mouse selects and moves panels, a drag on empty canvas
   // selects several; Hand (or the wheel, Space) moves the board. D58, touch: one finger moves the board, a tap
   // selects, a selected panel follows the finger, two fingers pinch and pan.
@@ -499,63 +405,20 @@ function BoardCanvas(props: {
   useLayoutEffect(() => {
     farRef.current = far;
   }, [far]);
-  // A press on a panel's content while zoomed out reaches nothing inside it (no button, no keyboard for a field);
-  // its tap zooms to the panel and selects it. Ports keep their taps (tap a port, then a target, to wire).
-  useEffect(() => {
-    const el = flowEl.current;
-    if (!el) return;
-    const panelOf = (e: Event) => {
-      const t = e.target as Element | null;
-      if (!farRef.current || !t || t.closest('.react-flow__handle')) return null;
-      const panel = t.closest<HTMLElement>('.react-flow__node');
-      return panel && panel !== t ? panel : null;
-    };
-    const onDown = (e: PointerEvent) => {
-      if (e.pointerType !== 'touch' || !panelOf(e)) return;
-      e.preventDefault();
-      e.stopPropagation();
-    };
-    const onClick = (e: MouseEvent) => {
-      const panel = panelOf(e);
-      const id = panel?.dataset.id;
-      if (!id) return;
-      e.preventDefault();
-      e.stopPropagation();
+  // A tap on a panel while zoomed out (useFarTap) zooms to it and selects it.
+  const farTap = useCallback(
+    (id: string) => {
       const picked = displayNodesRef.current.filter((n) => n.selected && n.id !== id).map((n) => ({ type: 'select' as const, id: n.id, selected: false }));
       onNodesChange([...picked, { type: 'select', id, selected: true }]);
       void flow.current?.fitView({ nodes: [{ id }], duration: 300, maxZoom: 1, padding: 0.15 });
-    };
-    el.addEventListener('pointerdown', onDown, true);
-    el.addEventListener('click', onClick, true);
-    return () => {
-      el.removeEventListener('pointerdown', onDown, true);
-      el.removeEventListener('click', onClick, true);
-    };
-  }, [onNodesChange]);
+    },
+    [onNodesChange],
+  );
+  useFarTap(flowEl, farRef, farTap);
   const [grid, setGrid] = useStoredFlag('sc-board-grid', false);
   useLayoutEffect(() => {
     gridRef.current = grid;
   }, [grid]);
-  /** Alt / Option held: a drag skips grid snap and the alignment guides (D57). */
-  const [altHeld, setAltHeld] = useState(false);
-  useEffect(() => {
-    const set = (on: boolean) => {
-      if (altRef.current === on) return;
-      altRef.current = on;
-      setAltHeld(on);
-    };
-    const down = (e: KeyboardEvent) => e.key === 'Alt' && set(true);
-    const up = (e: KeyboardEvent) => e.key === 'Alt' && set(false);
-    const off = () => set(false);
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
-    window.addEventListener('blur', off);
-    return () => {
-      window.removeEventListener('keydown', down);
-      window.removeEventListener('keyup', up);
-      window.removeEventListener('blur', off);
-    };
-  }, []);
   /** Tidy glides panels into place (the class is on for one move). */
   const [tidying, setTidying] = useState(false);
   /** A short notice after Tidy, with Undo (D57). */
@@ -611,25 +474,6 @@ function BoardCanvas(props: {
     syncHistory();
     show(next, true);
   }, [readOnly, show, syncHistory]);
-
-  // Ctrl/⌘+Z undo, Ctrl/⌘+Shift+Z or Ctrl+Y redo — except while typing in a field (its own undo).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-      if (!(e.ctrlKey || e.metaKey)) return;
-      const k = e.key.toLowerCase();
-      if (k === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-      } else if ((k === 'z' && e.shiftKey) || k === 'y') {
-        e.preventDefault();
-        redo();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [undo, redo]);
 
   const run = useCallback(
     (op: (doc: ProjectDoc) => SourceResult, opts?: { silent?: boolean }): SourceResult => {
@@ -747,190 +591,6 @@ function BoardCanvas(props: {
     [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus],
   );
 
-  // T12.2: typed ports (D32). The core decides what may connect; a refused drop says why.
-  const isValidConnection = useCallback<IsValidConnection>((c) => !readOnly && connectionRefusal(docRef.current, c) === null, [readOnly]);
-
-  /** Wire input → a composition row: connects it there, and moves it to that row if different (D11). */
-  const onConnect = useCallback(
-    (c: Connection) => {
-      const fromComposition = compositionToOutput(c);
-      const outputId = fromComposition ? outputIdOfNode(c.target) : undefined;
-      if (fromComposition && outputId) {
-        reconnect(outputId, fromComposition);
-        return;
-      }
-      // D46: a master preview wired into a Preset node feeds every size; a row's wire reconnects its own Preview.
-      const intoSet = setIdOfNode(c.target);
-      const fromComp = compositionIdOfNode(c.source);
-      if (intoSet && fromComp) {
-        run((doc) => connectSet(doc, intoSet, fromComp));
-        return;
-      }
-      const fromSet = setIdOfNode(c.source);
-      const rowOutput = outputOfSetRow(c.sourceHandle);
-      if (fromSet && rowOutput) {
-        reconnect(rowOutput, setComposition(docRef.current, fromSet));
-        return;
-      }
-      // D40: a wire from an Assets card wires every picture in it.
-      const stackId = stackIdOfNode(c.source);
-      const toComposition = compositionIdOfNode(c.target);
-      if (stackId && toComposition) {
-        run((doc) => connectStack(doc, stackId, toComposition));
-        return;
-      }
-      // D44, N3: a wire from a Headline card wires both languages of every pair.
-      const pair = languagePairs(docRef.current).find((p) => p.id === pairIdOfNode(c.source));
-      if (pair && toComposition) {
-        run((doc) => {
-          let next = doc;
-          for (const id of pairInputs(pair)) {
-            const r = connectSource(next, id, undefined, toComposition);
-            if (!r.ok) return r;
-            next = r.doc;
-          }
-          return { ok: true, doc: next };
-        });
-        return;
-      }
-      const sourceId = layerOfConnection(c);
-      if (sourceId) run((doc) => connectLayer(doc, sourceId, c.target, portFromHandle(c.targetHandle)));
-    },
-    [run, reconnect],
-  );
-
-  // Edges are controlled: apply selection here; removals go through the doc (onEdgesDelete).
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
-    const selection = changes.filter((c) => c.type === 'select');
-    if (selection.length) setEdges((es) => applyEdgeChanges(selection, es));
-  }, []);
-
-  /** T13.8: double-click a wire to add a reroute point there (in the spot that bends it least). */
-  const onEdgeDoubleClick = useCallback(
-    (e: React.MouseEvent, edge: Edge) => {
-      if (readOnly || !flow.current) return;
-      const at = flow.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
-      const end = (id: string, side: 'out' | 'in') => {
-        const n = flow.current?.getInternalNode(id);
-        const w = n?.measured.width ?? 0;
-        const h = n?.measured.height ?? 0;
-        const p = n?.internals.positionAbsolute ?? { x: 0, y: 0 };
-        return { x: side === 'out' ? p.x + w : p.x, y: p.y + h / 2 };
-      };
-      const points = docRef.current.edges.find((x) => x.id === edge.id)?.points ?? [];
-      const i = insertIndex(end(edge.source, 'out'), end(edge.target, 'in'), points, at);
-      run((doc) => setEdgePoints(doc, edge.id, [...points.slice(0, i), at, ...points.slice(i)]));
-    },
-    [readOnly, run],
-  );
-
-
-  const onEdgesDelete = useCallback(
-    (deleted: Edge[]) => {
-      for (const e of deleted) {
-        // D46: the wire into a Preset node stands for all its sizes' wires; a row's wire is that size's own.
-        const set = setIdOfNode(e.target);
-        if (set) {
-          for (const o of presetSets(docRef.current).find((x) => x.id === set)?.outputs ?? []) if (docRef.current.edges.some((x) => x.kind === 'composition' && x.to === o)) disconnect(o);
-          continue;
-        }
-        const row = setIdOfNode(e.source) ? outputOfSetRow(e.sourceHandle) : undefined;
-        if (row) {
-          disconnect(row);
-          continue;
-        }
-        // D49: a card's one wire into Main Comps stands for all its items' wires.
-        if (e.id.startsWith('card:')) {
-          const d0 = docRef.current;
-          const stack = assetStacks(d0).find((st) => st.id === stackIdOfNode(e.source));
-          const pair = languagePairs(d0).find((p) => p.id === pairIdOfNode(e.source));
-          const items = stack?.items ?? (pair ? pairInputs(pair) : []);
-          // D49.1: an empty card's wire is the card's own.
-          if (stack && !stack.items.length) {
-            run((doc) => setEmptyCardWired(doc, stack.id, false));
-            continue;
-          }
-          run((doc) => {
-            let next = doc;
-            for (const id of items) {
-              const r = disconnectSource(next, id, MAIN_ID);
-              if (r.ok) next = r.doc;
-            }
-            return { ok: true, doc: next };
-          });
-          continue;
-        }
-        // D40: a wire drawn from an Assets card is one picture's wire.
-        const sourceId = layerOfConnection(e) ?? (isCardNode(e.source) ? docRef.current.edges.find((x) => x.id === e.id)?.from : undefined);
-        const outputId = compositionIdOfNode(e.source) ? outputIdOfNode(e.target) : undefined;
-        if (sourceId) run((doc) => disconnectLayer(doc, sourceId, e.target));
-        else if (outputId) disconnect(outputId);
-      }
-    },
-    [run, disconnect],
-  );
-
-  /**
-   * Delete / Backspace (BoardKeys): selected nodes are deleted from the doc (one confirm, one undo step;
-   * React Flow's own removal would only drop them from the screen); selected wires alone are disconnected.
-   */
-  const deleteSelection = useCallback(() => {
-    const f = flow.current;
-    if (!f) return;
-    const picked = f.getNodes().filter((n) => n.selected);
-    if (picked.length === 0) {
-      const wires = f.getEdges().filter((e) => e.selected);
-      if (wires.length) onEdgesDelete(wires);
-      return;
-    }
-    const targets = deletableNodes(docRef.current, picked.map((n) => n.id));
-    if (targets.length && window.confirm(deleteQuestion(targets))) run((d) => deleteNodes(d, targets));
-  }, [run, onEdgesDelete]);
-
-  /**
-   * T8.5: every wire can be picked up by either end. Drop it on another valid handle to re-route it;
-   * drop it on empty canvas to detach (same as deleting the wire). Dropping on a handle that refuses it
-   * leaves the wire as it was.
-   */
-  const reconnectDone = useRef(false);
-  // React Flow also ends a wire-end drag with onConnectEnd; T10.4 must not read that as a new wire.
-  const wireEndDrag = useRef<{ active: boolean; endedAt: number }>({ active: false, endedAt: 0 });
-  const onReconnectStart = useCallback(() => {
-    reconnectDone.current = false;
-    wireEndDrag.current = { active: true, endedAt: 0 };
-  }, []);
-  const onReconnect = useCallback(
-    (old: Edge, c: Connection) => {
-      reconnectDone.current = true;
-      const oldSource = layerOfConnection(old);
-      const newSource = layerOfConnection(c);
-      if (oldSource && newSource && inputToComposition(c)) {
-        // Same input to another row = move it to that row; another input onto this row = swap who feeds it.
-        const port = portFromHandle(c.targetHandle);
-        run((doc) => {
-          const freed = newSource === oldSource && old.target === c.target ? { ok: true as const, doc } : disconnectLayer(doc, oldSource, old.target);
-          return freed.ok ? connectLayer(freed.doc, newSource, c.target, port) : freed;
-        });
-        return;
-      }
-      const oldOutput = compositionIdOfNode(old.source) ? outputIdOfNode(old.target) : undefined;
-      const fromComposition = compositionToOutput(c);
-      const newOutput = fromComposition ? outputIdOfNode(c.target) : undefined;
-      if (oldOutput && newOutput && fromComposition && oldOutput !== newOutput) {
-        disconnect(oldOutput);
-        reconnect(newOutput, fromComposition);
-      }
-    },
-    [run, disconnect, reconnect],
-  );
-  const onReconnectEnd = useCallback(
-    (_e: MouseEvent | TouchEvent, edge: Edge, _type: HandleType, state: FinalConnectionState) => {
-      wireEndDrag.current = { active: false, endedAt: performance.now() };
-      if (!reconnectDone.current && !state.toHandle) onEdgesDelete([edge]);
-    },
-    [onEdgesDelete],
-  );
-
   /** D49: a wire dragged out of the Main Comps group onto empty canvas (or a right-click on its out port) offers the Preset nodes. */
   const openPresets = useCallback(
     (client: { x: number; y: number }) => {
@@ -948,23 +608,34 @@ function BoardCanvas(props: {
     e.stopPropagation();
     openPresets({ x: e.clientX, y: e.clientY });
   };
-  const onConnectEnd = useCallback(
-    (e: MouseEvent | TouchEvent, state: FinalConnectionState) => {
-      if (readOnly || state.isValid || !flow.current) return;
-      if (state.toHandle) {
-        const why = connectionRefusal(docRef.current, { source: state.fromNode?.id ?? null, sourceHandle: state.fromHandle?.id ?? null, target: state.toNode?.id ?? null, targetHandle: state.toHandle?.id ?? null });
-        if (why) setNotice(why);
-        return;
-      }
-      const r = wireEndDrag.current;
-      if (r.active || performance.now() - r.endedAt < 100) return;
-      const from = state.fromHandle;
-      const point = 'changedTouches' in e ? e.changedTouches[0] : e;
-      if (!from || !point || from.nodeId !== MAIN_ID || from.id !== OUTPUT_HANDLE) return;
-      openPresets({ x: point.clientX, y: point.clientY });
-    },
-    [readOnly, openPresets],
-  );
+  const { isValidConnection, onConnect, onEdgesChange, onEdgeDoubleClick, onEdgesDelete, onReconnectStart, onReconnect, onReconnectEnd, onConnectEnd } = useWires({
+    readOnly,
+    docRef,
+    flow,
+    run,
+    reconnect,
+    disconnect,
+    setEdges,
+    setNotice,
+    openPresets,
+  });
+
+  /**
+   * Delete / Backspace (BoardKeys): selected nodes are deleted from the doc (one confirm, one undo step;
+   * React Flow's own removal would only drop them from the screen); selected wires alone are disconnected.
+   */
+  const deleteSelection = useCallback(() => {
+    const f = flow.current;
+    if (!f) return;
+    const picked = f.getNodes().filter((n) => n.selected);
+    if (picked.length === 0) {
+      const wires = f.getEdges().filter((e) => e.selected);
+      if (wires.length) onEdgesDelete(wires);
+      return;
+    }
+    const targets = deletableNodes(docRef.current, picked.map((n) => n.id));
+    if (targets.length && window.confirm(deleteQuestion(targets))) run((d) => deleteNodes(d, targets));
+  }, [run, onEdgesDelete]);
 
   /** Duplicates inputs (each copy right next to its original), as one undo step. */
   const duplicateInputs = useCallback(
@@ -989,17 +660,6 @@ function BoardCanvas(props: {
     if (ids.length === 0) return;
     run((doc) => createGroup(doc, { id: newId(), label: `Group ${(doc.groups?.length ?? 0) + 1}`, nodes: ids }));
   }, [readOnly, run]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== 'g') return;
-      e.preventDefault(); // the browser's "find next"
-      groupSelection();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [groupSelection]);
   /** Right-click on a selection of two or more nodes: group them. */
   const onSelectionContextMenu = useCallback(
     (e: React.MouseEvent, picked: Node[]) => {
@@ -1011,20 +671,19 @@ function BoardCanvas(props: {
     [readOnly, groupSelection],
   );
 
-  // T8.2: Ctrl/⌘+D duplicates the selected inputs (not while typing in a field).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'd') return;
+  // Ctrl/⌘+Z undo, Ctrl/⌘+Shift+Z or Ctrl+Y redo; Ctrl/⌘+G groups the selection (T13.7); Ctrl/⌘+D duplicates the
+  // selected inputs (T8.2).
+  useModKey((key, shift) => {
+    if (key === 'z' && !shift) undo();
+    else if ((key === 'z' && shift) || key === 'y') redo();
+    else if (key === 'g' && !shift) groupSelection();
+    else if (key === 'd') {
       const ids = nodesRef.current.flatMap((n) => (n.selected ? [sourceIdOfNode(n.id)] : [])).filter((id): id is string => !!id);
-      if (ids.length === 0) return;
-      e.preventDefault(); // the browser's "bookmark this page"
+      if (ids.length === 0) return false;
       duplicateInputs(ids);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [duplicateInputs]);
+    } else return false;
+    return true;
+  });
 
   // T8.2: right-click an input node → Duplicate / Show or hide / Delete.
   const onNodeContextMenu = useCallback(
@@ -1051,88 +710,12 @@ function BoardCanvas(props: {
     [duplicateInputs, readOnly, run, onSelectionContextMenu],
   );
 
-  /** N4: where a Preset node of `rows` sizes goes near `at` — its node and its Previews clear of every other node. */
-  const clearAt = (at: { x: number; y: number }, rows: number) => clearSpot(nodesRef.current.filter((n) => !n.hidden).map(boxOf), presetBlock(rows), at);
-
-  /** D46 / D49: a Preset node with every size of a preset family (e.g. the 7 GDN sizes), wired to Main Comps. */
-  const addSet = (family: string, at: { x: number; y: number }) => {
-    const sizes = presetFamilies(presets).find((f) => f.label === family)?.presets ?? [];
-    run((d) => addPresetSet(d, { id: newId(), label: family, board: clearAt(at, sizes.length), sizes: sizes.map((p) => ({ id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } })) }));
-  };
-
-  /** D49: the Preset nodes on offer — every preset family, then a custom one (the user's own sizes). */
-  const presetItems = (at: { x: number; y: number }): MenuItem[] => {
-    const doc = docRef.current;
-    return [
-      ...presetFamilies(presets).map((f) => ({
-        label: `${f.label} preset (${f.presets.length} ${f.presets.length === 1 ? 'size' : 'sizes'})`,
-        disabled: doc.outputs.length + f.presets.length > LIMITS.maxOutputs,
-        onSelect: () => addSet(f.label, at),
-      })),
-      { label: 'Custom preset…', separated: true, onSelect: () => run((d) => addPresetSet(d, { id: newId(), label: window.prompt('Preset name', 'Custom')?.trim() || 'Custom', board: clearAt(at, 1), sizes: [] })) },
-    ];
-  };
-
-  /** UX B2: the Export Group's "Add sizes" chips — a Preset node placed under the Main Comps group. */
-  const addSizes = (family: string | null) => {
-    const main = nodesRef.current.find((n) => n.id === MAIN_ID);
-    const at = main ? { x: main.position.x, y: main.position.y + (main.measured?.height ?? 400) + 120 } : { x: 0, y: 0 };
-    if (family) addSet(family, at);
-    else run((d) => addPresetSet(d, { id: newId(), label: window.prompt('Preset name', 'Custom')?.trim() || 'Custom', board: clearAt(at, 1), sizes: [] }));
-  };
-
+  const { presetItems, addSizes, addItems, nextSpot } = useAddMenus({ docRef, nodesRef, flow, presets, run });
   useEffect(() => {
     presetItemsRef.current = presetItems;
     addSizesRef.current = addSizes;
   });
 
-  /** D49 (page 3): what can be added on the board — the asset nodes, then the Preset nodes. */
-  const addItems = (at: { x: number; y: number }): MenuItem[] => {
-    const full = docRef.current.sources.length >= LIMITS.maxSources;
-    return [
-      { label: 'Logo node', disabled: full, onSelect: () => run((d) => addStack(d, { id: newId(), kind: 'logo', board: at })) },
-      { label: 'Headline node (Khmer / English)', disabled: full, onSelect: () => run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at })) },
-      {
-        label: 'Text node',
-        disabled: full,
-        onSelect: () =>
-          run((d) => {
-            const id = newId();
-            const r = addStack(d, { id, kind: 'text', board: at });
-            return r.ok ? addTextToStack(r.doc, id, { id: newId(), label: 'Text 1' }) : r;
-          }),
-      },
-      { label: 'Image node', disabled: full, onSelect: () => run((d) => addStack(d, { id: newId(), label: 'Image', board: at })) },
-      {
-        label: 'Background node',
-        disabled: full,
-        onSelect: () =>
-          run((d) => {
-            const id = newId();
-            const r = addSource(d, { id, kind: 'image', label: 'Background', behavesLike: 'background', board: at });
-            return r.ok ? connectSource(r.doc, id) : r;
-          }),
-      },
-      ...presetItems(at).map((item, i) => ({ ...item, separated: i === 0 })),
-    ];
-  };
-  /**
-   * D49: where + Add puts a node: asset nodes at the end of the top row, Preset nodes in a column under the Layer
-   * Comp group (each below the last), so nothing lands on top of the group.
-   */
-  const nextSpot = (): { asset: { x: number; y: number }; preset: { x: number; y: number } } => {
-    const d = docRef.current;
-    const main = d.compositions.find((c) => c.id === MAIN_ID);
-    const ns = flow.current?.getNodes() ?? [];
-    const right = (n: { position: { x: number }; measured?: { width?: number } }) => n.position.x + (n.measured?.width ?? 280);
-    const top = ns.filter((n) => n.type === 'assetsNode' || n.type === 'textNode' || n.type === 'headlineNode' || n.type === 'inputNode');
-    const sets = ns.filter((n) => n.type === 'presetNode');
-    const below = (n: { position: { y: number }; measured?: { height?: number } }) => n.position.y + (n.measured?.height ?? 400);
-    return {
-      asset: { x: top.length ? Math.max(...top.map(right)) + 40 : 0, y: top.length ? Math.min(...top.map((n) => n.position.y)) : 0 },
-      preset: { x: main?.board.x ?? 0, y: sets.length ? Math.max(...sets.map(below)) + 60 : (main?.board.y ?? 0) + 560 },
-    };
-  };
   const openAdd = (button: HTMLElement) => {
     const r = button.getBoundingClientRect();
     const spot = nextSpot();
@@ -1350,130 +933,37 @@ function BoardCanvas(props: {
       >
         Skip to board
       </a>
-      <header className={TOPBAR}>
-        <div className={GROUP_START}>
-          <button type="button" className={ICON} onClick={props.onBack} aria-label="Back to projects" title="All projects">
-            <Icon name="back" />
-          </button>
-          <strong className={NAME} title={initial.doc.name}>
-            {initial.doc.name}
-          </strong>
-          {readOnly && !props.history.previewing && <span className="sc-badge">View only</span>}
-          {!readOnly && screen !== 'phone' && (
-            <>
-              <span className={SEP} aria-hidden="true" />
-              <button type="button" className={ICON} onClick={undo} disabled={!canStep.undo} aria-label="Undo" title="Undo (Ctrl/⌘+Z)">
-                <Icon name="undo" />
-              </button>
-              <button type="button" className={ICON} onClick={redo} disabled={!canStep.redo} aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)">
-                <Icon name="redo" />
-              </button>
-            </>
-          )}
-        </div>
-        {!readOnly && screen !== 'phone' && (
-          <div className={GROUP_ADD} role="group" aria-label="Add">
-            {/* D49: one menu for every node — the asset nodes and the Preset nodes (as right-click on the canvas). */}
-            <button type="button" className={ADD} aria-label="+ Add" aria-haspopup="menu" onClick={(e) => openAdd(e.currentTarget)} title="Add a node (or right-click the canvas)">
-              <Icon name="plus" /> Add
-            </button>
-          </div>
-        )}
-        {readOnly && screen !== 'phone' && (
-          <span className={COUNTS}>
-            {sourceCount} inputs · {outputCount} outputs
-          </span>
-        )}
-        <div className={GROUP_END}>
-          {notice && (
-            <span className="sc-error" role="alert">
-              {notice}
-            </span>
-          )}
-          {/* D62: nothing is saved while a history version is shown. */}
-          {!props.history.previewing && (
-            <span className={saveClass(saveState)} role="status">
-              <span className={saveDotClass(saveState)} aria-hidden="true" />
-              <span className={SAVE_LONG}>{STATE_LABEL[saveState]}</span>
-              <span className={SAVE_SHORT} aria-hidden="true">
-                {SHORT_LABEL[saveState]}
-              </span>
-              {saveState === 'conflict' && (
-                <button type="button" className={SAVE_BUTTON} onClick={props.onReload}>
-                  Reload latest
-                </button>
-              )}
-            </span>
-          )}
-          {screen === 'phone' ? (
-            <button type="button" className={ICON} aria-label="More" aria-haspopup="menu" title="More" onClick={(e) => openMore(e.currentTarget)}>
-              <Icon name="more" />
-            </button>
-          ) : (
-          <>
-          <span className={SEP} aria-hidden="true" />
-          {/* U2: the team's fonts and library under one Assets menu; History and Review with their names too (icons only
-              at 1100 px and narrower, like Assets); the theme as an icon. */}
-          <button type="button" className={GHOST} aria-haspopup="menu" onClick={(e) => openAssets(e.currentTarget)} title="Team fonts and library">
-            <Icon name="library" /> Assets
-          </button>
-          <button type="button" className={`${GHOST} aria-pressed:bg-accent-soft`} onClick={openHistory} aria-label="History" aria-pressed={props.history.open} title="History: earlier versions of this project">
-            <Icon name="history" /> History
-          </button>
-          <button type="button" className={`${GHOST} sc-topbar__review relative aria-pressed:bg-accent-soft`} onClick={openReview} aria-label="Review" aria-pressed={reviewOpen} title="Review: approval and comments on every Preview">
-            <Icon name="check" /> Review
-            {openComments > 0 && <span className={COUNT} aria-hidden="true">{openComments}</span>}
-          </button>
-          <button
-            type="button"
-            className={`${ICON} sc-theme-toggle`}
-            onClick={toggleTheme}
-            aria-label="Dark theme"
-            aria-pressed={theme === 'dark'}
-            title={theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'}
-          >
-            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
-          </button>
-          {!floating && (
-            <button type="button" className={ICON} onClick={() => setInspectorHidden(!inspectorHidden)} aria-label="Side panel" aria-pressed={!inspectorHidden} title={inspectorHidden ? 'Show the side panel' : 'Hide the side panel'}>
-              <Icon name="panel" />
-            </button>
-          )}
-          </>
-          )}
-          {!readOnly && (
-            <button
-              type="button"
-              className={PRIMARY}
-              aria-label="Export"
-              onClick={() => void autosave.flush().then(() => setExporting({}))}
-              disabled={outputCount === 0}
-              title={outputCount === 0 ? 'Add sizes first: pick them in the Export Group' : 'Export Previews'}
-            >
-              <Icon name="export" /> Export
-            </button>
-          )}
-        </div>
-      </header>
+      <TopBar
+        name={initial.doc.name}
+        readOnly={readOnly}
+        previewing={Boolean(props.history.previewing)}
+        screen={screen}
+        floating={Boolean(floating)}
+        canStep={canStep}
+        onUndo={undo}
+        onRedo={redo}
+        onBack={props.onBack}
+        onAdd={openAdd}
+        sourceCount={sourceCount}
+        outputCount={outputCount}
+        notice={notice}
+        saveState={saveState}
+        onReload={props.onReload}
+        onMore={openMore}
+        onAssets={openAssets}
+        historyOpen={props.history.open}
+        onHistory={openHistory}
+        reviewOpen={reviewOpen}
+        onReview={openReview}
+        openComments={openComments}
+        theme={theme}
+        onTheme={toggleTheme}
+        inspectorHidden={inspectorHidden}
+        onInspectorHidden={setInspectorHidden}
+        onExport={() => void autosave.flush().then(() => setExporting({}))}
+      />
       {props.history.previewing && (
-        <div className={VERSION} role="status">
-          <span>
-            <strong>Version from {versionWhen(props.history.previewing)}</strong>
-            {` · ${versionTitle(props.history.previewing)}`}
-            {props.history.previewing.by ? ` · ${props.history.previewing.by}` : ''}
-          </span>
-          {props.history.error && <span className="sc-error">{props.history.error}</span>}
-          <span className={VERSION_ACTIONS}>
-            {props.canEdit && (
-              <button type="button" className={VERSION_RESTORE} onClick={() => void props.history.restore()}>
-                Restore
-              </button>
-            )}
-            <button type="button" className={VERSION_CLOSE} onClick={props.history.close}>
-              Close
-            </button>
-          </span>
-        </div>
+        <VersionBar version={props.history.previewing} error={props.history.error} canEdit={props.canEdit} onRestore={() => void props.history.restore()} onClose={props.history.close} />
       )}
       <main
         id="board"

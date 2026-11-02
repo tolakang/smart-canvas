@@ -106,7 +106,7 @@ The board (D49: asset nodes → Main Comps + Export Group → Preset nodes → P
 - **One edge type, `routed`** (`RoutedEdge.tsx`: bezier or reroute points, ✂ on hover / selection). Variations are data
   (`points`, `noCut`) or classes (`sc-edge--dim`, `sc-edge--pulse`). — One place draws every wire.
 - **Delete and reconnect wires through the board's handlers** (`onEdgesDelete`, `deleteElements`, `onReconnect*` in
-  `Board.tsx`). — The doc rules run: a Preview's wire freezes it; an empty card's wire sets `unwired` (D49.1).
+  `use-wires.ts`). — The doc rules run: a Preview's wire freezes it; an empty card's wire sets `unwired` (D49.1).
 - **Read-only (viewer):** read `readOnly` from `useBoard()` and hide every edit control.
 - **Performance:** node components are pure functions of `data` plus `useBoard()`; no `useNodes()` / `useEdges()`
   inside a node. — They re-render every node on every drag.
@@ -141,7 +141,7 @@ The board (D49: asset nodes → Main Comps + Export Group → Preset nodes → P
 2. `flow.ts`: id helpers, a `Node<…>` type added to `BoardNode`, built in `docToNodes` (edges in `docToEdges`).
 3. The component: `NodeHead`, `cardClass(kind)`, typed `Handle` ids, `NO_CANVAS` on controls, `readOnly` respected.
 4. Register it in `nodeTypes` (`nodes.tsx`); add it to **+ Add** and the right-click menu if users create it.
-5. Connections: extend `connectionRefusal` (`flow.ts`), and `onConnect` in `Board.tsx` if it wires specially.
+5. Connections: extend `connectionRefusal` (`flow.ts`), and `onConnect` in `use-wires.ts` if it wires specially.
 6. Delete: `delete-nodes.ts`. Zoomed-out tag: `panelTitle` (`ZoomLabels.tsx`). An inspector section if it has settings.
 7. Tests: a unit test for the doc ↔ flow mapping; one e2e test that adds, wires and deletes it.
 8. `pnpm lint`, `pnpm typecheck`, `pnpm build`, the tests (§6).

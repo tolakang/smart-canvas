@@ -89,3 +89,39 @@ export function usePinch(ref: RefObject<HTMLElement | null>, target: () => Pinch
     };
   }, [ref, target, min, max, onPinch]);
 }
+
+/**
+ * D58 (Q8): zoomed out on touch, a press on a panel's content reaches nothing inside it (no button, no keyboard for
+ * a field); its tap calls `onTap` with the panel's node id instead. Ports keep their taps (tap a port, then a target,
+ * to wire). `far` says whether the board is zoomed out that far now.
+ */
+export function useFarTap(ref: RefObject<HTMLElement | null>, far: RefObject<boolean>, onTap: (nodeId: string) => void) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const panelOf = (e: Event) => {
+      const t = e.target as Element | null;
+      if (!far.current || !t || t.closest('.react-flow__handle')) return null;
+      const panel = t.closest<HTMLElement>('.react-flow__node');
+      return panel && panel !== t ? panel : null;
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' || !panelOf(e)) return;
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const onClick = (e: MouseEvent) => {
+      const id = panelOf(e)?.dataset.id;
+      if (!id) return;
+      e.preventDefault();
+      e.stopPropagation();
+      onTap(id);
+    };
+    el.addEventListener('pointerdown', onDown, true);
+    el.addEventListener('click', onClick, true);
+    return () => {
+      el.removeEventListener('pointerdown', onDown, true);
+      el.removeEventListener('click', onClick, true);
+    };
+  }, [ref, far, onTap]);
+}
