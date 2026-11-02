@@ -51,7 +51,7 @@ interface Loaded {
   rev: number;
   doc: ProjectDoc;
 }
-type LoadResult = { key: number } & ({ ok: Loaded } | { error: string });
+type LoadResult = { key: number } & ({ ok: Loaded; presets: SizePreset[] } | { error: string });
 
 const ERROR_NOTICE: Partial<Record<SourceError, string>> = {
   limit: `A project can have at most ${LIMITS.maxSources} inputs.`,
@@ -78,8 +78,11 @@ export function Board(props: { teamId: string; projectId: string; userId: string
 
   useEffect(() => {
     let live = true;
-    api<Loaded>('GET', url).then(
-      (p) => live && setResult({ key: reloadKey, ok: { rev: p.rev, doc: p.doc } }),
+    // UX C3: the team's size presets come with the project, so Main Comps' "Add sizes" chips are there on the first
+    // render and the board's first Fit takes them in (they would otherwise grow the card under it).
+    const presets = api<SizePreset[]>('GET', `/teams/${teamId}/presets`).catch(() => [] as SizePreset[]);
+    Promise.all([api<Loaded>('GET', url), presets]).then(
+      ([p, list]) => live && setResult({ key: reloadKey, ok: { rev: p.rev, doc: p.doc }, presets: list }),
       (e: unknown) =>
         live &&
         setResult({ key: reloadKey, error: e instanceof ApiError ? `Could not load project (${e.status})` : String(e) }),
@@ -87,7 +90,7 @@ export function Board(props: { teamId: string; projectId: string; userId: string
     return () => {
       live = false;
     };
-  }, [url, reloadKey]);
+  }, [url, teamId, reloadKey]);
 
   const history: HistoryControls = {
     open: historyOpen,
@@ -136,6 +139,7 @@ export function Board(props: { teamId: string; projectId: string; userId: string
       role={props.role}
       url={url}
       initial={previewing ? { rev: previewing.version.rev, doc: { ...previewing.doc, name: result.ok.doc.name } } : result.ok}
+      initialPresets={result.presets}
       readOnly={readOnly || Boolean(previewing)}
       canEdit={!readOnly}
       history={history}
@@ -186,6 +190,7 @@ function BoardCanvas(props: {
   role: TeamRole;
   url: string;
   initial: Loaded;
+  initialPresets: SizePreset[];
   readOnly: boolean;
   /** The person may edit (readOnly is also on while a history version is shown). */
   canEdit: boolean;
@@ -494,10 +499,12 @@ function BoardCanvas(props: {
     [apply, show],
   );
 
-  const [presets, setPresets] = useState<SizePreset[]>([]);
+  const [presets, setPresets] = useState<SizePreset[]>(props.initialPresets);
   const [presetsRev, setPresetsRev] = useState(0);
   const reloadPresets = useCallback(() => setPresetsRev((n) => n + 1), []);
   useEffect(() => {
+    // Loaded with the project; fetched again only when they change (Save as team preset, the Size presets dialog).
+    if (presetsRev === 0) return;
     let live = true;
     api<SizePreset[]>('GET', `/teams/${teamId}/presets`).then(
       (list) => live && setPresets(list),

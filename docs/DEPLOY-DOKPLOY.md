@@ -119,7 +119,7 @@ Save. Dokploy's Traefik routes the domain to `web:80`, and nginx inside `web` fo
 
 Smoke check:
 1. Create a project, drop an image on the *Image* node and type a text on the *Text* node.
-2. In the *Export Group*, pick a family (e.g. *IG*): each size gets a Preview.
+2. In *Main Comps*, pick a family (e.g. *IG*) under *Sizes*: each size gets a Preview.
 3. Click **Export**, choose PNG and download the file. If the download works, `web → api → postgres/minio → worker` all work.
 
 ## 8. Updates

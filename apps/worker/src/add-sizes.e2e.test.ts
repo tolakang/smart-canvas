@@ -1,5 +1,5 @@
 /**
- * UX B2 (F3): a new project leads to the sizes step. With no Previews the Export Group offers the size families as
+ * UX B2 (F3): a new project leads to the sizes step. With no Previews Main Comps (UX C3; the Export Group before) offers the size families as
  * one-tap chips (not three empty drop sections), the overview lists three steps, and Export says why it waits; a chip
  * adds that family's Preset node and its Previews.
  */
@@ -8,7 +8,7 @@ import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
 
-describe.skipIf(!adminUrl)('Add sizes from the empty Export Group (UX B2)', () => {
+describe.skipIf(!adminUrl)('Add sizes from Main Comps while it has none (UX B2, C3)', () => {
   let stack: Stack;
   let page: Page;
 
@@ -22,7 +22,7 @@ describe.skipIf(!adminUrl)('Add sizes from the empty Export Group (UX B2)', () =
     await stack?.close();
   });
 
-  const group = () => page.locator('[aria-label="Export Group"]').first();
+  const group = () => page.locator('[aria-label="Main Comps"]').first();
 
   it('a new project: family chips, the getting-started steps, and Export says to add sizes first', async () => {
     await expect.poll(() => group().getByRole('list', { name: 'Add sizes' }).getByRole('button').count()).toBeGreaterThan(3);
@@ -36,11 +36,11 @@ describe.skipIf(!adminUrl)('Add sizes from the empty Export Group (UX B2)', () =
     expect(await exp.getAttribute('title')).toMatch(/^Add sizes first/);
   }, 60_000);
 
-  it('a family chip adds its Preset node; the Export Group then sorts its Previews', async () => {
+  it('a family chip adds its Preset node; each size row then shows its layout', async () => {
     await group().getByRole('button', { name: /^Add GDN sizes/ }).click();
     await expect.poll(() => page.locator('.react-flow__node-presetNode').filter({ has: page.locator('.sc-node__title', { hasText: /^GDN$/ }) }).count()).toBe(1);
     await expect.poll(() => group().getByRole('list', { name: 'Add sizes' }).count()).toBe(0);
-    await expect.poll(() => group().locator('.sc-rule__chip').count()).toBeGreaterThan(1);
+    await expect.poll(() => page.locator('.react-flow__node-presetNode .sc-preset__layout').count()).toBe(7);
     expect(await page.getByRole('button', { name: 'Export', exact: true }).isDisabled()).toBe(false);
   }, 60_000);
 

@@ -5,7 +5,7 @@
  * `_` in a class is a space, so a selector naming `react-flow__node` is written with `\_` (String.raw).
  */
 
-export type CardKind = 'input' | 'main' | 'rule' | 'preset' | 'output';
+export type CardKind = 'input' | 'main' | 'preset' | 'output';
 
 /**
  * Fields in a card look like the node controls: filled, small type, a clear border, never wider than the card.
@@ -65,14 +65,12 @@ const SELECTED = String.raw`[.react-flow\_\_node.selected_&]:border-accent [.rea
 const STRIPE: Record<CardKind, string> = {
   input: 'before:bg-type-input',
   main: 'before:bg-type-main',
-  rule: 'before:bg-type-input',
   preset: 'before:bg-type-input',
   output: 'before:bg-type-output',
 };
 const SIZE: Record<CardKind, string> = {
   input: 'w-280 min-w-[160px]',
   main: 'w-280 min-w-260 min-h-120',
-  rule: 'w-280 min-w-[160px]',
   preset: 'w-300 min-w-[160px]',
   output: 'w-280 min-w-[160px]',
 };

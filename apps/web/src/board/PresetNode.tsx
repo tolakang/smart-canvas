@@ -3,9 +3,10 @@
  * preview. Each row is an output wired out to its own Preview node (Edit / Export there); cutting a row's wire
  * disconnects that size (its layout freezes). Rows are dragged into another order, added from the team's presets
  * or as a custom W × H, or removed. N5: "Save as team preset" saves the node's sizes as a team preset family, so
- * it is offered as a Preset node from then on.
+ * it is offered as a Preset node from then on. UX C3 (D72): each row also says which of Main Comps' layouts its
+ * Preview uses — the one closest to its shape, or another picked there (S · V · H).
  */
-import { addSizeToSet, deleteOutput, deletePresetSet, moveSetRow, renameSet, setFamily, setPreviewHidden, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addSizeToSet, canvasMetrics, deleteOutput, deletePresetSet, familyOfShape, GUIDE_FAMILIES, moveSetRow, renameSet, setFamily, setOutputLayout, setPreviewHidden, type GuideFamily, type OutputNode, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState } from 'react';
 import { cardClass, HEAD_ACTION } from './card';
@@ -14,6 +15,7 @@ import { setRowHandle, type SetFlowNode } from './flow';
 import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
+import { FAMILY_LABEL } from './MainNode';
 import { nameWithoutSize, presetSettings } from './OutputNode';
 import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
 import { useSaveAsFamily } from './preset-save';
@@ -37,6 +39,18 @@ export function rowName(label: string, setLabel: string): string {
   return name === setLabel.trim() ? '' : name;
 }
 const ROW_DRAG = 'application/x-sc-preset-row';
+
+/** UX C3: a row's layout choice — three small buttons; the one in use raised, in the accent when picked by hand. */
+const SEG = 'sc-preset__layout inline-flex flex-none gap-1 rounded-[7px] bg-surface-2 p-1';
+const SEG_BUTTON =
+  'h-20 min-w-20 cursor-pointer rounded-[5px] px-4 text-[10.5px] font-[700] text-muted [background:none] [border:0] hover:text-fg disabled:cursor-default aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:[box-shadow:var(--shadow-1)] data-[chosen]:aria-pressed:text-accent pointer-coarse:h-32 pointer-coarse:min-w-32';
+const SHORT: Record<GuideFamily, string> = { square: 'S', vertical: 'V', horizontal: 'H' };
+
+/** The layout an output takes by its shape alone (D50). */
+export const closestLayout = (o: OutputNode): GuideFamily => {
+  const { trim } = canvasMetrics(o);
+  return familyOfShape({ width: trim.w, height: trim.h });
+};
 /** The "Add a size" choice that opens the custom W × H fields. */
 const CUSTOM = '__custom';
 
@@ -147,6 +161,8 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
               {/* V2: the size is already shown; a name that only repeats the preset and the size says nothing more. */}
               {rowName(output.label, set.label)}
             </span>
+            {/* UX C3 (D72): which of Main Comps' layouts this size uses; the closest one again clears a pick. */}
+            <LayoutChoice output={output} readOnly={readOnly} onPick={(f) => run((d) => setOutputLayout(d, output.id, f, newId()))} />
             {/* UX A5 (F16): the state is never cut off; only the name gives way. */}
             {!connected && <span className="sc-preset__state flex-none text-[12px] text-warn">Disconnected</span>}
             {/* D51: the eye shows / hides this size's Preview on the board (it still exports); the trash removes the size. */}
@@ -222,5 +238,30 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         </select>
       )}
     </div>
+  );
+}
+
+function LayoutChoice(props: { output: OutputNode; readOnly: boolean; onPick: (family: GuideFamily | null) => void }) {
+  const { output } = props;
+  const closest = closestLayout(output);
+  const current = output.layout ?? closest;
+  return (
+    <span className={`${SEG} ${NO_CANVAS}`} role="group" aria-label={`Layout for ${output.label}`}>
+      {GUIDE_FAMILIES.map((f) => (
+        <button
+          key={f}
+          type="button"
+          className={SEG_BUTTON}
+          aria-pressed={current === f}
+          data-chosen={output.layout === f || undefined}
+          aria-label={`${FAMILY_LABEL[f]} layout`}
+          title={f === closest ? `${FAMILY_LABEL[f]} layout (closest to its shape)` : `${FAMILY_LABEL[f]} layout`}
+          disabled={props.readOnly}
+          onClick={() => current !== f && props.onPick(f === closest ? null : f)}
+        >
+          {SHORT[f]}
+        </button>
+      ))}
+    </span>
   );
 }

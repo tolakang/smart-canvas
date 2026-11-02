@@ -1,6 +1,6 @@
 /**
  * What can be added on the board, and where it goes (D49, N4; clean-up 2, U8: moved out of Board.tsx as they were):
- * the asset nodes and the Preset nodes, for + Add, the canvas's right-click menu and the Export Group's "Add sizes".
+ * the asset nodes and the Preset nodes, for + Add, the canvas's right-click menu and Main Comps' "Add sizes".
  */
 import { addLanguagePair, addPresetSet, addSource, addStack, addTextToStack, connectSource, LIMITS, presetFamilies, type ProjectDoc, type SizePreset, type SourceResult } from '@smart-canvas/core';
 import type { Edge, ReactFlowInstance } from '@xyflow/react';
@@ -43,7 +43,7 @@ export function useAddMenus({ docRef, nodesRef, flow, presets, run }: AddMenuDep
     ];
   };
 
-  /** UX B2: the Export Group's "Add sizes" chips — a Preset node placed under the Main Comps group. */
+  /** UX B2 / C3: Main Comps' "Add sizes" chips — a Preset node placed under the Main Comps group. */
   const addSizes = (family: string | null) => {
     const main = nodesRef.current.find((n) => n.id === MAIN_ID);
     const at = main ? { x: main.position.x, y: main.position.y + (main.measured?.height ?? 400) + 120 } : { x: 0, y: 0 };

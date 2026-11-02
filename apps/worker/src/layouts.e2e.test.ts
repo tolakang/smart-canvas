@@ -1,8 +1,8 @@
 /**
  * PR 2 of the page-3 board (D50) end to end. The Square / Vertical / Horizontal editors share the master's
  * layers: order, lock, hide and delete apply in all three layouts; a locked layer can't be picked or moved on
- * the canvas. The Export Group (V2: always shown) lists the outputs in their layout's section; dragging one into another
- * section assigns that layout (added if needed), and × puts it back on the closest one.
+ * the canvas. UX C3 (D72): each size row of a Preset node says which layout its Preview uses (the closest to its
+ * shape); picking another assigns that layout (added if needed), and picking the closest one again clears it.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addPresetSet, guidesOf, MAIN, type ProjectDoc } from '@smart-canvas/core';
@@ -10,7 +10,7 @@ import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { boardNode, openLayout, setupAndCreateProject, startStack, type Stack } from './test/stack';
 
-describe.skipIf(!adminUrl)('layouts and the Export Group (D50)', () => {
+describe.skipIf(!adminUrl)('layouts and each size\'s layout (D50, D72)', () => {
   let stack: Stack;
   let page: Page;
   let url = '';
@@ -78,36 +78,35 @@ describe.skipIf(!adminUrl)('layouts and the Export Group (D50)', () => {
     await close();
   }, 60_000);
 
-  it('Export Group: each output in its closest layout; dragged into another section it follows that one', async () => {
-    // V2: shown on the board without opening anything, and no Core Auto Layout Guide.
+  it('each size row shows its closest layout; picking another assigns it, the closest one again clears it', async () => {
+    // V2: no Core Preset / Auto Layout Guide, and (C3) no Export Group card.
     expect(await page.getByRole('button', { name: /Core (Preset|Auto Layout) Guide/ }).count()).toBe(0);
-    const section = (f: string) => page.getByRole('listitem', { name: `${f} layout` });
-    await expect.poll(() => section('Square').locator('[data-output]').evaluateAll((els) => els.map((e) => e.getAttribute('data-output')))).toEqual(['g1']);
-    expect(await section('Horizontal').locator('[data-output="g2"]').count()).toBe(1);
-    expect(await section('Vertical').locator('[data-output="g3"]').count()).toBe(1);
-    // The wide banner dragged into Square.
-    await section('Horizontal').locator('[data-output="g2"]').dragTo(section('Square'));
+    expect(await page.locator('[aria-label="Export Group"]').count()).toBe(0);
+    const choice = (id: string) => page.locator(`.react-flow__node-presetNode [data-output="${id}"] .sc-preset__layout`);
+    const inUse = (id: string) => choice(id).locator('button[aria-pressed="true"]').getAttribute('aria-label');
+    await expect.poll(() => inUse('g1')).toBe('Square layout');
+    expect(await inUse('g2')).toBe('Horizontal layout');
+    expect(await inUse('g3')).toBe('Vertical layout');
+    // The wide banner set to Square.
+    await choice('g2').getByRole('button', { name: 'Square layout' }).click();
     await saved();
     let d = await doc();
     expect(d.outputs.find((o) => o.id === 'g2')?.layout).toBe('square');
-    await expect.poll(() => section('Square').locator('[data-output="g2"]').count()).toBe(1);
-    // Into Horizontal (not added yet): the layout is added and the banner follows it.
-    await section('Square').locator('[data-output="g2"]').dragTo(section('Horizontal'));
+    expect(await choice('g2').locator('button[data-chosen]').getAttribute('aria-label')).toBe('Square layout');
+    // Vertical (not added yet): the layout is added and the banner follows it.
+    await choice('g2').getByRole('button', { name: 'Vertical layout' }).click();
     await saved();
     d = await doc();
-    expect(d.outputs.find((o) => o.id === 'g2')?.layout).toBe('horizontal');
-    expect(guidesOf(d, MAIN).some((g) => g.guide?.family === 'horizontal')).toBe(true);
-    // × puts it back on the closest layout.
-    await section('Horizontal').getByRole('button', { name: /back to the closest layout/ }).click();
+    expect(d.outputs.find((o) => o.id === 'g2')?.layout).toBe('vertical');
+    expect(guidesOf(d, MAIN).some((g) => g.guide?.family === 'vertical')).toBe(true);
+    // Its closest layout again clears the pick.
+    await choice('g2').getByRole('button', { name: 'Horizontal layout' }).click();
     await saved();
     expect((await doc()).outputs.find((o) => o.id === 'g2')?.layout).toBeUndefined();
-    // UX B4 (F9): the same move without dragging — the chip's "Move to" menu, by keyboard.
-    const move = section('Horizontal').getByRole('button', { name: /: move to another layout$/ }).first();
-    await move.focus();
-    await page.keyboard.press('Enter');
-    await page.getByRole('menuitem', { name: 'Move to Vertical' }).focus();
+    // By keyboard too.
+    await choice('g2').getByRole('button', { name: 'Square layout' }).focus();
     await page.keyboard.press('Enter');
     await saved();
-    expect((await doc()).outputs.find((o) => o.id === 'g2')?.layout).toBe('vertical');
+    expect((await doc()).outputs.find((o) => o.id === 'g2')?.layout).toBe('square');
   }, 60_000);
 });

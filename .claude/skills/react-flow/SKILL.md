@@ -5,7 +5,7 @@ description: How this project's flow board is built on @xyflow/react v12, and ho
 
 # React Flow on this board
 
-The board (D49: asset nodes → Main Comps + Export Group → Preset nodes → Previews; names D66) is React Flow v12 (`@xyflow/react`
+The board (D49: asset nodes → Main Comps → Preset nodes → Previews; names D66, D72) is React Flow v12 (`@xyflow/react`
 ^12.12, `apps/web/package.json`). Read this before touching `apps/web/src/board/`. Locked decisions in
 `docs/DECISIONS.md` win over anything here; the ones that matter most are named inline (D32, D36, D49, D57, D58, D64,
 D69, D70).
