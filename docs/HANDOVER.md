@@ -151,4 +151,4 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - None else known beyond the proposals in BACKLOG **Next**.
 
 ## Next
-P1–P30 are done (clean-up review 2: `docs/archive/CLEANUP-AUDIT-2.md`). **P31:** the owner took the UX review's C1 (guided start, D71) and C3 (the layout choice on each size row); C2 is left out for now. They run one PR each in `TASKS.md` P31's order. The rest of the dev plan is Q6 (print colour, CMYK / PDF-X): planned in `docs/plans/Q6-print-colour.md` and **on hold** — the owner said "Do not dev it yet". Don't start it until the owner says go and answers its three open questions.
+P1–P31 are done (clean-up review 2: `docs/archive/CLEANUP-AUDIT-2.md`; P31: the UX review's C1, guided start, D71, and C3, the layout choice on each size row, D72, #237–#239). C2 (pipeline lanes) is left out for now. Nothing else is planned: the owner picks what comes next.
