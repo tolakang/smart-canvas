@@ -173,7 +173,7 @@ export const projectDocV4Schema = {
     stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
     headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
     presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
-    layerOrder: { type: 'array', minItems: 4, maxItems: 4, uniqueItems: true, items: { enum: ['logo', 'headline', 'elements', 'background'] } },
+    layerOrder: { type: 'array', minItems: 4, maxItems: 5, uniqueItems: true, items: { enum: ['logo', 'headline', 'text', 'elements', 'background'] } },
   },
 } as const;
 
@@ -194,7 +194,7 @@ export const projectDocV3Schema = {
     stacks: { type: 'array', maxItems: LIMITS.maxSources, items: stack },
     headlines: { type: 'array', maxItems: LIMITS.maxSources, items: headline },
     presetSets: { type: 'array', maxItems: LIMITS.maxOutputs, items: presetSet },
-    layerOrder: { type: 'array', minItems: 4, maxItems: 4, uniqueItems: true, items: { enum: ['logo', 'headline', 'elements', 'background'] } },
+    layerOrder: { type: 'array', minItems: 4, maxItems: 5, uniqueItems: true, items: { enum: ['logo', 'headline', 'text', 'elements', 'background'] } },
   },
 } as const;
 

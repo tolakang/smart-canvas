@@ -46,12 +46,12 @@ describe('page-3 board structure (D49)', () => {
 
   it('D48: the layer comp groups can be dragged into another order; every composition follows', () => {
     const doc = createBoardProject('P', { legacySlots: true });
-    expect(layerOrderOf(doc)).toEqual(['logo', 'headline', 'elements', 'background']);
+    expect(layerOrderOf(doc)).toEqual(['logo', 'headline', 'text', 'elements', 'background']);
     const moved = moveLayerGroup(doc, 'elements', 0);
-    expect(layerOrderOf(moved)).toEqual(['elements', 'logo', 'headline', 'background']);
+    expect(layerOrderOf(moved)).toEqual(['elements', 'logo', 'headline', 'text', 'background']);
     for (const c of moved.compositions) expect(c.layers[0]).toBe('subject');
     // Back to the default: nothing stored.
-    expect(moveLayerGroup(moved, 'elements', 2).layerOrder).toBeUndefined();
+    expect(moveLayerGroup(moved, 'elements', 3).layerOrder).toBeUndefined();
   });
 });
 

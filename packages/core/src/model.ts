@@ -222,8 +222,8 @@ export interface ProjectDoc {
   headlines?: LanguagePair[];
   /** D46: Preset nodes — a list of output sizes (e.g. GDN) fed by one master preview. */
   presetSets?: PresetSet[];
-  /** D48: the layer comp's group order, front first ('logo' | 'headline' | 'elements' | 'background'); absent = default. */
-  layerOrder?: ('logo' | 'headline' | 'elements' | 'background')[];
+  /** D48: the layer comp's group order, front first; absent = default. D73 adds 'text' (an order of the other four, saved before, still reads). */
+  layerOrder?: ('logo' | 'headline' | 'text' | 'elements' | 'background')[];
 }
 
 /**

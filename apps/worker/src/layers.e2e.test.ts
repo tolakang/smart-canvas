@@ -30,26 +30,27 @@ describe.skipIf(!adminUrl)('layer order (T8.1, D48)', () => {
   const groups = () => comp().getByRole('list', { name: 'Layer order (front first)' }).locator('.sc-comp__group-name').allInnerTexts();
   const group = (name: string) => comp().locator('.sc-comp__group', { has: page.locator('.sc-comp__group-name', { hasText: new RegExp(`^${name}$`) }) });
 
-  it('Main Comps shows the four groups, logo on top', async () => {
-    expect(await groups()).toEqual(['Logo', 'Headline', 'Elements', 'Background']);
+  it('Main Comps shows a group per asset node, logo on top (D73: Text its own, Image for the pictures)', async () => {
+    expect(await groups()).toEqual(['Logo', 'Headline', 'Text', 'Image', 'Background']);
     // Each group counts its layers (the default board: one logo, the headline text and its two pictures, the subject, the background).
-    expect(await group('Elements').locator('.sc-comp__count').innerText()).toBe('1');
+    expect(await group('Image').locator('.sc-comp__count').innerText()).toBe('1');
+    expect(await group('Text').locator('.sc-comp__count').innerText()).toBe('1');
   }, 30_000);
 
   it('dragging a group re-orders every composition’s rows; ↑ ↓ too', async () => {
-    await group('Elements').dragTo(group('Logo'));
-    await expect.poll(groups).toEqual(['Elements', 'Logo', 'Headline', 'Background']);
+    await group('Image').dragTo(group('Logo'));
+    await expect.poll(groups).toEqual(['Image', 'Logo', 'Headline', 'Text', 'Background']);
     await saved();
     let d = await doc();
-    expect(layerOrderOf(d)).toEqual(['elements', 'logo', 'headline', 'background']);
+    expect(layerOrderOf(d)).toEqual(['elements', 'logo', 'headline', 'text', 'background']);
     expect(mainComposition(d).layers[0]).toBe('subject');
     // Back with the arrows: the default order is not stored.
     // (The arrows show on hover; clicked without a pointer, as the row moves under it.)
-    for (let i = 0; i < 2; i++) {
-      await group('Elements').locator('button[aria-label="Move Elements down"]').dispatchEvent('click');
+    for (let i = 0; i < 3; i++) {
+      await group('Image').locator('button[aria-label="Move Image down"]').dispatchEvent('click');
       await page.waitForTimeout(200);
     }
-    await expect.poll(groups).toEqual(['Logo', 'Headline', 'Elements', 'Background']);
+    await expect.poll(groups).toEqual(['Logo', 'Headline', 'Text', 'Image', 'Background']);
     await saved();
     d = await doc();
     expect(d.layerOrder).toBeUndefined();

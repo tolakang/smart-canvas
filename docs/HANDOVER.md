@@ -1,6 +1,6 @@
 # Handover — 2026-10-28 (UX review fixes done; clean-up review 2 under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D72**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D73**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -60,7 +60,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 - **Background** is one input with vertical and horizontal slots (D43). A square output uses either slot.
 
 **Main Comps** (Layer Comp before D66).
-- The layer order is shown as four groups; drag them or use ↑ ↓ to reorder (D48: `ProjectDoc.layerOrder`, `moveLayerGroup`).
+- The layer order is shown as five groups, one per asset node: Logo, Headline, Text, Image, Background (D73); drag them or use ↑ ↓ to reorder (D48: `ProjectDoc.layerOrder`, `moveLayerGroup`).
 - **Square, Vertical, Horizontal** each open that layout's editor. A missing layout is added the first time it's opened (D42 guides).
 - All three editors share the master's layers: order, wiring, show/hide, **lock** and delete apply everywhere. Position and size are per layout (D50: `masterScene` of a guide, `InputSource.locked`).
 
