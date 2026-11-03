@@ -321,7 +321,8 @@ describe.skipIf(!adminUrl)('editor transform box (D36)', () => {
     await ed.locator('[data-tb-handle="e"]').waitFor();
     const first = await label();
     await phone.waitForTimeout(400);
-    await tap(pic);
+    // Selecting can resize the sheet and so move the canvas: the picture is found again where it is now.
+    await tap(await centreOf('.sc-editor__canvas [data-source-id="subject"]'));
     await expect.poll(label).not.toBe(first);
     near(await placement(), moved);
     await ctx.close();

@@ -59,12 +59,7 @@ export function DesignPanel(props: {
   if (!source || !frame) {
     return (
       <aside className={DESIGN} aria-label="Design">
-        <section className={SECTION}>
-          <div className={TITLE}>Canvas</div>
-          <div className="sc-design__value">
-            {round(props.scene.width)} × {round(props.scene.height)} <span className={MUTED_TEXT}>design px</span>
-          </div>
-        </section>
+        {/* Owner, 2026-11-03: the canvas size is in the editor bar already; nothing is repeated here. */}
         {/* Touch screens get gestures instead of keyboard shortcuts. */}
         <details className={SECTION_TOUCH}>
           <summary className={SUMMARY}>Gestures</summary>

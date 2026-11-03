@@ -168,8 +168,9 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 
 ## Editors (U4)
 - The editor bar follows the theme: a glass bar (`--fig-bar: var(--glass)`) floating on the ambient backdrop like the board's, with the active tool as a solid accent button. (The old dark bar is gone.)
-- On tablets and desktops the Layers panel, the stage and the Design (or Comments) panel float with a 12 px margin and 18 px corners; phones keep the full-width canvas and the bottom sheet.
-- With nothing selected, the Design panel shows the canvas size and **Keyboard shortcuts** folded (open it to see them); touch screens show the gestures instead.
+- On tablets and desktops (D76) one column on the left, 300 px (340 px from 1536 px), holds the **Layers** panel on top (up to about half the height, scrolling) and the **Design** (or Comments, or a Preview's) panel under it, as tall as its content; the stage takes all the rest. They float with a 12 px margin and 18 px corners; phones keep the full-width canvas and the bottom sheet.
+- Layer rows are two lines beside a 32 px thumbnail: the name (13 px) across the whole first line; its kind, then the KM / EN switch and the row's buttons (shown on hover, focus or the selected row) at the right of the second line, so the name is never cut by them.
+- With nothing selected, the Design panel shows **Keyboard shortcuts** folded (open it to see them); touch screens show the gestures instead. The canvas size is in the editor bar only.
 
 ## Words, health and access (U7, D64)
 - **One name for each thing**, everywhere in the UI: **Main Comps** (the master artwork and its layouts; its editor is the "Main Comps editor"), and **Preview** (each size; "Preview editor", "Export 3 Previews", "Previews" in the export dialog). Code keeps its model names (`output`, `main`).

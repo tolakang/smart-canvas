@@ -98,7 +98,8 @@ describe.skipIf(!adminUrl)('collapse and expand a card', () => {
     await logo.focus();
     await page.keyboard.press('Enter'); // brought close (D69)
     await settled(logo);
-    await logo.getByRole('button', { name: 'Collapse Logo' }).click();
+    // Zoomed in, the card's head can sit under the top bar, so use the fold button from the keyboard.
+    await logo.getByRole('button', { name: 'Collapse Logo' }).press('Enter');
     await expect.poll(() => logo.locator('.sc-slot').first().isVisible()).toBe(false);
     await page.reload();
     await page.locator('.react-flow__node-presetNode').first().waitFor();
@@ -107,7 +108,7 @@ describe.skipIf(!adminUrl)('collapse and expand a card', () => {
     await boardNode(page, 'Logo').focus();
     await page.keyboard.press('Enter');
     await settled(boardNode(page, 'Logo'));
-    await boardNode(page, 'Logo').getByRole('button', { name: 'Expand Logo' }).click();
+    await boardNode(page, 'Logo').getByRole('button', { name: 'Expand Logo' }).press('Enter');
     await expect.poll(() => boardNode(page, 'Logo').locator('.sc-slot').first().isVisible()).toBe(true);
   }, 60_000);
 });

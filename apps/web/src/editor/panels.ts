@@ -26,17 +26,23 @@ export function layerRowClass(o: { selected: boolean; hidden: boolean; unwired: 
   const state = o.selected
     ? ' sc-layer--selected [background:var(--fig-select)] [box-shadow:none]'
     : `${o.drop ? ' [box-shadow:inset_0_2px_0_var(--accent)]' : ''} hover:[background:var(--fig-hover)]`;
-  return `sc-layer group/layer flex min-h-32 items-center gap-6 rounded-[10px] px-8 py-0 [border-bottom:0] [&[draggable=true]]:cursor-grab ${o.hidden ? ' sc-layer--hidden' : ''}${o.unwired ? ' sc-layer--unwired' : ''}${o.drop ? ' sc-layer--drop' : ''}${state}`;
+  return `sc-layer group/layer relative grid min-h-44 grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-x-8 gap-y-0 rounded-[10px] px-8 py-4 [&>.sc-port__grip]:row-span-2 [&>.sc-port__grip]:self-center [&>.sc-layer-thumb]:row-span-2 [border-bottom:0] [&[draggable=true]]:cursor-grab ${o.hidden ? ' sc-layer--hidden' : ''}${o.unwired ? ' sc-layer--unwired' : ''}${o.drop ? ' sc-layer--drop' : ''}${state}`;
 }
 /** The row's name and its kind; a hidden layer's name is struck through, an unwired one is faded. */
 export const layerNameClass = (hidden: boolean, unwired: boolean) =>
-  `sc-layer__name [&>span.sc-muted]:text-[11px] [.sc-fig_&>span.sc-muted]:text-[10px] grid min-w-0 flex-1 p-2 text-left text-[11px] [background:none] [border:0] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap ${unwired ? ' opacity-60' : ''}${hidden ? ' [&>span:first-child]:line-through [&>span:first-child]:opacity-50' : ''}`;
+  `sc-layer__name col-[3/5] row-1 grid min-w-0 px-2 pt-2 pb-0 text-left text-[13px] font-[550] [background:none] [border:0] [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap ${unwired ? ' opacity-60' : ''}${hidden ? ' [&>span:first-child]:line-through [&>span:first-child]:opacity-50' : ''}`;
+/**
+ * Owner, 2026-11-03 ("Layer panel … too narrow"): a row is two lines — the name across the whole first line, then its
+ * kind, with the KM / EN switch and the row's buttons at the right of the second line — so the name is never cut by them.
+ */
+export const LAYER_KIND = 'sc-layer__kind col-3 row-2 min-w-0 overflow-hidden px-2 pb-2 text-[11.5px] text-ellipsis whitespace-nowrap';
+export const LAYER_TOOLS = 'sc-layer__tools col-4 row-2 flex items-center gap-4';
 /** The row's buttons: shown on hover, on the selected row, or while one has focus. */
 export const layerActionsClass = (selected: boolean) =>
-  `sc-layer__actions flex gap-2 ${selected ? 'opacity-100' : 'opacity-0 group-hover/layer:opacity-100 focus-within:opacity-100'} [&_button]:size-24 [&_button]:rounded-[4px] [&_button]:p-0 [&_button]:text-[11px] [&_button]:text-muted [&_button]:[background:none] [&_button]:[border:1px_solid_transparent] [&_button:hover:not(:disabled)]:border-line [&_button:hover:not(:disabled)]:text-fg [&_button:disabled]:opacity-30`;
+  `sc-layer__actions flex gap-2 ${selected ? 'opacity-100' : 'opacity-0 group-hover/layer:opacity-100 focus-within:opacity-100'} [&_button]:size-28 [&_button]:rounded-[6px] [&_button]:p-0 [&_button]:text-[11px] [&_button]:text-muted [&_button]:[background:none] [&_button]:[border:1px_solid_transparent] [&_button:hover:not(:disabled)]:border-line [&_button:hover:not(:disabled)]:text-fg [&_button:disabled]:opacity-30`;
 /** The layer's picture, fill or first letter, on a checkerboard. */
 export const THUMB =
-  'sc-layer-thumb inline-flex size-20 flex-none items-center justify-center overflow-hidden rounded-[2px] [border:1px_solid_var(--line)] [background:repeating-conic-gradient(var(--checker-a)_0%_25%,var(--checker-b)_0%_50%)_0_0_/_8px_8px] [&_img]:size-full [&_img]:object-contain';
+  'sc-layer-thumb inline-flex size-32 flex-none items-center justify-center overflow-hidden rounded-[6px] [border:1px_solid_var(--line)] [background:repeating-conic-gradient(var(--checker-a)_0%_25%,var(--checker-b)_0%_50%)_0_0_/_8px_8px] [&_img]:size-full [&_img]:object-contain';
 /** "edited": the layer was moved by hand on this Preview. */
 export const EDITED =
   'sc-edited ml-6 rounded-[4px] px-5 py-0 align-[1px] text-[10px] font-[600] text-accent [background:color-mix(in_srgb,var(--accent)_14%,transparent)]';
