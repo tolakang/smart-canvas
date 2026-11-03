@@ -1,4 +1,4 @@
-import { boardStructure, fitFrames, orderLayers, boardGroups, createGroup, deleteSource, disconnectOutput, duplicateSource, LIMITS, reconnectNeedsChoice, reconnectOutput, setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult, type TeamRole } from '@smart-canvas/core';
+import { presetSets, boardStructure, fitFrames, orderLayers, boardGroups, createGroup, deleteSource, disconnectOutput, duplicateSource, LIMITS, reconnectNeedsChoice, reconnectOutput, setSourceVisible, type InputSource, type ProjectDoc, type SizePreset, type SourceError, type SourceResult, type TeamRole } from '@smart-canvas/core';
 import { applyNodeChanges, Background, MiniMap, Panel, ReactFlow, useStore, ViewportPortal, type Edge, type Node, type NodeChange, type ReactFlowInstance } from '@xyflow/react';
 import './reactflow.css';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -212,6 +212,8 @@ function BoardCanvas(props: {
   /** The composition open in the master preview editor (the master or one of its layouts). */
   const [editingMain, setEditingMain] = useState<string | null>(null);
   const [editingOutput, setEditingOutput] = useState<string | null>(null);
+  /** D83: the Preset node whose sizes the output editor shows (Edit all); none for a Preview's own Edit. */
+  const [editAllSet, setEditAllSet] = useState<string | null>(null);
   const [outputComments, setOutputComments] = useState(false);
   /** D63: the Review panel (in the inspector's place, like History). */
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -616,7 +618,15 @@ function BoardCanvas(props: {
       openMainEditor: (compositionId: string = MAIN_ID) => setEditingMain(compositionId),
       openOutputEditor: (id: string, opts?: { comments?: boolean }) => {
         setOutputComments(Boolean(opts?.comments));
+        setEditAllSet(null);
         setEditingOutput(id);
+      },
+      openEditAll: (setId: string) => {
+        const first = presetSets(docRef.current).find((s) => s.id === setId)?.outputs.find((id) => docRef.current.outputs.some((o) => o.id === id));
+        if (!first) return;
+        setOutputComments(false);
+        setEditAllSet(setId);
+        setEditingOutput(first);
       },
       exportOutputs: (ids: string[], set?: string) => void autosave.flush().then(() => setExporting({ outputs: ids, ...(set ? { set } : {}) })),
       author,
@@ -1240,7 +1250,18 @@ function BoardCanvas(props: {
           )}
           {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
           {editingMain && <MainEditor compositionId={editingMain} onClose={() => setEditingMain(null)} />}
-          {editingOutput && <OutputEditor outputId={editingOutput} comments={outputComments} onClose={() => setEditingOutput(null)} />}
+          {editingOutput && (
+            <OutputEditor
+              outputId={editingOutput}
+              comments={outputComments}
+              setId={editAllSet ?? undefined}
+              onSwitch={setEditingOutput}
+              onClose={() => {
+                setEditingOutput(null);
+                setEditAllSet(null);
+              }}
+            />
+          )}
         </BoardContext.Provider>
       </main>
       {reconnecting && (

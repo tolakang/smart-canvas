@@ -1,4 +1,4 @@
-/* The app's CSS at 2a95ce8d4bf789252994445a7e9c315fcb96c8f8 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at aa0ccda3eb2a000fe34070c03956d88fe0e701b0 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -4338,6 +4338,19 @@
 
   .has-\[input\:focus-visible\]\:outline-offset-1:has(:is(input:focus-visible)) {
     outline-offset: 1px;
+  }
+
+  .aria-current\:bg-accent-soft[aria-current="true"] {
+    background-color: var(--accent-soft);
+  }
+
+  .aria-current\:font-\[650\][aria-current="true"] {
+    --tw-font-weight: 650;
+    font-weight: 650;
+  }
+
+  .aria-current\:text-accent[aria-current="true"] {
+    color: var(--accent);
   }
 
   .aria-expanded\:bg-\[color-mix\(in_srgb\,var\(--fg\)_8\%\,transparent\)\][aria-expanded="true"] {

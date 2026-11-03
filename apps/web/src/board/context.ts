@@ -25,6 +25,8 @@ export interface BoardActions {
   openMainEditor: (compositionId?: string) => void;
   /** `comments`: open with the Comment tool on (D63). */
   openOutputEditor: (outputId: string, opts?: { comments?: boolean }) => void;
+  /** D83: Edit all — the editor on a Preset node's first size, with every size of it a click away. */
+  openEditAll: (setId: string) => void;
   /** Opens the export dialog with these outputs chosen (T13.7: export a group); N6: or a Preset node's sizes, as one ZIP. */
   exportOutputs: (outputIds: string[], presetSetId?: string) => void;
   /** Stamp for override writes: the signed-in user, now. */

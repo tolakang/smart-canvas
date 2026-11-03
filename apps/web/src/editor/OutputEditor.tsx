@@ -5,7 +5,7 @@
  * D63: the Comment tool turns a click or tap on the Preview into a pinned comment; the Comments panel takes the
  * Design panel's place while it is on.
  */
-import { allLayersEmpty, computeLayout, isEmptyLayer, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
+import { allLayersEmpty, computeLayout, isEmptyLayer, presetSets, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '../board/context';
 import { threadsOf } from '../board/review';
@@ -18,8 +18,22 @@ import { COMMENT_TOOL, COUNT, LOADING } from './shell';
 import { SIDE } from './panels';
 import { MUTED_TEXT } from '../ui/tw';
 import { nameWithoutSize } from '../board/OutputNode';
+import { SizeStrip } from './SizeStrip';
 
-export function OutputEditor({ outputId, comments = false, onClose }: { outputId: string; comments?: boolean; onClose: () => void }) {
+export function OutputEditor({
+  outputId,
+  comments = false,
+  setId,
+  onSwitch,
+  onClose,
+}: {
+  outputId: string;
+  comments?: boolean;
+  /** D83 (Edit all): the Preset node whose sizes are a click away along the stage. */
+  setId?: string;
+  onSwitch?: (outputId: string) => void;
+  onClose: () => void;
+}) {
   const { doc, run, layoutDeps, author, readOnly, review, reviewApprove } = useBoard();
   /** D63: the Comment tool, the pin being written, the thread picked, and whether resolved threads show. */
   const [commenting, setCommenting] = useState(comments);
@@ -27,6 +41,8 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
   const [active, setActive] = useState<string | null>(null);
   const [showResolved, setShowResolved] = useState(false);
   const output = doc.outputs.find((o) => o.id === outputId);
+  const set = setId ? presetSets(doc).find((s) => s.id === setId) : undefined;
+  const sizes = set ? set.outputs.filter((id) => doc.outputs.some((o) => o.id === id)) : [];
   const layout = useMemo(() => (output && layoutDeps ? computeLayout(doc, output.id, layoutDeps) : null), [doc, output, layoutDeps]);
   const scene = useMemo(() => (output && layout ? outputScene(layout, output) : null), [output, layout]);
   /**
@@ -83,6 +99,11 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       label={`Preview editor ${output.label}`}
       title={
         <>
+          {set && (
+            <span className="sc-edit-all__set inline-flex items-center gap-6 rounded-[8px] bg-accent-soft px-8 py-3 font-[650] text-accent">
+              Edit all · {set.label} · {sizes.length} {sizes.length === 1 ? 'size' : 'sizes'}
+            </span>
+          )}
           <strong>{nameWithoutSize(output.label) || output.label}</strong>
           <span className={MUTED_TEXT}>
             {output.size.width} × {output.size.height} {output.size.unit}
@@ -145,6 +166,11 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
       aside={
         commenting ? (
           <CommentsPanel outputId={output.id} showResolved={showResolved} onShowResolved={setShowResolved} pending={pending} onPending={setPending} active={active} onActive={setActive} />
+        ) : undefined
+      }
+      stageFooter={
+        set && onSwitch ? (
+          <SizeStrip label={`Sizes of ${set.label}`} heading="All sizes" outputIds={sizes} current={output.id} pickName={(label) => `Edit ${label}`} onPick={(id) => id !== output.id && onSwitch(id)} />
         ) : undefined
       }
       onClose={onClose}

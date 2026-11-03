@@ -52,7 +52,7 @@ const CUSTOM = '__custom';
 
 export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   const { set, rows } = data;
-  const { doc, readOnly, run, presets, exportOutputs, collapsed } = useBoard();
+  const { doc, readOnly, run, presets, exportOutputs, collapsed, openEditAll } = useBoard();
   const folded = collapsed.has(id);
   const updateInternals = useUpdateNodeInternals();
   const rowKey = rows.map((r) => r.output.id).join(',');
@@ -99,6 +99,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           readOnly
             ? []
             : [
+                ...(rows.length > 0 ? [{ label: 'Edit all sizes', icon: 'pencil' as const, onSelect: () => openEditAll(set.id) }] : []),
                 ...(rows.length > 0 ? [{ label: allHidden ? 'Show all Previews' : 'Hide all Previews', icon: allHidden ? ('eye' as const) : ('eye-off' as const), onSelect: () => run((d) => setAllPreviewsHidden(d, set.id, !allHidden)) }] : []),
                 // UX B6 (F20): saving the sizes is an occasional job; it lives in ⋯, not as a third button on the card.
                 ...(rows.length > 0 ? [{ label: 'Save as team preset', icon: 'library' as const, onSelect: () => void saving.save() }] : []),
@@ -107,10 +108,17 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
         }
         extra={
           rows.length > 0 && (
-            <button type="button" className={`${HEAD_ACTION} ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id), set.id)} aria-label={`Export all ${set.label} sizes`} title="Export every size as one ZIP">
-              <Icon name="export" size={14} />
-              Export
-            </button>
+            <>
+              {/* D83: every size of the node in one editor, each a click away (each Preview's own Edit stays). */}
+              <button type="button" className={`${HEAD_ACTION} sc-preset__edit-all ${NO_CANVAS}`} onClick={() => openEditAll(set.id)} aria-label={`${readOnly ? 'View' : 'Edit'} all ${set.label} sizes`} title="Open every size of this node in one editor">
+                <Icon name="pencil" size={14} />
+                {readOnly ? 'View all' : 'Edit all'}
+              </button>
+              <button type="button" className={`${HEAD_ACTION} ${NO_CANVAS}`} onClick={() => exportOutputs(rows.map((r) => r.output.id), set.id)} aria-label={`Export all ${set.label} sizes`} title="Export every size as one ZIP">
+                <Icon name="export" size={14} />
+                Export
+              </button>
+            </>
           )
         }
       />

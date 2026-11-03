@@ -4,18 +4,15 @@
  */
 import {
   compositionById,
-  computeLayout,
   deleteSource,
   followMaster,
   guideRows,
-  layerSources,
   layerSpots,
   MAIN,
   mainComposition,
   masterOf,
   masterScene,
   movedInLayout,
-  outputScene,
   savedTransforms,
   setLayerTransform,
   setPlacement,
@@ -30,18 +27,13 @@ import { CanvasEditor } from './CanvasEditor';
 import { LayersPanel } from './LayersPanel';
 import { TextPanel } from './TextPanel';
 import { MUTED_TEXT } from '../ui/tw';
-import { assetUrl } from '../api';
 import { FAMILY_LABEL, useOpenLayout } from '../board/MainNode';
-import { nameWithoutSize } from '../board/OutputNode';
-import { RenderThumbnail } from '../render/OutputRenderer';
+import { SizeStrip } from './SizeStrip';
 import { btn } from '../ui/button';
 
 /** D82: a layout tab — its shape, its name, how many sizes follow it; the one open is lit. */
 const TAB =
   'sc-layout-tab inline-flex h-32 cursor-pointer items-center gap-7 rounded-[10px] px-10 text-[12.5px] font-[650] whitespace-nowrap text-muted [background:none] [border:0] hover:text-fg aria-selected:bg-accent-soft aria-selected:text-accent pointer-coarse:h-40';
-/** D82: the sizes that follow the open layout, along the bottom of the stage. */
-const STRIP =
-  'sc-layout-users absolute right-12 bottom-12 left-12 z-3 flex items-end gap-12 overflow-x-auto rounded-[14px] bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] px-12 py-8 [backdrop-filter:blur(10px)] [box-shadow:var(--shadow-2)]';
 
 function Shape({ w, h }: { w: number; h: number }) {
   const k = 14 / Math.max(w, h);
@@ -137,39 +129,20 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
       )}
       stageFooter={
         users.length > 0 ? (
-          <div className={STRIP} role="group" aria-label={`Sizes that use the ${FAMILY_LABEL[family]} layout`}>
-            <span className="self-center text-[11.5px] font-[650] whitespace-nowrap text-muted">Used by</span>
-            {users.map((u) => (
-              <UsedBy
-                key={u.id}
-                outputId={u.id}
-                onOpen={() => {
-                  onClose();
-                  openOutputEditor(u.id);
-                }}
-              />
-            ))}
-          </div>
+          <SizeStrip
+            label={`Sizes that use the ${FAMILY_LABEL[family]} layout`}
+            heading="Used by"
+            outputIds={users.map((u) => u.id)}
+            pickName={(label) => `Open Preview ${label}`}
+            onPick={(id) => {
+              onClose();
+              openOutputEditor(id);
+            }}
+          />
         ) : null
       }
       onClose={onClose}
     />
-  );
-}
-
-/** D82: one size that follows the open layout — its live Preview, its size; a click opens it in its own editor. */
-function UsedBy({ outputId, onOpen }: { outputId: string; onOpen: () => void }) {
-  const { doc, layoutDeps, teamId } = useBoard();
-  const o = doc.outputs.find((x) => x.id === outputId);
-  const scene = useMemo(() => (o && layoutDeps ? outputScene(computeLayout(doc, o.id, layoutDeps), o) : null), [doc, o, layoutDeps]);
-  const sources = useMemo(() => layerSources(doc), [doc]);
-  if (!o || !scene) return null;
-  const name = nameWithoutSize(o.label);
-  return (
-    <button type="button" className="sc-layout-user grid flex-none cursor-pointer justify-items-start gap-3 rounded-[8px] p-2 text-[11px] text-muted [background:none] [border:0] hover:text-fg focus-visible:[outline:2px_solid_var(--accent)]" onClick={onOpen} aria-label={`Open Preview ${o.label}`} title={`${o.label}: open it in its own editor`}>
-      <RenderThumbnail scene={scene} sources={sources} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={96} maxHeight={40} />
-      <span className="[font-variant-numeric:tabular-nums]">{name ? `${name} · ` : ''}{o.size.width} × {o.size.height}</span>
-    </button>
   );
 }
 
