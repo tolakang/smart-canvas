@@ -1,6 +1,8 @@
 /**
  * Owner, 2026-11-03 ("Study the best practice of the layout edit in the Main Comps"; "Go all four, layouts first"):
  * D81 — Main Comps shows its layouts as small live pictures in their own shapes, with how many sizes follow each.
+ * D82 — the layout editor switches layouts by tabs, shows the sizes that follow the open one, and marks a layer moved
+ * there (Follow Square again undoes it).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { Page } from 'playwright';
@@ -55,5 +57,35 @@ describe.skipIf(!adminUrl)('layouts in Main Comps (D81)', () => {
     await layout('Horizontal').click();
     await page.getByRole('dialog').first().waitFor();
     await page.keyboard.press('Escape');
+  }, 60_000);
+
+  it('D82: the layout editor switches layouts by tabs, keeping the selection; Used by lists the sizes that follow it', async () => {
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    const counts = Object.fromEntries(await Promise.all(['Square', 'Vertical', 'Horizontal'].map(async (n) => [n, Number(/(\d+) sizes?/.exec(await layout(n).innerText())?.[1] ?? -1)] as const)));
+    await layout('Horizontal').click();
+    const editor = page.getByRole('dialog').first();
+    const tabs = editor.getByRole('tablist', { name: 'Layouts' });
+    await expect.poll(() => tabs.getByRole('tab', { selected: true }).innerText()).toContain('Horizontal');
+    expect(await editor.getByRole('group', { name: 'Sizes that use the Horizontal layout' }).getByRole('button').count()).toBe(counts.Horizontal);
+    await editor.getByRole('complementary', { name: 'Layers' }).getByRole('button', { name: /^Background/ }).click();
+    await tabs.getByRole('tab', { name: /^Vertical/ }).click();
+    await expect.poll(() => tabs.getByRole('tab', { selected: true }).innerText()).toContain('Vertical');
+    expect(await editor.getByText('Selected: Background').count()).toBe(1);
+    await editor.getByRole('button', { name: 'Close', exact: true }).click();
+    await editor.waitFor({ state: 'detached' });
+  }, 60_000);
+
+  it('D82: a layer moved in a layout says so; Follow Square again puts it back where Square puts it', async () => {
+    await layout('Horizontal').click();
+    const editor = page.getByRole('dialog').first();
+    const layers = editor.getByRole('complementary', { name: 'Layers' });
+    const row = layers.locator('[data-layer]').filter({ hasText: 'Text 1' });
+    await row.getByRole('button', { name: /^Text 1/ }).click();
+    expect(await row.locator('.sc-layer__moved').count()).toBe(0);
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Shift+ArrowDown');
+    await expect.poll(() => row.locator('.sc-layer__moved').count()).toBe(1);
+    await editor.getByRole('button', { name: 'Follow Square again' }).click();
+    await expect.poll(() => row.locator('.sc-layer__moved').count()).toBe(0);
+    await editor.getByRole('button', { name: 'Close', exact: true }).click();
   }, 60_000);
 });

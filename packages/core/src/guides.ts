@@ -174,3 +174,32 @@ export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): Rend
   const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
   return compositionScene(doc, comp, (id) => byId.get(id));
 }
+
+/**
+ * D82: whether layer `sourceId` sits somewhere else in layout `layoutId` than Square puts it — moved there by hand,
+ * or Square moved since the layout was made (D42 seeds a layout from Square, then it keeps its own places). A layer
+ * with no place of its own, or one still where the stretched grid puts Square's (within 0.2 % of the canvas), is
+ * not. False for the master itself.
+ */
+export function movedInLayout(doc: ProjectDoc, layoutId: string, sourceId: string): boolean {
+  const c = compositionById(doc, layoutId);
+  const own = c?.guide ? c.placements[sourceId] : undefined;
+  if (!c?.guide || !own) return false;
+  const master = compositionById(doc, c.guide.of);
+  const n = master?.placements[sourceId];
+  if (!master || !n) return true;
+  const m = mapPlacement(n, sizeInDesignPx(master.size), c.size);
+  const near = (a = 0, b = 0, tol = 0.002) => Math.abs(a - b) <= tol;
+  return !(near(own.x, m.x) && near(own.y, m.y) && near(own.w, m.w) && near(own.h, m.h) && near(own.rotation, m.rotation, 0.05) && near(own.shear, m.shear, 0.05));
+}
+
+/** D82, "Follow Square again": drops layout `layoutId`'s own place of a layer (and its edit history there). */
+export function followMaster(doc: ProjectDoc, layoutId: string, sourceId: string): SourceResult {
+  const c = compositionById(doc, layoutId);
+  if (!c?.guide) return { ok: false, error: 'not_found' };
+  if (!c.placements[sourceId]) return { ok: true, doc };
+  const { [sourceId]: _p, ...placements } = c.placements;
+  void _p;
+  const transforms = c.transforms && c.transforms.layers[sourceId] ? { transforms: { ...c.transforms, layers: Object.fromEntries(Object.entries(c.transforms.layers).filter(([id]) => id !== sourceId)) } } : {};
+  return { ok: true, doc: { ...doc, compositions: doc.compositions.map((x) => (x.id === layoutId ? { ...x, placements, ...transforms } : x)) } };
+}

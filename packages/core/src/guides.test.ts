@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fillBoxes, keepAspect } from './fit';
 import { MAIN, mainComposition, withComposition } from './graph';
-import { addGuides, familyOfShape, guideFor, guideSize, guidesOf, layerSpots, masterScene } from './guides';
+import { addGuides, familyOfShape, followMaster, guideFor, guideSize, guidesOf, layerSpots, masterScene, movedInLayout } from './guides';
 import { computeLayout } from './layout';
 import { expectFrame, mockMeasure, output, place, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
@@ -186,5 +186,27 @@ describe('owner, 2026-11-03 (D80): a layout shows the master\'s layers as its Pr
     expect(logoOf(MAIN)?.assetId).toBeUndefined();
     expect(logoOf('gv')?.assetId).toBe('tall');
     expect(logoOf('gh')?.assetId).toBe('wide');
+  });
+});
+
+describe('D82: a layer moved in a layout, or following Square', () => {
+  it('a new layout sits every layer where Square puts it; a move marks it; Follow Square again undoes the move', () => {
+    let doc = ok(addGuides(project(), MAIN, { vertical: 'gv', horizontal: 'gh' }));
+    // Seeded from Square (D42): each layer starts where the stretched grid puts Square's, so none is moved.
+    expect(['logo', 'subject', 'headline'].some((id) => movedInLayout(doc, 'gh', id))).toBe(false);
+    doc = { ...doc, compositions: doc.compositions.map((c) => (c.id === 'gh' ? { ...c, placements: { ...c.placements, logo: { x: 0.5, y: 0.5, w: 0.1, h: 0.1 } } } : c)) };
+    expect(movedInLayout(doc, 'gh', 'logo')).toBe(true);
+    expect(movedInLayout(doc, 'gv', 'logo')).toBe(false);
+    doc = ok(followMaster(doc, 'gh', 'logo'));
+    expect(movedInLayout(doc, 'gh', 'logo')).toBe(false);
+    expect(guidesOf(doc, MAIN).find((c) => c.id === 'gh')?.placements.logo).toBeUndefined();
+    expect(movedInLayout(doc, MAIN, 'logo')).toBe(false);
+    expect(followMaster(doc, MAIN, 'logo').ok).toBe(false);
+  });
+
+  it('Square moved after the layout was made: the layout\u2019s seeded place no longer matches, so it reads as moved', () => {
+    let doc = ok(addGuides(project(), MAIN, { vertical: 'gv', horizontal: 'gh' }));
+    doc = place(doc, 'logo', { x: 2000, y: 2000, w: 300, h: 300 });
+    expect(movedInLayout(doc, 'gh', 'logo')).toBe(true);
   });
 });

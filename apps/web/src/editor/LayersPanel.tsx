@@ -6,7 +6,7 @@
  * UX B5 (F13): a headline pair is one row (the language in use, with a KM / EN switch; the other language is not
  * drawn, so not listed); a layer with no file or text yet says "empty"; hide and connect use the icon set.
  */
-import { connectSource, isEmptyLayer, LANGUAGE_LABEL, LANGUAGE_SHORT, LANGUAGES, languagePairs, layerOrder, MAIN, outputComposition, pairRows, rowInputs, setLanguage, setOverrideHidden, unusedLanguageInputs, unusedLogoInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
+import { connectSource, isEmptyLayer, movedInLayout, LANGUAGE_LABEL, LANGUAGE_SHORT, LANGUAGES, languagePairs, layerOrder, MAIN, outputComposition, pairRows, rowInputs, setLanguage, setOverrideHidden, unusedLanguageInputs, unusedLogoInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 import { EDITED, LAYER_KIND, LAYER_TOOLS, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
@@ -14,7 +14,14 @@ import { GRIP } from '../ui/controls';
 import { MUTED_TEXT } from '../ui/tw';
 
 
-export function LayersPanel(props: { selected: string | null; onSelect: (id: string) => void; outputId?: string; compositionId?: string }) {
+export function LayersPanel(props: {
+  selected: string | null;
+  onSelect: (id: string) => void;
+  outputId?: string;
+  compositionId?: string;
+  /** D82: the Vertical or Horizontal layout being edited; its moved layers say so. */
+  layoutId?: string;
+}) {
   const { doc, run, readOnly, author, layoutDeps } = useBoard();
   const { outputId } = props;
   // The rows of this editor's composition (an output's: the one it is wired to).
@@ -67,6 +74,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
         <span className={`${MUTED_TEXT} ${LAYER_KIND}`}>
           {KIND_LABEL[s.kind]} · {s.behavesLike}
           {isEmptyLayer(s) && ' · empty'}
+          {props.layoutId && movedInLayout(doc, props.layoutId, s.id) && <span className="sc-layer__moved font-[650] text-warn"> · moved</span>}
           {!isWired && ' · not wired'}
           {outputId && !s.visible && ' · hidden everywhere'}
         </span>
