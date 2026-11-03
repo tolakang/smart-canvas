@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { fillBoxes, keepAspect } from './fit';
 import { MAIN, mainComposition, withComposition } from './graph';
 import { addGuides, familyOfShape, guideFor, guideSize, guidesOf, layerSpots } from './guides';
 import { computeLayout } from './layout';
@@ -124,5 +125,42 @@ describe('background pictures for vertical / horizontal outputs (D43)', () => {
   it('an empty slot falls back to the main picture', () => {
     const doc = { ...withVariants(project()), sources: withVariants(project()).sources.map((s) => (s.id === 'background' && s.content.kind === 'image' ? { ...s, content: { ...s.content, variants: { vertical: 'tall' } } } : s)) };
     expect(bg(doc, 728, 90)?.assetId).toBeUndefined();
+  });
+});
+
+describe('owner, 2026-11-03: a logo never stretches', () => {
+  // The logo's square picture is 1:1; its horizontal one 4:1. Both measured, no transparent margin.
+  const assets = { sq: { width: 400, height: 400, trim: { x: 0, y: 0, w: 1, h: 1 } }, wide: { width: 800, height: 200, trim: { x: 0, y: 0, w: 1, h: 1 } } };
+  const withLogo = (variants: { horizontal?: string } = {}): ProjectDoc => {
+    const doc = place(project(), 'logo', { x: 300, y: 300, w: 600, h: 600, fitted: true });
+    return { ...doc, sources: doc.sources.map((s) => (s.id === 'logo' ? { ...s, kind: 'image', content: { kind: 'image', assetId: 'sq', focal: { x: 0.5, y: 0.5 }, variants } } : s)) };
+  };
+  const logo = (doc: ProjectDoc, width: number, height: number) =>
+    computeLayout({ ...doc, outputs: [output({ size: { width, height, unit: 'px' } })] }, 'o1', { measure: mockMeasure, assets }).items.find((i) => i.sourceId === 'logo');
+
+  it('a horizontal output drawing the horizontal logo gives it that picture’s shape, same centre and area', () => {
+    const sq = logo(withLogo({ horizontal: 'wide' }), 1080, 1080);
+    const it = logo(withLogo({ horizontal: 'wide' }), 1456, 180);
+    expect(sq?.assetId).toBeUndefined();
+    expect(it?.assetId).toBe('wide');
+    const f = it?.frame;
+    if (!f) throw new Error('no logo');
+    expect(f.w / f.h).toBeCloseTo(4, 6);
+    const plain = logo(withLogo(), 1456, 180)?.frame;
+    if (!plain) throw new Error('no logo');
+    expect(f.w * f.h).toBeCloseTo(plain.w * plain.h, 4);
+    expect(f.x + f.w / 2).toBeCloseTo(plain.x + plain.w / 2, 4);
+  });
+
+  it('a stretched logo frame is drawn in its picture’s shape', () => {
+    const doc = place(withLogo(), 'logo', { x: 300, y: 300, w: 900, h: 300, fitted: true });
+    const f = logo(doc, 1080, 1080)?.frame;
+    expect(f && f.w / f.h).toBeCloseTo(1, 6);
+  });
+
+  it('keepAspect keeps the centre and area; fillBoxes(keepShape) fits the picture inside, centred', () => {
+    expect(keepAspect({ x: 0, y: 0, w: 400, h: 100 }, 1)).toEqual({ x: 100, y: -50, w: 200, h: 200 });
+    const { img } = fillBoxes({ w: 400, h: 100 }, { width: 100, height: 100, trim: { x: 0, y: 0, w: 1, h: 1 } }, true);
+    expect(img).toEqual({ x: 150, y: 0, w: 100, h: 100 });
   });
 });

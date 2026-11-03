@@ -113,7 +113,8 @@ function Layer({
       // D37: a fitted frame is the picture's visible part, which fills it (stretched with it). Until the
       // trim is measured, draw it the old way (contain) rather than stretch transparent margins in.
       if (frame.fitted && size?.trim && isFittable(source)) {
-        const { img } = fillBoxes(frame, size);
+        // A logo keeps its own shape inside its frame (owner, 2026-11-03: "logo never stretch").
+        const { img } = fillBoxes(frame, size, source.behavesLike === 'logo');
         return (
           <div {...data} style={{ ...box, overflow: 'hidden' }}>
             <img src={assetUrl(content.assetId)} alt="" draggable={false} style={{ position: 'absolute', left: img.x, top: img.y, width: img.w, height: img.h, maxWidth: 'none', objectFit: 'fill' }} />
