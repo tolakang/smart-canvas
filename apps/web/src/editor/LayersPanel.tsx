@@ -9,7 +9,7 @@
 import { connectSource, isEmptyLayer, languagePairs, layerOrder, MAIN, outputComposition, pairRows, setLanguage, setOverrideHidden, unusedLanguageInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
-import { EDITED, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
+import { EDITED, LAYER_KIND, LAYER_TOOLS, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
 import { GRIP } from '../ui/controls';
 import { MUTED_TEXT } from '../ui/tw';
 
@@ -42,6 +42,8 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
         className={layerRowClass({ selected: isSelected, hidden: !visible, unwired: !isWired, drop: dropAt === port })}
         aria-selected={isSelected}
         data-layer={s.id}
+        // A click anywhere on the row selects the layer (its name is the keyboard's way in), except on its own buttons.
+        onClick={(e) => !(e.target as Element).closest('button') && props.onSelect(s.id)}
         {...(reorder ? rowProps({ id: s.id, port }) : {})}
       >
         {reorder && (
@@ -59,13 +61,14 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
               </span>
             )}
           </span>
-          <span className={MUTED_TEXT}>
-            {KIND_LABEL[s.kind]} · {s.behavesLike}
-            {isEmptyLayer(s) && ' · empty'}
-            {!isWired && ' · not wired'}
-            {outputId && !s.visible && ' · hidden everywhere'}
-          </span>
         </button>
+        <span className={`${MUTED_TEXT} ${LAYER_KIND}`}>
+          {KIND_LABEL[s.kind]} · {s.behavesLike}
+          {isEmptyLayer(s) && ' · empty'}
+          {!isWired && ' · not wired'}
+          {outputId && !s.visible && ' · hidden everywhere'}
+        </span>
+        <span className={LAYER_TOOLS}>
         {pair && (
           // The pair's language in use; switching swaps the picture only (V4). Every Preview draws the same language.
           <span className={LANG_SWITCH} role="group" aria-label={`${pair.label} language`}>
@@ -108,6 +111,7 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
             <LayerActions source={s} />
           </span>
         )}
+        </span>
       </li>
     );
   };
