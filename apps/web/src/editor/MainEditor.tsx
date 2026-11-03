@@ -7,6 +7,7 @@ import {
   deleteSource,
   followMaster,
   guideRows,
+  layerSources,
   layerSpots,
   MAIN,
   mainComposition,
@@ -27,8 +28,10 @@ import { CanvasEditor } from './CanvasEditor';
 import { LayersPanel } from './LayersPanel';
 import { TextPanel } from './TextPanel';
 import { MUTED_TEXT } from '../ui/tw';
-import { FAMILY_LABEL, useOpenLayout } from '../board/MainNode';
-import { SizeStrip } from './SizeStrip';
+import { FAMILY_LABEL, useLayoutPictures, useOpenLayout } from '../board/MainNode';
+import { assetUrl } from '../api';
+import { RenderThumbnail } from '../render/OutputRenderer';
+import { SizeStrip, StageStrip, STRIP_GROUP, STRIP_HEADING, STRIP_TILE } from './SizeStrip';
 import { btn } from '../ui/button';
 
 /** D82: a layout tab — its shape, its name, how many sizes follow it; the one open is lit. */
@@ -128,18 +131,23 @@ export function MainEditor({ compositionId = MAIN, onClose }: { compositionId?: 
         </>
       )}
       stageFooter={
-        users.length > 0 ? (
-          <SizeStrip
-            label={`Sizes that use the ${FAMILY_LABEL[family]} layout`}
-            heading="Used by"
-            outputIds={users.map((u) => u.id)}
-            pickName={(label) => `Open Preview ${label}`}
-            onPick={(id) => {
-              onClose();
-              openOutputEditor(id);
-            }}
-          />
-        ) : null
+        // D85: the three layouts (switching keeps the editor and its selection), then the sizes that follow the open one.
+        <StageStrip>
+          <LayoutStrip compositionId={rowsOf} current={family} onPick={openLayout} />
+          {users.length > 0 && (
+            <SizeStrip
+              bare
+              label={`Sizes that use the ${FAMILY_LABEL[family]} layout`}
+              heading="Used by"
+              outputIds={users.map((u) => u.id)}
+              pickName={(label) => `Open Preview ${label}`}
+              onPick={(id) => {
+                onClose();
+                openOutputEditor(id);
+              }}
+            />
+          )}
+        </StageStrip>
       }
       onClose={onClose}
     />
@@ -159,5 +167,38 @@ function FollowSquare({ layoutId, sourceId, label }: { layoutId: string; sourceI
         </button>
       )}
     </section>
+  );
+}
+
+/** D85: the master's layouts in the stage strip, each a live picture in its own shape; the open one lit. */
+function LayoutStrip({ compositionId, current, onPick }: { compositionId: string; current: GuideFamily; onPick: (f: GuideFamily) => void }) {
+  const { doc, readOnly, teamId, layoutDeps } = useBoard();
+  const layers = useMemo(() => layerSources(doc), [doc]);
+  const pictures = useLayoutPictures(compositionId);
+  return (
+    <div className={`sc-layout-strip ${STRIP_GROUP} border-r border-line pr-12`} role="group" aria-label="Switch layout">
+      <span className={STRIP_HEADING}>Layouts</span>
+      {pictures.map(({ family, composition, outputs, scene }) => (
+        <button
+          key={family}
+          type="button"
+          className={STRIP_TILE}
+          aria-current={family === current || undefined}
+          disabled={readOnly && !composition}
+          onClick={() => family !== current && onPick(family)}
+          aria-label={`Switch to the ${FAMILY_LABEL[family]} layout`}
+          title={composition ? `${FAMILY_LABEL[family]} layout · ${outputs.length} ${outputs.length === 1 ? 'size follows' : 'sizes follow'} it` : `${FAMILY_LABEL[family]} layout — not made yet; opening it makes it from Square`}
+        >
+          {scene && (
+            <span className={composition ? '' : 'rounded-[2px] [outline:1.5px_dashed_var(--line-strong)] outline-offset-1'}>
+              <RenderThumbnail scene={scene} sources={layers} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={56} maxHeight={40} />
+            </span>
+          )}
+          <span>
+            {FAMILY_LABEL[family]} · {outputs.length}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }

@@ -1,10 +1,11 @@
 /**
  * D82 / D83: a strip of sizes along the bottom of an editor's stage, each a live Preview with its size. The layout
  * editor lists the sizes that follow the open layout ("Used by"); Edit all lists every size of a Preset node, the one
- * being edited lit. A click picks one.
+ * being edited lit. A click picks one. D85: the layout editor's strip also holds the master's three layouts (`StageStrip`
+ * with the groups side by side).
  */
 import { computeLayout, layerSources, outputScene } from '@smart-canvas/core';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { assetUrl } from '../api';
 import { useBoard } from '../board/context';
 import { nameWithoutSize } from '../board/OutputNode';
@@ -15,10 +16,29 @@ const STRIP =
 const TILE =
   'sc-size-tile grid flex-none cursor-pointer justify-items-start gap-3 rounded-[8px] p-3 text-[11px] text-muted [background:none] [border:0] hover:text-fg focus-visible:[outline:2px_solid_var(--accent)] aria-current:bg-accent-soft aria-current:text-accent aria-current:font-[650]';
 
-export function SizeStrip(props: { label: string; heading: string; outputIds: readonly string[]; current?: string; onPick: (id: string) => void; pickName?: (label: string) => string }) {
+/** The glass strip along the stage's bottom, holding one group or several side by side. */
+export function StageStrip({ children }: { children: ReactNode }) {
+  return <div className={STRIP}>{children}</div>;
+}
+
+/** A group in the strip: its heading, then its tiles. */
+export const STRIP_GROUP = 'flex flex-none items-end gap-12';
+export const STRIP_HEADING = 'self-center text-[11.5px] font-[650] whitespace-nowrap text-muted';
+export const STRIP_TILE = TILE;
+
+export function SizeStrip(props: {
+  label: string;
+  heading: string;
+  outputIds: readonly string[];
+  current?: string;
+  onPick: (id: string) => void;
+  pickName?: (label: string) => string;
+  /** Inside a `StageStrip` with other groups: no glass of its own. */
+  bare?: boolean;
+}) {
   return (
-    <div className={STRIP} role="group" aria-label={props.label}>
-      <span className="self-center text-[11.5px] font-[650] whitespace-nowrap text-muted">{props.heading}</span>
+    <div className={props.bare ? STRIP_GROUP : STRIP} role="group" aria-label={props.label}>
+      <span className={STRIP_HEADING}>{props.heading}</span>
       {props.outputIds.map((id) => (
         <SizeTile key={id} outputId={id} current={id === props.current} onPick={() => props.onPick(id)} pickName={props.pickName} />
       ))}
