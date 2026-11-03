@@ -35,4 +35,4 @@ export * from './preset-sets';
 export * from './core-rules';
 export * from './board-structure';
 export * from './review';
-
+export * from './edit-all';
