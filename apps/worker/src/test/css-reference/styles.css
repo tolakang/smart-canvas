@@ -1,4 +1,4 @@
-/* The app's CSS at e2f430711cdb274eae6ab721ca0c085209c5fde4 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 1e799ed07d163c152e06aa778d4af40e89ef77e9 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -741,6 +741,10 @@
     height: 60px;
   }
 
+  .h-64 {
+    height: 64px;
+  }
+
   .h-72 {
     height: 72px;
   }
@@ -1205,6 +1209,10 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
+  .grid-cols-\[repeat\(3\,minmax\(0\,1fr\)\)\] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .grid-cols-\[repeat\(3\,minmax\(0\,1fr\)\)_28px\] {
     grid-template-columns: repeat(3, minmax(0, 1fr)) 28px;
   }
@@ -1243,6 +1251,10 @@
 
   .place-items-center {
     place-items: center;
+  }
+
+  .place-items-end {
+    place-items: end;
   }
 
   .\[align-items\:end\] {
@@ -1443,6 +1455,10 @@
 
   .rounded-\[2px\] {
     border-radius: 2px;
+  }
+
+  .rounded-\[3px\] {
+    border-radius: 3px;
   }
 
   .rounded-\[4px\] {
@@ -2379,6 +2395,10 @@
     padding-bottom: 4px;
   }
 
+  .pb-6 {
+    padding-bottom: 6px;
+  }
+
   .pb-8 {
     padding-bottom: 8px;
   }
@@ -2562,6 +2582,11 @@
   .leading-\[1\.1\] {
     --tw-leading: 1.1;
     line-height: 1.1;
+  }
+
+  .leading-\[1\.2\] {
+    --tw-leading: 1.2;
+    line-height: 1.2;
   }
 
   .leading-\[1\.3\] {
@@ -3065,6 +3090,10 @@
 
   .\[box-shadow\:var\(--shadow-3\)\] {
     box-shadow: var(--shadow-3);
+  }
+
+  .\[outline\:1\.5px_dashed_var\(--line-strong\)\] {
+    outline: 1.5px dashed var(--line-strong);
   }
 
   .\[outline\:1\.5px_solid_var\(--fig-blue\)\] {
@@ -3668,6 +3697,10 @@
 
   .\[transition\:border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\,background_var\(--t-fast\)\] {
     transition: border-color var(--t-fast),box-shadow var(--t-fast),background var(--t-fast);
+  }
+
+  .\[transition\:border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\] {
+    transition: border-color var(--t-fast),box-shadow var(--t-fast);
   }
 
   .\[transition\:box-shadow_var\(--t-fast\)\,border-color_var\(--t-fast\)\] {
@@ -4954,6 +4987,10 @@
 
   .\[\&_\.sc-comments\\_\\_primary\:disabled\]\:opacity-50 .sc-comments__primary:disabled {
     opacity: .5;
+  }
+
+  .\[\&_\.sc-comp__layout-pic\]\:opacity-60 .sc-comp layout-pic {
+    opacity: .6;
   }
 
   .\[\&_\.sc-field\]\:text-fg .sc-field {

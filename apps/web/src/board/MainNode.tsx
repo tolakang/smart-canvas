@@ -9,7 +9,8 @@
 import {
   addGuides,
   compositionHealth,
-  GUIDE_FAMILIES,
+  layerSources,
+  masterScene,
   guideRows,
   LAYER_GROUP_LABEL,
   layerComp,
@@ -29,9 +30,11 @@ import { newId } from './ids';
 import { Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { NO_DRAG } from './pinch';
-import { btn, iconBtn } from '../ui/button';
+import { iconBtn } from '../ui/button';
 import { GRIP } from '../ui/controls';
 import { MUTED_TEXT } from '../ui/tw';
+import { assetUrl } from '../api';
+import { RenderThumbnail } from '../render/OutputRenderer';
 
 /** Controls that don't scroll: the wheel still zooms and pans the board over them. */
 const GROUP_DRAG = 'application/x-sc-layer-group';
@@ -62,6 +65,50 @@ export function useOpenLayout(compositionId: string) {
     const r = run((d) => addGuides(d, compositionId, { [family]: id }));
     if (r.ok) openMainEditor(id);
   };
+}
+
+/** Owner, 2026-11-03 (D81): a layout as a small live picture in its own shape, its name and the sizes that follow it. */
+const THUMB_BOX = { w: 92, h: 64 };
+const LAYOUT =
+  'sc-comp__layout group/lay grid cursor-pointer justify-items-center gap-4 rounded-[12px] border border-line bg-surface px-6 pt-8 pb-6 text-center [transition:border-color_var(--t-fast),box-shadow_var(--t-fast)] hover:border-accent focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-1';
+
+function LayoutThumbs(props: { compositionId: string; guides: ReturnType<typeof guideRows>; onOpen: (f: GuideFamily) => void }) {
+  const { doc, readOnly, teamId, layoutDeps } = useBoard();
+  const layers = useMemo(() => layerSources(doc), [doc]);
+  // A layout not made yet is shown as it would be made from Square (the same seed opening it makes).
+  const seeded = useMemo(() => {
+    const r = addGuides(doc, props.compositionId, { vertical: '__thumb-vertical', horizontal: '__thumb-horizontal', square: '__thumb-square' });
+    return r.ok ? r.doc : doc;
+  }, [doc, props.compositionId]);
+  return (
+    <div className={`sc-comp__layouts grid grid-cols-[repeat(3,minmax(0,1fr))] items-end gap-8 ${NO_DRAG}`} role="group" aria-label="Layouts">
+      {props.guides.map(({ family, composition, outputs }) => {
+        const n = outputs.length;
+        const isMaster = composition?.id === props.compositionId;
+        const shown = composition ?? guideRows(seeded, props.compositionId).find((g) => g.family === family)?.composition;
+        return (
+          <button
+            key={family}
+            type="button"
+            className={`${LAYOUT}${n === 0 && !isMaster ? ' sc-comp__layout--unused [&_.sc-comp__layout-pic]:opacity-60' : ''}`}
+            onClick={() => props.onOpen(family)}
+            aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[family]} layout`}
+            title={composition ? `${FAMILY_LABEL[family]} layout — ${n} ${n === 1 ? 'size follows' : 'sizes follow'} it` : `${FAMILY_LABEL[family]} layout — not made yet; ${readOnly ? '' : 'click to make it from Square'}`}
+          >
+            <span className="sc-comp__layout-pic grid h-64 place-items-end" aria-hidden="true">
+              {shown && (
+                <span className={composition ? '' : 'rounded-[3px] [outline:1.5px_dashed_var(--line-strong)] outline-offset-2'}>
+                  <RenderThumbnail scene={masterScene(composition ? doc : seeded, shown.id)} sources={layers} assetSizes={layoutDeps?.assets} assetUrl={(id) => assetUrl(teamId, id)} maxWidth={THUMB_BOX.w} maxHeight={THUMB_BOX.h} />
+                </span>
+              )}
+            </span>
+            <span className="text-[12.5px] leading-[1.2] font-[650]">{FAMILY_LABEL[family]}</span>
+            <span className="text-[11px] leading-[1.2] text-muted">{isMaster ? 'master · ' : ''}{n} {n === 1 ? 'size' : 'sizes'}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
@@ -133,13 +180,7 @@ export function MainNodeView({ data }: NodeProps<MainFlowNode>) {
           ))}
         </ol>
         <div className={LABEL}>Layouts</div>
-        <div className={`sc-comp__layouts grid grid-cols-[repeat(3,1fr)] gap-8 ${NO_DRAG}`} role="group" aria-label="Layouts">
-          {GUIDE_FAMILIES.map((f) => (
-            <button key={f} type="button" className={btn('default', 'node', { h: 'h-36', round: 'rounded-[11px]', weight: 'font-[600]' })} onClick={() => openLayout(f)} aria-label={`${readOnly ? 'View' : 'Edit'} ${FAMILY_LABEL[f]} layout`}>
-              {FAMILY_LABEL[f]}
-            </button>
-          ))}
-        </div>
+        <LayoutThumbs compositionId={compositionId} guides={guides} onOpen={openLayout} />
         {previewCount === 0 && (
           // UX B2 (F3), C3: no sizes yet — the size families as one-tap chips.
           <div className={`sc-comp__add-sizes grid gap-8 ${NO_DRAG}`}>
