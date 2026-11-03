@@ -2,7 +2,7 @@
  * Override inspector (T5.2): for the selected layer of an output, which fields its override changes and
  * what the automatic layout would give instead.
  */
-import { overrideDiff, resetOverride, type OverrideField } from '@smart-canvas/core';
+import { forEachOutput, overrideDiff, resetOverride, type OverrideField } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { INSPECTOR, INSPECTOR_ACTIONS, INSPECTOR_NOTE, INSPECTOR_TABLE, PANEL_TITLE } from './panels';
 import { MUTED_TEXT } from '../ui/tw';
@@ -29,7 +29,7 @@ const LABEL: Record<string, string> = {
 
 const show = (v: OverrideField['auto']) => (v === undefined ? 'auto' : typeof v === 'number' ? String(Math.round(v * 10) / 10) : String(v));
 
-export function OverrideInspector({ outputId, sourceId }: { outputId: string; sourceId: string }) {
+export function OverrideInspector({ outputId, sourceId, alsoOutputs = [] }: { outputId: string; sourceId: string; /** D84: Edit all's All sizes — Reset layer resets it in these sizes too. */ alsoOutputs?: readonly string[] }) {
   const { doc, layoutDeps, run, readOnly } = useBoard();
   const fields = layoutDeps ? overrideDiff(doc, outputId, sourceId, layoutDeps) : [];
   const override = doc.outputs.find((o) => o.id === outputId)?.overrides.find((o) => o.sourceId === sourceId);
@@ -63,10 +63,10 @@ export function OverrideInspector({ outputId, sourceId }: { outputId: string; so
           Last changed {new Date(override.updatedAt).toLocaleString()}
         </p>
       )}
-      {override && !readOnly && (
+      {(override || alsoOutputs.length > 0) && !readOnly && (
         <div className={INSPECTOR_ACTIONS}>
-          <button type="button" onClick={() => run((d) => resetOverride(d, outputId, sourceId))}>
-            Reset layer
+          <button type="button" onClick={() => run((d) => forEachOutput(d, [outputId, ...alsoOutputs], (x, id) => resetOverride(x, id, sourceId)))}>
+            {alsoOutputs.length ? 'Reset layer in all sizes' : 'Reset layer'}
           </button>
         </div>
       )}

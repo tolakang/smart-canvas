@@ -2,6 +2,7 @@
  * D83 (owner, 2026-11-03: "add 'Edit all' button that user can see all export sizes and edit those at once? Manual
  * edit one by one still available too"): Edit all on a Preset node opens the editor on its first size with every size
  * of the node live along the stage; a click edits another. Each Preview's own Edit stays.
+ * D84: with All sizes on, an edit to a layer applies to it in every size of the node, in proportion, as one step.
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -76,4 +77,32 @@ describe.skipIf(!adminUrl)('Edit all (D83)', () => {
     await page.getByRole('dialog', { name: `Preview editor ${o.label}` }).waitFor();
     expect(await page.getByRole('group', { name: 'Sizes of GDN' }).count()).toBe(0);
   }, 60_000);
+
+  it('D84: All sizes — a nudge moves the layer in every size, in proportion; the eye hides it in all; one undo takes it back', async () => {
+    const d = await doc();
+    const ids = d.presetSets?.[0]?.outputs ?? [];
+    const brand = d.sources.find((x) => x.label === 'brand');
+    if (!brand) throw new Error('no logo');
+    // Start clean: no edits on any size.
+    await page.getByRole('button', { name: 'Close', exact: true }).click().catch(() => {});
+    await preset().getByRole('button', { name: 'Edit all GDN sizes' }).dispatchEvent('click');
+    const strip = page.getByRole('group', { name: 'Sizes of GDN' });
+    await strip.waitFor();
+    const scope = page.getByRole('group', { name: 'Edits apply to' });
+    await scope.getByRole('button', { name: /^All \d+ sizes$/ }).click();
+    const layers = page.getByRole('complementary', { name: 'Layers' });
+    await layers.getByRole('button', { name: /^brand/ }).click();
+    const edited = async () => (await doc()).outputs.filter((o) => ids.includes(o.id) && o.overrides.some((x) => x.sourceId === brand.id && x.frame)).length;
+    const before = await edited();
+    for (let i = 0; i < 2; i++) await page.keyboard.press('Shift+ArrowRight');
+    await expect.poll(edited, { timeout: 15_000 }).toBe(ids.length);
+    expect(before).toBeLessThan(ids.length);
+    // Hide it in every size from the layer's eye.
+    await layers.getByRole('button', { name: /^Hide layer brand/ }).click();
+    await expect.poll(async () => (await doc()).outputs.filter((o) => ids.includes(o.id) && o.overrides.some((x) => x.sourceId === brand.id && x.hidden)).length, { timeout: 15_000 }).toBe(ids.length);
+    // One undo shows it again in all of them.
+    await page.keyboard.press('Control+z');
+    await expect.poll(async () => (await doc()).outputs.filter((o) => ids.includes(o.id) && o.overrides.some((x) => x.sourceId === brand.id && x.hidden)).length, { timeout: 15_000 }).toBe(0);
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+  }, 90_000);
 });

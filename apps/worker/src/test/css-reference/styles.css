@@ -1,4 +1,4 @@
-/* The app's CSS at aa0ccda3eb2a000fe34070c03956d88fe0e701b0 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 10669bd0e9d470fd6863fcaac2f44e73bec3038d (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -699,6 +699,10 @@
 
   .h-24 {
     height: 24px;
+  }
+
+  .h-26 {
+    height: 26px;
   }
 
   .h-28 {
@@ -1989,6 +1993,10 @@
 
   .bg-\[rgb\(255_255_255\/0\.4\)\] {
     background-color: #fff6;
+  }
+
+  .bg-\[var\(--fig-hover\)\] {
+    background-color: var(--fig-hover);
   }
 
   .bg-accent {

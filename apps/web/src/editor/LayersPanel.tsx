@@ -6,7 +6,7 @@
  * UX B5 (F13): a headline pair is one row (the language in use, with a KM / EN switch; the other language is not
  * drawn, so not listed); a layer with no file or text yet says "empty"; hide and connect use the icon set.
  */
-import { connectSource, isEmptyLayer, movedInLayout, LANGUAGE_LABEL, LANGUAGE_SHORT, LANGUAGES, languagePairs, layerOrder, MAIN, outputComposition, pairRows, rowInputs, setLanguage, setOverrideHidden, unusedLanguageInputs, unusedLogoInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
+import { connectSource, forEachOutput, isEmptyLayer, movedInLayout, LANGUAGE_LABEL, LANGUAGE_SHORT, LANGUAGES, languagePairs, layerOrder, MAIN, outputComposition, pairRows, rowInputs, setLanguage, setOverrideHidden, unusedLanguageInputs, unusedLogoInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 import { EDITED, LAYER_KIND, LAYER_TOOLS, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
@@ -21,6 +21,8 @@ export function LayersPanel(props: {
   compositionId?: string;
   /** D82: the Vertical or Horizontal layout being edited; its moved layers say so. */
   layoutId?: string;
+  /** D84: Edit all's All sizes — the eye hides or shows the layer in these sizes too. */
+  alsoOutputs?: readonly string[];
 }) {
   const { doc, run, readOnly, author, layoutDeps } = useBoard();
   const { outputId } = props;
@@ -105,7 +107,7 @@ export function LayersPanel(props: {
               aria-pressed={hiddenHere}
               title={hiddenHere ? 'Show on this Preview' : 'Hide on this Preview'}
               disabled={!s.visible}
-              onClick={() => run((d) => setOverrideHidden(d, outputId, s.id, !hiddenHere, author()))}
+              onClick={() => run((d) => forEachOutput(d, [outputId, ...(props.alsoOutputs ?? [])], (x, id) => setOverrideHidden(x, id, s.id, !hiddenHere, author())))}
             >
               <Icon name={visible ? 'eye' : 'eye-off'} size={14} />
             </button>

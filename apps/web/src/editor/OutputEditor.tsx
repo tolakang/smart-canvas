@@ -5,7 +5,7 @@
  * D63: the Comment tool turns a click or tap on the Preview into a pinned comment; the Comments panel takes the
  * Design panel's place while it is on.
  */
-import { allLayersEmpty, computeLayout, isEmptyLayer, presetSets, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
+import { allLayersEmpty, carryFrame, computeLayout, forEachOutput, isEmptyLayer, presetSets, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '../board/context';
 import { threadsOf } from '../board/review';
@@ -42,7 +42,10 @@ export function OutputEditor({
   const [showResolved, setShowResolved] = useState(false);
   const output = doc.outputs.find((o) => o.id === outputId);
   const set = setId ? presetSets(doc).find((s) => s.id === setId) : undefined;
-  const sizes = set ? set.outputs.filter((id) => doc.outputs.some((o) => o.id === id)) : [];
+  const sizes = useMemo(() => (set ? set.outputs.filter((id) => doc.outputs.some((o) => o.id === id)) : []), [set, doc.outputs]);
+  /** D84: Edit all's scope — this size only, or the same layer in every size of the node. */
+  const [allSizes, setAllSizes] = useState(false);
+  const others = useMemo(() => (set && allSizes ? sizes.filter((id) => id !== outputId) : []), [set, allSizes, sizes, outputId]);
   const layout = useMemo(() => (output && layoutDeps ? computeLayout(doc, output.id, layoutDeps) : null), [doc, output, layoutDeps]);
   const scene = useMemo(() => (output && layout ? outputScene(layout, output) : null), [output, layout]);
   /**
@@ -72,10 +75,21 @@ export function OutputEditor({
       run((d) => {
         const overridden = setOverrideFrame(d, outputId, id, { ...frame, ...zeroed }, author());
         // One undo step for the gesture and its reset history (D41).
-        return overridden.ok && history && size ? setLayerTransform(overridden.doc, id, history, { outputId }, size) : overridden;
+        const here = overridden.ok && history && size ? setLayerTransform(overridden.doc, id, history, { outputId }, size) : overridden;
+        if (!here.ok || !cur || !size || !layoutDeps || others.length === 0) return here;
+        // D84: All sizes — the same layer in every other size of the node moves and resizes in proportion (one step).
+        return forEachOutput(here.doc, others, (x, oid) => {
+          const o = x.outputs.find((y) => y.id === oid);
+          if (!o) return { ok: true, doc: x };
+          const sc = outputScene(computeLayout(x, oid, layoutDeps), o);
+          const target = sc.items.find((i) => i.sourceId === id)?.frame;
+          if (!target) return { ok: true, doc: x };
+          const next = carryFrame(cur, { ...frame, ...zeroed }, size, { width: sc.width, height: sc.height }, target);
+          return setOverrideFrame(x, oid, id, { ...next, ...(target.rotation && !next.rotation ? { rotation: 0 } : {}), ...(target.shear && !next.shear ? { shear: 0 } : {}) }, author());
+        });
       });
     },
-    [run, outputId, author, scene, size],
+    [run, outputId, author, scene, size, others, layoutDeps],
   );
   // Typed values / nudges update the history after the override write; metadata, so no extra undo step.
   const onHistory = useCallback(
@@ -110,7 +124,25 @@ export function OutputEditor({
             {(output.bleedMm ?? 0) > 0 && ` · bleed ${output.bleedMm} mm`}
             {!connected && ' · disconnected (frozen)'}
           </span>
-          <span className={MUTED_TEXT}>Changes here apply to this Preview only</span>
+          {set && !readOnly ? (
+            // D84: what an edit reaches — this size, or the same layer in every size of the node.
+            <span className="sc-edit-all__scope inline-flex gap-2 rounded-[10px] bg-[var(--fig-hover)] p-2" role="group" aria-label="Edits apply to">
+              {([false, true] as const).map((all) => (
+                <button
+                  key={String(all)}
+                  type="button"
+                  aria-pressed={allSizes === all}
+                  className="h-26 cursor-pointer rounded-[8px] px-10 text-[11.5px] font-[650] text-muted [background:none] [border:0] aria-pressed:bg-accent aria-pressed:text-on-accent pointer-coarse:h-36"
+                  title={all ? 'An edit applies to this layer in every size, in proportion to each' : 'An edit applies to this size only'}
+                  onClick={() => setAllSizes(all)}
+                >
+                  {all ? `All ${sizes.length} sizes` : 'This size'}
+                </button>
+              ))}
+            </span>
+          ) : (
+            <span className={MUTED_TEXT}>Changes here apply to this Preview only</span>
+          )}
           <Approval outputId={output.id} fingerprint={fingerprint} empty={allLayersEmpty(doc, scene.items.map((i) => i.sourceId))} onApprove={reviewApprove} />
           {!readOnly && (
             <button
@@ -129,11 +161,11 @@ export function OutputEditor({
       histories={savedTransforms(output.transforms, scene)}
       // Delete key: a layer can't be deleted from one output; it's hidden there (eye in the layers panel).
       spotsOf={spotsOf}
-      onDelete={readOnly ? undefined : (id) => run((d) => setOverrideHidden(d, output.id, id, true, author()))}
-      layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} outputId={output.id} />}
+      onDelete={readOnly ? undefined : (id) => run((d) => forEachOutput(d, [output.id, ...others], (x, oid) => setOverrideHidden(x, oid, id, true, author())))}
+      layers={(selected, select) => <LayersPanel selected={selected} onSelect={select} outputId={output.id} alsoOutputs={others} />}
       props={(s) => (
         <div className={SIDE}>
-          <OverrideInspector outputId={output.id} sourceId={s.id} />
+          <OverrideInspector outputId={output.id} sourceId={s.id} alsoOutputs={others} />
           {s.content.kind === 'text' && <TextPanel key={s.id} source={{ ...s, content: s.content }} outputId={output.id} />}
         </div>
       )}
