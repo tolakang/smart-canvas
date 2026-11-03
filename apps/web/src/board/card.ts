@@ -86,7 +86,7 @@ const SIZE: Record<CardKind, string> = {
  * A card: its kind sets the width and the stripe; `frozen` (a disconnected Preview) is dashed and grey, `hidden` (an
  * input hidden everywhere) faded, `drop` (a file dragged over it) outlined.
  */
-export function cardClass(kind: CardKind, state: { frozen?: boolean; hidden?: boolean; drop?: boolean } = {}) {
+export function cardClass(kind: CardKind, state: { frozen?: boolean; hidden?: boolean; drop?: boolean; wide?: boolean } = {}) {
   return [
     `sc-node sc-node--${kind}`,
     state.frozen && 'sc-node--frozen',
@@ -100,7 +100,8 @@ export function cardClass(kind: CardKind, state: { frozen?: boolean; hidden?: bo
     '[box-shadow:0_1px_2px_rgb(16_24_40/0.06),0_6px_16px_-6px_rgb(16_24_40/0.12)] [transition:box-shadow_var(--t-fast),border-color_var(--t-fast)]',
     state.frozen ? 'border-line-strong [border-style:dashed] before:bg-line-strong' : `border-[color-mix(in_srgb,var(--line)_90%,transparent)] ${STRIPE[kind]}`,
     "before:absolute before:top-[-1px] before:right-[-1px] before:left-[-1px] before:hidden before:h-3 before:rounded-t-lg before:content-['']",
-    SIZE[kind],
+    // Owner, 2026-11-03: the Logo and Language nodes' three slots a row get room for their pictures and actions.
+    state.wide ? 'w-340 pointer-coarse:w-380 min-w-[160px]' : SIZE[kind],
     HOVER,
     SELECTED,
     FIELDS,

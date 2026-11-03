@@ -249,9 +249,11 @@ export interface LanguagePair {
   board: { x: number; y: number };
   km: string;
   en: string;
-  use: 'km' | 'en';
-  /** N3: more Khmer / English pairs in the same card (each its own two inputs); `use` applies to all. */
-  more?: { km: string; en: string }[];
+  /** D78: the first row's Chinese picture (older cards have none until one is added). */
+  zh?: string;
+  use: 'km' | 'en' | 'zh';
+  /** N3: more rows in the same card (each its own inputs); `use` applies to all. D78: each may have a Chinese one. */
+  more?: { km: string; en: string; zh?: string }[];
 }
 
 /**

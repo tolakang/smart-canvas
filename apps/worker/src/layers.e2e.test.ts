@@ -75,7 +75,7 @@ describe.skipIf(!adminUrl)('layer order (T8.1, D48)', () => {
     expect(layers.indexOf('subject')).toBeGreaterThan(layers.indexOf('headline'));
   }, 60_000);
 
-  it('UX B5 (F13): a headline pair is one row — the language in use — with a KM / EN switch; empty layers say so', async () => {
+  it('UX B5 (F13): a headline pair is one row — the language in use — with a KH / EN / CN switch (D78); empty layers say so', async () => {
     await openLayout(page);
     const panel = page.getByRole('complementary', { name: 'Layers' });
     const pair = (await doc()).headlines?.[0];
@@ -85,7 +85,7 @@ describe.skipIf(!adminUrl)('layer order (T8.1, D48)', () => {
     expect(await panel.locator(`[data-layer="${pair.km}"]`).count()).toBe(1);
     expect(await panel.locator(`[data-layer="${pair.en}"]`).count()).toBe(0);
     const lang = panel.getByRole('group', { name: `${pair.label} language` });
-    expect(await lang.getByRole('button', { name: 'KM' }).getAttribute('aria-pressed')).toBe('true');
+    expect(await lang.getByRole('button', { name: 'KH' }).getAttribute('aria-pressed')).toBe('true');
     await lang.getByRole('button', { name: 'EN' }).click();
     await saved();
     expect((await doc()).headlines?.[0]?.use).toBe('en');

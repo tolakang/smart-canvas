@@ -15,7 +15,7 @@ const ok = (r: SourceResult): ProjectDoc => {
   return r.doc;
 };
 
-describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
+describe.skipIf(!adminUrl)('Language node: Khmer / English / Chinese (D44, D78)', () => {
   let stack: Stack;
   let page: Page;
   let url = '';
@@ -42,16 +42,16 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
   const card = () => page.locator('.react-flow__node-headlineNode').first();
   const drawnInStory = () => page.getByLabel('Preview Story', { exact: true }).locator('.sc-render').first().evaluate((r) => [...r.querySelectorAll('[data-source-id]')].map((e) => e.getAttribute('data-source-id')));
 
-  it('the Headline node: a picture in each slot; the story draws Khmer only', async () => {
-    // D49: every project starts with a Headline node.
+  it('the Language node: a picture in each slot; the story draws Khmer only', async () => {
+    // D49: every project starts with a Language node (named Headline node before D78).
     await page.getByRole('button', { name: /^Fit to screen/ }).click();
     await page.waitForTimeout(300);
     await card().waitFor();
     const pic = (r: number, g: number, b: number, w: number) => sharp({ create: { width: w, height: 100, channels: 3, background: { r, g, b } } }).png().toBuffer();
-    await card().getByLabel('Khmer headline picture').setInputFiles({ name: 'km.png', mimeType: 'image/png', buffer: await pic(200, 30, 30, 400) });
-    await card().getByRole('img', { name: 'Khmer headline' }).waitFor();
-    await card().getByLabel('English headline picture').setInputFiles({ name: 'en.png', mimeType: 'image/png', buffer: await pic(30, 30, 200, 600) });
-    await card().getByRole('img', { name: 'English headline' }).waitFor();
+    await card().getByLabel('Khmer Headline picture').setInputFiles({ name: 'km.png', mimeType: 'image/png', buffer: await pic(200, 30, 30, 400) });
+    await card().getByRole('img', { name: 'Khmer Headline' }).waitFor();
+    await card().getByLabel('English Headline picture').setInputFiles({ name: 'en.png', mimeType: 'image/png', buffer: await pic(30, 30, 200, 600) });
+    await card().getByRole('img', { name: 'English Headline' }).waitFor();
     await saved();
     const d = await doc();
     const [pair] = languagePairs(d);
@@ -68,7 +68,7 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
     const [pair] = languagePairs(before);
     if (!pair) throw new Error('no card');
     // The card sits low on this canvas, under the toolbar: click the switch without a pointer.
-    await card().getByRole('radiogroup').getByText('English', { exact: true }).dispatchEvent('click');
+    await card().getByRole('radiogroup').getByRole('radio', { name: 'English' }).dispatchEvent('click');
     await saved();
     await expect.poll(drawnInStory).toContain(pair.en);
     expect(await drawnInStory()).not.toContain(pair.km);
@@ -90,7 +90,7 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
     expect(en.y + en.h / 2).toBeCloseTo(km.y + km.h / 2, 3);
     expect(en.w * en.h).toBeCloseTo(km.w * km.h, 4);
     // Switched back and forth: Khmer comes back exactly as it was — no shrinking.
-    const radio = (lang: string) => card().getByRole('radiogroup').getByText(lang, { exact: true });
+    const radio = (lang: string) => card().getByRole('radiogroup').getByRole('radio', { name: lang });
     for (const lang of ['Khmer', 'English', 'Khmer']) {
       await radio(lang).dispatchEvent('click');
       await saved();
@@ -103,15 +103,15 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
     await saved();
   }, 60_000);
 
-  it('N3: "Add headline" adds a second Khmer / English pair to the node; "Use" covers both; it can be deleted', async () => {
-    await card().getByRole('button', { name: 'Add headline' }).dispatchEvent('click');
-    await card().getByRole('group', { name: 'Headline 2' }).waitFor();
+  it('N3 / D78: "Add asset" adds a second row to the node; the switch covers both; it can be deleted', async () => {
+    await card().getByRole('button', { name: 'Add asset' }).dispatchEvent('click');
+    await card().getByRole('group', { name: 'Asset 2' }).waitFor();
     await saved();
     const second = languagePairs(await doc())[0]?.more?.[0];
     if (!second) throw new Error('no second pair');
     const pic = await sharp({ create: { width: 500, height: 100, channels: 3, background: { r: 30, g: 160, b: 60 } } }).png().toBuffer();
-    await card().getByLabel('English headline 2 picture').setInputFiles({ name: 'en2.png', mimeType: 'image/png', buffer: pic });
-    await card().getByRole('img', { name: 'English headline 2' }).waitFor();
+    await card().getByLabel('English Asset 2 picture').setInputFiles({ name: 'en2.png', mimeType: 'image/png', buffer: pic });
+    await card().getByRole('img', { name: 'English Asset 2' }).waitFor();
     await saved();
     if (process.env.SC_SHOTS) await card().screenshot({ path: `${process.env.SC_SHOTS}/headline-two-pairs.png` });
     // English is in use: the story draws both English pictures, no Khmer one.
@@ -120,11 +120,30 @@ describe.skipIf(!adminUrl)('Headline card: Khmer / English (D44)', () => {
     expect(await drawnInStory()).toContain(pair?.en);
     expect(await drawnInStory()).not.toContain(second.km);
     page.once('dialog', (d) => void d.accept());
-    await card().getByRole('button', { name: 'Delete headline 2' }).dispatchEvent('click');
-    await card().getByRole('group', { name: 'Headline 2' }).waitFor({ state: 'detached' });
+    await card().getByRole('button', { name: 'Delete Asset 2' }).dispatchEvent('click');
+    await card().getByRole('group', { name: 'Asset 2' }).waitFor({ state: 'detached' });
     await saved();
     const d = await doc();
     expect(languagePairs(d)[0]?.more).toBeUndefined();
     expect(d.sources.some((s) => s.id === second.km || s.id === second.en)).toBe(false);
+  }, 60_000);
+
+  it('D78: a Chinese picture; switching to CN draws it in every output, in the place of the language before', async () => {
+    const [pair] = languagePairs(await doc());
+    if (!pair?.zh) throw new Error('no Chinese input');
+    const pic = await sharp({ create: { width: 300, height: 100, channels: 3, background: { r: 200, g: 160, b: 30 } } }).png().toBuffer();
+    await card().getByLabel('Chinese Headline picture').setInputFiles({ name: 'zh.png', mimeType: 'image/png', buffer: pic });
+    await card().getByRole('img', { name: 'Chinese Headline' }).waitFor();
+    await saved();
+    const was = mainComposition(await doc()).placements[pair.en];
+    await card().getByRole('radiogroup').getByRole('radio', { name: 'Chinese' }).dispatchEvent('click');
+    await saved();
+    await expect.poll(drawnInStory).toContain(pair.zh);
+    expect(await drawnInStory()).not.toContain(pair.en);
+    expect(await drawnInStory()).not.toContain(pair.km);
+    const zh = mainComposition(await doc()).placements[pair.zh];
+    if (!was || !zh) throw new Error('no boxes');
+    expect(zh.x + zh.w / 2).toBeCloseTo(was.x + was.w / 2, 3);
+    expect(zh.y + zh.h / 2).toBeCloseTo(was.y + was.h / 2, 3);
   }, 60_000);
 });

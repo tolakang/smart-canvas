@@ -188,7 +188,7 @@ export interface ProjectDoc {
   /** Assets cards (D40): one board node holding many pictures; absent = none. Board only, no effect on layout. */
   stacks?: AssetStack[];
   /** D44: Headline cards (a Khmer and an English input, one in use). */
-  headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; use: 'km' | 'en'; more?: { km: string; en: string }[] }[]; // more: N3
+  headlines?: { id: string; label: string; board: { x: number; y: number }; km: string; en: string; zh?: string; use: 'km' | 'en' | 'zh'; more?: { km: string; en: string; zh?: string }[] }[]; // more: N3; zh: D78 (the Language node)
   // D46: Preset nodes — each lists output ids (its sizes, in row order).
   presetSets?: { id: string; label: string; board: { x: number; y: number }; outputs: string[]; hidden?: string[] }[]; // hidden: D51
   // D48: the layer comp's group order, front first; absent = logo, headline, text, elements (shown as Image), background (D73).

@@ -143,9 +143,10 @@ const headline = {
     board: point,
     km: id,
     en: id,
-    use: { enum: ['km', 'en'] },
-    // N3: more pairs in the same card.
-    more: { type: 'array', maxItems: LIMITS.maxSources, items: { type: 'object', additionalProperties: false, required: ['km', 'en'], properties: { km: id, en: id } } },
+    zh: id, // D78
+    use: { enum: ['km', 'en', 'zh'] },
+    // N3: more rows in the same card (D78: each may have a Chinese input).
+    more: { type: 'array', maxItems: LIMITS.maxSources, items: { type: 'object', additionalProperties: false, required: ['km', 'en'], properties: { km: id, en: id, zh: id } } },
   },
 } as const;
 

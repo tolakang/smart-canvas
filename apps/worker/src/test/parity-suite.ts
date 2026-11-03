@@ -120,7 +120,7 @@ export function paritySuite() {
     await node('Logo').locator('input[type=file]').nth(1).setInputFiles(both[1] as (typeof both)[number]);
     await node('Image').locator('input[type=file][multiple]').first().setInputFiles(both);
     await until('both images in the Image node', async () => (await node('Image').locator('.sc-slot__pick img').count()) === 2, 20_000);
-    await node('Headline').locator('input[type=file]').first().setInputFiles({ name: 'khmer.png', mimeType: 'image/png', buffer: wide });
+    await node('Language').locator('input[type=file]').first().setInputFiles({ name: 'khmer.png', mimeType: 'image/png', buffer: wide });
     await node('Background').locator('input[type=file]').nth(1).setInputFiles({ name: 'bg.png', mimeType: 'image/png', buffer: await png(400, 400, 240, 200, 120) });
     await node('Text').getByRole('textbox').first().fill('Big summer sale');
     await saved();

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { MAIN, mainComposition, wiredLayers } from './graph';
-import { addLanguagePair, addPairRow, deletePair, deletePairRow, languagePairs, pairInputs, setLanguage, unusedLanguageInputs } from './languages';
+import { addLanguageInput, addLanguagePair, addPairRow, deletePair, deletePairRow, languagePairs, pairInputs, renameLanguageRow, rowName, setLanguage, unusedLanguageInputs } from './languages';
 import { computeLayout } from './layout';
 import { mockMeasure, output, project } from './layout/test-doc';
-import type { ProjectDoc } from './model';
+import type { LanguagePair, ProjectDoc } from './model';
 import { masterScene } from './render';
 import { deleteSource, type SourceResult } from './sources';
 
@@ -21,7 +21,7 @@ const drawn = (doc: ProjectDoc) => computeLayout(doc, 'o1', { measure: mockMeasu
 describe('Headline cards: Khmer / English (D44)', () => {
   it('adds two picture inputs, both wired into the master at the same box, Khmer in use', () => {
     const doc = card();
-    expect(languagePairs(doc)).toEqual([{ id: 'h', label: 'Headline', board: { x: -500, y: 0 }, km: 'hk', en: 'he', use: 'km' }]);
+    expect(languagePairs(doc)).toEqual([{ id: 'h', label: 'Language', board: { x: -500, y: 0 }, km: 'hk', en: 'he', use: 'km' }]);
     expect(doc.sources.filter((s) => s.id === 'hk' || s.id === 'he').map((s) => [s.label, s.kind])).toEqual([
       ['Headline · English', 'image'],
       ['Headline · Khmer', 'image'],
@@ -129,7 +129,7 @@ describe('Several pairs in one Headline card (N3)', () => {
     const pair = languagePairs(doc)[0];
     expect(pair?.more).toEqual([{ km: 'hk2', en: 'he2' }]);
     expect(pair && pairInputs(pair)).toEqual(['hk', 'he', 'hk2', 'he2']);
-    expect(doc.sources.filter((s) => s.id === 'hk2' || s.id === 'he2').map((s) => s.label).sort()).toEqual(['Headline 2 · English', 'Headline 2 · Khmer']);
+    expect(doc.sources.filter((s) => s.id === 'hk2' || s.id === 'he2').map((s) => s.label).sort()).toEqual(['Asset 2 · English', 'Asset 2 · Khmer']);
     for (const id of ['hk2', 'he2']) expect(wiredLayers(doc, MAIN).has(id)).toBe(true);
     const at = mainComposition(doc).placements;
     expect(at.hk2?.y).toBeGreaterThan((at.hk?.y ?? 0) + (at.hk?.h ?? 0));
@@ -152,7 +152,7 @@ describe('Several pairs in one Headline card (N3)', () => {
     expect(doc.sources.some((s) => s.id === 'hk2' || s.id === 'he2')).toBe(false);
     expect(languagePairs(doc)[0]?.more).toEqual([{ km: 'hk3', en: 'he3' }]);
     doc = ok(deletePairRow(doc, 'h', 0));
-    expect(languagePairs(doc)).toEqual([{ id: 'h', label: 'Headline', board: { x: -500, y: 0 }, km: 'hk3', en: 'he3', use: 'km' }]);
+    expect(languagePairs(doc)).toEqual([{ id: 'h', label: 'Language', board: { x: -500, y: 0 }, km: 'hk3', en: 'he3', use: 'km' }]);
     doc = ok(deletePairRow(doc, 'h', 0));
     expect(languagePairs(doc)).toEqual([]);
     expect(doc.sources.some((s) => s.id === 'hk3')).toBe(false);
@@ -170,5 +170,59 @@ describe('Several pairs in one Headline card (N3)', () => {
     expect(addPairRow(card(), 'h', { km: 'hk', en: 'x' }).ok).toBe(false);
     expect(addPairRow(card(), 'nope', { km: 'a', en: 'b' }).ok).toBe(false);
     expect(deletePairRow(card(), 'h', 3).ok).toBe(false);
+  });
+});
+
+describe('The Language node: Khmer, English and Chinese (D78)', () => {
+  const three = () => withPictures(ok(addLanguagePair(project(output()), { id: 'h', km: 'hk', en: 'he', zh: 'hz', board: { x: -500, y: 0 } })));
+
+  it('a new card is named Language; its first row, Headline, has three inputs, Khmer in use', () => {
+    const doc = three();
+    expect(languagePairs(doc)[0]).toMatchObject({ label: 'Language', km: 'hk', en: 'he', zh: 'hz', use: 'km' });
+    expect(doc.sources.filter((s) => ['hk', 'he', 'hz'].includes(s.id)).map((s) => s.label).sort()).toEqual(['Headline · Chinese', 'Headline · English', 'Headline · Khmer']);
+    expect([...unusedLanguageInputs(doc)].sort()).toEqual(['he', 'hz']);
+    expect(rowName(doc, { km: 'hk', en: 'he' })).toBe('Headline');
+  });
+
+  it('switching to Chinese draws only the Chinese picture of every row, in the Khmer one’s place', () => {
+    let doc = ok(addPairRow(three(), 'h', { km: 'k2', en: 'e2', zh: 'z2' }, 'Offer badge'));
+    const before = mainComposition(doc).placements.hk;
+    doc = ok(setLanguage(doc, 'h', 'zh'));
+    expect([...unusedLanguageInputs(doc)].sort()).toEqual(['e2', 'he', 'hk', 'k2']);
+    expect(mainComposition(doc).placements.hz).toMatchObject({ x: before?.x, y: before?.y });
+    expect(doc.sources.find((s) => s.id === 'z2')?.label).toBe('Offer badge · Chinese');
+  });
+
+  it('an older row gets its Chinese input on demand, wired and placed like its Khmer one', () => {
+    let doc = card();
+    expect(pairInputs(languagePairs(doc)[0] as LanguagePair)).toEqual(['hk', 'he']);
+    doc = ok(addLanguageInput(doc, 'h', 0, 'zh', 'hz'));
+    expect(languagePairs(doc)[0]?.zh).toBe('hz');
+    expect(wiredLayers(doc, MAIN).has('hz')).toBe(true);
+    const { fitted: _f, ...box } = mainComposition(doc).placements.hk ?? { x: 0, y: 0, w: 0, h: 0 };
+    void _f;
+    expect(mainComposition(doc).placements.hz).toEqual(box);
+    expect(addLanguageInput(doc, 'h', 0, 'zh', 'again').ok).toBe(false);
+  });
+
+  it('a row without Chinese, switched to Chinese, draws nothing; deleting a Chinese input keeps its row', () => {
+    let doc = ok(addPairRow(three(), 'h', { km: 'k2', en: 'e2' }));
+    doc = ok(setLanguage(doc, 'h', 'zh'));
+    expect(unusedLanguageInputs(doc).has('k2') && unusedLanguageInputs(doc).has('e2')).toBe(true);
+    doc = ok(deleteSource(doc, 'hz'));
+    expect(languagePairs(doc)[0]).toMatchObject({ km: 'hk', en: 'he' });
+    expect(languagePairs(doc)[0]?.zh).toBeUndefined();
+    expect(languagePairs(doc)[0]?.more).toEqual([{ km: 'k2', en: 'e2' }]);
+  });
+
+  it('renaming a row renames each of its inputs "<name> · <language>"', () => {
+    const doc = ok(renameLanguageRow(three(), 'h', 0, 'Title'));
+    expect(doc.sources.filter((s) => ['hk', 'he', 'hz'].includes(s.id)).map((s) => s.label).sort()).toEqual(['Title · Chinese', 'Title · English', 'Title · Khmer']);
+  });
+
+  it('deleting a row deletes its three inputs', () => {
+    let doc = ok(addPairRow(three(), 'h', { km: 'k2', en: 'e2', zh: 'z2' }));
+    doc = ok(deletePairRow(doc, 'h', 1));
+    expect(doc.sources.some((s) => ['k2', 'e2', 'z2'].includes(s.id))).toBe(false);
   });
 });

@@ -56,7 +56,7 @@ export function useAddMenus({ docRef, nodesRef, flow, presets, run }: AddMenuDep
     const full = docRef.current.sources.length >= LIMITS.maxSources;
     return [
       { label: 'Logo node', disabled: full, onSelect: () => run((d) => addStack(d, { id: newId(), kind: 'logo', board: at })) },
-      { label: 'Headline node (Khmer / English)', disabled: full, onSelect: () => run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), board: at })) },
+      { label: 'Language node (KH · EN · CN)', disabled: full, onSelect: () => run((d) => addLanguagePair(d, { id: newId(), km: newId(), en: newId(), zh: newId(), board: at })) },
       {
         label: 'Text node',
         disabled: full,

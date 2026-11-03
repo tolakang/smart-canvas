@@ -61,7 +61,7 @@ export function boardStructure(doc: ProjectDoc): ProjectDoc {
   }
   if (languagePairs(next).length === 0) {
     const id = uniqueId(next, 'headline');
-    next = step(next, addLanguagePair(next, { id, km: uniqueId(next, `${id}-km`), en: uniqueId(next, `${id}-en`), board: BOARD_LAYOUT.headline }));
+    next = step(next, addLanguagePair(next, { id, km: uniqueId(next, `${id}-km`), en: uniqueId(next, `${id}-en`), zh: uniqueId(next, `${id}-zh`), board: BOARD_LAYOUT.headline }));
   }
   if (!next.sources.some((s) => s.behavesLike === 'background')) {
     const id = uniqueId(next, 'background');

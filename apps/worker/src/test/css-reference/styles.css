@@ -1,4 +1,4 @@
-/* The app's CSS at 71f11f35375f35625093aeb9ac285d58ee924b11 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 15269559c5af65e5e4edfab75211ed7655f6abd7 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -337,6 +337,10 @@
     margin-inline: 4px;
   }
 
+  .mx-6 {
+    margin-inline: 6px;
+  }
+
   .mx-12 {
     margin-inline: 12px;
   }
@@ -543,6 +547,10 @@
 
   .aspect-\[3\/4\] {
     aspect-ratio: 3 / 4;
+  }
+
+  .aspect-\[4\/3\] {
+    aspect-ratio: 4 / 3;
   }
 
   .aspect-\[5\/8\] {
@@ -886,6 +894,10 @@
 
   .w-320 {
     width: 320px;
+  }
+
+  .w-340 {
+    width: 340px;
   }
 
   .w-360 {
@@ -2098,6 +2110,10 @@
     padding-inline: 0;
   }
 
+  .px-0\! {
+    padding-inline: 0 !important;
+  }
+
   .px-2 {
     padding-inline: 2px;
   }
@@ -2196,6 +2212,10 @@
 
   .py-2 {
     padding-block: 2px;
+  }
+
+  .py-3 {
+    padding-block: 3px;
   }
 
   .py-4 {
@@ -3477,16 +3497,6 @@
   @supports (color: color-mix(in lab, red, red)) {
     .\[border-top\:1px_solid_color-mix\(in_srgb\,var\(--line\)_70\%\,transparent\)\] {
       border-top: 1px solid color-mix(in srgb,var(--line) 70%,transparent);
-    }
-  }
-
-  .\[border-top\:1px_solid_color-mix\(in_srgb\,var\(--line\)_80\%\,transparent\)\] {
-    border-top: 1px solid var(--line);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .\[border-top\:1px_solid_color-mix\(in_srgb\,var\(--line\)_80\%\,transparent\)\] {
-      border-top: 1px solid color-mix(in srgb,var(--line) 80%,transparent);
     }
   }
 

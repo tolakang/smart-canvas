@@ -16,36 +16,63 @@ import { sizeInDesignPx } from './render';
 import { connectSource } from './ports';
 import { addSource, deleteSource, type SourceResult } from './sources';
 
-export const LANGUAGE_LABEL = { km: 'Khmer', en: 'English' } as const;
+/** D78: a Language node's languages, in the order they show. */
+export const LANGUAGES = ['km', 'en', 'zh'] as const;
+export type LanguageCode = (typeof LANGUAGES)[number];
+export const LANGUAGE_LABEL = { km: 'Khmer', en: 'English', zh: 'Chinese' } as const;
+/** The short names on the switch and the slot headings. */
+export const LANGUAGE_SHORT = { km: 'KH', en: 'EN', zh: 'CN' } as const;
 
 export interface LanguageRow {
   km: string;
   en: string;
+  /** D78: older rows have no Chinese input until one is added (`addLanguageInput`). */
+  zh?: string;
 }
 
-/** A card's pairs, first one first (N3). */
-export const pairRows = (p: LanguagePair): LanguageRow[] => [{ km: p.km, en: p.en }, ...(p.more ?? [])];
+/** A card's rows, first one first (N3). */
+export const pairRows = (p: LanguagePair): LanguageRow[] => [{ km: p.km, en: p.en, ...(p.zh ? { zh: p.zh } : {}) }, ...(p.more ?? [])];
 
-/** Every input of a card: both languages of every pair. */
-export const pairInputs = (p: LanguagePair): string[] => pairRows(p).flatMap((r) => [r.km, r.en]);
+/** A row's inputs, in language order (a missing Chinese one left out). */
+export const rowInputs = (r: LanguageRow): string[] => LANGUAGES.flatMap((l) => (r[l] ? [r[l] as string] : []));
 
-/** The cards whose first two inputs still exist (and of their other pairs, the ones whose two inputs exist). */
+/** Every input of a card: every language of every row. */
+export const pairInputs = (p: LanguagePair): string[] => pairRows(p).flatMap(rowInputs);
+
+/** A row without a Chinese input that no longer exists. */
+const keepZh = <R extends { zh?: string }>(r: R, ids: Set<string>): R => {
+  if (!r.zh || ids.has(r.zh)) return r;
+  const { zh: _zh, ...rest } = r;
+  void _zh;
+  return rest as R;
+};
+
+/**
+ * The cards whose first Khmer and English inputs still exist (and of their other rows, the ones whose Khmer and
+ * English inputs exist); a Chinese input that is gone is dropped from its row.
+ */
 export function languagePairs(doc: ProjectDoc): LanguagePair[] {
   const ids = new Set(doc.sources.map((s) => s.id));
   return (doc.headlines ?? []).flatMap((p) => {
     if (!ids.has(p.km) || !ids.has(p.en)) return [];
-    if (!p.more) return [p];
-    const more = p.more.filter((r) => ids.has(r.km) && ids.has(r.en));
-    if (more.length === p.more.length) return [p];
-    const { more: _more, ...rest } = p;
+    const lead = keepZh(p, ids);
+    if (!p.more) return [lead];
+    const more = p.more.filter((r) => ids.has(r.km) && ids.has(r.en)).map((r) => keepZh(r, ids));
+    const { more: _more, ...rest } = lead;
     void _more;
     return [more.length ? { ...rest, more } : rest];
   });
 }
 
-/** The inputs a card has switched off (the language not in use, in every pair). */
+/** The inputs a card has switched off: every language not in use, in every row. */
 export function unusedLanguageInputs(doc: ProjectDoc): Set<string> {
-  return new Set(languagePairs(doc).flatMap((p) => pairRows(p).map((r) => (p.use === 'km' ? r.en : r.km))));
+  return new Set(languagePairs(doc).flatMap((p) => pairRows(p).flatMap((r) => LANGUAGES.flatMap((l) => (l !== p.use && r[l] ? [r[l] as string] : [])))));
+}
+
+/** A row's name: its Khmer input's name without the language (" · Khmer"). */
+export function rowName(doc: ProjectDoc, r: LanguageRow): string {
+  const label = doc.sources.find((s) => s.id === r.km)?.label ?? '';
+  return label.replace(/ · (Khmer|English|Chinese)$/, '');
 }
 
 const withPairs = (doc: ProjectDoc, pairs: LanguagePair[]): ProjectDoc => {
@@ -62,18 +89,20 @@ const HEADLINE_BOX = { x: 0.08, y: 0.08, w: 0.84, h: 0.2 };
  * Adds a Headline card: two picture inputs (Khmer, English), both wired into the master preview at the same
  * box, Khmer in use. One result, so one undo step.
  */
-export function addLanguagePair(doc: ProjectDoc, spec: { id: string; km: string; en: string; board: { x: number; y: number }; label?: string }): SourceResult {
-  if ([spec.id, spec.km, spec.en].some((id) => doc.sources.some((s) => s.id === id) || (doc.headlines ?? []).some((p) => p.id === id))) return { ok: false, error: 'invalid' };
-  const label = spec.label?.trim() || 'Headline';
+export function addLanguagePair(doc: ProjectDoc, spec: { id: string; km: string; en: string; zh?: string; board: { x: number; y: number }; label?: string; row?: string }): SourceResult {
+  const ids = [spec.id, spec.km, spec.en, ...(spec.zh ? [spec.zh] : [])];
+  if (new Set(ids).size !== ids.length || ids.some((id) => doc.sources.some((s) => s.id === id) || (doc.headlines ?? []).some((p) => p.id === id))) return { ok: false, error: 'invalid' };
+  const label = spec.label?.trim() || 'Language';
+  const row = spec.row?.trim() || 'Headline';
   let next = doc;
-  for (const [id, lang] of [[spec.en, 'en'], [spec.km, 'km']] as const) {
-    const added = addSource(next, { id, kind: 'image', label: `${label} · ${LANGUAGE_LABEL[lang]}`, behavesLike: 'subject', board: spec.board });
+  for (const [id, lang] of [...(spec.zh ? [[spec.zh, 'zh'] as const] : []), [spec.en, 'en'], [spec.km, 'km']] as const) {
+    const added = addSource(next, { id, kind: 'image', label: `${row} · ${LANGUAGE_LABEL[lang]}`, behavesLike: 'subject', board: spec.board });
     if (!added.ok) return added;
     const wired = connectSource(added.doc, id);
     if (!wired.ok) return wired;
     next = withComposition(wired.doc, MAIN, (c) => ({ ...c, placements: { ...c.placements, [id]: { ...HEADLINE_BOX } } }));
   }
-  const pair: LanguagePair = { id: spec.id, label, board: { x: Math.round(spec.board.x), y: Math.round(spec.board.y) }, km: spec.km, en: spec.en, use: 'km' };
+  const pair: LanguagePair = { id: spec.id, label, board: { x: Math.round(spec.board.x), y: Math.round(spec.board.y) }, km: spec.km, en: spec.en, ...(spec.zh ? { zh: spec.zh } : {}), use: 'km' };
   return { ok: true, doc: withPairs(next, [...languagePairs(next), pair]) };
 }
 
@@ -87,15 +116,17 @@ const editPair = (doc: ProjectDoc, id: string, edit: (p: LanguagePair) => Langua
  * N3: adds another Khmer / English pair to card `id` — two picture inputs, wired into the master like the
  * card's first pair (when that one is wired), in a box below the card's last one. One undo step.
  */
-export function addPairRow(doc: ProjectDoc, id: string, row: LanguageRow): SourceResult {
+export function addPairRow(doc: ProjectDoc, id: string, row: LanguageRow, name?: string): SourceResult {
   const pair = languagePairs(doc).find((p) => p.id === id);
-  if (!pair || row.km === row.en || [row.km, row.en].some((x) => doc.sources.some((s) => s.id === x) || (doc.headlines ?? []).some((p) => p.id === x))) return { ok: false, error: 'invalid' };
+  const ids = rowInputs(row);
+  if (!pair || new Set(ids).size !== ids.length || ids.some((x) => doc.sources.some((s) => s.id === x) || (doc.headlines ?? []).some((p) => p.id === x))) return { ok: false, error: 'invalid' };
   const n = pairRows(pair).length + 1;
   const wired = doc.edges.some((e) => e.kind === 'layer' && e.from === pair.km && e.to === MAIN);
   const box = { ...HEADLINE_BOX, y: Math.min(HEADLINE_BOX.y + (n - 1) * (HEADLINE_BOX.h + 0.02), 1 - HEADLINE_BOX.h) };
+  const rowLabel = name?.trim() || `Asset ${n}`;
   let next = doc;
-  for (const [sid, lang] of [[row.en, 'en'], [row.km, 'km']] as const) {
-    const added = addSource(next, { id: sid, kind: 'image', label: `${pair.label} ${n} · ${LANGUAGE_LABEL[lang]}`, behavesLike: 'subject', board: pair.board });
+  for (const [sid, lang] of [...(row.zh ? [[row.zh, 'zh'] as const] : []), [row.en, 'en'], [row.km, 'km']] as const) {
+    const added = addSource(next, { id: sid, kind: 'image', label: `${rowLabel} · ${LANGUAGE_LABEL[lang]}`, behavesLike: 'subject', board: pair.board });
     if (!added.ok) return added;
     next = added.doc;
     if (wired) {
@@ -104,7 +135,7 @@ export function addPairRow(doc: ProjectDoc, id: string, row: LanguageRow): Sourc
       next = withComposition(w.doc, MAIN, (c) => ({ ...c, placements: { ...c.placements, [sid]: { ...box } } }));
     }
   }
-  return editPair(next, id, (p) => ({ ...p, more: [...(p.more ?? []), { km: row.km, en: row.en }] }));
+  return editPair(next, id, (p) => ({ ...p, more: [...(p.more ?? []), { km: row.km, en: row.en, ...(row.zh ? { zh: row.zh } : {}) }] }));
 }
 
 /** N3: deletes pair `index` of card `id` (both its inputs); the card's first pair can go while others are left. */
@@ -114,7 +145,7 @@ export function deletePairRow(doc: ProjectDoc, id: string, index: number): Sourc
   if (!pair || !row) return { ok: false, error: 'not_found' };
   if (pairRows(pair).length === 1) return deletePair(doc, id);
   let next = doc;
-  for (const s of [row.km, row.en]) {
+  for (const s of rowInputs(row)) {
     const r = deleteSource(next, s);
     if (r.ok) next = r.doc;
   }
@@ -126,12 +157,53 @@ export function deletePairRow(doc: ProjectDoc, id: string, index: number): Sourc
  * language coming in take the exact size of the one going out (`shareLayout`); without them its frames are left
  * to be fitted by the board.
  */
-export function setLanguage(doc: ProjectDoc, id: string, use: 'km' | 'en', assets?: Record<string, AssetSize>): SourceResult {
+export function setLanguage(doc: ProjectDoc, id: string, use: LanguageCode, assets?: Record<string, AssetSize>): SourceResult {
   const pair = languagePairs(doc).find((p) => p.id === id);
   if (!pair || pair.use === use) return editPair(doc, id, (p) => p);
-  // V4: one layout for the pair — the language coming in takes over the one going out's.
-  const next = pairRows(pair).reduce((d, r) => shareLayout(d, use === 'en' ? r.km : r.en, use === 'en' ? r.en : r.km, assets), doc);
+  // V4: one layout for each row — the language coming in takes over the one going out's (a row with no input in the
+  // language going out, an old row without Chinese, hands over its Khmer one's).
+  const next = pairRows(pair).reduce((d, r) => {
+    const from = r[pair.use] ?? r.km;
+    const to = r[use];
+    return to && to !== from ? shareLayout(d, from, to, assets) : d;
+  }, doc);
   return editPair(next, id, (p) => ({ ...p, use }));
+}
+
+/**
+ * D78: gives row `index` of card `id` its missing input in `lang` (an older row's Chinese one): a picture input
+ * named after the row, wired and placed like the row's Khmer one (unfitted, so its picture fits that box).
+ */
+export function addLanguageInput(doc: ProjectDoc, id: string, index: number, lang: LanguageCode, sid: string): SourceResult {
+  const pair = languagePairs(doc).find((p) => p.id === id);
+  const row = pair && pairRows(pair)[index];
+  if (!pair || !row || row[lang] || doc.sources.some((s) => s.id === sid) || (doc.headlines ?? []).some((p) => p.id === sid)) return { ok: false, error: 'invalid' };
+  const added = addSource(doc, { id: sid, kind: 'image', label: `${rowName(doc, row)} · ${LANGUAGE_LABEL[lang]}`, behavesLike: 'subject', board: pair.board });
+  if (!added.ok) return added;
+  let next = added.doc;
+  for (const e of doc.edges.filter((x) => x.kind === 'layer' && x.from === row.km)) {
+    const w = connectSource(next, sid, undefined, e.to);
+    if (!w.ok) return w;
+    next = withComposition(w.doc, e.to, (c) => {
+      const own = c.placements[row.km];
+      if (!own) return c;
+      const { fitted: _f, ...box } = own;
+      void _f;
+      return { ...c, placements: { ...c.placements, [sid]: box } };
+    });
+  }
+  return editPair(next, id, (p) => (index === 0 ? { ...p, [lang]: sid } : { ...p, more: (p.more ?? []).map((r, i) => (i === index - 1 ? { ...r, [lang]: sid } : r)) }));
+}
+
+/** D78: renames row `index` of card `id`: each of its inputs is named "<name> · <language>". */
+export function renameLanguageRow(doc: ProjectDoc, id: string, index: number, name: string): SourceResult {
+  const pair = languagePairs(doc).find((p) => p.id === id);
+  const row = pair && pairRows(pair)[index];
+  const clean = name.trim();
+  if (!pair || !row) return { ok: false, error: 'not_found' };
+  if (!clean) return { ok: true, doc };
+  const names = new Map(LANGUAGES.flatMap((l) => (row[l] ? [[row[l] as string, `${clean} · ${LANGUAGE_LABEL[l]}`] as const] : [])));
+  return { ok: true, doc: { ...doc, sources: doc.sources.map((s) => (names.has(s.id) ? { ...s, label: names.get(s.id) as string } : s)) } };
 }
 
 type Box = { x: number; y: number; w: number; h: number };

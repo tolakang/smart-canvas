@@ -211,19 +211,29 @@ export function deleteSource(doc: ProjectDoc, id: string): SourceResult {
   };
 }
 
-/** A Headline card once input `id` is gone (D44, N3): the pair holding it leaves; none left = no card. */
+/**
+ * A Headline card once input `id` is gone (D44, N3): the row holding it as its Khmer or English one leaves (its other
+ * inputs stay, as ordinary inputs); none left = no card. D78: a row's Chinese input going leaves the row without one.
+ */
 function withoutInput(p: LanguagePair, id: string): LanguagePair[] {
-  const more = p.more ?? [];
-  if (p.km !== id && p.en !== id) {
-    if (!more.some((r) => r.km === id || r.en === id)) return [p];
+  const dropZh = <R extends { zh?: string }>(r: R): R => {
+    if (r.zh !== id) return r;
+    const { zh: _zh, ...rest } = r;
+    void _zh;
+    return rest as R;
+  };
+  const more = (p.more ?? []).map(dropZh);
+  const lead = dropZh(p);
+  if (lead.km !== id && lead.en !== id) {
     const left = more.filter((r) => r.km !== id && r.en !== id);
-    const { more: _more, ...rest } = p;
+    const { more: _more, ...rest } = lead;
     void _more;
     return [left.length ? { ...rest, more: left } : rest];
   }
-  const [lead, ...rest] = more;
-  if (!lead) return [];
-  const { more: _more, ...card } = p;
+  const [next, ...rest] = more;
+  if (!next) return [];
+  const { more: _more, zh: _zh, ...card } = lead;
   void _more;
-  return [{ ...card, km: lead.km, en: lead.en, ...(rest.length ? { more: rest } : {}) }];
+  void _zh;
+  return [{ ...card, km: next.km, en: next.en, ...(next.zh ? { zh: next.zh } : {}), ...(rest.length ? { more: rest } : {}) }];
 }

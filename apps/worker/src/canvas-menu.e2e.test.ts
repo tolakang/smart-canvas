@@ -61,7 +61,7 @@ describe.skipIf(!adminUrl)('right-click the canvas to add nodes (T8.4)', () => {
       .toBe(1);
     const items = await menu().getByRole('menuitem').allInnerTexts();
     // D49: the asset nodes, then a Preset node per preset family, then a custom one; N4: then Tidy board.
-    expect(items.slice(0, 5)).toEqual(['Logo node', 'Headline node (Khmer / English)', 'Text node', 'Image node', 'Background node']);
+    expect(items.slice(0, 5)).toEqual(['Logo node', 'Language node (KH · EN · CN)', 'Text node', 'Image node', 'Background node']);
     for (const p of ['FB preset (1 size)', 'GDN preset (7 sizes)', 'Website preset (4 sizes)', 'App banner preset (2 sizes)']) expect(items).toContain(p);
     expect(items.slice(-2)).toEqual(['Custom preset…', 'Tidy board']);
     await page.keyboard.press('Escape');

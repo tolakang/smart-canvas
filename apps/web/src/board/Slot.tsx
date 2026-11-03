@@ -113,11 +113,13 @@ export function Slot(p: SlotProps) {
     'sc-slot__tile overflow-hidden [transition:border-color_var(--t-fast),box-shadow_var(--t-fast),background_var(--t-fast)]',
     row ? 'static size-52 rounded-[11px]' : `relative rounded-[14px] ${p.tileClass ?? (p.shape === 'wide' ? 'h-104' : 'aspect-square')}`,
     inUse
-      ? 'border-2 border-solid border-accent'
+      ? p.bare
+        ? 'border-[1.5px] border-solid border-accent'
+        : 'border-2 border-solid border-accent'
       : empty
         ? `border-[1.5px] ${over ? 'border-solid' : 'border-dashed'} ${lit ? 'border-accent' : p.bare ? 'border-[color-mix(in_srgb,var(--muted)_45%,transparent)] group-hover/slot:border-accent' : 'border-muted group-hover/slot:border-accent'}`
         : `border border-solid ${lit ? 'border-accent' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)]'}`,
-    inUse || (over && !p.focused) ? RING_4 : p.focused ? RING_3 : '',
+    (inUse && !p.bare) || (over && !p.focused) ? RING_4 : p.focused ? RING_3 : '',
     over ? ACCENT_FILL : empty ? '[background:transparent] group-hover/slot:[background:color-mix(in_srgb,var(--accent-soft)_70%,transparent)]' : CHECKER,
     p.dimmed && 'opacity-45',
   ]
