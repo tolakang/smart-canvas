@@ -108,8 +108,8 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         menuLabel={`${stack.label} actions`}
         menu={[
           // A logo shows its three slots side by side; the list view is for the Image node's many pictures.
-          ...(isLogo ? [] : [{ label: list ? 'Grid view' : 'List view', onSelect: () => setList(!list) }]),
-          ...(readOnly ? [] : [{ label: `Delete ${stack.label}`, danger: true, separated: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]),
+          ...(isLogo ? [] : [{ label: list ? 'Grid view' : 'List view', icon: list ? ('grid' as const) : ('list' as const), onSelect: () => setList(!list) }]),
+          ...(readOnly ? [] : [{ label: `Delete ${stack.label}`, icon: 'trash' as const, danger: true, separated: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]),
         ]}
       />
       <ul className={`sc-assets m-0 grid list-none p-0 ${list && !isLogo ? 'sc-assets--list grid-cols-[minmax(0,1fr)] gap-8' : isLogo ? 'grid-cols-[minmax(0,1fr)] gap-14' : 'grid-cols-[repeat(2,minmax(0,1fr))] gap-12'} ${NO_CANVAS}`} aria-label={`${stack.label} pictures`}>

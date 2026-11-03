@@ -70,7 +70,7 @@ Logo · Headline (KH/EN) · Text · Image · Background (V/H)     ← asset node
 
 **Preset node (D46, D51).**
 - **Its team family (D60, Q2):** `setFamily(doc, setId, presets)` finds the family its sizes came from (by `presetId`); the node offers "Rename to “…”" when the family's name changed and "Add N new sizes" when the family grew.
-- Rows reorder by their grip. Add a size from presets or as a custom W×H.
+- Rows reorder by dragging their size (no grip since 2026-11-03). Add a size from presets or as a custom W×H.
 - The **eye** hides that size's Preview on the board (`PresetSet.hidden`; it still exports). The **trash** removes the size.
 - **Export** opens the export dialog on the node's sizes only (hidden ones included unless "Include hidden previews" is unticked) and downloads one ZIP named `<project>_<family>.zip` once all are done (`exportZipName(project, family)`).
 - **Save as team preset** (D54) saves the sizes as a team preset family.
@@ -137,7 +137,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 - **CSS parity (P28):** `service postgresql start`, then `cd apps/worker && TEST_DATABASE_URL=postgres://sc:sc@localhost:5432/postgres npx vitest run src/css-parity-` (six files that run side by side; `SC_PARITY_ONLY=word,word` compares only the screens whose name has one of the words, commands in `TAILWIND-PLAN.md`). It compares every covered screen with main's built CSS; a conversion PR adds screens for the states it touches. The probe that lists what a sheet decides: `TAILWIND-PLAN.md`. If Postgres stopped (container restart), start it again.
 - **Off‑screen nodes:** press **Fit to screen** before clicking a node the test just added, or one placed by the conversion. Since D69 Fit to screen stops at 40 % from tablet width up: press **Fit all** when the test needs every panel on screen. Since D70 a phone board opens on the first asset nodes: phone tests press Fit to screen first.
 - **API tests need Postgres:** run `pnpm test` with `TEST_DATABASE_URL` set, or the API's database tests are skipped (#214 reached CI with one broken that way). If Postgres stopped (a container restart), `service postgresql start` again.
-- **Draggable rows:** a draggable row (HTML5 `draggable`) swallows wire drags that start on a handle inside it. Make only the grip draggable.
+- **Draggable rows:** a draggable row (HTML5 `draggable`) swallows wire drags that start on a handle inside it. Make only the grip (on Preset rows, the size label) draggable.
 - **Shared ports:** many wires meet at the Main Comps `layers` port. Grab a wire by its node end (`edgeupdater-source`).
 - **Hidden buttons:** buttons shown only on hover aren't in the accessibility tree. Use a CSS locator plus `dispatchEvent('click')`.
 - **Lazy deps in e2e:** the e2e tests run the Vite dev server. A dependency imported lazily must be listed in `optimizeDeps.include` (`apps/web/vite.config.ts`), or Vite finds it mid‑test and reloads the page. pdf.js 6+ needs `Map.getOrInsertComputed`, which the test Chromium lacks; stay on 5.4.

@@ -120,13 +120,13 @@ export const HEAD_TITLE =
   'sc-node__title sc-head__title flex-1 overflow-hidden text-[14.5px] leading-[1.25] font-[680] tracking-[-0.015em] text-ellipsis whitespace-nowrap';
 export const HEAD_SUB = 'sc-head__sub overflow-hidden text-[12px] leading-[1.3] text-ellipsis whitespace-nowrap text-muted';
 export const HEAD_MORE =
-  'sc-head__more grid size-32 flex-none cursor-pointer place-items-center rounded-[10px] bg-transparent p-0 text-muted [border:0] [transition:background_var(--t-fast),color_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] hover:text-fg aria-expanded:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] aria-expanded:text-fg pointer-coarse:size-44';
+  'sc-head__more grid size-36 flex-none cursor-pointer place-items-center rounded-[10px] bg-transparent p-0 text-muted [border:0] [transition:background_var(--t-fast),color_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] hover:text-fg aria-expanded:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] aria-expanded:text-fg pointer-coarse:size-44';
 /** D75: the collapse chevron, styled as the ⋯ button. */
 export const HEAD_FOLD =
-  'sc-head__fold grid size-32 flex-none cursor-pointer place-items-center rounded-[10px] bg-transparent p-0 text-muted [border:0] [transition:background_var(--t-fast),color_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] hover:text-fg aria-expanded:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] aria-expanded:text-fg pointer-coarse:size-44';
+  'sc-head__fold grid size-36 flex-none cursor-pointer place-items-center rounded-[10px] bg-transparent p-0 text-muted [border:0] [transition:background_var(--t-fast),color_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] hover:text-fg aria-expanded:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] aria-expanded:text-fg pointer-coarse:size-44';
 /** A header action (Edit, Export): tinted in the card's colour. */
 export const HEAD_ACTION =
-  'sc-head__action [&_.sc-icon]:m-0 inline-flex h-32 flex-none cursor-pointer items-center gap-6 rounded-[10px] bg-[color-mix(in_srgb,var(--head)_14%,var(--surface))] px-12 py-0 text-[12.5px] font-[650] text-[color-mix(in_srgb,var(--head)_65%,var(--fg))] [border:0] [transition:background_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--head)_24%,var(--surface))] pointer-coarse:h-40 pointer-coarse:px-14';
+  'sc-head__action [&_.sc-icon]:m-0 inline-flex h-36 flex-none cursor-pointer items-center gap-6 rounded-[10px] bg-[color-mix(in_srgb,var(--head)_14%,var(--surface))] px-12 py-0 text-[13px] font-[650] text-[color-mix(in_srgb,var(--head)_65%,var(--fg))] [border:0] [transition:background_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--head)_24%,var(--surface))] pointer-coarse:h-40 pointer-coarse:px-14';
 /** A mark in the header (hidden, from the library). */
 export const HEAD_MARK = 'sc-node__mark grid flex-none place-items-center text-muted';
 

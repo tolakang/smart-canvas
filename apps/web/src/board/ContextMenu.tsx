@@ -5,6 +5,7 @@
  */
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { COARSE_QUERY } from '../ui/responsive';
+import { Icon, type IconName } from './LayerRow';
 import { MENU, MENU_TITLE, menuItemClass } from './topbar';
 
 export interface MenuItem {
@@ -16,6 +17,8 @@ export interface MenuItem {
   separated?: boolean;
   /** D70: a section title shown above this item (a sectioned menu, e.g. the phone's Add sheet). */
   heading?: string;
+  /** Owner, 2026-11-03: a card's ⋯ menu shows an icon before each item. */
+  icon?: IconName;
 }
 
 export interface MenuState {
@@ -74,13 +77,14 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
           key={item.label}
           type="button"
           role="menuitem"
-          className={menuItemClass(!!item.danger, !!item.separated)}
+          className={`${menuItemClass(!!item.danger, !!item.separated)}${item.icon ? ' flex items-center gap-10 [&_.sc-icon]:m-0 [&_.sc-icon]:opacity-80' : ''}`}
           disabled={item.disabled}
           onClick={() => {
             onClose();
             item.onSelect();
           }}
         >
+          {item.icon && <Icon name={item.icon} />}
           {item.label}
         </button>,
       ])}
