@@ -58,6 +58,7 @@ const FIELDS = [
   '[&_input[type=color]]:bg-surface',
 ].join(' ');
 
+const COLLAPSED = String.raw`[&:has(>.sc-node\_\_head[data-collapsed])>*:not(.sc-node\_\_head):not(.react-flow\_\_handle):not(.sc-node\_\_keep)]:hidden [&:has(>.sc-node\_\_head[data-collapsed])]:pb-0`;
 const HOVER = String.raw`[.react-flow\_\_node:hover:not(.selected)_&]:[box-shadow:0_2px_4px_rgb(16_24_40/0.06),0_14px_28px_-10px_rgb(16_24_40/0.22)]`;
 const SELECTED = String.raw`[.react-flow\_\_node.selected_&]:border-accent [.react-flow\_\_node.selected_&]:[box-shadow:0_0_0_2px_var(--accent),0_0_0_7px_var(--ring),0_14px_28px_-10px_rgb(16_24_40/0.22)]`;
 
@@ -92,6 +93,8 @@ export function cardClass(kind: CardKind, state: { frozen?: boolean; hidden?: bo
     state.hidden && 'sc-node--hidden opacity-50',
     state.drop && 'sc-node--drop [outline:2px_dashed_var(--accent)] outline-offset-2',
     'relative grid grid-cols-[minmax(0,1fr)] gap-14 rounded-[20px] border bg-surface p-16 [&>*]:min-w-0',
+    // Collapsed (its header marked, NodeHead): only the header shows; the handles stay for the wires.
+    COLLAPSED,
     // A focused button in a card: the accent ring, close (zero weight below a button's own focus look).
     '[:where(&)_button:focus-visible]:[outline:2px_solid_var(--accent)] [:where(&)_button:focus-visible]:outline-offset-1',
     '[box-shadow:0_1px_2px_rgb(16_24_40/0.06),0_6px_16px_-6px_rgb(16_24_40/0.12)] [transition:box-shadow_var(--t-fast),border-color_var(--t-fast)]',
@@ -108,15 +111,19 @@ export function cardClass(kind: CardKind, state: { frozen?: boolean; hidden?: bo
 
 /** The header (V1): its kind's colour is `--head` (`tone`), a soft gradient of it across the card's top. */
 export const HEAD =
-  'sc-node__head sc-head relative mx-[-16px] mt-[-16px] mb-0 flex min-h-64 items-center gap-12 rounded-t-[20px] pt-14 pr-12 pb-14 pl-16 [border-bottom:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:linear-gradient(180deg,color-mix(in_srgb,var(--head)_12%,var(--surface)),color-mix(in_srgb,var(--head)_4%,var(--surface)))]';
+  'sc-node__head sc-head relative mx-[-16px] mt-[-16px] mb-0 flex min-h-64 flex-wrap items-center justify-end gap-x-12 gap-y-8 rounded-t-[20px] data-[collapsed]:rounded-b-[20px] data-[collapsed]:[border-bottom-color:transparent] pt-14 pr-12 pb-14 pl-16 [border-bottom:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:linear-gradient(180deg,color-mix(in_srgb,var(--head)_12%,var(--surface)),color-mix(in_srgb,var(--head)_4%,var(--surface)))]';
 export const HEAD_ICON =
   'sc-head__icon grid size-34 flex-none place-items-center rounded-[11px] [color:white] [background:linear-gradient(140deg,color-mix(in_srgb,var(--head)_78%,white),var(--head))] [box-shadow:0_4px_10px_-3px_color-mix(in_srgb,var(--head)_60%,transparent),inset_0_1px_0_rgb(255_255_255/0.3)]';
-export const HEAD_TEXT = 'sc-head__text grid min-w-0 flex-1 gap-2';
+/** The name keeps at least 7.5 rem: when the header's actions leave less, they wrap under it, at the right (owner, 2026-11-02: nothing cut off). */
+export const HEAD_TEXT = 'sc-head__text grid min-w-[7.5rem] flex-1 gap-2';
 export const HEAD_TITLE =
   'sc-node__title sc-head__title flex-1 overflow-hidden text-[14.5px] leading-[1.25] font-[680] tracking-[-0.015em] text-ellipsis whitespace-nowrap';
 export const HEAD_SUB = 'sc-head__sub overflow-hidden text-[12px] leading-[1.3] text-ellipsis whitespace-nowrap text-muted';
 export const HEAD_MORE =
   'sc-head__more grid size-32 flex-none cursor-pointer place-items-center rounded-[10px] bg-transparent p-0 text-muted [border:0] [transition:background_var(--t-fast),color_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] hover:text-fg aria-expanded:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] aria-expanded:text-fg pointer-coarse:size-44';
+/** D75: the collapse chevron, styled as the ⋯ button. */
+export const HEAD_FOLD =
+  'sc-head__fold grid size-32 flex-none cursor-pointer place-items-center rounded-[10px] bg-transparent p-0 text-muted [border:0] [transition:background_var(--t-fast),color_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] hover:text-fg aria-expanded:bg-[color-mix(in_srgb,var(--fg)_8%,transparent)] aria-expanded:text-fg pointer-coarse:size-44';
 /** A header action (Edit, Export): tinted in the card's colour. */
 export const HEAD_ACTION =
   'sc-head__action [&_.sc-icon]:m-0 inline-flex h-32 flex-none cursor-pointer items-center gap-6 rounded-[10px] bg-[color-mix(in_srgb,var(--head)_14%,var(--surface))] px-12 py-0 text-[12.5px] font-[650] text-[color-mix(in_srgb,var(--head)_65%,var(--fg))] [border:0] [transition:background_var(--t-fast)] hover:bg-[color-mix(in_srgb,var(--head)_24%,var(--surface))] pointer-coarse:h-40 pointer-coarse:px-14';

@@ -1,6 +1,6 @@
 # Handover — 2026-10-28 (UX review fixes done; clean-up review 2 under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D74**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D75**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
