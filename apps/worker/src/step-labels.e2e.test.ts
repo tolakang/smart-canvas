@@ -41,6 +41,16 @@ describe.skipIf(!adminUrl)('step labels on the board (C2 A)', () => {
 
   it('each row is named at its left, top first, the three ending in one column left of the board', async () => {
     await expect.poll(() => page.locator('.sc-step__label').allInnerTexts()).toEqual(['Assets', 'Main Comps', 'Sizes']);
+    // Fit all glides the board into place: measure once it has stopped moving.
+    let last = '';
+    await expect
+      .poll(async () => {
+        const now = JSON.stringify(await page.locator('.react-flow__node-presetNode').first().boundingBox());
+        const still = now === last;
+        last = now;
+        return still;
+      }, { interval: 150, timeout: 5_000 })
+      .toBe(true);
     const [assets, main, sizes] = await Promise.all(['.sc-step--assets span', '.sc-step--main span', '.sc-step--sizes span'].map(box));
     if (!assets || !main || !sizes) throw new Error('no labels');
     expect(assets.y).toBeLessThan(main.y);
