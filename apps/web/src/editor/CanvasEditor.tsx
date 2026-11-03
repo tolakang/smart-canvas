@@ -63,10 +63,12 @@ export interface CanvasEditorProps {
   onPoint?: (p: { x: number; y: number }) => void;
   /** D63: shown in place of the Design panel (the Comments panel). */
   aside?: ReactNode;
+  /** D82: along the bottom of the stage, over the canvas's backdrop (a layout's "Used by" sizes). */
+  stageFooter?: ReactNode;
   onClose: () => void;
 }
 
-export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, spotsOf, props: sidePanel, tools, overlay, onPoint, aside, onClose }: CanvasEditorProps) {
+export function CanvasEditor({ label, title, scene, onCommit, onDelete, histories, onHistory, layers, spotsOf, props: sidePanel, tools, overlay, onPoint, aside, stageFooter, onClose }: CanvasEditorProps) {
   const { doc, readOnly, teamId, layoutDeps } = useBoard();
   // The layers the canvas draws (a Headline card's unused language hidden, D44).
   const layerList = useMemo(() => layerSources(doc), [doc]);
@@ -589,6 +591,7 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
             )}
           </div>
           {hand && <div className={PAN} data-testid="pan-surface" {...panHandlers} />}
+          {stageFooter}
         </div>
         {/* V3 (owner: the layers were missing on a phone): the sheet's two tabs, shown on phones only. */}
         <div className={TABS} role="tablist" aria-label="Panels">
