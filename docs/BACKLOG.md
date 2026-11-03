@@ -192,8 +192,8 @@ Format: `ID — title — acceptance`. Read only `00-READ-FIRST.md`, `DECISIONS.
 - The second audit of code, tests, docs and UI: `docs/archive/CLEANUP-AUDIT-2.md`. Done: groups (1) and (2) (#217–#229) and group (3) (#230–#236): the owner took the recommended picks (2026-11-02, "go with your picks"): K1, K5, K6, K3 (T9, three PRs) and K4 (T8, option A: no Preflight); K2 stays as it is.
 
 ## P31 — UX review (c) (owner, 2026-11-02: "C1 and C3, go ahead")
-- **Done.** C1 guided start (D71: sizes and artwork in New project; a getting-started strip until the first export) and C3 (D72: the layout choice on each size row, no Export Group card). C2 (pipeline lanes) is left out for now. Tickets and PRs: `TASKS.md` P31 (#237–#239).
+- **Done.** C1 guided start (D71: sizes and artwork in New project; a getting-started strip until the first export) and C3 (D72: the layout choice on each size row, no Export Group card). C2 (pipeline lanes) was left out at first; on 2026-11-03 the owner picked **option A, labels only** ("Go C2 option A"): the board names its three rows, Assets, Main Comps and Sizes, at their left (`board/StepLabels.tsx`). No bands, no change to free placement (D57). Tickets and PRs: `TASKS.md` P31 (#237–#239).
 
 ## Next — dev plan (proposed 2026-10-23; the owner picks and orders)
 - Q9 — Editor colour variables (bug, found by the 2026-10-27 clean-up audit). **Done.** The editor screen redefined `--line` / `--muted` from `--fig-line` / `--fig-muted`, which were defined from them; the loop left both empty, so the editors lost their panel outlines, section dividers, field borders, dropdown chevrons and grey text. `.sc-fig` no longer redefines them (`editor/shell.ts`).
-- Nothing else is planned. The owner picks what comes next (C2, pipeline lanes, waits for the owner's choice: labels only, bands, or skip).
+- Nothing else is planned. The owner picks what comes next.
