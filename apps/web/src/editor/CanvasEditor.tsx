@@ -342,9 +342,10 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
   const selectedFrame = selectedItem?.frame ?? null;
   // A fitted picture's own proportions: resets of its stretch / scale handles end at them.
   const aspect = selectedFrame?.fitted && selectedSource ? pictureAspect(selectedSource, layoutDeps?.assets ?? {}) : undefined;
-  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select });
+  const logo = selectedSource?.behavesLike === 'logo';
+  const latest = useRef({ scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select, logo });
   useLayoutEffect(() => {
-    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select };
+    latest.current = { scale, onCommit, lockRatio, targets, frame: selectedFrame, aspect, layersAt, select, logo };
   });
 
   // One transform box per selected layer, picking up its history from this session.
@@ -369,7 +370,8 @@ export function CanvasEditor({ label, title, scene, onCommit, onDelete, historie
       },
       getScale: () => latest.current.scale,
       flip: false,
-      proportional: (shift) => latest.current.lockRatio || shift,
+      // A logo always keeps its proportions (owner, 2026-11-03: "logo never stretch").
+      proportional: (shift) => latest.current.lockRatio || shift || latest.current.logo,
       aspect: () => latest.current.aspect,
       snapMove: (moved) => snapMove(moved, latest.current.targets, SNAP_PX / latest.current.scale),
       snapResize: (resize, at) => snapResize(resize, at, latest.current.targets, SNAP_PX / latest.current.scale),

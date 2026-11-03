@@ -5,7 +5,7 @@
  * D63: the Comment tool turns a click or tap on the Preview into a pinned comment; the Comments panel takes the
  * Design panel's place while it is on.
  */
-import { allLayersEmpty, computeLayout, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
+import { allLayersEmpty, computeLayout, isEmptyLayer, isOutputConnected, previewFingerprint, layerSpots, outputComposition, outputScene, resetOutputOverrides, savedTransforms, setLayerTransform, setOverrideFrame, setOverrideHidden, type Frame, type TransformHistory } from '@smart-canvas/core';
 import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '../board/context';
 import { threadsOf } from '../board/review';
@@ -29,6 +29,16 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
   const output = doc.outputs.find((o) => o.id === outputId);
   const layout = useMemo(() => (output && layoutDeps ? computeLayout(doc, output.id, layoutDeps) : null), [doc, output, layoutDeps]);
   const scene = useMemo(() => (output && layout ? outputScene(layout, output) : null), [output, layout]);
+  /**
+   * Owner, 2026-11-03 ("Don't have to show the empty layer in the preview panel, it is wasted and cluttered"): the
+   * Preview editor draws and lists only layers with something in them, as its export does. Main Comps still shows the
+   * empty ones, where they are filled and placed.
+   */
+  const shown = useMemo(() => {
+    if (!scene) return null;
+    const empty = new Set(doc.sources.filter(isEmptyLayer).map((s) => s.id));
+    return empty.size ? { ...scene, items: scene.items.filter((i) => !empty.has(i.sourceId)) } : scene;
+  }, [doc.sources, scene]);
   // D63: what this Preview looks like now, to approve it (and to tell an approval it has changed since).
   const fingerprint = useMemo(() => (output && layout ? previewFingerprint(doc, output.id, layout) : ''), [doc, output, layout]);
   // A frame without rotation / shear means 0: write that only when it replaces a non-zero value (else the
@@ -65,7 +75,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
   const spotsOf = useCallback((id: string) => (master ? layerSpots(doc, master, id) : []), [doc, master]);
 
   if (!output) return null;
-  if (!scene) return <div className={LOADING}>Loading fonts…</div>;
+  if (!scene || !shown) return <div className={LOADING}>Loading fonts…</div>;
   const connected = isOutputConnected(doc, output.id);
   const openThreads = threadsOf(review, output.id).length;
   return (
@@ -92,7 +102,7 @@ export function OutputEditor({ outputId, comments = false, onClose }: { outputId
           )}
         </>
       }
-      scene={scene}
+      scene={shown}
       onCommit={onCommit}
       onHistory={onHistory}
       histories={savedTransforms(output.transforms, scene)}

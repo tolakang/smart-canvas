@@ -29,7 +29,8 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
   for (const p of languagePairs(doc)) for (const r of pairRows(p)) for (const id of rowInputs(r)) pairOf.set(id, p);
   // A Headline's language not in use, and a Logo node's sets not in use (D77), aren't listed.
   const unused = new Set([...unusedLanguageInputs(doc), ...unusedLogoInputs(doc)]);
-  const shown = layers.filter(({ s }) => !unused.has(s.id));
+  // Owner, 2026-11-03: a Preview editor lists only layers with something in them (Main Comps lists the empty ones too).
+  const shown = layers.filter(({ s }) => !unused.has(s.id) && !(outputId && isEmptyLayer(s)));
 
   const row = ({ s, port }: { s: InputSource; port: number }) => {
     const isWired = wired.has(s.id);

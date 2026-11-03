@@ -116,4 +116,23 @@ describe.skipIf(!adminUrl)('Logo node: square, vertical and horizontal slots (D7
     await expect.poll(() => logo.locator('.sc-logo-set').count()).toBe(1);
     await expect.poll(() => page.getByLabel(`Preview ${ig}`, { exact: true }).locator(`.sc-render [data-source-id="${brand.id}"]`).count(), { timeout: 15_000 }).toBe(1);
   }, 90_000);
+
+  it('owner, 2026-11-03: the Preview editor neither lists nor draws an empty layer; Main Comps keeps it', async () => {
+    const d = await doc();
+    // A wired picture layer with no file yet (the Language node's Khmer headline on a new board).
+    const empty = d.sources.find((x) => x.content.kind === 'image' && !x.content.assetId && x.visible && d.edges.some((e) => e.kind === 'layer' && e.from === x.id && e.to === 'main'));
+    if (!empty) throw new Error('no empty layer');
+    const ig = d.outputs.find((o) => o.size.height <= o.size.width * 1.5)?.label ?? '';
+    const editor = page.getByRole('dialog', { name: `Preview editor ${ig}` });
+    await page.getByRole('button', { name: `Edit Preview ${ig}` }).dispatchEvent('click');
+    await editor.waitFor();
+    const layers = editor.getByRole('complementary', { name: 'Layers' });
+    await layers.locator('[data-layer]').first().waitFor();
+    expect(await layers.locator(`[data-layer="${empty.id}"]`).count()).toBe(0);
+    expect(await editor.locator(`.sc-render [data-source-id="${empty.id}"]`).count()).toBe(0);
+    // The logo, which has a picture, is listed and drawn.
+    expect(await layers.locator(`[data-layer="${d.sources.find((x) => x.label === 'brand')?.id}"]`).count()).toBe(1);
+    await page.keyboard.press('Escape');
+    await editor.waitFor({ state: 'detached' });
+  }, 60_000);
 });

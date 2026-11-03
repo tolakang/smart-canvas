@@ -62,12 +62,35 @@ export function fittedFrame(frame: Frame, size: AssetSize): Frame {
  * Where a fitted picture goes inside its frame (frame-local px): placed so its visible part fills the frame,
  * stretched on each axis with it.
  */
-export function fillBoxes(frame: Pick<Frame, 'w' | 'h'>, size: AssetSize) {
+export function fillBoxes(frame: Pick<Frame, 'w' | 'h'>, size: AssetSize, keepShape = false) {
   const v = visibleRect(size.trim);
-  const kx = frame.w / (size.width * v.w);
-  const ky = frame.h / (size.height * v.h);
-  const img = { x: -v.x * size.width * kx + 0, y: -v.y * size.height * ky + 0, w: size.width * kx, h: size.height * ky }; // + 0: no -0
+  let kx = frame.w / (size.width * v.w);
+  let ky = frame.h / (size.height * v.h);
+  // Owner, 2026-11-03 ("logo never stretch"): a logo's visible part is fitted inside its frame at its own shape, centred.
+  let ox = 0;
+  let oy = 0;
+  if (keepShape && kx !== ky) {
+    const k = Math.min(kx, ky);
+    ox = (frame.w - size.width * v.w * k) / 2;
+    oy = (frame.h - size.height * v.h * k) / 2;
+    kx = k;
+    ky = k;
+  }
+  const img = { x: -v.x * size.width * kx + ox + 0, y: -v.y * size.height * ky + oy + 0, w: size.width * kx, h: size.height * ky }; // + 0: no -0
   return { img };
+}
+
+/**
+ * Owner, 2026-11-03 ("logo never stretch"): a fitted frame in a picture's own shape `aspect` (w / h), with the same
+ * centre and area — a logo's frame, whatever it was stretched to, or after its vertical or horizontal picture (D74)
+ * took the place of its square one. Itself when it already has that shape.
+ */
+export function keepAspect<F extends Pick<Frame, 'x' | 'y' | 'w' | 'h'>>(f: F, aspect: number): F {
+  if (!(aspect > 0) || !(f.w > 0) || !(f.h > 0) || Math.abs(f.w / f.h / aspect - 1) < 0.005) return f;
+  const area = f.w * f.h;
+  const w = Math.sqrt(area * aspect);
+  const h = Math.sqrt(area / aspect);
+  return { ...f, x: f.x + f.w / 2 - w / 2, y: f.y + f.h / 2 - h / 2, w, h };
 }
 
 /** The picture asset behind a layer, or null if the layer can't be fitted. */

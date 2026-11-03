@@ -3,11 +3,14 @@
  * is approved again; the Review panel lists every Preview's state; the export dialog warns about Previews not
  * approved and can keep only the approved ones; a viewer sees the states with no Approve.
  */
+import { readFileSync } from 'node:fs';
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import { addOutput, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setupAndCreateProject, startStack, type Stack } from './test/stack';
+
+const tinyPng = readFileSync(new URL('../../api/src/assets/fixtures/tiny.png', import.meta.url));
 
 const ok = (r: SourceResult): ProjectDoc => {
   if (!r.ok) throw new Error(r.error);
@@ -27,7 +30,15 @@ describe.skipIf(!adminUrl)('approval of Previews (D63)', () => {
     teamId = ids.teamId;
     const url = `${stack.env.webUrl}api/teams/${ids.teamId}/projects/${ids.projectId}`;
     const p = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
-    let doc = ok(addOutput(p.doc, { id: 'banner', label: 'Banner', size: { width: 1500, height: 500, unit: 'px' } }));
+    // D79: a Preview editor lists only layers with something in them, so the logo the test nudges gets a picture.
+    const up = await page.request.post(`${stack.env.webUrl}api/teams/${ids.teamId}/assets`, { multipart: { file: { name: 'logo.png', mimeType: 'image/png', buffer: tinyPng } } });
+    expect(up.ok()).toBe(true);
+    const asset = (await up.json()) as { id: string; kind: 'image' | 'vector' };
+    const withLogo: ProjectDoc = {
+      ...p.doc,
+      sources: p.doc.sources.map((s) => (s.behavesLike === 'logo' && s.label === 'Logo' ? { ...s, kind: asset.kind, content: { kind: asset.kind, assetId: asset.id, focal: { x: 0.5, y: 0.5 } } } : s)),
+    };
+    let doc = ok(addOutput(withLogo, { id: 'banner', label: 'Banner', size: { width: 1500, height: 500, unit: 'px' } }));
     doc = ok(addOutput(doc, { id: 'square', label: 'Square', size: { width: 1080, height: 1080, unit: 'px' } }));
     expect((await page.request.put(url, { data: { rev: p.rev, doc } })).status()).toBe(200);
     board = page.url();

@@ -7,6 +7,7 @@ import { canvasMetrics, type Frame, type ProjectDoc } from '../model';
 import { sizeInDesignPx, toDesignFrame } from '../render';
 import { backgroundFrame } from './background';
 import type { RuleContext } from './context';
+import { keepAspect, pictureAspect } from '../fit';
 import { guideFor, withPictureForShape } from '../guides';
 import { gridFrame, gridScale } from './grid';
 import { logoFrame } from './logo';
@@ -106,9 +107,13 @@ export function computeLayout(doc: ProjectDoc, outputId: string, deps: LayoutDep
   return {
     metrics,
     items: items.map((it) => {
-      const c = byId.get(it.sourceId)?.content;
+      const s = byId.get(it.sourceId);
+      const c = s?.content;
       const id = c && (c.kind === 'image' || c.kind === 'vector') ? c.assetId : null;
-      return id && id !== main.get(it.sourceId) ? { ...it, assetId: id } : it;
+      // Owner, 2026-11-03: a logo never stretches — its fitted frame takes the shape of the picture this output draws.
+      const aspect = s?.behavesLike === 'logo' && it.frame.fitted ? pictureAspect(s, deps.assets) : undefined;
+      const shaped = aspect ? { ...it, frame: keepAspect(it.frame, aspect) } : it;
+      return id && id !== main.get(it.sourceId) ? { ...shaped, assetId: id } : shaped;
     }),
   };
 }
