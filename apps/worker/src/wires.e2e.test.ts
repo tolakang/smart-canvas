@@ -72,9 +72,10 @@ describe.skipIf(!adminUrl)('wires attach and detach (T8.5, D49)', () => {
     // Selecting the wire (a tap on touch) brings its badge.
     await page.locator(`.react-flow__edge[data-id="${await textWire()}"]`).dispatchEvent('click');
     await page.locator(`.react-flow__edgelabel-renderer [data-edge="${await textWire()}"]`).click();
+    // The badge waits a moment for a second click (a double-click there adds a reroute point) before it cuts.
+    await page.locator(`.react-flow__edge[data-id="${await textWire()}"]`).waitFor({ state: 'detached' });
     await saved();
-    for (const id of card?.items ?? []) expect((await wired()).has(id)).toBe(false);
-    expect(await page.locator(`.react-flow__edge[data-id="${await textWire()}"]`).count()).toBe(0);
+    await expect.poll(async () => { const w = await wired(); return (card?.items ?? []).some((id) => w.has(id)); }).toBe(false);
   }, 60_000);
 
   it('a wire dragged from the node onto the group connects every item again', async () => {

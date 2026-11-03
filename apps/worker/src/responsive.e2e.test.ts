@@ -452,7 +452,8 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     if (!at) throw new Error('no wire');
     await phone.touchscreen.tap(at.x, at.y);
     await phone.getByRole('button', { name: 'Disconnect wire' }).tap();
-    await expect.poll(async () => (await (await phone.request.get(url)).json()).doc.edges.some((e: { id: string }) => e.id === 'in:background')).toBe(false);
+    // The badge waits a moment for a second tap before it cuts (a double tap there adds a reroute point).
+    await expect.poll(async () => (await (await phone.request.get(url)).json()).doc.edges.some((e: { id: string }) => e.id === 'in:background'), { timeout: 15_000 }).toBe(false);
     expect(await phone.getByRole('button', { name: 'Disconnect wire' }).count()).toBe(0);
   }, 60_000);
 

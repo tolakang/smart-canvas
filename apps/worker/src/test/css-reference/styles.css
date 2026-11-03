@@ -1,4 +1,4 @@
-/* The app's CSS at b25f831bb642cc146d6ad9ef4660ea990617bcc7 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at e2f430711cdb274eae6ab721ca0c085209c5fde4 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -641,6 +641,11 @@
   .size-52 {
     width: 52px;
     height: 52px;
+  }
+
+  .size-\[62\%\] {
+    width: 62%;
+    height: 62%;
   }
 
   .size-full {
@@ -1496,10 +1501,6 @@
     border-radius: 20px;
   }
 
-  .rounded-\[22\%\] {
-    border-radius: 22%;
-  }
-
   .rounded-\[22px\] {
     border-radius: 22px;
   }
@@ -1518,6 +1519,10 @@
 
   .rounded-\[inherit\] {
     border-radius: inherit;
+  }
+
+  .rounded-full {
+    border-radius: 3.40282e38px;
   }
 
   .rounded-lg {
@@ -2960,6 +2965,14 @@
     box-shadow: 0 0 0 1px var(--line);
   }
 
+  .\[box-shadow\:0_0_0_2px_var\(--surface\)\,var\(--shadow-1\)\] {
+    box-shadow: 0 0 0 2px var(--surface),var(--shadow-1);
+  }
+
+  .\[box-shadow\:0_0_0_2px_var\(--surface\)\,var\(--shadow-2\)\] {
+    box-shadow: 0 0 0 2px var(--surface),var(--shadow-2);
+  }
+
   .\[box-shadow\:0_0_0_3px_var\(--ring\)\] {
     box-shadow: 0 0 0 3px var(--ring);
   }
@@ -3681,8 +3694,8 @@
     transition: opacity var(--t-fast);
   }
 
-  .\[transition\:transform_var\(--t-fast\)\,opacity_var\(--t-fast\)\] {
-    transition: transform var(--t-fast),opacity var(--t-fast);
+  .\[transition\:transform_var\(--t-fast\)\] {
+    transition: transform var(--t-fast);
   }
 
   .\[transition\:transform_var\(--t-med\)\,box-shadow_var\(--t-med\)\,border-color_var\(--t-med\)\] {
@@ -4019,10 +4032,6 @@
 
   .focus-within\:\[background\:var\(--surface\)\]:focus-within {
     background: var(--surface);
-  }
-
-  .hover\:\[transform\:scale\(1\.12\)\]:hover {
-    transform: scale(1.12);
   }
 
   .hover\:\[transform\:translateY\(-2px\)\]:hover {
@@ -5656,6 +5665,10 @@
 
   .\[\&\:hover_\.sc-rows\\_\\_name\]\:text-accent:hover .sc-rows__name {
     color: var(--accent);
+  }
+
+  .\[\&\:hover_\.sc-wire-cut__icon\]\:\[transform\:scale\(1\.12\)\]:hover .sc-wire-cut icon {
+    transform: scale(1.12);
   }
 
   .\[\&\:hover\:not\(\:disabled\)\]\:border-accent-hover:hover:not(:disabled) {

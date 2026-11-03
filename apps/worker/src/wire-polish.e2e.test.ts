@@ -84,4 +84,31 @@ describe.skipIf(!adminUrl)('wire polish (T13.8)', () => {
     await point.dblclick();
     await expect.poll(async () => (await doc()).edges.find((e) => e.id === 'in:background')?.points).toBeUndefined();
   }, 60_000);
+
+  it('owner, 2026-11-03: the ✂ badge sits on the wire — the wire runs through its centre, behind it', async () => {
+    const wire = edge('in:background');
+    const at = await onWire(wire);
+    await page.mouse.move(at.x, at.y);
+    const badge = page.locator(`.sc-wire-cut[data-edge="in:background"]`);
+    await badge.waitFor();
+    const c = await centre(badge);
+    // The wire's nearest point to the badge's centre, in screen px.
+    const gap = await wire.locator('path.react-flow__edge-path').evaluate((el, p) => {
+      const path = el as SVGPathElement;
+      const m = path.getScreenCTM();
+      if (!m) return Infinity;
+      let best = Infinity;
+      const n = 400;
+      for (let i = 0; i <= n; i++) {
+        const q = path.getPointAtLength((path.getTotalLength() * i) / n);
+        const x = q.x * m.a + q.y * m.c + m.e;
+        const y = q.x * m.b + q.y * m.d + m.f;
+        best = Math.min(best, Math.hypot(x - p.x, y - p.y));
+      }
+      return best;
+    }, c);
+    expect(gap).toBeLessThan(3);
+    // The badge is drawn over the wire (the wire is behind it).
+    expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('.sc-wire-cut') !== null, c)).toBe(true);
+  }, 60_000);
 });
