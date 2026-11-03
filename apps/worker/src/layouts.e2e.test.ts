@@ -3,6 +3,8 @@
  * D81 — Main Comps shows its layouts as small live pictures in their own shapes, with how many sizes follow each.
  * D82 — the layout editor switches layouts by tabs, shows the sizes that follow the open one, and marks a layer moved
  * there (Follow Square again undoes it).
+ * D85 ("I need to have edit all button for this too, so it can switch to edit between layout easily") — Edit all on
+ * the card opens the layouts in one editor; its strip shows the three as live pictures, one click to switch (phones too).
  */
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { Page } from 'playwright';
@@ -87,5 +89,36 @@ describe.skipIf(!adminUrl)('layouts in Main Comps (D81)', () => {
     await editor.getByRole('button', { name: 'Follow Square again' }).click();
     await expect.poll(() => row.locator('.sc-layer__moved').count()).toBe(0);
     await editor.getByRole('button', { name: 'Close', exact: true }).click();
+  }, 60_000);
+
+  it('D85: Edit all opens Square; the strip switches layouts with one click, keeping the selection', async () => {
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await card().getByRole('button', { name: 'Edit all layouts' }).click();
+    const editor = page.getByRole('dialog').first();
+    const strip = editor.getByRole('group', { name: 'Switch layout' });
+    await expect.poll(() => strip.locator('.sc-render').count()).toBe(3);
+    const current = () => strip.locator('[aria-current="true"]').innerText();
+    await expect.poll(current).toContain('Square');
+    await editor.getByRole('complementary', { name: 'Layers' }).getByRole('button', { name: /^Background/ }).click();
+    await strip.getByRole('button', { name: 'Switch to the Horizontal layout' }).click();
+    await expect.poll(current).toContain('Horizontal');
+    await expect.poll(() => editor.getByRole('tablist', { name: 'Layouts' }).getByRole('tab', { selected: true }).innerText()).toContain('Horizontal');
+    expect(await editor.getByText('Selected: Background').count()).toBe(1);
+    await strip.getByRole('button', { name: 'Switch to the Vertical layout' }).click();
+    await expect.poll(current).toContain('Vertical');
+    await editor.getByRole('button', { name: 'Close', exact: true }).click();
+    await editor.waitFor({ state: 'detached' });
+  }, 60_000);
+
+  it('D85: on a phone the strip is there to switch layouts', async () => {
+    const phone = await stack.env.browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    await phone.context().addCookies(await page.context().cookies());
+    await phone.goto(page.url());
+    await phone.locator('.react-flow__node-mainNode').waitFor();
+    await phone.locator('.react-flow__node-mainNode').getByRole('button', { name: 'Edit all layouts' }).dispatchEvent('click');
+    const strip = phone.getByRole('dialog').first().getByRole('group', { name: 'Switch layout' });
+    await strip.getByRole('button', { name: 'Switch to the Horizontal layout' }).click();
+    await expect.poll(() => strip.locator('[aria-current="true"]').innerText()).toContain('Horizontal');
+    await phone.close();
   }, 60_000);
 });
