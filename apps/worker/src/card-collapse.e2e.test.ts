@@ -57,6 +57,19 @@ describe.skipIf(!adminUrl)('collapse and expand a card', () => {
     await expect.poll(() => preset().getByRole('list', { name: 'GDN sizes' }).isVisible()).toBe(true);
   }, 60_000);
 
+  it('owner, 2026-11-03: the eye heading the sizes hides every Preview of the node at once, and shows them again', async () => {
+    const previews = () => page.locator('.react-flow__node-outputNode').count();
+    expect(await previews()).toBe(7);
+    const all = preset().getByRole('button', { name: 'Hide all GDN Previews' });
+    expect(await all.getAttribute('aria-pressed')).toBe('false');
+    await all.click();
+    await expect.poll(previews).toBe(0);
+    // Each row's eye says so too; the sizes still export.
+    expect(await preset().getByRole('button', { name: /^Show preview / }).count()).toBe(7);
+    await preset().getByRole('button', { name: 'Show all GDN Previews' }).click();
+    await expect.poll(previews).toBe(7);
+  }, 60_000);
+
   it('an asset node folds too, and the choice is kept after a reload', async () => {
     const logo = boardNode(page, 'Logo');
     await logo.focus();

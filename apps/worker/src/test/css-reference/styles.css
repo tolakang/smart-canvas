@@ -1,4 +1,4 @@
-/* The app's CSS at 83bef3de2c5707267feba4b26cac1cbd577861a1 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 71869fef13fe8255d26bcc86ffdc98ccbbadda38 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -347,6 +347,10 @@
 
   .my-8 {
     margin-block: 8px;
+  }
+
+  .my-\[-6px\] {
+    margin-block: -6px;
   }
 
   .-mt-4 {
@@ -971,8 +975,8 @@
     min-width: 280px;
   }
 
-  .min-w-\[7\.5rem\] {
-    min-width: 7.5rem;
+  .min-w-\[6rem\] {
+    min-width: 6rem;
   }
 
   .min-w-\[160px\] {

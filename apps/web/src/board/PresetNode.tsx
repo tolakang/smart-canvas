@@ -6,7 +6,7 @@
  * it is offered as a Preset node from then on. UX C3 (D72): each row also says which of Main Comps' layouts its
  * Preview uses — the one closest to its shape, or another picked there (S · V · H).
  */
-import { addSizeToSet, canvasMetrics, deleteOutput, deletePresetSet, familyOfShape, GUIDE_FAMILIES, moveSetRow, renameSet, setFamily, setOutputLayout, setPreviewHidden, type GuideFamily, type OutputNode, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
+import { addSizeToSet, canvasMetrics, setAllPreviewsHidden, deleteOutput, deletePresetSet, familyOfShape, GUIDE_FAMILIES, moveSetRow, renameSet, setFamily, setOutputLayout, setPreviewHidden, type GuideFamily, type OutputNode, type ProjectDoc, type SourceResult } from '@smart-canvas/core';
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect, useState } from 'react';
 import { cardClass, HEAD_ACTION } from './card';
@@ -58,6 +58,8 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   useEffect(() => updateInternals(id), [id, rowKey, updateInternals]);
   const used = new Set(rows.map((r) => r.output.presetId));
   const hidden = new Set(set.hidden ?? []);
+  /** Owner, 2026-11-03: every size's Preview hidden (the header row's eye shows them all again). */
+  const allHidden = rows.length > 0 && rows.every((r) => hidden.has(r.output.id));
   const [dropAt, setDropAt] = useState<number | null>(null);
   const [custom, setCustom] = useState<{ w: string; h: string } | null>(null);
   const addCustom = () => {
@@ -96,6 +98,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           readOnly
             ? []
             : [
+                ...(rows.length > 0 ? [{ label: allHidden ? 'Show all Previews' : 'Hide all Previews', onSelect: () => run((d) => setAllPreviewsHidden(d, set.id, !allHidden)) }] : []),
                 // UX B6 (F20): saving the sizes is an occasional job; it lives in ⋯, not as a third button on the card.
                 ...(rows.length > 0 ? [{ label: 'Save as team preset', onSelect: () => void saving.save() }] : []),
                 { label: `Delete preset ${set.label}`, danger: true, separated: rows.length > 0, onSelect: () => window.confirm(`Delete “${set.label}” and its ${rows.length} sizes?`) && run((d) => deletePresetSet(d, set.id)) },
@@ -130,6 +133,25 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           {rows.map(({ output, connected }) => (
             <Handle key={output.id} type="source" position={Position.Right} id={setRowHandle(output.id)} isConnectable={!readOnly && !connected} className="sc-handle--composition pointer-events-auto" />
           ))}
+        </div>
+      )}
+      {rows.length > 0 && (
+        // Owner, 2026-11-03: hide or show every size's Preview at once — the eye heading the rows' own eyes.
+        <div className={`sc-preset__head mx-[-16px] my-[-6px] flex min-h-32 items-center gap-6 pr-16 pl-16 text-[11.5px] font-[650] text-muted ${NO_CANVAS}`}>
+          <span className="flex-1">Previews</span>
+          <button
+            type="button"
+            className={`${iconBtn()} sc-preset__eye-all aria-pressed:text-muted`}
+            aria-label={`${allHidden ? 'Show' : 'Hide'} all ${set.label} Previews`}
+            aria-pressed={allHidden}
+            disabled={readOnly}
+            title={allHidden ? 'Show every Preview on the board' : 'Hide every Preview from the board (they still export)'}
+            onClick={() => run((d) => setAllPreviewsHidden(d, set.id, !allHidden))}
+          >
+            <Icon name={allHidden ? 'eye-off' : 'eye'} />
+          </button>
+          {/* Keeps the eye over the rows' eyes: the trash column's width. */}
+          {!readOnly && <span className={`${iconBtn()} invisible`} aria-hidden="true" />}
         </div>
       )}
       <ol className="sc-ports sc-preset__rows mx-[-16px] my-0 list-none p-0" aria-label={`${set.label} sizes`}>

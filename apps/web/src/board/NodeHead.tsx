@@ -75,35 +75,38 @@ export function NodeHead(props: {
         )}
         {props.sub && <div className={HEAD_SUB}>{props.sub}</div>}
       </div>
-      {props.extra}
-      {nodeId && (
-        <button
-          type="button"
-          className={`${HEAD_FOLD} ${NO_CANVAS}`}
-          aria-label={`${folded ? 'Expand' : 'Collapse'} ${props.title}`}
-          aria-expanded={!folded}
-          title={folded ? 'Expand' : 'Collapse'}
-          onClick={() => setCollapsed(nodeId, !folded)}
-        >
-          <Icon name={folded ? 'down' : 'up'} />
-        </button>
-      )}
-      {props.menu && props.menu.length > 0 && (
-        <button
-          type="button"
-          className={`${HEAD_MORE} ${NO_CANVAS}`}
-          aria-label={props.menuLabel ?? `${props.title} actions`}
-          aria-haspopup="menu"
-          aria-expanded={Boolean(open)}
-          title="More"
-          onClick={(e) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            setOpen(open ? null : { x: r.right - 200, y: r.bottom + 6, title: props.title, items: props.menu ?? [] });
-          }}
-        >
-          <Icon name="more" />
-        </button>
-      )}
+      {/* The actions move together: when they don't fit beside the name, they wrap under it as one row, at the right. */}
+      <div className="sc-head__actions flex flex-none items-center gap-8">
+        {props.extra}
+        {nodeId && (
+          <button
+            type="button"
+            className={`${HEAD_FOLD} ${NO_CANVAS}`}
+            aria-label={`${folded ? 'Expand' : 'Collapse'} ${props.title}`}
+            aria-expanded={!folded}
+            title={folded ? 'Expand' : 'Collapse'}
+            onClick={() => setCollapsed(nodeId, !folded)}
+          >
+            <Icon name={folded ? 'down' : 'up'} />
+          </button>
+        )}
+        {props.menu && props.menu.length > 0 && (
+          <button
+            type="button"
+            className={`${HEAD_MORE} ${NO_CANVAS}`}
+            aria-label={props.menuLabel ?? `${props.title} actions`}
+            aria-haspopup="menu"
+            aria-expanded={Boolean(open)}
+            title="More"
+            onClick={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              setOpen(open ? null : { x: r.right - 200, y: r.bottom + 6, title: props.title, items: props.menu ?? [] });
+            }}
+          >
+            <Icon name="more" />
+          </button>
+        )}
+      </div>
       {/* Outside the node's transform, so the menu keeps its size at any zoom. */}
       {open && createPortal(<ContextMenu menu={open} onClose={() => setOpen(null)} />, document.body)}
     </div>

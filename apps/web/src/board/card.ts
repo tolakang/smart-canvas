@@ -114,8 +114,8 @@ export const HEAD =
   'sc-node__head sc-head relative mx-[-16px] mt-[-16px] mb-0 flex min-h-64 flex-wrap items-center justify-end gap-x-12 gap-y-8 rounded-t-[20px] data-[collapsed]:rounded-b-[20px] data-[collapsed]:[border-bottom-color:transparent] pt-14 pr-12 pb-14 pl-16 [border-bottom:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:linear-gradient(180deg,color-mix(in_srgb,var(--head)_12%,var(--surface)),color-mix(in_srgb,var(--head)_4%,var(--surface)))]';
 export const HEAD_ICON =
   'sc-head__icon grid size-34 flex-none place-items-center rounded-[11px] [color:white] [background:linear-gradient(140deg,color-mix(in_srgb,var(--head)_78%,white),var(--head))] [box-shadow:0_4px_10px_-3px_color-mix(in_srgb,var(--head)_60%,transparent),inset_0_1px_0_rgb(255_255_255/0.3)]';
-/** The name keeps at least 7.5 rem: when the header's actions leave less, they wrap under it, at the right (owner, 2026-11-02: nothing cut off). */
-export const HEAD_TEXT = 'sc-head__text grid min-w-[7.5rem] flex-1 gap-2';
+/** The name keeps at least 6 rem: when the header's actions leave less, they wrap under it, at the right (owner, 2026-11-02: nothing cut off). */
+export const HEAD_TEXT = 'sc-head__text grid min-w-[6rem] flex-1 gap-2';
 export const HEAD_TITLE =
   'sc-node__title sc-head__title flex-1 overflow-hidden text-[14.5px] leading-[1.25] font-[680] tracking-[-0.015em] text-ellipsis whitespace-nowrap';
 export const HEAD_SUB = 'sc-head__sub overflow-hidden text-[12px] leading-[1.3] text-ellipsis whitespace-nowrap text-muted';

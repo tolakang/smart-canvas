@@ -3,7 +3,7 @@ import { MAIN, outputComposition } from './graph';
 import { output, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
 import { deleteOutput, disconnectOutput, isOutputConnected } from './outputs';
-import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setFamily, setPreviewHidden } from './preset-sets';
+import { addPresetSet, addSizeToSet, connectSet, deletePresetSet, moveSetRow, presetFamilies, presetSets, setComposition, setFamily, setAllPreviewsHidden, setPreviewHidden } from './preset-sets';
 import type { SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {
@@ -71,6 +71,10 @@ describe('Preview visibility (D51)', () => {
     const hidden = ok(setPreviewHidden(doc, 'gdn', 'g2', true));
     expect(presetSets(hidden)[0]?.hidden).toEqual(['g2']);
     expect(ok(setPreviewHidden(hidden, 'gdn', 'g2', false)).presetSets?.[0]).not.toHaveProperty('hidden');
+    // All at once (owner, 2026-11-03): every size hidden, then all shown again (nothing stored).
+    const all = ok(setAllPreviewsHidden(hidden, 'gdn', true));
+    expect(all.presetSets?.[0]?.hidden).toEqual(all.presetSets?.[0]?.outputs);
+    expect(ok(setAllPreviewsHidden(all, 'gdn', false)).presetSets?.[0]).not.toHaveProperty('hidden');
     // Not one of its sizes: unchanged.
     expect(presetSets(ok(setPreviewHidden(doc, 'gdn', 'nope', true)))[0]).not.toHaveProperty('hidden');
   });

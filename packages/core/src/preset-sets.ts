@@ -88,6 +88,15 @@ export function setPreviewHidden(doc: ProjectDoc, setId: string, outputId: strin
   });
 }
 
+/** Owner, 2026-11-03: hides (or shows) every size's Preview of a set at once, in one step; they still export. */
+export function setAllPreviewsHidden(doc: ProjectDoc, setId: string, hidden: boolean): SourceResult {
+  return editSet(doc, setId, (s) => {
+    const { hidden: _old, ...base } = s;
+    void _old;
+    return hidden && s.outputs.length ? { ...base, hidden: [...s.outputs] } : base;
+  });
+}
+
 /** Moves a row within its set (row order only). */
 export function moveSetRow(doc: ProjectDoc, setId: string, outputId: string, to: number): SourceResult {
   return editSet(doc, setId, (s) => {
