@@ -2,8 +2,7 @@
  * What the OutputRenderer draws: a canvas size and items back→front (ADAPTATION-RULES: highest port first).
  * The layout engine produces these for outputs; a composition's come straight from its placements.
  */
-import { compositionById, MAIN, mainComposition, wiredLayers } from './graph';
-import { layerSources } from './layers';
+import { wiredLayers } from './graph';
 import { toDesignPx, type Composition, type Frame, type InputSource, type NFrame, type ProjectDoc, type Size, type TextStyle } from './model';
 
 /** One drawn layer. Same shape as the engine's LayoutItem minus bookkeeping. Frame in design px; rotation in degrees. */
@@ -37,22 +36,6 @@ export function toDesignFrame(n: NFrame, canvas: { width: number; height: number
     h: n.h * canvas.height,
     ...(n.rotation ? { rotation: n.rotation } : {}), ...(n.shear ? { shear: n.shear } : {}), ...(n.fitted ? { fitted: true as const } : {}),
   };
-}
-
-/**
- * A composition (default: the master preview): its wired rows, visible, back→front. Each uses its placement;
- * a background with no placement yet covers the whole canvas; anything else unplaced is skipped.
- */
-export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): RenderScene {
-  const comp = compositionById(doc, compositionId) ?? mainComposition(doc);
-  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
-  // D42 / D50: a layout of the master (a guide) draws the master's layers, in its order and wiring, at its own
-  // positions — a layer it hasn't placed yet at the master's.
-  const master = comp.guide ? compositionById(doc, comp.guide.of) : undefined;
-  if (master) {
-    return compositionScene(doc, { ...master, size: comp.size, placements: { ...master.placements, ...comp.placements } }, (id) => byId.get(id));
-  }
-  return compositionScene(doc, comp, (id) => byId.get(id));
 }
 
 /** A composition's scene with its rows looked up by `layer`. */

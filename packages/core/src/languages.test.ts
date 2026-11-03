@@ -4,7 +4,7 @@ import { addLanguageInput, addLanguagePair, addPairRow, deletePair, deletePairRo
 import { computeLayout } from './layout';
 import { mockMeasure, output, project } from './layout/test-doc';
 import type { LanguagePair, ProjectDoc } from './model';
-import { masterScene } from './render';
+import { masterScene } from './guides';
 import { deleteSource, type SourceResult } from './sources';
 
 const ok = (r: SourceResult): ProjectDoc => {

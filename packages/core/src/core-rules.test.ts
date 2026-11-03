@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { guideRows, layerComp, setOutputLayout } from './core-rules';
 import { guideFor } from './guides';
 import { canvasMetrics } from './model';
-import { masterScene } from './render';
+import { masterScene } from './guides';
 import { MAIN } from './graph';
 import { addGuides } from './guides';
 import { output, project } from './layout/test-doc';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fillBoxes, keepAspect } from './fit';
 import { MAIN, mainComposition, withComposition } from './graph';
-import { addGuides, familyOfShape, guideFor, guideSize, guidesOf, layerSpots } from './guides';
+import { addGuides, familyOfShape, guideFor, guideSize, guidesOf, layerSpots, masterScene } from './guides';
 import { computeLayout } from './layout';
 import { expectFrame, mockMeasure, output, place, project } from './layout/test-doc';
 import type { ProjectDoc } from './model';
@@ -162,5 +162,29 @@ describe('owner, 2026-11-03: a logo never stretches', () => {
     expect(keepAspect({ x: 0, y: 0, w: 400, h: 100 }, 1)).toEqual({ x: 100, y: -50, w: 200, h: 200 });
     const { img } = fillBoxes({ w: 400, h: 100 }, { width: 100, height: 100, trim: { x: 0, y: 0, w: 1, h: 1 } }, true);
     expect(img).toEqual({ x: 150, y: 0, w: 100, h: 100 });
+  });
+});
+
+describe('owner, 2026-11-03 (D80): a layout shows the master\'s layers as its Previews do', () => {
+  const ids = { vertical: 'gv', horizontal: 'gh' };
+  it('a layer placed on the master after the layouts were made keeps its proportions in each layout', () => {
+    let doc = ok(addGuides(project(), MAIN, ids));
+    // Placed afterwards: the layouts have no placement of their own for it.
+    doc = place(doc, 'subject', { x: 600, y: 2400, w: 1200, h: 300, fitted: true });
+    doc = { ...doc, compositions: doc.compositions.map((c) => (c.guide ? { ...c, placements: Object.fromEntries(Object.entries(c.placements).filter(([id]) => id !== 'subject')) } : c)) };
+    for (const g of ['gv', 'gh']) {
+      expect(guidesOf(doc, MAIN).find((c) => c.id === g)?.placements.subject).toBeUndefined();
+      const it = masterScene(doc, g).items.find((i) => i.sourceId === 'subject');
+      expect(it && it.frame.w / it.frame.h).toBeCloseTo(4, 3);
+    }
+  });
+
+  it('each layout draws the logo set’s picture for its family; the master its square one', () => {
+    let doc = ok(addGuides(place(project(), 'logo', { x: 100, y: 100, w: 400, h: 400 }), MAIN, ids));
+    doc = { ...doc, sources: doc.sources.map((s) => (s.id === 'logo' ? { ...s, kind: 'image', content: { kind: 'image', assetId: 'sq', focal: { x: 0.5, y: 0.5 }, variants: { vertical: 'tall', horizontal: 'wide' } } } : s)) };
+    const logoOf = (comp: string) => masterScene(doc, comp).items.find((i) => i.sourceId === 'logo');
+    expect(logoOf(MAIN)?.assetId).toBeUndefined();
+    expect(logoOf('gv')?.assetId).toBe('tall');
+    expect(logoOf('gh')?.assetId).toBe('wide');
   });
 });

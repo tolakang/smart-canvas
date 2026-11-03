@@ -5,10 +5,11 @@
  * (D38) adapts that to its exact size. Guides only hold positions: the master decides which layers exist and
  * their order; a layer a guide hasn't placed yet uses the master's position.
  */
-import { compositionById, edgeId, newComposition } from './graph';
+import { compositionById, edgeId, MAIN, mainComposition, newComposition } from './graph';
 import { gridFrame } from './layout/grid';
 import { canvasMetrics, LIMITS, type Composition, type Frame, type GuideFamily, type NFrame, type ProjectDoc, type Size, type SourceContent } from './model';
-import { sizeInDesignPx, toDesignFrame } from './render';
+import { layerSources } from './layers';
+import { compositionScene, sizeInDesignPx, toDesignFrame, type RenderScene } from './render';
 import type { SourceResult } from './sources';
 
 export const GUIDE_FAMILIES: readonly GuideFamily[] = ['square', 'vertical', 'horizontal'];
@@ -75,7 +76,7 @@ export function guideSize(master: Size, family: GuideFamily): Size {
 }
 
 /** A master placement as the stretched grid puts it on another artboard (normalized to that artboard). */
-function mapPlacement(n: NFrame, from: { width: number; height: number }, to: Size): NFrame {
+export function mapPlacement(n: NFrame, from: { width: number; height: number }, to: Size): NFrame {
   const toPx = sizeInDesignPx(to);
   const master = { w: from.width, h: from.height };
   const metrics = canvasMetrics({ size: { ...to } });
@@ -139,4 +140,37 @@ export function withPictureForShape<T extends { content: SourceContent }>(source
   if (c.kind !== 'image' && c.kind !== 'vector') return source;
   const id = pictureForShape(c, trim, chosen);
   return id === c.assetId ? source : { ...source, content: { ...c, assetId: id } };
+}
+
+/**
+ * A composition (default: the master preview): its wired rows, visible, back→front. Each uses its placement;
+ * a background with no placement yet covers the whole canvas; anything else unplaced is skipped.
+ * D42 / D50: a layout of the master (a guide) draws the master's layers, in its order and wiring, at its own
+ * positions. Owner, 2026-11-03 (D80): a layer the layout hasn't placed yet sits where the stretched grid puts the
+ * master's (`mapPlacement`, its proportions kept, as the layout engine places it in that layout's Previews), not at the master's place stretched to
+ * the layout's shape; and each layer draws its picture for the layout's family (a logo set's vertical or horizontal
+ * picture, D74, as its Previews do).
+ */
+export function masterScene(doc: ProjectDoc, compositionId: string = MAIN): RenderScene {
+  const comp = compositionById(doc, compositionId) ?? mainComposition(doc);
+  const master = comp.guide ? compositionById(doc, comp.guide.of) : undefined;
+  if (master && comp.guide) {
+    const family = comp.guide.family;
+    const from = sizeInDesignPx(master.size);
+    const mapped = Object.fromEntries(Object.entries(master.placements).map(([id, n]) => [id, comp.placements[id] ?? mapPlacement(n, from, comp.size)]));
+    const trim = { w: sizeInDesignPx(comp.size).width, h: sizeInDesignPx(comp.size).height };
+    const byId = new Map(layerSources(doc).map((s) => [s.id, withPictureForShape(s, trim, family)]));
+    const main = new Map(layerSources(doc).map((s) => [s.id, s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null]));
+    const scene = compositionScene(doc, { ...master, size: comp.size, placements: { ...mapped, ...comp.placements } }, (id) => byId.get(id));
+    return {
+      ...scene,
+      items: scene.items.map((it) => {
+        const c = byId.get(it.sourceId)?.content;
+        const id = c && (c.kind === 'image' || c.kind === 'vector') ? c.assetId : null;
+        return id && id !== main.get(it.sourceId) ? { ...it, assetId: id } : it;
+      }),
+    };
+  }
+  const byId = new Map(layerSources(doc).map((s) => [s.id, s]));
+  return compositionScene(doc, comp, (id) => byId.get(id));
 }
