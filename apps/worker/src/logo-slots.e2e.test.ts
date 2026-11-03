@@ -4,11 +4,11 @@
  * D77 (owner, 2026-11-03): each row is a logo set; one set is in use, switched over the rows; a set is deleted by its row.
  */
 import { readFileSync } from 'node:fs';
-import type { ProjectDoc } from '@smart-canvas/core';
+import { addOutput, type ProjectDoc } from '@smart-canvas/core';
 import { adminUrl } from '@smart-canvas/api/src/test/db';
 import type { Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { boardNode, startStack, type Stack } from './test/stack';
+import { boardNode, openLayout, startStack, type Stack } from './test/stack';
 
 const tinyPng = readFileSync(new URL('../../api/src/assets/fixtures/tiny.png', import.meta.url));
 const logoSvg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100" fill="#0a7"/></svg>');
@@ -135,4 +135,33 @@ describe.skipIf(!adminUrl)('Logo node: square, vertical and horizontal slots (D7
     await page.keyboard.press('Escape');
     await editor.waitFor({ state: 'detached' });
   }, 60_000);
+
+  it('owner, 2026-11-03 (D80): a horizontal size (1500 × 400) draws the set\u2019s horizontal logo, and so does the Horizontal layout', async () => {
+    const logo = boardNode(page, 'Logo');
+    const brand = (await doc()).sources.find((s) => s.label === 'brand');
+    if (!brand) throw new Error('no logo');
+    await logo.getByLabel('Horizontal logo for brand', { exact: true }).setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer: tinyPng });
+    const wide = async () => {
+      const s = (await doc()).sources.find((x) => x.id === brand.id);
+      return s?.content.kind === 'vector' || s?.content.kind === 'image' ? (s.content.variants?.horizontal ?? null) : null;
+    };
+    await expect.poll(wide, { timeout: 15_000 }).not.toBeNull();
+    const horizontal = (await wide()) ?? '-';
+    // A 1500 × 400 size, as in the owner's screenshot.
+    const cur = (await (await page.request.get(url)).json()) as { rev: number; doc: ProjectDoc };
+    const added = addOutput(cur.doc, { id: 'gift', label: 'Gift', size: { width: 1500, height: 400, unit: 'px' } });
+    if (!added.ok) throw new Error(added.error);
+    expect((await page.request.put(url, { data: { rev: cur.rev, doc: added.doc } })).status()).toBe(200);
+    await page.reload();
+    await page.getByLabel('Preview Gift', { exact: true }).waitFor();
+    await expect.poll(() => logoSrc('Gift', brand.id).getAttribute(), { timeout: 15_000 }).toContain(horizontal);
+    // Main Comps' Horizontal layout shows the same picture its Previews draw.
+    await page.getByRole('button', { name: /^Fit to screen/ }).click();
+    await openLayout(page, 'Horizontal');
+    const editor = page.getByRole('dialog').first();
+    const drawn = editor.locator(`.sc-render [data-source-id="${brand.id}"]`).first();
+    await drawn.waitFor();
+    await expect.poll(() => drawn.evaluate((el) => (el instanceof HTMLImageElement ? el : el.querySelector('img'))?.getAttribute('src') ?? ''), { timeout: 15_000 }).toContain(horizontal);
+    await page.keyboard.press('Escape');
+  }, 90_000);
 });

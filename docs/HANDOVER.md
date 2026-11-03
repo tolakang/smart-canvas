@@ -1,6 +1,6 @@
 # Handover — 2026-10-28 (UX review fixes done; clean-up review 2 under way)
 
-Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D79**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
+Read `CLAUDE.md`, then `docs/00-READ-FIRST.md`, `docs/DECISIONS.md` (latest **D80**), `docs/BACKLOG.md` (P15–P31 and **Next**) and `TASKS.md`. For any UI work, `docs/FRONTEND.md`: **the web app is built with Tailwind** on our tokens (owner, 2026-10-26: "build with tailwind"), and the board's React Flow rules. The conversion of the older CSS is done through T7 (`TAILWIND-PLAN.md`); T8 (optional) is left.
 
 ## Workflow the owner expects
 - **Branch:** `claude/gifted-archimedes-e2gjq4`, restarted from `origin/main` for each piece of work. A force push is fine when the branch only holds merged history.
@@ -62,7 +62,7 @@ Logo · Language (KH/EN/CN) · Text · Image · Background (V/H)     ← asset n
 **Main Comps** (Layer Comp before D66).
 - The layer order is shown as five groups, one per asset node: Logo, Headline, Text, Image, Background (D73); drag them or use ↑ ↓ to reorder (D48: `ProjectDoc.layerOrder`, `moveLayerGroup`).
 - **Square, Vertical, Horizontal** each open that layout's editor. A missing layout is added the first time it's opened (D42 guides).
-- All three editors share the master's layers: order, wiring, show/hide, **lock** and delete apply everywhere. Position and size are per layout (D50: `masterScene` of a guide, `InputSource.locked`).
+- All three editors share the master's layers: order, wiring, show/hide, **lock** and delete apply everywhere. Position and size are per layout (D50: `masterScene` of a guide, in `guides.ts` since D80, `InputSource.locked`).
 
 **Which layout a size uses** (D72; the Export Group card before, Core preset in V2, Core Rule before that).
 - Each Preset node row shows S · V · H: the closest layout by shape, or one picked there, which sets `OutputNode.layout` (D50: `setOutputLayout`, `guideFor(…, chosen)`); picking the closest one again clears it (`PresetNode.tsx`, `LayoutChoice`).
@@ -117,7 +117,7 @@ New projects come from `createBoardProject` (API `POST /projects`).
 | Board structure / conversion | `packages/core/src/board-structure.ts`; document migrations v1 → v2 → v3 in `graph.ts` (`migrateProjectDoc`, D56) |
 | Cards | `stacks.ts` (`addStack`, `addPicturesToStack`, `addTextToStack`, `stackKind`), `languages.ts` (`addLanguagePair`, `addPairRow`, `deletePairRow`, `pairRows`, `pairInputs`) |
 | Layer order | `layer-order.ts` (`orderLayers`, `layerOrderOf`, `moveLayerGroup`) |
-| Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`, `layerSpots`), `render.ts` (`masterScene`); layers a row can show: `layers.ts` (`layerSources`) |
+| Layouts / guides | `guides.ts` (`guideFor`, `layoutOf`, `addGuides`, `pictureForShape`, `layerSpots`), `guides.ts` also `masterScene` and `mapPlacement` (D80); layers a row can show: `layers.ts` (`layerSources`) |
 | Layout per size, layer order | `core-rules.ts` (`layerComp`, `guideRows`, `setOutputLayout`; all derived) |
 | Preset sets | `preset-sets.ts` (`addPresetSet`, `connectSet`, `setPreviewHidden`, `presetFamilies` by `SizePreset.family`, D54); built-in families in `packages/presets`; a Preset node's **Save as team preset** in `PresetNode.tsx`; families renamed / deleted in `shell/PresetsDialog.tsx` (M4) |
 | Layout engine | `layout/` (D38 stretched grid; `computeLayout` uses `guideFor(…, output.layout)`) |

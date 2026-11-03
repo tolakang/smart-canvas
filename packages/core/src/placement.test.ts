@@ -4,7 +4,7 @@ import type { ProjectDoc } from './model';
 import { defaultPlacement, ensurePlacement, setPlacement } from './placement';
 import { connectSource } from './ports';
 import { createProjectDoc } from './project';
-import { masterScene } from './render';
+import { masterScene } from './guides';
 
 const ok = (r: { ok: true; doc: ProjectDoc } | { ok: false }) => {
   if (!r.ok) throw new Error('op failed');

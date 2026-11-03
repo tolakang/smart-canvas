@@ -4,7 +4,8 @@ import { fillToCss } from './css';
 import type { ProjectDoc } from './model';
 import { connectSource } from './ports';
 import { createProjectDoc } from './project';
-import { masterScene, sizeInDesignPx, toDesignFrame } from './render';
+import { masterScene } from './guides';
+import { sizeInDesignPx, toDesignFrame } from './render';
 import { setSourceVisible } from './sources';
 import { applyTransform, isKhmerText, lineHeightOf, withKhmerBreaks } from './text';
 
