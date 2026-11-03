@@ -1,4 +1,4 @@
-/* The app's CSS at fb3404376eb23a487190a2a7a3d947d84c8163bd (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 90320c6da46c0adf6dc2beac9c807a1266f15fdb (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -611,6 +611,11 @@
     height: 34px;
   }
 
+  .size-36 {
+    width: 36px;
+    height: 36px;
+  }
+
   .size-40 {
     width: 40px;
     height: 40px;
@@ -689,6 +694,10 @@
 
   .h-40 {
     height: 40px;
+  }
+
+  .h-40\! {
+    height: 40px !important;
   }
 
   .h-44 {
@@ -787,6 +796,10 @@
     min-height: 32px;
   }
 
+  .min-h-36 {
+    min-height: 36px;
+  }
+
   .min-h-40 {
     min-height: 40px;
   }
@@ -797,6 +810,10 @@
 
   .min-h-44 {
     min-height: 44px;
+  }
+
+  .min-h-48 {
+    min-height: 48px;
   }
 
   .min-h-52 {
@@ -959,16 +976,16 @@
     min-width: 18px;
   }
 
-  .min-w-20 {
-    min-width: 20px;
-  }
-
   .min-w-22 {
     min-width: 22px;
   }
 
   .min-w-24 {
     min-width: 24px;
+  }
+
+  .min-w-28 {
+    min-width: 28px;
   }
 
   .min-w-44 {
@@ -979,8 +996,8 @@
     min-width: 48px;
   }
 
-  .min-w-84 {
-    min-width: 84px;
+  .min-w-88 {
+    min-width: 88px;
   }
 
   .min-w-200 {
@@ -1661,6 +1678,10 @@
     border-color: #0000;
   }
 
+  .border-transparent\! {
+    border-color: #0000 !important;
+  }
+
   .border-t-accent {
     border-top-color: var(--accent);
   }
@@ -1893,6 +1914,10 @@
     background-color: var(--accent-soft);
   }
 
+  .bg-accent-soft\! {
+    background-color: var(--accent-soft) !important;
+  }
+
   .bg-canvas {
     background-color: var(--canvas);
   }
@@ -2099,6 +2124,10 @@
 
   .px-14 {
     padding-inline: 14px;
+  }
+
+  .px-14\! {
+    padding-inline: 14px !important;
   }
 
   .px-16 {
@@ -2385,10 +2414,6 @@
     font-size: 9px;
   }
 
-  .text-\[10\.5px\] {
-    font-size: 10.5px;
-  }
-
   .text-\[10px\] {
     font-size: 10px;
   }
@@ -2411,6 +2436,10 @@
 
   .text-\[13px\] {
     font-size: 13px;
+  }
+
+  .text-\[13px\]\! {
+    font-size: 13px !important;
   }
 
   .text-\[14\.5px\] {
@@ -2559,6 +2588,11 @@
   .font-\[600\] {
     --tw-font-weight: 600;
     font-weight: 600;
+  }
+
+  .font-\[600\]\! {
+    --tw-font-weight: 600 !important;
+    font-weight: 600 !important;
   }
 
   .font-\[650\] {
@@ -2732,6 +2766,10 @@
 
   .text-accent {
     color: var(--accent);
+  }
+
+  .text-accent\! {
+    color: var(--accent) !important;
   }
 
   .text-bg {
@@ -3521,6 +3559,10 @@
     list-style: none;
   }
 
+  .\[text-align-last\:center\] {
+    text-align-last: center;
+  }
+
   .\[transition\:background_var\(--t-fast\)\,border-color_var\(--t-fast\)\,box-shadow_var\(--t-fast\)\,transform_var\(--t-fast\)\] {
     transition: background var(--t-fast),border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast);
   }
@@ -3941,6 +3983,16 @@
 
   .hover\:border-line-strong:hover {
     border-color: var(--line-strong);
+  }
+
+  .hover\:bg-\[color-mix\(in_srgb\,var\(--accent\)_16\%\,var\(--surface\)\)\]\!:hover {
+    background-color: var(--accent) !important;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .hover\:bg-\[color-mix\(in_srgb\,var\(--accent\)_16\%\,var\(--surface\)\)\]\!:hover {
+      background-color: color-mix(in srgb,var(--accent) 16%,var(--surface)) !important;
+    }
   }
 
   .hover\:bg-\[color-mix\(in_srgb\,var\(--accent-soft\)_75\%\,transparent\)\]:hover {
@@ -4731,8 +4783,16 @@
       height: 32px;
     }
 
+    .pointer-coarse\:h-36 {
+      height: 36px;
+    }
+
     .pointer-coarse\:h-40 {
       height: 40px;
+    }
+
+    .pointer-coarse\:h-44\! {
+      height: 44px !important;
     }
 
     .pointer-coarse\:min-h-40 {
@@ -4751,12 +4811,12 @@
       max-width: none;
     }
 
-    .pointer-coarse\:min-w-28 {
-      min-width: 28px;
-    }
-
     .pointer-coarse\:min-w-32 {
       min-width: 32px;
+    }
+
+    .pointer-coarse\:min-w-36 {
+      min-width: 36px;
     }
 
     .pointer-coarse\:min-w-44 {
@@ -4827,6 +4887,10 @@
 
   .\[\&_\.sc-icon\]\:m-0 .sc-icon {
     margin: 0;
+  }
+
+  .\[\&_\.sc-icon\]\:opacity-80 .sc-icon {
+    opacity: .8;
   }
 
   .\[\&_\.sc-muted\]\:text-\[11px\] .sc-muted {

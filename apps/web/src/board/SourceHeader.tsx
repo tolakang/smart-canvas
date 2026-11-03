@@ -23,7 +23,7 @@ export function SourceHeader({ source }: { source: InputSource }) {
       onRename={readOnly ? undefined : (name) => run((doc) => renameSource(doc, source.id, name))}
       renameLabel="Input name"
       menuLabel={`${source.label} actions`}
-      menu={readOnly ? [] : [{ label: `Delete ${source.label}`, danger: true, onSelect: () => confirmDelete(source.label) && run((doc) => deleteSource(doc, source.id)) }]}
+      menu={readOnly ? [] : [{ label: `Delete ${source.label}`, icon: 'trash' as const, danger: true, onSelect: () => confirmDelete(source.label) && run((doc) => deleteSource(doc, source.id)) }]}
       extra={
         <>
           {!source.visible && (

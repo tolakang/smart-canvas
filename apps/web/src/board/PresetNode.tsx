@@ -20,25 +20,26 @@ import { presetSettings, rowName } from './OutputNode';
 import { NO_CANVAS, TOUCH_NO_PAN } from './pinch';
 import { useSaveAsFamily } from './preset-save';
 import { btn, iconBtn } from '../ui/button';
-import { GRIP } from '../ui/controls';
 import { MUTED_TEXT } from '../ui/tw';
 
 
 /**
  * A size row (D46): the size first, its name, then the eye and the trash, shown on hover or keyboard focus (always
- * on touch, and the eye while it hides a Preview). Only the grip drags it; its handle starts a wire.
+ * on touch, and the eye while it hides a Preview). The size drags it (owner, 2026-11-03: no grip dots); its handle
+ * starts a wire. Its buttons are 32 px (owner: "the buttons are too small").
  */
 const ROW =
-  'group/row relative flex min-h-44 cursor-grab items-center gap-6 py-6 pr-16 pl-16 text-[12px] [border-top:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:none] [transition:background_var(--t-fast)] hover:bg-surface-2';
+  'group/row relative flex min-h-48 items-center gap-8 py-6 pr-16 pl-16 text-[12px] [border-top:1px_solid_color-mix(in_srgb,var(--line)_70%,transparent)] [background:none] [transition:background_var(--t-fast)] hover:bg-surface-2';
 const ROW_ACTION =
   'opacity-0 [transition:opacity_var(--t-fast)] group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100';
 
 const ROW_DRAG = 'application/x-sc-preset-row';
+const ROW_BUTTON = 'size-32';
 
 /** UX C3: a row's layout choice — three small buttons; the one in use raised, in the accent when picked by hand. */
-const SEG = 'sc-preset__layout inline-flex flex-none gap-1 rounded-[7px] bg-surface-2 p-1';
+const SEG = 'sc-preset__layout inline-flex flex-none gap-2 rounded-[9px] bg-surface-2 p-2';
 const SEG_BUTTON =
-  'h-20 min-w-20 cursor-pointer rounded-[5px] px-4 text-[10.5px] font-[700] text-muted [background:none] [border:0] hover:text-fg disabled:cursor-default aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:[box-shadow:var(--shadow-1)] data-[chosen]:aria-pressed:text-accent pointer-coarse:h-32 pointer-coarse:min-w-28';
+  'h-28 min-w-28 cursor-pointer rounded-[7px] px-6 text-[12px] font-[700] text-muted [background:none] [border:0] hover:text-fg disabled:cursor-default aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:[box-shadow:var(--shadow-1)] data-[chosen]:aria-pressed:text-accent pointer-coarse:h-36 pointer-coarse:min-w-36';
 const SHORT: Record<GuideFamily, string> = { square: 'S', vertical: 'V', horizontal: 'H' };
 
 /** The layout an output takes by its shape alone (D50). */
@@ -98,10 +99,10 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           readOnly
             ? []
             : [
-                ...(rows.length > 0 ? [{ label: allHidden ? 'Show all Previews' : 'Hide all Previews', onSelect: () => run((d) => setAllPreviewsHidden(d, set.id, !allHidden)) }] : []),
+                ...(rows.length > 0 ? [{ label: allHidden ? 'Show all Previews' : 'Hide all Previews', icon: allHidden ? ('eye' as const) : ('eye-off' as const), onSelect: () => run((d) => setAllPreviewsHidden(d, set.id, !allHidden)) }] : []),
                 // UX B6 (F20): saving the sizes is an occasional job; it lives in ⋯, not as a third button on the card.
-                ...(rows.length > 0 ? [{ label: 'Save as team preset', onSelect: () => void saving.save() }] : []),
-                { label: `Delete preset ${set.label}`, danger: true, separated: rows.length > 0, onSelect: () => window.confirm(`Delete “${set.label}” and its ${rows.length} sizes?`) && run((d) => deletePresetSet(d, set.id)) },
+                ...(rows.length > 0 ? [{ label: 'Save as team preset', icon: 'library' as const, onSelect: () => void saving.save() }] : []),
+                { label: `Delete preset ${set.label}`, icon: 'trash', danger: true, separated: rows.length > 0, onSelect: () => window.confirm(`Delete “${set.label}” and its ${rows.length} sizes?`) && run((d) => deletePresetSet(d, set.id)) },
               ]
         }
         extra={
@@ -137,11 +138,11 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
       )}
       {rows.length > 0 && (
         // Owner, 2026-11-03: hide or show every size's Preview at once — the eye heading the rows' own eyes.
-        <div className={`sc-preset__head mx-[-16px] my-[-6px] flex min-h-32 items-center gap-6 pr-16 pl-16 text-[11.5px] font-[650] text-muted ${NO_CANVAS}`}>
+        <div className={`sc-preset__head mx-[-16px] my-[-6px] flex min-h-36 items-center gap-8 pr-16 pl-16 text-[11.5px] font-[650] text-muted ${NO_CANVAS}`}>
           <span className="flex-1">Previews</span>
           <button
             type="button"
-            className={`${iconBtn()} sc-preset__eye-all aria-pressed:text-muted`}
+            className={`${iconBtn({ size: ROW_BUTTON, round: 'rounded-[8px]' })} sc-preset__eye-all aria-pressed:text-muted`}
             aria-label={`${allHidden ? 'Show' : 'Hide'} all ${set.label} Previews`}
             aria-pressed={allHidden}
             disabled={readOnly}
@@ -151,7 +152,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             <Icon name={allHidden ? 'eye-off' : 'eye'} />
           </button>
           {/* Keeps the eye over the rows' eyes: the trash column's width. */}
-          {!readOnly && <span className={`${iconBtn()} invisible`} aria-hidden="true" />}
+          {!readOnly && <span className={`${iconBtn({ size: ROW_BUTTON })} invisible`} aria-hidden="true" />}
         </div>
       )}
       <ol className="sc-ports sc-preset__rows mx-[-16px] my-0 list-none p-0" aria-label={`${set.label} sizes`}>
@@ -174,13 +175,13 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
               run((d) => moveSetRow(d, set.id, id, i));
             }}
           >
-            {/* Only the grip drags the row (the row's handle starts a wire). */}
-            {!readOnly && (
-              <span className={`${GRIP} ${TOUCH_NO_PAN}`} aria-hidden="true" draggable onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)} title="Drag to re-order">
-                <Icon name="grip" />
-              </span>
-            )}
-            <span className="sc-preset__size min-w-84 flex-none text-[12.5px] font-[600] [font-variant-numeric:tabular-nums]">
+            {/* The size drags the row (the row's handle starts a wire). */}
+            <span
+              className={`sc-preset__size min-w-88 flex-none text-[13px] font-[600] [font-variant-numeric:tabular-nums] ${readOnly ? '' : `cursor-grab active:cursor-grabbing ${TOUCH_NO_PAN}`}`}
+              draggable={!readOnly}
+              onDragStart={(e) => e.dataTransfer.setData(ROW_DRAG, output.id)}
+              title={readOnly ? undefined : 'Drag to re-order'}
+            >
               {output.size.width} × {output.size.height}
             </span>
             <span className="sc-port__label min-w-0 flex-1 overflow-hidden text-[12.5px] text-ellipsis whitespace-nowrap text-muted" title={output.label}>
@@ -194,7 +195,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             {/* D51: the eye shows / hides this size's Preview on the board (it still exports); the trash removes the size. */}
             <button
               type="button"
-              className={`${iconBtn({ transition: '[transition:opacity_var(--t-fast)]' })} sc-preset__eye ml-auto ${ROW_ACTION} aria-pressed:text-muted aria-pressed:opacity-100 ${NO_CANVAS}`}
+              className={`${iconBtn({ size: ROW_BUTTON, round: 'rounded-[8px]', transition: '[transition:opacity_var(--t-fast)]' })} sc-preset__eye ml-auto ${ROW_ACTION} aria-pressed:text-muted aria-pressed:opacity-100 ${NO_CANVAS}`}
               aria-label={`${hidden.has(output.id) ? 'Show' : 'Hide'} preview ${output.label}`}
               aria-pressed={hidden.has(output.id)}
               disabled={readOnly}
@@ -206,7 +207,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             {!readOnly && (
               <button
                 type="button"
-                className={`${iconBtn({ transition: '[transition:opacity_var(--t-fast)]' })} sc-preset__remove ${ROW_ACTION} ${NO_CANVAS}`}
+                className={`${iconBtn({ size: ROW_BUTTON, round: 'rounded-[8px]', transition: '[transition:opacity_var(--t-fast)]' })} sc-preset__remove ${ROW_ACTION} ${NO_CANVAS}`}
                 aria-label={`Remove ${output.label} from ${set.label}`}
                 title="Remove this size (deletes its preview)"
                 onClick={() => window.confirm(`Remove “${output.label}”? Its preview is deleted.`) && run((d) => deleteOutput(d, output.id))}
@@ -247,7 +248,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
       {!readOnly && !custom && (
         // UX B6 (F20): one way to add a size — the team's presets not on the node yet, then a custom size.
         <select
-          className={`sc-preset__add mt-8 w-full ${NO_CANVAS}`}
+          className={`sc-preset__add mt-10 h-40! w-full cursor-pointer rounded-[10px] border-transparent! bg-accent-soft! px-14! text-[13px]! font-[600]! text-accent! [text-align-last:center] hover:bg-[color-mix(in_srgb,var(--accent)_16%,var(--surface))]! pointer-coarse:h-44! ${NO_CANVAS}`}
           aria-label={`Add a size to ${set.label}`}
           value=""
           onChange={(e) => {
@@ -256,7 +257,7 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
             if (p) run((d) => addSizeToSet(d, set.id, { id: newId(), label: p.name, ...presetSettings(p), size: { ...p.size } }));
           }}
         >
-          <option value="">+ Add a size…</option>
+          <option value="">+ Add size</option>
           {addable.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}

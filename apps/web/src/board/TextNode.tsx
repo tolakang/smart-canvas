@@ -37,7 +37,7 @@ export function TextNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         onRename={readOnly ? undefined : (name) => run((d) => renameStack(d, stack.id, name))}
         renameLabel="Text node name"
         menuLabel={`${stack.label} actions`}
-        menu={readOnly ? [] : [{ label: `Delete ${stack.label}`, danger: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]}
+        menu={readOnly ? [] : [{ label: `Delete ${stack.label}`, icon: 'trash' as const, danger: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]}
       />
       <ol className={`sc-text-slots m-0 grid list-none gap-12 p-0 ${NO_CANVAS}`} aria-label={`${stack.label} slots`}>
         {items.map((s) => {

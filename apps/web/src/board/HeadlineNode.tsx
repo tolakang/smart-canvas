@@ -110,7 +110,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
         title={pair.label}
         sub={`${rows.length} ${rows.length === 1 ? 'headline' : 'headlines'} · ${LANGUAGE_LABEL[pair.use]}`}
         menuLabel={`${pair.label} actions`}
-        menu={readOnly ? [] : [{ label: `Delete ${pair.label}`, danger: true, onSelect: () => confirmDelete(pair.label) && run((d) => deletePair(d, pair.id)) }]}
+        menu={readOnly ? [] : [{ label: `Delete ${pair.label}`, icon: 'trash' as const, danger: true, onSelect: () => confirmDelete(pair.label) && run((d) => deletePair(d, pair.id)) }]}
       />
       {rows.map((_, i) => (
         <div
