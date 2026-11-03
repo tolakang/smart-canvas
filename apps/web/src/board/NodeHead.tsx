@@ -2,10 +2,14 @@
  * V1 (2026-10-25, owner: "Header text of each panel should drop by line, should not squeeze in one line"): a board
  * node's header — a kind icon, the name on its own line with a quiet subtitle under it, and the node's actions in
  * one ⋯ menu (grid / list, delete…) instead of a row of small buttons. Double-click the name to rename it.
+ * Owner, 2026-11-02: a chevron before the menu collapses the card to its header and expands it again; its wires stay
+ * on (each handle keeps its place, or, on a Preset node, gathers at the header's edge).
  */
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useNodeId, useUpdateNodeInternals } from '@xyflow/react';
+import { useBoard } from './context';
 import { createPortal } from 'react-dom';
-import { HEAD, HEAD_ICON, HEAD_MORE, HEAD_SUB, HEAD_TEXT, HEAD_TITLE } from './card';
+import { HEAD, HEAD_FOLD, HEAD_ICON, HEAD_MORE, HEAD_SUB, HEAD_TEXT, HEAD_TITLE } from './card';
 import { ContextMenu, type MenuItem, type MenuState } from './ContextMenu';
 import { Icon, type IconName } from './LayerRow';
 import { NO_CANVAS } from './pinch';
@@ -31,12 +35,20 @@ export function NodeHead(props: {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(props.title);
   const [open, setOpen] = useState<MenuState | null>(null);
+  const nodeId = useNodeId();
+  const { collapsed, setCollapsed } = useBoard();
+  const folded = nodeId ? collapsed.has(nodeId) : false;
+  const updateInternals = useUpdateNodeInternals();
+  // The card's handles move when it folds: React Flow re-measures them so the wires follow.
+  useEffect(() => {
+    if (nodeId) updateInternals(nodeId);
+  }, [folded, nodeId, updateInternals]);
   const commit = () => {
     setEditing(false);
     if (draft.trim() && draft.trim() !== (props.renameValue ?? props.title)) props.onRename?.(draft.trim());
   };
   return (
-    <div className={`${HEAD} ${props.tone ?? '[--head:var(--head-asset)]'}`}>
+    <div className={`${HEAD} ${props.tone ?? '[--head:var(--head-asset)]'}`} data-collapsed={folded || undefined}>
       <span className={HEAD_ICON} aria-hidden="true">
         <Icon name={props.icon} size={15} />
       </span>
@@ -64,6 +76,18 @@ export function NodeHead(props: {
         {props.sub && <div className={HEAD_SUB}>{props.sub}</div>}
       </div>
       {props.extra}
+      {nodeId && (
+        <button
+          type="button"
+          className={`${HEAD_FOLD} ${NO_CANVAS}`}
+          aria-label={`${folded ? 'Expand' : 'Collapse'} ${props.title}`}
+          aria-expanded={!folded}
+          title={folded ? 'Expand' : 'Collapse'}
+          onClick={() => setCollapsed(nodeId, !folded)}
+        >
+          <Icon name={folded ? 'down' : 'up'} />
+        </button>
+      )}
       {props.menu && props.menu.length > 0 && (
         <button
           type="button"

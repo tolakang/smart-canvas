@@ -291,10 +291,13 @@ describe.skipIf(!adminUrl)('responsive workspace (T13.6)', () => {
     );
     const row = boxes.filter((b) => b.id.startsWith('stk:') || b.id.startsWith('hl:')).sort((a, b) => a.x - b.x).slice(0, 2);
     if (row.length < 2) throw new Error('no asset row');
-    // The nearest spot of empty canvas below-right of them (not on a wire or a panel).
+    // The nearest spot of empty canvas below-right of them, with empty canvas 16 px around it too (not on a wire or a
+    // panel, and not so close to one that the browser moves the touch onto it).
     const corner = { x: Math.max(...row.map((b) => b.x + b.width)), y: Math.max(...row.map((b) => b.y + b.height)) };
     const from = await phone.evaluate(({ x, y }) => {
-      for (let dy = 40; dy < 240; dy += 8) for (const dx of [4, 16, 32, 48]) if (document.elementFromPoint(x + dx, y + dy)?.classList.contains('react-flow__pane')) return { x: x + dx, y: y + dy };
+      const pane = (px: number, py: number) => document.elementFromPoint(px, py)?.classList.contains('react-flow__pane');
+      const clear = (px: number, py: number) => [[0, 0], [16, 0], [-16, 0], [0, 16], [0, -16]].every(([ox = 0, oy = 0]) => pane(px + ox, py + oy));
+      for (let dy = 40; dy < 400; dy += 8) for (const dx of [4, 16, 32, 48, 64]) if (clear(x + dx, y + dy)) return { x: x + dx, y: y + dy };
       return null;
     }, corner);
     if (!from) throw new Error('no empty canvas below the asset row');

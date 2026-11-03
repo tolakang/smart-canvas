@@ -1,4 +1,4 @@
-/* The app's CSS at 94d4173e5a6dfb8fc658c80b7c8dc0bc0897bd05 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at 83bef3de2c5707267feba4b26cac1cbd577861a1 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -147,6 +147,10 @@
 
   .top-30 {
     top: 30px;
+  }
+
+  .top-32 {
+    top: 32px;
   }
 
   .top-\[50\%\] {
@@ -611,6 +615,10 @@
     height: var(--field-h);
   }
 
+  .h-0 {
+    height: 0;
+  }
+
   .h-1 {
     height: 1px;
   }
@@ -791,6 +799,10 @@
     min-height: 100dvh;
   }
 
+  .w-0 {
+    width: 0;
+  }
+
   .w-1 {
     width: 1px;
   }
@@ -957,6 +969,10 @@
 
   .min-w-280 {
     min-width: 280px;
+  }
+
+  .min-w-\[7\.5rem\] {
+    min-width: 7.5rem;
   }
 
   .min-w-\[160px\] {
@@ -1297,6 +1313,10 @@
 
   .gap-y-\(--sp-2\) {
     row-gap: var(--sp-2);
+  }
+
+  .gap-y-8 {
+    row-gap: 8px;
   }
 
   .self-center {
@@ -4188,6 +4208,15 @@
     color: var(--accent);
   }
 
+  .data-\[collapsed\]\:rounded-b-\[20px\][data-collapsed] {
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+  }
+
+  .data-\[collapsed\]\:\[border-bottom-color\:transparent\][data-collapsed] {
+    border-bottom-color: #0000;
+  }
+
   .data-\[over\]\:border-accent[data-over] {
     border-color: var(--accent);
   }
@@ -5427,6 +5456,14 @@
 
   .\[\&\:active\:not\(\:disabled\)\]\:\[transform\:translateY\(0\.5px\)\]:active:not(:disabled) {
     transform: translateY(.5px);
+  }
+
+  .\[\&\:has\(\>\.sc-node\\_\\_head\[data-collapsed\]\)\]\:pb-0:has( > .sc-node__head[data-collapsed]) {
+    padding-bottom: 0;
+  }
+
+  .\[\&\:has\(\>\.sc-node\\_\\_head\[data-collapsed\]\)\>\*\:not\(\.sc-node\\_\\_head\)\:not\(\.react-flow\\_\\_handle\)\:not\(\.sc-node\\_\\_keep\)\]\:hidden:has( > .sc-node__head[data-collapsed]) > :not(.sc-node__head):not(.react-flow__handle):not(.sc-node__keep) {
+    display: none;
   }
 
   .\[\&\:hover_\.sc-rows\\_\\_name\]\:text-accent:hover .sc-rows__name {

@@ -234,6 +234,33 @@ function BoardCanvas(props: {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   /** D40: the picture of the selected Assets card shown in the inspector. */
   const [stackFocus, setStackFocus] = useState<string | null>(null);
+  // Owner, 2026-11-02: cards collapsed to their header, in this browser per project (a view setting, like the zoom:
+  // not in the doc, so not in undo or history, and each person keeps their own).
+  const collapsedKey = `sc-collapsed:${projectId}`;
+  const [collapsed, setCollapsedIds] = useState<ReadonlySet<string>>(() => {
+    try {
+      const v = JSON.parse(localStorage.getItem(collapsedKey) ?? '[]') as unknown;
+      return new Set(Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+    } catch {
+      return new Set();
+    }
+  });
+  const setCollapsed = useCallback(
+    (nodeId: string, on: boolean) =>
+      setCollapsedIds((prev) => {
+        if (prev.has(nodeId) === on) return prev;
+        const next = new Set(prev);
+        if (on) next.add(nodeId);
+        else next.delete(nodeId);
+        try {
+          localStorage.setItem(collapsedKey, JSON.stringify([...next]));
+        } catch {
+          // private mode: remembered for this page only
+        }
+        return next;
+      }),
+    [collapsedKey],
+  );
   const flow = useRef<ReactFlowInstance<FlowNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
   const [reconnecting, setReconnecting] = useState<{ outputId: string; compositionId: string } | null>(null);
@@ -604,8 +631,10 @@ function BoardCanvas(props: {
       run,
       addSizes: (family: string | null) => addSizesRef.current(family),
       zoomTo,
+      collapsed,
+      setCollapsed,
     }),
-    [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus, zoomTo],
+    [teamId, readOnly, props.userId, props.role, url, review.data, reloadReview, approvals, doc, teamFonts, sourceCount, layoutDeps, missingFonts, presets, reloadPresets, remember, disconnect, reconnect, author, apply, run, autosave, stackFocus, zoomTo, collapsed, setCollapsed],
   );
 
   /** D49: a wire dragged out of the Main Comps group onto empty canvas (or a right-click on its out port) offers the Preset nodes. */

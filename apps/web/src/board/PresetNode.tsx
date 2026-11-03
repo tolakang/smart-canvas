@@ -51,7 +51,8 @@ const CUSTOM = '__custom';
 
 export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
   const { set, rows } = data;
-  const { doc, readOnly, run, presets, exportOutputs } = useBoard();
+  const { doc, readOnly, run, presets, exportOutputs, collapsed } = useBoard();
+  const folded = collapsed.has(id);
   const updateInternals = useUpdateNodeInternals();
   const rowKey = rows.map((r) => r.output.id).join(',');
   useEffect(() => updateInternals(id), [id, rowKey, updateInternals]);
@@ -123,6 +124,14 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
           )}
         </div>
       )}
+      {folded && (
+        // Collapsed: every size's handle at the header's right edge, so its wire to its Preview stays on.
+        <div className="sc-node__keep pointer-events-none absolute top-32 right-0 h-0 w-0" aria-hidden="true">
+          {rows.map(({ output, connected }) => (
+            <Handle key={output.id} type="source" position={Position.Right} id={setRowHandle(output.id)} isConnectable={!readOnly && !connected} className="sc-handle--composition pointer-events-auto" />
+          ))}
+        </div>
+      )}
       <ol className="sc-ports sc-preset__rows mx-[-16px] my-0 list-none p-0" aria-label={`${set.label} sizes`}>
         {rows.map(({ output, connected }, i) => (
           <li
@@ -183,7 +192,9 @@ export function PresetNodeView({ id, data }: NodeProps<SetFlowNode>) {
                 <Icon name="trash" />
               </button>
             )}
-            <Handle type="source" position={Position.Right} id={setRowHandle(output.id)} isConnectable={!readOnly && !connected} className="sc-handle--composition" title={connected ? 'Wired to its preview: cut the wire to disconnect' : 'Wire back into its preview to reconnect'} />
+            {!folded && (
+              <Handle type="source" position={Position.Right} id={setRowHandle(output.id)} isConnectable={!readOnly && !connected} className="sc-handle--composition" title={connected ? 'Wired to its preview: cut the wire to disconnect' : 'Wire back into its preview to reconnect'} />
+            )}
           </li>
         ))}
       </ol>

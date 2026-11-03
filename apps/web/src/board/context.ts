@@ -57,6 +57,9 @@ export interface BoardActions {
   addSizes: (family: string | null) => void;
   /** D69 (UX B3): brings one panel close (selects it and zooms to it, at most 100%). */
   zoomTo: (nodeId: string) => void;
+  /** Owner, 2026-11-02: the cards shown as their header only (React Flow node ids), remembered in this browser per project. */
+  collapsed: ReadonlySet<string>;
+  setCollapsed: (nodeId: string, collapsed: boolean) => void;
 }
 
 export const BoardContext = createContext<BoardActions | null>(null);
