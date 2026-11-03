@@ -2,14 +2,16 @@
  * D40 / D49: an Image node (or a Logo node: its pictures behave as logos) — one board node holding many pictures. Drop several files on it (or pick them) and each
  * becomes its own layer, wired into Main Comps (and its layouts). Click a picture to set it in the inspector,
  * drag pictures to reorder the card. V1: each slot's Replace / Remove picture / Delete show on hover or once tapped;
- * grid / list (remembered per card, in this browser) and Delete node are in the ⋯ menu.
+ * grid / list (remembered per card, in this browser) and Delete node are in the ⋯ menu. A Logo node shows each logo as
+ * three slots (owner, 2026-11-02, D74): Square (its picture), Vertical and Horizontal — the logo vertical and horizontal
+ * Previews use when given (D43's `variants`, as the Background node's slots); empty ones use the square one.
  */
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { deleteSource, deleteStack, moveStackItem, renameStack, stackKind } from '@smart-canvas/core';
 import { useState, type DragEvent } from 'react';
 import { useStoredFlag } from './board-keys';
 import { assetUrl, uploadAsset } from '../api';
-import { setAsset, setPicture, withSource } from './content';
+import { setAsset, setPicture, setVariant, withSource } from './content';
 import { cardClass } from './card';
 import { useBoard } from './context';
 import type { StackFlowNode } from './flow';
@@ -50,6 +52,22 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
     }
   };
   const isLogo = stackKind(stack) === 'logo';
+  /** Owner, 2026-11-02: a logo's own picture for vertical or horizontal Previews (D43's slots, on the Logo node). */
+  const [variantBusy, setVariantBusy] = useState<string | null>(null);
+  const [variantFocus, setVariantFocus] = useState<string | null>(null);
+  const putVariant = async (id: string, family: 'vertical' | 'horizontal', file: File) => {
+    setVariantBusy(`${id}:${family}`);
+    try {
+      const asset = await uploadAsset(teamId, file);
+      if (asset.kind !== 'image' && asset.kind !== 'vector') return;
+      rememberAsset(asset);
+      run((d) => ({ ok: true, doc: withSource(d, id, (x) => setVariant(x, family, asset.id)) }));
+    } catch {
+      // as a replace: a failed upload leaves the slot as it was
+    } finally {
+      setVariantBusy(null);
+    }
+  };
   const drop = usePictureDrop();
   const [over, setOver] = useState(false);
   const [list, setList] = useStoredFlag(`sc-assets-list:${stack.id}`, false);
@@ -89,27 +107,33 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
         renameLabel="Assets name"
         menuLabel={`${stack.label} actions`}
         menu={[
-          { label: list ? 'Grid view' : 'List view', onSelect: () => setList(!list) },
+          // A logo shows its three slots side by side; the list view is for the Image node's many pictures.
+          ...(isLogo ? [] : [{ label: list ? 'Grid view' : 'List view', onSelect: () => setList(!list) }]),
           ...(readOnly ? [] : [{ label: `Delete ${stack.label}`, danger: true, separated: true, onSelect: () => confirmDelete(stack.label) && run((d) => deleteStack(d, stack.id)) }]),
         ]}
       />
-      <ul className={`sc-assets m-0 grid list-none p-0 ${list ? 'sc-assets--list grid-cols-[minmax(0,1fr)] gap-8' : 'grid-cols-[repeat(2,minmax(0,1fr))] gap-12'} ${NO_CANVAS}`} aria-label={`${stack.label} pictures`}>
+      <ul className={`sc-assets m-0 grid list-none p-0 ${list && !isLogo ? 'sc-assets--list grid-cols-[minmax(0,1fr)] gap-8' : isLogo ? 'grid-cols-[minmax(0,1fr)] gap-14' : 'grid-cols-[repeat(2,minmax(0,1fr))] gap-12'} ${NO_CANVAS}`} aria-label={`${stack.label} pictures`}>
         {items.map((s, i) => {
           const asset = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.assetId : null;
           const focused = selected && (stackFocus === s.id || (!items.some((x) => x.id === stackFocus) && i === 0));
           return (
-            <li key={s.id} className={`sc-assets__item relative min-w-0 ${list ? 'flex items-center gap-8' : ''}`}>
+            <li key={s.id} className={`sc-assets__item relative min-w-0 ${isLogo ? 'grid grid-cols-[repeat(3,minmax(0,1fr))] gap-8' : list ? 'flex items-center gap-8' : ''}`} {...(isLogo ? { role: 'group', 'aria-label': `${s.label}: square, vertical and horizontal` } : {})}>
               <Slot
+                caption={isLogo ? 'Square' : undefined}
+                emptyText={isLogo ? 'Add logo' : undefined}
                 src={asset ? assetUrl(teamId, asset) : null}
                 alt={`${s.label} preview`}
                 busy={replacing === s.id}
-                focused={Boolean(focused)}
+                focused={Boolean(focused) && !variantFocus?.startsWith(`${s.id}:`)}
                 dimmed={!s.visible}
                 readOnly={readOnly}
                 accept={PICTURE_ACCEPT}
-                label={list ? s.label : undefined}
+                label={list && !isLogo ? s.label : undefined}
                 names={{ select: `Select ${s.label}`, file: `Replace ${s.label}`, remove: `Remove picture from ${s.label}`, delete: `Delete ${s.label}` }}
-                onSelect={() => setStackFocus(s.id)}
+                onSelect={() => {
+                  setStackFocus(s.id);
+                  setVariantFocus(null);
+                }}
                 onFile={(file) => void replace(s.id, file)}
                 onRemovePicture={() => run((d) => ({ ok: true, doc: withSource(d, s.id, (x) => setAsset(x, null)) }))}
                 onDelete={() => confirmDelete(s.label) && run((d) => deleteSource(d, s.id))}
@@ -126,6 +150,33 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
                   },
                 }}
               />
+              {isLogo &&
+                (['vertical', 'horizontal'] as const).map((family) => {
+                  const v = s.content.kind === 'image' || s.content.kind === 'vector' ? s.content.variants?.[family] : undefined;
+                  const name = family === 'vertical' ? 'Vertical' : 'Horizontal';
+                  const key = `${s.id}:${family}`;
+                  return (
+                    <Slot
+                      key={family}
+                      caption={name}
+                      src={v ? assetUrl(teamId, v) : null}
+                      alt={`${s.label} ${family} preview`}
+                      busy={variantBusy === key}
+                      focused={selected && variantFocus === key}
+                      dimmed={!s.visible}
+                      readOnly={readOnly}
+                      accept={PICTURE_ACCEPT}
+                      emptyText="Same as square"
+                      names={{ select: `${s.label} ${family}`, file: `${name} logo for ${s.label}`, remove: `Clear ${family} logo of ${s.label}` }}
+                      onSelect={() => {
+                        setStackFocus(s.id);
+                        setVariantFocus(key);
+                      }}
+                      onFile={(file) => void putVariant(s.id, family, file)}
+                      onRemovePicture={() => run((d) => ({ ok: true, doc: withSource(d, s.id, (x) => setVariant(x, family, null)) }))}
+                    />
+                  );
+                })}
             </li>
           );
         })}
