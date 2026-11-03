@@ -156,6 +156,7 @@ Light is the token set on `:root`. Dark redefines the same tokens on `:root[data
 - **Main Comps group**: a soft tinted frame around Main Comps (no dashed line).
 - **Wires and ports:** 2 px wires tinted blue, accent with a glow when selected or hovered; 12 px ports with a white ring.
 - **Zoomed out (below 60 %):** each panel gets a dark name tag above it (Preview tags add ✓ approved / changed and the open-comment count). Tags keep their screen size at any zoom (`--zoom-inv`) and never take a click (`board/ZoomLabels.tsx`); a tag wider than its panel is cut to the panel's width (at least 48 px, the name ending in …), and one that still covers a tag already placed is left out (D69 as amended by K5, `visibleTags`).
+- **Step labels (UX C2, option A):** the board's three rows are named at their left — **Assets**, **Main Comps**, **Sizes** — in quiet muted 13 px text, right-aligned 16 px left of the board's leftmost panel and level with the top of each row's highest panel (Previews belong to the Sizes row). They keep their screen size at any zoom (`--zoom-inv`), never take a click, are drawn from the panels each render (never stored), leave out a label that would touch the one above it on screen, and hide while they would be cut off at the canvas's left edge (a phone opens there, D70). `board/StepLabels.tsx`.
 
 ## Projects home and sign-in (U5)
 - **Brand:** `ui/Brand.tsx` — the mark (three stacked frames on a blue–violet tile) and the name "Smart Canvas".

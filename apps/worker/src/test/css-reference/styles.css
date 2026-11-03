@@ -1,4 +1,4 @@
-/* The app's CSS at 088bfecb245bbdc2ce468d50fc62a1fec8110488 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
+/* The app's CSS at b25f831bb642cc146d6ad9ef4660ea990617bcc7 (HEAD), built by scripts/css-reference.mjs. Do not edit. */
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -423,6 +423,10 @@
 
   .mr-0 {
     margin-right: 0;
+  }
+
+  .mr-16 {
+    margin-right: 16px;
   }
 
   .mr-auto {
@@ -1054,6 +1058,10 @@
 
   .origin-center {
     transform-origin: center;
+  }
+
+  .origin-top-right {
+    transform-origin: 100% 0;
   }
 
   .\[transform\:none\] {
@@ -2596,6 +2604,11 @@
     line-height: 15px;
   }
 
+  .leading-\[22px\] {
+    --tw-leading: 22px;
+    line-height: 22px;
+  }
+
   .leading-\[inherit\] {
     --tw-leading: inherit;
     line-height: inherit;
@@ -2687,6 +2700,11 @@
   .tracking-\[-0\.015em\] {
     --tw-tracking: -.015em;
     letter-spacing: -.015em;
+  }
+
+  .tracking-\[0\.01em\] {
+    --tw-tracking: .01em;
+    letter-spacing: .01em;
   }
 
   .tracking-\[0\.02em\] {

@@ -42,6 +42,7 @@ import { HistoryPanel, type Version } from './HistoryPanel';
 import { openCounts, useApprovalStates, useReview } from './review';
 import { useProjectThumbnail } from './thumbnail';
 import { ReviewPanel } from './ReviewPanel';
+import { StepLabels } from './StepLabels';
 import { LABEL_ZOOM, ZoomLabels } from './ZoomLabels';
 import { BOARD, CANVAS, SKIP, FLOW, GUIDE_H, GUIDE_V, SELBAR, SELBAR_COUNT, TOAST, TOAST_BUTTON } from './frame';
 import { btn, iconBtn } from '../ui/button';
@@ -1183,6 +1184,8 @@ function BoardCanvas(props: {
                 )}
               </Panel>
             )}
+            {/* UX C2 (A): the three steps named at the left of their rows. */}
+            <StepLabels nodes={flowNodes} />
             {zoomedOut && <ZoomLabels nodes={flowNodes} doc={doc} approvals={approvals} openComments={openCommentCounts} />}
             <ViewportPortal>
               {guides.vertical !== undefined && <div className={GUIDE_V} style={{ transform: `translateX(${guides.vertical}px)` }} />}

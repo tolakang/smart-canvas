@@ -248,7 +248,7 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] B10 (D68) — new projects start without empty layers — [#214](https://github.com/tolakang/smart-canvas/pull/214)
 - [x] B3 (D69) — Preview grid, Fit floor, Fit all, zoom to a panel, tags that don't overlap — [#215](https://github.com/tolakang/smart-canvas/pull/215)
 - [x] B7 (D70) — the phone board, thumb first — [#216](https://github.com/tolakang/smart-canvas/pull/216)
-- C1–C3 (bigger rethinks) — the owner took C1 and C3 (2026-11-02, "C1 and C3, go ahead"); C2 stays out for now. See P31.
+- C1–C3 (bigger rethinks) — the owner took C1 and C3 (2026-11-02, "C1 and C3, go ahead"), then C2 as labels only (2026-11-03, option A). See P31.
 
 ## P30 Clean-up review 2 (`docs/archive/CLEANUP-AUDIT-2.md`; owner, 2026-10-28: "start (1)", "go group (2)"; 2026-11-02, group (3): "go with your picks")
 - [x] (1) R1–R4 — dead code only its tests used — [#217](https://github.com/tolakang/smart-canvas/pull/217)
@@ -281,4 +281,4 @@ Rule: nothing may look different; the CSS parity test comes back for the convers
 - [x] C1a (D71) — sizes and artwork in New project — [#237](https://github.com/tolakang/smart-canvas/pull/237)
 - [x] C1b (D71) — the getting-started strip until the first export — [#238](https://github.com/tolakang/smart-canvas/pull/238)
 - [x] C3 (D72) — the layout choice on each size row; the Export Group card goes — [#239](https://github.com/tolakang/smart-canvas/pull/239)
-- C2 (pipeline lanes) — not now: D69 already makes the board readable at Fit
+- [x] C2, option A (owner, 2026-11-03: "Go C2 option A") — the board names its rows: Assets, Main Comps, Sizes (`board/StepLabels.tsx`; labels only, no bands)
