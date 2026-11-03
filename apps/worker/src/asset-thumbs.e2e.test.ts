@@ -56,8 +56,8 @@ describe.skipIf(!adminUrl)('Asset node pictures fit their tiles', () => {
       await page.getByRole('status').getByText('All changes saved').waitFor({ timeout: 15_000 });
     }
     await expect.poll(() => node('Background').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(3);
-    await node('Headline').locator('input[type=file]').first().setInputFiles({ name: 'hl.png', mimeType: 'image/png', buffer: tall });
-    await expect.poll(() => node('Headline').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(1);
+    await node('Language').locator('input[type=file]').first().setInputFiles({ name: 'hl.png', mimeType: 'image/png', buffer: tall });
+    await expect.poll(() => node('Language').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(1);
     await expect.poll(async () => (await page.locator('.react-flow__node .sc-slot__pick img').evaluateAll((els) => els.every((e) => (e as HTMLImageElement).complete)))).toBe(true);
     const out = await overflow('.react-flow__node');
     expect(out.length).toBeGreaterThanOrEqual(8);

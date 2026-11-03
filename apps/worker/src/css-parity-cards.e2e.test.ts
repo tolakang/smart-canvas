@@ -91,7 +91,7 @@ describe.skipIf(!adminUrl)('CSS parity: the node cards: Main Comps, Presets, Pre
   it('asset slots: drop targets, slot actions, empty and hidden slots', async () => {
     // A second text slot and a second headline pair; then the second logo and the second text hidden (seeded).
     await node('Text').getByRole('button', { name: 'Add text' }).click();
-    await node('Headline').getByRole('button', { name: 'Add headline' }).click();
+    await node('Language').getByRole('button', { name: 'Add asset' }).click();
     await saved();
     const p = (await (await page.request.get(s.api)).json()) as { rev: number; doc: ProjectDoc };
     const items = (label: string) => p.doc.stacks?.find((s) => s.label === label)?.items ?? [];
@@ -191,10 +191,10 @@ describe.skipIf(!adminUrl)('CSS parity: the node cards: Main Comps, Presets, Pre
 
   it('asset slots: Headline pairs and the language switch, text slots', async () => {
     // Headline: two pairs, a pair hovered with its Delete, English in use by keyboard, the other language hovered.
-    const headline = node('Headline');
+    const headline = node('Language');
     await headline.locator('.sc-hl-row').nth(1).hover();
     await same('headline-row-hover');
-    await headline.getByRole('button', { name: 'Delete headline 2' }).hover({ force: true });
+    await headline.getByRole('button', { name: 'Delete Asset 2' }).hover({ force: true });
     await same('headline-delete-hover');
     await page.mouse.move(5, 500);
     await headline.getByRole('radio', { name: 'Khmer' }).focus();
@@ -202,7 +202,8 @@ describe.skipIf(!adminUrl)('CSS parity: the node cards: Main Comps, Presets, Pre
     await expect.poll(() => headline.getByRole('radio', { name: 'English' }).isChecked()).toBe(true);
     await saved();
     await same('headline-english-key');
-    await headline.locator('.sc-slot--off img').first().hover();
+    // D78: the slots are smaller, and the actions bar shown on hover covers the picture's centre.
+    await headline.locator('.sc-slot--off img').first().hover({ force: true });
     await same('headline-off-hover');
     await headline.getByRole('radio', { name: 'English' }).focus();
     await page.keyboard.press('ArrowLeft');

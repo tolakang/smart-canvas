@@ -82,7 +82,7 @@ export function AssetsNodeView({ data, selected }: NodeProps<StackFlowNode>) {
   const noun = isLogo ? (n === 1 ? 'logo set' : 'logo sets') : n === 1 ? 'picture' : 'pictures';
 
   return (
-    <div className={`${cardClass('input', { drop: over })} sc-node--assets`} {...dropProps}>
+    <div className={`${cardClass('input', { drop: over, wide: isLogo })} sc-node--assets`} {...dropProps}>
       <NodeHead
         icon="image"
         title={stack.label}

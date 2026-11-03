@@ -7,6 +7,7 @@
 import {
   deletePair,
   LANGUAGE_LABEL,
+  LANGUAGES,
   languagePairs,
   pairInputs,
   renamePair,
@@ -245,15 +246,15 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
   const { doc, run, readOnly, stackFocus, layoutDeps } = useBoard();
   const pair = languagePairs(doc).find((p) => p.id === pairId);
   if (!pair) return null;
-  const focusId = stackFocus && pairInputs(pair).includes(stackFocus) ? stackFocus : pair.use === 'km' ? pair.km : pair.en;
+  const focusId = stackFocus && pairInputs(pair).includes(stackFocus) ? stackFocus : (pair[pair.use] ?? pair.km);
   const focused = doc.sources.find((s) => s.id === focusId);
   return (
     <>
-      <Section title="Headline node">
-        <NameField label="Headline name" value={pair.label} onCommit={(label) => run((d) => renamePair(d, pair.id, label))} />
+      <Section title="Language node">
+        <NameField label="Node name" value={pair.label} onCommit={(label) => run((d) => renamePair(d, pair.id, label))} />
         {/* UX A7 (F17): a segmented switch, not native radios (the radios stay, hidden, for the keyboard and screen readers). */}
         <div className={`${SEG_PANEL} ${SWITCH}`} role="radiogroup" aria-label="Language every Preview uses">
-          {(['km', 'en'] as const).map((lang) => (
+          {LANGUAGES.map((lang) => (
             <label key={lang}>
               <input type="radio" name={`inspector-use-${pair.id}`} checked={pair.use === lang} disabled={readOnly} onChange={() => run((d) => setLanguage(d, pair.id, lang, layoutDeps?.assets))} />
               {LANGUAGE_LABEL[lang]}
@@ -262,7 +263,7 @@ function HeadlineInspector({ pairId }: { pairId: string }) {
         </div>
         <p className={HINT}>Every Preview draws the language in use. Switching swaps the picture only: it keeps its place and size (V4).</p>
         {!readOnly && (
-          <button type="button" className={DELETE_NODE} aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with both languages? Their wires and edits on Previews go with them.`) && run((d) => deletePair(d, pair.id))}>
+          <button type="button" className={DELETE_NODE} aria-label={`Delete ${pair.label}`} onClick={() => window.confirm(`Delete “${pair.label}” with every language of its assets? Their wires and edits on Previews go with them.`) && run((d) => deletePair(d, pair.id))}>
             <Icon name="trash" /> Delete node
           </button>
         )}

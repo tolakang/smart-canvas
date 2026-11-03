@@ -68,12 +68,12 @@ describe.skipIf(!adminUrl)('project history (D62)', () => {
 
     // The other tab's next save is refused: it offers the latest instead of overwriting the restore.
     other.once('dialog', (d) => void d.accept());
-    await boardNode(other, 'Headline').locator('.sc-node__title').click();
+    await boardNode(other, 'Language').locator('.sc-node__title').click();
     await other.keyboard.press('Delete');
     await other.getByRole('status').getByText('Someone else saved a newer version.').waitFor({ timeout: 15_000 });
     await other.getByRole('button', { name: 'Reload latest' }).click();
     await boardNode(other, 'Logo').waitFor();
-    await boardNode(other, 'Headline').waitFor();
+    await boardNode(other, 'Language').waitFor();
     await otherCtx.close();
   }, 90_000);
 

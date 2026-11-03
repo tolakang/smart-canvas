@@ -35,7 +35,7 @@ export type StackFlowNode = Node<{ stack: AssetStack; items: InputSource[] }, 'a
 /** D46: a Preset node and its rows (sizes, in order), each with whether it is wired. */
 export type SetFlowNode = Node<{ set: PresetSet; rows: { output: OutputNode; connected: boolean }[] }, 'presetNode'>;
 /** D44: a Headline card and its two inputs. */
-export type PairFlowNode = Node<{ pair: LanguagePair; rows: { km: InputSource | undefined; en: InputSource | undefined }[] }, 'headlineNode'>;
+export type PairFlowNode = Node<{ pair: LanguagePair; rows: { km: InputSource | undefined; en: InputSource | undefined; zh: InputSource | undefined }[] }, 'headlineNode'>;
 /** D49: the Main Comps group (the master); what it shows is read from the doc. */
 export type MainFlowNode = Node<{ compositionId: string }, 'mainNode'>;
 
@@ -144,7 +144,7 @@ export function docToNodes(doc: ProjectDoc): BoardNode[] {
         id: pairNodeId(pair.id),
         type: 'headlineNode',
         position: pair.board,
-        data: { pair, rows: pairRows(pair).map((r) => ({ km: byId.get(r.km), en: byId.get(r.en) })) },
+        data: { pair, rows: pairRows(pair).map((r) => ({ km: byId.get(r.km), en: byId.get(r.en), zh: r.zh ? byId.get(r.zh) : undefined })) },
         deletable: false,
       }),
     ),
