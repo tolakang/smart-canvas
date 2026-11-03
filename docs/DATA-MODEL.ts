@@ -203,6 +203,7 @@ export interface AssetStack {
   items: string[];
   kind?: 'image' | 'logo' | 'text'; // D49: the Image (default), Logo or Text node
   unwired?: true; // D49.1: an empty card's wire into the Layer Comp was cut (an empty card is wired by default)
+  use?: string; // D77: a Logo node's set (row) in use, one of items; none = the first. Other sets are drawn nowhere
 }
 
 // ---------- team-level records ----------

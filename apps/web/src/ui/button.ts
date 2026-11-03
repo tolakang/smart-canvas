@@ -113,3 +113,9 @@ export const SPINNER =
 /** A short notice at the bottom of the page (the projects home). */
 export const TOAST =
   'sc-toast fixed bottom-[calc(24px+env(safe-area-inset-bottom))] left-1/2 z-70 m-0 rounded-md bg-fg px-14 py-8 text-sm text-surface [box-shadow:var(--shadow-2)] [transform:translateX(-50%)]';
+
+/**
+ * Owner, 2026-11-03 ("Add headline button are not consistent, need to make it prominent and consistent through all"):
+ * the one Add button of the asset nodes — Add logo set, Add headline, Add text — full width, 40 px (44 on touch), soft accent.
+ */
+export const ADD_BUTTON = `${btn('soft', 'node', { display: 'flex', gap: 'gap-6', h: 'h-40 pointer-coarse:h-44', text: 'text-[13px]', round: 'rounded-[12px]' })} w-full`;

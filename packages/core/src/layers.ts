@@ -3,14 +3,15 @@
  * drawn nowhere (D44), as if hidden. (Process nodes and compositions used as layers were retired in D56.)
  */
 import { unusedLanguageInputs } from './languages';
+import { unusedLogoInputs } from './logo-sets';
 import type { InputSource, ProjectDoc } from './model';
 
 /** A layer as the layout and renderer see it: an input. */
 export type LayerSource = InputSource;
 
-/** Every layer a row can show: the inputs, a Headline card's unused language hidden. */
+/** Every layer a row can show: the inputs, a Headline card's unused language and a Logo node's sets not in use hidden. */
 export function layerSources(doc: ProjectDoc): LayerSource[] {
-  const off = unusedLanguageInputs(doc);
+  const off = new Set([...unusedLanguageInputs(doc), ...unusedLogoInputs(doc)]);
   return off.size ? doc.sources.map((s) => (off.has(s.id) ? { ...s, visible: false } : s)) : doc.sources;
 }
 

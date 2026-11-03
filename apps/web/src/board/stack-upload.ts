@@ -11,7 +11,7 @@ import { newId } from './ids';
 
 export const PICTURE_ACCEPT = 'image/png,image/jpeg,image/webp,image/svg+xml,.svg,application/pdf,.pdf';
 
-const labelOf = (name: string) => name.replace(/\.[^.]+$/, '').trim() || 'Picture';
+export const labelOf = (name: string) => name.replace(/\.[^.]+$/, '').trim() || 'Picture';
 
 function reason(file: File, err: unknown): string {
   if (err instanceof ApiError && err.status === 415) return `${file.name}: use a PNG, JPEG, WebP, SVG or PDF file.`;

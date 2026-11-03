@@ -271,6 +271,8 @@ export interface AssetStack {
    * by default, `unwired` once its wire is cut. Pictures added later go where the card is wired.
    */
   unwired?: true;
+  /** D77: a Logo node's set (row) in use — one of `items`; none: the first. The other sets are drawn nowhere. */
+  use?: string;
 }
 
 // ---------- team-level records ----------

@@ -114,7 +114,10 @@ export function paritySuite() {
       { name: 'wide.png', mimeType: 'image/png', buffer: wide },
       { name: 'tall.png', mimeType: 'image/png', buffer: tall },
     ];
-    await node('Logo').locator('input[type=file][multiple]').first().setInputFiles(both);
+    // D77: the logo set's square and vertical slots, one file each.
+    await node('Logo').locator('input[type=file]').nth(0).setInputFiles(both[0] as (typeof both)[number]);
+    await until('the square logo', async () => (await node('Logo').locator('.sc-slot__pick img').count()) === 1, 20_000);
+    await node('Logo').locator('input[type=file]').nth(1).setInputFiles(both[1] as (typeof both)[number]);
     await node('Image').locator('input[type=file][multiple]').first().setInputFiles(both);
     await until('both images in the Image node', async () => (await node('Image').locator('.sc-slot__pick img').count()) === 2, 20_000);
     await node('Headline').locator('input[type=file]').first().setInputFiles({ name: 'khmer.png', mimeType: 'image/png', buffer: wide });

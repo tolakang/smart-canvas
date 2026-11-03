@@ -49,6 +49,11 @@ export interface SlotProps {
   onDelete?: () => void;
   /** What an empty tile says. */
   emptyText?: string;
+  /**
+   * Owner, 2026-11-03 ("remove text inside those and leave only the + mark but very light intensity"): an empty tile
+   * shows only a faint +; `emptyText` becomes its tooltip and accessible name.
+   */
+  bare?: boolean;
   /** Wide (headlines, backgrounds) or square (a grid of pictures). */
   shape?: 'wide' | 'square';
   /** V4, a Headline language: the one in use stands out (accent outline and caption), the other steps back. */
@@ -110,7 +115,7 @@ export function Slot(p: SlotProps) {
     inUse
       ? 'border-2 border-solid border-accent'
       : empty
-        ? `border-[1.5px] ${over ? 'border-solid' : 'border-dashed'} ${lit ? 'border-accent' : 'border-muted group-hover/slot:border-accent'}`
+        ? `border-[1.5px] ${over ? 'border-solid' : 'border-dashed'} ${lit ? 'border-accent' : p.bare ? 'border-[color-mix(in_srgb,var(--muted)_45%,transparent)] group-hover/slot:border-accent' : 'border-muted group-hover/slot:border-accent'}`
         : `border border-solid ${lit ? 'border-accent' : 'border-[color-mix(in_srgb,var(--line)_90%,transparent)]'}`,
     inUse || (over && !p.focused) ? RING_4 : p.focused ? RING_3 : '',
     over ? ACCENT_FILL : empty ? '[background:transparent] group-hover/slot:[background:color-mix(in_srgb,var(--accent-soft)_70%,transparent)]' : CHECKER,
@@ -144,6 +149,10 @@ export function Slot(p: SlotProps) {
     </span>
   ) : p.src ? (
     <img src={p.src} alt={p.alt} draggable={false} className={img} />
+  ) : p.bare ? (
+    <span className={`sc-slot__state grid place-items-center [&_.sc-icon]:m-0 ${over ? 'text-accent' : 'text-[color-mix(in_srgb,var(--muted)_55%,transparent)] group-hover/slot:text-accent'}`}>
+      <Icon name={p.readOnly ? 'image' : 'plus'} size={20} />
+    </span>
   ) : (
     <span className={state}>
       <Icon name={p.readOnly ? 'image' : 'plus'} size={18} />
@@ -163,7 +172,7 @@ export function Slot(p: SlotProps) {
       <div className={tile}>
         {empty && !p.readOnly ? (
           // An empty slot: the whole tile picks a file (and selects the slot, for the inspector).
-          <label htmlFor={fileId} className={pick} onClick={p.onSelect} {...FILE_PICK}>
+          <label htmlFor={fileId} className={pick} onClick={p.onSelect} title={p.bare ? p.emptyText : undefined} {...FILE_PICK}>
             {picture}
           </label>
         ) : (

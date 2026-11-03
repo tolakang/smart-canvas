@@ -1,6 +1,7 @@
 /**
  * D74 (owner, 2026-11-02): a Logo node shows each logo as Square, Vertical and Horizontal slots. A vertical
  * Preview draws the logo's vertical picture; a square one keeps the main picture; an empty slot uses the square one.
+ * D77 (owner, 2026-11-03): each row is a logo set; one set is in use, switched over the rows; a set is deleted by its row.
  */
 import { readFileSync } from 'node:fs';
 import type { ProjectDoc } from '@smart-canvas/core';
@@ -57,8 +58,9 @@ describe.skipIf(!adminUrl)('Logo node: square, vertical and horizontal slots (D7
     const logo = boardNode(page, 'Logo');
     const slots = logo.getByRole('group', { name: 'brand: square, vertical and horizontal' });
     await slots.waitFor();
-    for (const caption of ['Square', 'Vertical', 'Horizontal']) await slots.getByText(caption, { exact: true }).waitFor();
-    expect(await slots.getByText('Same as square').count()).toBe(2);
+    // D77: the headings show once, over the rows; an empty slot shows only a faint + (its tooltip says the rest).
+    for (const caption of ['Square', 'Vertical', 'Horizontal']) await logo.getByText(caption, { exact: true }).waitFor();
+    expect(await slots.locator('.sc-slot--empty').count()).toBe(2);
 
     const brand = (await doc()).sources.find((s) => s.label === 'brand');
     if (!brand || brand.content.kind !== 'vector' || !brand.content.assetId) throw new Error('no logo');
@@ -75,7 +77,7 @@ describe.skipIf(!adminUrl)('Logo node: square, vertical and horizontal slots (D7
     const s = d.sources.find((x) => x.id === brand.id);
     const vertical = s?.content.kind === 'vector' ? s.content.variants?.vertical : undefined;
     expect(vertical).toBeTruthy();
-    expect(await slots.getByText('Same as square').count()).toBe(1);
+    expect(await slots.locator('.sc-slot--empty').count()).toBe(1);
 
     // The Story Preview (vertical) draws the vertical picture; the IG one (square layout) keeps the main one.
     await expect.poll(() => logoSrc(story, brand.id).getAttribute(), { timeout: 15_000 }).toContain(vertical ?? '-');
@@ -84,5 +86,34 @@ describe.skipIf(!adminUrl)('Logo node: square, vertical and horizontal slots (D7
     // Cleared: the vertical Preview is back on the square picture.
     await logo.getByLabel('Clear vertical logo of brand', { exact: true }).dispatchEvent('click');
     await expect.poll(() => logoSrc(story, brand.id).getAttribute(), { timeout: 15_000 }).toContain(main);
+  }, 90_000);
+
+  it('D77: Add logo set adds an empty row; the switch draws that set instead, in the same place; its bin deletes it', async () => {
+    const logo = boardNode(page, 'Logo');
+    const brand = (await doc()).sources.find((s) => s.label === 'brand');
+    if (!brand) throw new Error('no logo');
+    const ig = (await doc()).outputs.find((o) => o.size.height <= o.size.width * 1.5)?.label ?? '';
+    await logo.getByRole('button', { name: 'Add logo set' }).dispatchEvent('click');
+    await expect.poll(() => logo.locator('.sc-logo-set').count()).toBe(2);
+    const findSecond = async () => (await doc()).sources.find((s) => s.behavesLike === 'logo' && s.id !== brand.id && s.label === 'Logo 2');
+    await expect.poll(async () => Boolean(await findSecond()), { timeout: 15_000 }).toBe(true);
+    const second = await findSecond();
+    if (!second) throw new Error('no second set');
+    await logo.getByLabel('Replace Logo 2', { exact: true }).setInputFiles({ name: 'other.png', mimeType: 'image/png', buffer: tinyPng });
+    await expect.poll(async () => {
+      const s = (await doc()).sources.find((x) => x.id === second.id);
+      return s?.content.kind === 'image' ? s.content.assetId ?? null : null;
+    }, { timeout: 15_000 }).not.toBeNull();
+    // Set 1 is still in use: the Preview draws brand, not the new set.
+    expect(await page.getByLabel(`Preview ${ig}`, { exact: true }).locator(`.sc-render [data-source-id="${second.id}"]`).count()).toBe(0);
+    await logo.getByRole('radiogroup', { name: 'Logo set in use' }).getByText('Set 2').click();
+    await expect.poll(async () => (await doc()).stacks?.find((st) => st.kind === 'logo')?.use, { timeout: 15_000 }).toBe(second.id);
+    await expect.poll(() => page.getByLabel(`Preview ${ig}`, { exact: true }).locator(`.sc-render [data-source-id="${second.id}"]`).count(), { timeout: 15_000 }).toBe(1);
+    expect(await page.getByLabel(`Preview ${ig}`, { exact: true }).locator(`.sc-render [data-source-id="${brand.id}"]`).count()).toBe(0);
+    // Deleting the set in use hands the logo back to the other set.
+    page.once('dialog', (d) => void d.accept());
+    await logo.getByRole('button', { name: 'Delete Set 2 of Logo' }).dispatchEvent('click');
+    await expect.poll(() => logo.locator('.sc-logo-set').count()).toBe(1);
+    await expect.poll(() => page.getByLabel(`Preview ${ig}`, { exact: true }).locator(`.sc-render [data-source-id="${brand.id}"]`).count(), { timeout: 15_000 }).toBe(1);
   }, 90_000);
 });
