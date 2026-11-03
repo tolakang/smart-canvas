@@ -38,6 +38,18 @@ describe.skipIf(!adminUrl)('collapse and expand a card', () => {
 
   const preset = () => page.locator('.react-flow__node-presetNode').first();
   const edgeCount = () => page.locator('.react-flow__edge').count();
+  /** Waits until a panel stops moving (a Tidy glides panels into place, and a zoom moves them on screen). */
+  const settled = async (el: ReturnType<Page['locator']>) => {
+    let last = '';
+    await expect
+      .poll(async () => {
+        const b = JSON.stringify(await el.boundingBox());
+        const still = b === last;
+        last = b;
+        return still;
+      }, { interval: 150, timeout: 5_000 })
+      .toBe(true);
+  };
 
   it('a Preset node folds to its header; its wires to the Previews stay; it expands again', async () => {
     const edges = await edgeCount();
@@ -70,11 +82,22 @@ describe.skipIf(!adminUrl)('collapse and expand a card', () => {
     await expect.poll(previews).toBe(7);
   }, 60_000);
 
+  it('owner, 2026-11-03: collapsing or expanding a card tidies the board — the panels under it close up, then make room again', async () => {
+    const y = async () => (await preset().boundingBox())?.y ?? 0;
+    const main = page.locator('.react-flow__node-mainNode');
+    const before = await y();
+    await main.getByRole('button', { name: 'Collapse Main Comps' }).click();
+    await expect.poll(y, { timeout: 5_000 }).toBeLessThan(before - 50);
+    await page.getByText('Board tidied').waitFor();
+    await main.getByRole('button', { name: 'Expand Main Comps' }).click();
+    await expect.poll(async () => Math.abs((await y()) - before), { timeout: 5_000 }).toBeLessThan(4);
+  }, 60_000);
+
   it('an asset node folds too, and the choice is kept after a reload', async () => {
     const logo = boardNode(page, 'Logo');
     await logo.focus();
     await page.keyboard.press('Enter'); // brought close (D69)
-    await page.waitForTimeout(400);
+    await settled(logo);
     await logo.getByRole('button', { name: 'Collapse Logo' }).click();
     await expect.poll(() => logo.locator('.sc-slot').first().isVisible()).toBe(false);
     await page.reload();
@@ -83,7 +106,7 @@ describe.skipIf(!adminUrl)('collapse and expand a card', () => {
     expect(await boardNode(page, 'Logo').locator('.sc-slot').first().isVisible()).toBe(false);
     await boardNode(page, 'Logo').focus();
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(400);
+    await settled(boardNode(page, 'Logo'));
     await boardNode(page, 'Logo').getByRole('button', { name: 'Expand Logo' }).click();
     await expect.poll(() => boardNode(page, 'Logo').locator('.sc-slot').first().isVisible()).toBe(true);
   }, 60_000);

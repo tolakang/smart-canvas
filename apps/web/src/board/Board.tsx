@@ -245,8 +245,11 @@ function BoardCanvas(props: {
       return new Set();
     }
   });
+  /** Owner, 2026-11-03: a card collapsed or expanded tidies the board once its new size is measured (set below). */
+  const tidyRef = useRef<(opts?: { auto?: boolean }) => void>(() => undefined);
   const setCollapsed = useCallback(
-    (nodeId: string, on: boolean) =>
+    (nodeId: string, on: boolean) => {
+      if (!readOnly) setTimeout(() => tidyRef.current({ auto: true }), 180);
       setCollapsedIds((prev) => {
         if (prev.has(nodeId) === on) return prev;
         const next = new Set(prev);
@@ -258,8 +261,9 @@ function BoardCanvas(props: {
           // private mode: remembered for this page only
         }
         return next;
-      }),
-    [collapsedKey],
+      });
+    },
+    [collapsedKey, readOnly],
   );
   const flow = useRef<ReactFlowInstance<FlowNode, Edge> | null>(null);
   const [outputCount, setOutputCount] = useState(initial.doc.outputs.length);
@@ -859,9 +863,9 @@ function BoardCanvas(props: {
    * board laid out again, then fitted on screen. Positions land on the grid with grid snap on; panels glide there;
    * a notice says what happened, with Undo.
    */
-  const tidy = () => {
+  const tidy = (opts: { auto?: boolean } = {}) => {
     if (readOnly) return;
-    const picked = displayNodesRef.current.filter((n) => n.selected && !n.hidden && !isGroupNode(n.id));
+    const picked = opts.auto ? [] : displayNodesRef.current.filter((n) => n.selected && !n.hidden && !isGroupNode(n.id));
     const selection = picked.length >= 2;
     let moves = selection ? tidySelectionPositions(picked) : tidyPositions(docRef.current, nodesRef.current);
     if (gridRef.current) moves = moves.map((m) => ({ ...m, position: onGrid(m.position, 16) }));
@@ -870,15 +874,19 @@ function BoardCanvas(props: {
       const p = at.get(m.id);
       return !p || Math.round(p.x) !== Math.round(m.position.x) || Math.round(p.y) !== Math.round(m.position.y);
     });
-    if (!changed) return setToast(selection ? 'The selected panels are already tidy' : 'The board is already tidy');
+    if (!changed) return opts.auto ? undefined : setToast(selection ? 'The selected panels are already tidy' : 'The board is already tidy');
     history.current.record(docRef.current);
     syncHistory();
     setTidying(true);
     setTimeout(() => setTidying(false), 320);
     show(withPositions(docRef.current, moves), true);
     setToast(selection ? `${picked.length} panels tidied` : 'Board tidied');
-    if (!selection) requestAnimationFrame(() => void flow.current?.fitView({ ...fitOptions(), duration: 200 }));
+    // After a collapse or expand the view stays where it is (the card being looked at stays put on screen).
+    if (!selection && !opts.auto) requestAnimationFrame(() => void flow.current?.fitView({ ...fitOptions(), duration: 200 }));
   };
+  useLayoutEffect(() => {
+    tidyRef.current = tidy;
+  });
 
   /**
    * Writes panel positions into the doc and saves them (one undo step; `coalesce` merges a quick run of the same
@@ -1151,7 +1159,7 @@ function BoardCanvas(props: {
               compact={screen === 'phone'}
               onAdd={screen === 'phone' && !readOnly ? openPhoneAdd : undefined}
               minimapToggle={screen === 'desktop'}
-              onTidy={readOnly ? undefined : tidy}
+              onTidy={readOnly ? undefined : () => tidy()}
               tidySelection={selectedCount >= 2}
               several={coarse && !readOnly ? { on: several, onToggle: () => setSeveral((on) => !on) } : undefined}
             />
@@ -1204,7 +1212,7 @@ function BoardCanvas(props: {
               onSelectAll={selectAll}
               onNudge={nudge}
               onSpace={setSpaceHeld}
-              onTidy={readOnly ? undefined : tidy}
+              onTidy={readOnly ? undefined : () => tidy()}
               disabled={Boolean(editingMain || editingOutput)}
             />
           </ReactFlow>
