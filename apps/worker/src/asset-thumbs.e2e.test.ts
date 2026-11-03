@@ -43,7 +43,11 @@ describe.skipIf(!adminUrl)('Asset node pictures fit their tiles', () => {
       { name: 'wide.png', mimeType: 'image/png', buffer: wide },
       { name: 'tall.png', mimeType: 'image/png', buffer: tall },
     ];
-    await node('Logo').locator('input[type=file][multiple]').first().setInputFiles(both);
+    // D77: the Logo node has no picker for several files; its set's square and vertical slots take one each.
+    await node('Logo').locator('input[type=file]').nth(0).setInputFiles(both[0] as (typeof both)[number]);
+    await expect.poll(() => node('Logo').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(1);
+    await node('Logo').locator('input[type=file]').nth(1).setInputFiles(both[1] as (typeof both)[number]);
+    await expect.poll(() => node('Logo').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(2);
     await node('Image').locator('input[type=file][multiple]').first().setInputFiles(both);
     await expect.poll(() => node('Image').locator('.sc-slot__pick img').count(), { timeout: 20_000 }).toBe(2);
     const bg = node('Background').locator('input[type=file]');

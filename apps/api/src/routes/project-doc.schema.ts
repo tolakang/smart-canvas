@@ -127,6 +127,7 @@ const stack = {
     board: point,
     kind: { enum: ['image', 'logo', 'text'] }, // D49
     unwired: { const: true }, // D49.1
+    use: id, // D77: a Logo node's set in use
     items: { type: 'array', maxItems: LIMITS.maxSources, items: id },
   },
 } as const;

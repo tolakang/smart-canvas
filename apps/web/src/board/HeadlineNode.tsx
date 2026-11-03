@@ -18,17 +18,12 @@ import { confirmDelete, Icon } from './LayerRow';
 import { NodeHead } from './NodeHead';
 import { Slot } from './Slot';
 import { NO_CANVAS } from './pinch';
-import { btn, iconBtn } from '../ui/button';
+import { ADD_BUTTON, iconBtn } from '../ui/button';
+import { SEGMENT_OFF, SEGMENT_ON, SWITCH } from '../ui/controls';
 import { ERROR_TEXT } from '../ui/tw';
 
 type Lang = 'km' | 'en';
 
-/** The switch for the language in use: two segments, the one in use filled with the accent. */
-const SWITCH = 'sc-switch inline-flex gap-2 rounded-[11px] bg-surface-2 p-3';
-const SEGMENT =
-  'relative inline-flex cursor-pointer items-center rounded-[8px] px-12 py-6 text-[12.5px] font-[600] [transition:background_var(--t-fast),color_var(--t-fast),box-shadow_var(--t-fast)] has-[input:focus-visible]:[outline:2px_solid_var(--accent)] has-[input:focus-visible]:outline-offset-1 pointer-coarse:px-16 pointer-coarse:py-10';
-const SEGMENT_ON = `sc-switch__on ${SEGMENT} bg-accent text-on-accent [box-shadow:0_2px_6px_-2px_color-mix(in_srgb,var(--accent)_60%,transparent)]`;
-const SEGMENT_OFF = `${SEGMENT} text-muted`;
 
 /**
  * The first picture in a slot starts where the other language sits now (its box, unfitted so the new picture fits
@@ -148,7 +143,7 @@ export function HeadlineNodeView({ data, selected }: NodeProps<PairFlowNode>) {
           ))}
         </div>
         {!readOnly && (
-          <button type="button" className={`${btn('soft', 'node', { display: 'flex', gap: 'gap-6' })} sc-hl-add w-auto`} onClick={() => run((d) => addPairRow(d, pair.id, { km: newId(), en: newId() }))}>
+          <button type="button" className={`${ADD_BUTTON} sc-hl-add`} onClick={() => run((d) => addPairRow(d, pair.id, { km: newId(), en: newId() }))}>
             <Icon name="plus" size={14} /> Add headline
           </button>
         )}

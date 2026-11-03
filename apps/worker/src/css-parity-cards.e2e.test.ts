@@ -135,7 +135,8 @@ describe.skipIf(!adminUrl)('CSS parity: the node cards: Main Comps, Presets, Pre
     const logo = node('Logo');
     const empties = await logo.locator('.sc-slot--empty').count();
     await logo.locator('.sc-slot').nth(1).hover();
-    await logo.getByRole('button', { name: /^Remove picture from / }).nth(1).click({ force: true });
+    // D77: the set's vertical logo (the setup gives the set a square and a vertical picture).
+    await logo.getByRole('button', { name: /^Clear vertical logo of / }).click({ force: true });
     await expect.poll(() => logo.locator('.sc-slot--empty').count()).toBe(empties + 1);
     await page.mouse.move(5, 500);
     await logo.locator('.sc-slot--empty').last().hover();

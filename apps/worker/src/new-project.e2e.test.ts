@@ -21,12 +21,14 @@ describe.skipIf(!adminUrl)('a new project starts without empty layers (D68)', ()
     await stack?.close();
   });
 
-  it('the Image and Logo nodes have no slot yet, only their drop area; the Text node starts with "Text 1"', async () => {
-    for (const title of ['Image', 'Logo']) {
-      const node = boardNode(page, title);
-      await node.locator('.sc-dropzone').waitFor();
-      expect(await node.locator('.sc-slot').count()).toBe(0);
-    }
+  it('the Image node has no slot yet, only its drop area; the Logo node one ready row (D77); the Text node starts with "Text 1"', async () => {
+    const image = boardNode(page, 'Image');
+    await image.locator('.sc-dropzone').waitFor();
+    expect(await image.locator('.sc-slot').count()).toBe(0);
+    // D77: the Logo node shows one ready row of three slots; no logo set (layer) exists until a file goes in one.
+    const logo = boardNode(page, 'Logo');
+    await logo.locator('.sc-logo-set--new').waitFor();
+    expect(await logo.locator('.sc-logo-set:not(.sc-logo-set--new)').count()).toBe(0);
     expect(await boardNode(page, 'Text').getByText('Text 1', { exact: true }).count()).toBeGreaterThan(0);
     // No picture slot waits to be filled: only the layers the user adds, the headline pictures and the background.
     const [, teamId = '', projectId = ''] = /#\/t\/([^/]+)\/p\/([^/]+)/.exec(page.url()) ?? [];

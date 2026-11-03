@@ -29,6 +29,7 @@ export * from './fit';
 export * from './stacks';
 export * from './guides';
 export * from './languages';
+export * from './logo-sets';
 export * from './layer-order';
 export * from './preset-sets';
 export * from './core-rules';

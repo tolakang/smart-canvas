@@ -6,7 +6,7 @@
  * UX B5 (F13): a headline pair is one row (the language in use, with a KM / EN switch; the other language is not
  * drawn, so not listed); a layer with no file or text yet says "empty"; hide and connect use the icon set.
  */
-import { connectSource, isEmptyLayer, languagePairs, layerOrder, MAIN, outputComposition, pairRows, setLanguage, setOverrideHidden, unusedLanguageInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
+import { connectSource, isEmptyLayer, languagePairs, layerOrder, MAIN, outputComposition, pairRows, setLanguage, setOverrideHidden, unusedLanguageInputs, unusedLogoInputs, wiredLayers, type InputSource, type LanguagePair } from '@smart-canvas/core';
 import { useBoard } from '../board/context';
 import { Icon, KIND_LABEL, LayerActions, LayerThumb, useLayerReorder } from '../board/LayerRow';
 import { EDITED, LAYER_KIND, LAYER_TOOLS, LAYERS, LAYERS_LIST, LAYERS_TITLE, layerActionsClass, layerNameClass, layerRowClass } from './panels';
@@ -27,7 +27,8 @@ export function LayersPanel(props: { selected: string | null; onSelect: (id: str
   const reorder = !readOnly && !outputId;
   const pairOf = new Map<string, LanguagePair>();
   for (const p of languagePairs(doc)) for (const r of pairRows(p)) for (const id of [r.km, r.en]) pairOf.set(id, p);
-  const unused = unusedLanguageInputs(doc);
+  // A Headline's language not in use, and a Logo node's sets not in use (D77), aren't listed.
+  const unused = new Set([...unusedLanguageInputs(doc), ...unusedLogoInputs(doc)]);
   const shown = layers.filter(({ s }) => !unused.has(s.id));
 
   const row = ({ s, port }: { s: InputSource; port: number }) => {

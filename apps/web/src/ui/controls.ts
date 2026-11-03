@@ -57,3 +57,13 @@ export const THUMB_NODE_UPLOAD = `sc-thumb sc-thumb--empty sc-thumb--upload grid
 
 /** A drag grip at the start of a row (layers, Preset node sizes). */
 export const GRIP = 'sc-port__grip inline-flex flex-none cursor-grab text-muted';
+
+/**
+ * A switch between a few choices, the one in use filled with the accent: a Headline's language (D44), a Logo node's
+ * set (D77). Each segment is a label wrapping a hidden radio input.
+ */
+export const SWITCH = 'sc-switch inline-flex flex-wrap gap-2 rounded-[11px] bg-surface-2 p-3';
+const SEGMENT =
+  'relative inline-flex cursor-pointer items-center rounded-[8px] px-12 py-6 text-[12.5px] font-[600] [transition:background_var(--t-fast),color_var(--t-fast),box-shadow_var(--t-fast)] has-[input:focus-visible]:[outline:2px_solid_var(--accent)] has-[input:focus-visible]:outline-offset-1 pointer-coarse:px-16 pointer-coarse:py-10';
+export const SEGMENT_ON = `sc-switch__on ${SEGMENT} bg-accent text-on-accent [box-shadow:0_2px_6px_-2px_color-mix(in_srgb,var(--accent)_60%,transparent)]`;
+export const SEGMENT_OFF = `${SEGMENT} text-muted hover:text-fg`;
